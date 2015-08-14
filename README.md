@@ -18,9 +18,9 @@ export DYNACONF_SETTINGS_MODULE=myproject.production_settings
 # you can export extra values (or even define all as ENV vars)
 
 ```
-export DYNACONF_DATABASE = 'mysql://....'
-export DYNACONF_SYSTEM_USER = 'admin'
-export DYNACONF_FOO = 'bar'
+export DYNACONF_DATABASE='mysql://....'
+export DYNACONF_SYSTEM_USER='admin'
+export DYNACONF_FOO='bar'
 ```
 
 # having the settings file
@@ -40,7 +40,7 @@ from dynaconf import settings
 print settings.NAME
 print settings.DATABASE
 print settings.SYSTEM_USER
-print setttings.get('FOO')
+print settings.get('FOO')
 ```
 
 # So
