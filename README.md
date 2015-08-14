@@ -15,13 +15,15 @@ or
 export DYNACONF_SETTINGS_MODULE=myproject.production_settings
 ```
 
-# you can export extra values (or even define all as ENV vars)
+# you can export extra values
 
 ```
 export DYNACONF_DATABASE='mysql://....'
 export DYNACONF_SYSTEM_USER='admin'
 export DYNACONF_FOO='bar'
 ```
+
+Or define all your settings as env_vars starting with **DYNACONF_**
 
 # having the settings file
 
