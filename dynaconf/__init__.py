@@ -6,6 +6,7 @@ environment variable;
 """
 import os
 import importlib
+from dynaconf import default_settings
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.conf.exceptions import ImproperlyConfigured
 from dynaconf.conf.functional import LazyObject, empty
@@ -41,14 +42,12 @@ class LazySettings(LazyObject):
             self._setup(name)
         return getattr(self._wrapped, name)
 
-    def configure(self, root=None, default_settings=None, **options):
+    def configure(self, root=None, default_settings=default_settings, **options):
         """
         Called to manually configure the settings. The 'default_settings'
         parameter sets where to retrieve any unspecified values from (its
         argument must support attribute access (__getattr__)).
         """
-
-        default_settings = default_settings or {}
         if root:
             if root.startswith('/'):
                 default_settings.PROJECT_ROOT = root
@@ -129,7 +128,6 @@ class Settings(BaseSettings):
             )
 
         self.load_from_envvar_namespace()
-
 
     def is_overridden(self, setting):
         return setting in self._explicit_settings

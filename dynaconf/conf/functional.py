@@ -244,7 +244,9 @@ class LazyObject(object):
         """
         Must be implemented by subclasses to initialize the wrapped object.
         """
-        raise NotImplementedError('subclasses of LazyObject must provide a _setup() method')
+        raise NotImplementedError(
+            'subclasses of LazyObject must provide a _setup() method'
+        )
 
     # Because we have messed with __class__ below, we confuse pickle as to what
     # class we are pickling. It also appears to stop __reduce__ from being
@@ -272,7 +274,11 @@ class LazyObject(object):
             # code fails miserably (see regression test). Instead, we return
             # exactly what's returned if there's no ``__reduce__`` method at
             # all.
-            return (copyreg._reconstructor, (self.__class__, object, None), self.__getstate__())
+            return (
+                copyreg._reconstructor,
+                (self.__class__, object, None),
+                self.__getstate__()
+            )
 
     def __deepcopy__(self, memo):
         if self._wrapped is empty:
