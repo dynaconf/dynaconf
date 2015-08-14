@@ -25,16 +25,18 @@ export DYNACONF_FOO='bar'
 
 Or define all your settings as env_vars starting with **DYNACONF_**
 
-# having the settings file
+# Example
 
-## myproject/settings.py
+```
+export DYNACONF_SETTINGS_MODULE=myproject.settings
+```
+
+### file: myproject/settings.py
 ```python
 NAME = 'Bruno'
 ```
 
-# use it
-
-## ascript.py
+### file:app.py
 ```python
 
 from dynaconf import settings
@@ -45,10 +47,11 @@ print settings.SYSTEM_USER
 print settings.get('FOO')
 ```
 
-# So
+### then
 
 ```
-python ascript.py
+python app.py
+
 Bruno
 mysql://..
 admin
