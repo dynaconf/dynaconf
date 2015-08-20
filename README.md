@@ -3,13 +3,13 @@ Dynamic config load for Python
 
 
 # install
-```
+```bash
 pip install dynaconf
 ```
 
 # define your settings module
 
-```
+```bash
 export DYNACONF_SETTINGS_MODULE=myproject.settings
 or
 export DYNACONF_SETTINGS_MODULE=myproject.production_settings
@@ -17,7 +17,7 @@ export DYNACONF_SETTINGS_MODULE=myproject.production_settings
 
 # you can export extra values
 
-```
+```bash
 export DYNACONF_DATABASE='mysql://....'
 export DYNACONF_SYSTEM_USER='admin'
 export DYNACONF_FOO='bar'
@@ -27,7 +27,7 @@ Or define all your settings as env_vars starting with **DYNACONF_**
 
 # Example
 
-```
+```bash
 export DYNACONF_SETTINGS_MODULE=myproject.settings
 ```
 
@@ -49,7 +49,7 @@ print settings.get('FOO')
 
 ### then
 
-```
+```bash
 python app.py
 
 Bruno
@@ -137,7 +137,7 @@ You have 2 ways to use the casts.
 
 Just start your ENV settigs with this
 
-```
+```bash
 export DYNACONF_DEFAULT_THEME='material'
 export DYNACONF_DEBUG='@bool True'
 export DYNACONF_DEBUG_TOOLBAR_ENABLED='@bool False'
@@ -150,10 +150,14 @@ Starting the settings values with @ will make dynaconf.settings to cast it in th
 
 ### Casting on access
 
-```
+```bash
 export DYNACONF_USE_SSH='yes'
 
 from dynaconf import settings
+
+```
+
+```python
 
 use_ssh = settings.get('USE_SSH', cast='@bool')
 # or
@@ -168,7 +172,7 @@ True
 
 ### more examples
 
-```
+```bash
 export DYNACONF_USE_SSH='enabled'
 
 export DYNACONF_ALIST='@json [1,2,3]'
