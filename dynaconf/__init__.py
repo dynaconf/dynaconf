@@ -8,7 +8,7 @@ import os
 import importlib
 from contextlib import contextmanager
 from dynaconf import default_settings
-from dynaconf.utils.parse_conf import parse_conf_data
+from dynaconf.utils.parse_conf import parse_conf_data, converters
 from dynaconf.conf.exceptions import ImproperlyConfigured
 from dynaconf.conf.functional import LazyObject, empty
 
@@ -70,6 +70,9 @@ class LazySettings(LazyObject):
         """
         return self._wrapped is not empty
 
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
 
 class BaseSettings(object):
     """
@@ -87,8 +90,26 @@ class BaseSettings(object):
     def values(self):
         return self.store.values()
 
-    def get(self, key, default=None):
-        return self.store.get(key, default)
+    def get(self, key, default=None, cast=None):
+        data = self.store.get(key, default)
+        if cast:
+            data = converters.get(cast)(data)
+        return data
+
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
+    def as_bool(self, key):
+        return self.get(key, cast='@bool')
+
+    def as_int(self, key):
+        return self.get(key, cast='@int')
+
+    def as_float(self, key):
+        return self.get(key, cast='@float')
+
+    def as_json(self, key):
+        return self.get(key, cast='@json')
 
     @contextmanager
     def using_namespace(self, namespace):
