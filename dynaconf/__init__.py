@@ -6,6 +6,7 @@ environment variable;
 """
 import os
 import importlib
+from contextlib import contextmanager
 from dynaconf import default_settings
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.conf.exceptions import ImproperlyConfigured
@@ -89,7 +90,26 @@ class BaseSettings(object):
     def get(self, key, default=None):
         return self.store.get(key, default)
 
-    def load_from_envvar_namespace(self, namespace='DYNACONF', silent=True):
+    @contextmanager
+    def using_namespace(self, namespace):
+        try:
+            self.namespace(namespace)
+            yield
+        finally:
+            self.namespace()
+
+    def namespace(self, namespace=None):
+        namespace = namespace or 'DYNACONF'
+        if not isinstance(namespace, basestring):
+            raise AttributeError('namespace should be a string')
+        if "_" in namespace:
+            raise AttributeError('namespace should not contains _')
+        self.DYNACONF_NAMESPACE = namespace.upper()
+        self.load_from_envvar_namespace(namespace=namespace, silent=False)
+
+    def load_from_envvar_namespace(self, namespace=None, silent=True):
+        namespace = namespace or getattr(
+            self, 'DYNACONF_NAMESPACE', 'DYNACONF')
         try:
             data = {
                 key.partition('_')[-1]: parse_conf_data(data)
