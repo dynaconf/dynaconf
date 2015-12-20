@@ -5,14 +5,18 @@ Values will be read from the module specified by the DYNACONF_SETTINGS_MODULE
 environment variable;
 """
 import os
+import types
+import errno
 import importlib
 from contextlib import contextmanager
 from dynaconf import default_settings
-from dynaconf.utils.parse_conf import parse_conf_data, converters
+from dynaconf.utils.parse_conf import converters
 from dynaconf.conf.exceptions import ImproperlyConfigured
 from dynaconf.conf.functional import LazyObject, empty
+from dynaconf.loaders import default_loader
 
-ENVIRONMENT_VARIABLE = "DYNACONF_SETTINGS_MODULE"
+
+ENVIRONMENT_VARIABLE = default_settings.ENVVAR_FOR_DYNACONF
 
 
 class LazySettings(LazyObject):
@@ -21,6 +25,7 @@ class LazySettings(LazyObject):
     The user can manually configure settings prior to using them. Otherwise,
     uses the settings module pointed to by DYNACONF_SETTINGS_MODULE.
     """
+
     def _setup(self, name=None):
         """
         Load the settings module pointed to by the environment variable. This
@@ -43,7 +48,8 @@ class LazySettings(LazyObject):
             self._setup(name)
         return getattr(self._wrapped, name)
 
-    def configure(self, root=None, default_settings=default_settings, **options):
+    def configure(self, root=None,
+                  default_settings=default_settings, **options):
         """
         Called to manually configure the settings. The 'default_settings'
         parameter sets where to retrieve any unspecified values from (its
@@ -81,7 +87,12 @@ class BaseSettings(object):
     @property
     def store(self):
         if not hasattr(self, '_store'):
-            self._store = {}
+            self._store = {
+                key: value
+                for key, value
+                in default_settings.__dict__.items()
+                if key.isupper()
+            }
         return self._store
 
     def keys(self):
@@ -165,10 +176,26 @@ class Settings(BaseSettings):
 
         if not hasattr(self, 'PROJECT_ROOT'):
             self.PROJECT_ROOT = os.path.realpath(
-                os.path.dirname(os.path.abspath(self.SETTINGS_MODULE))
-            )
+                os.path.dirname(os.path.abspath(settings_module))
+            ) if loaded_from == 'module' else os.getcwd()
 
-        self.load_from_envvar_namespace()
+        self.execute_loaders()
+
+    def import_from_filename(self, filename, silent=False):
+        mod = types.ModuleType('config')
+        mod.__file__ = filename
+        try:
+            with open(filename) as config_file:
+                exec(
+                    compile(config_file.read(), filename, 'exec'),
+                    mod.__dict__
+                )
+        except IOError as e:
+            if silent and e.errno in (errno.ENOENT, errno.EISDIR):
+                return False
+            e.strerror = 'Unable to load configuration file (%s)' % e.strerror
+            raise
+        return mod
 
     def is_overridden(self, setting):
         return setting in self._explicit_settings
@@ -195,7 +222,7 @@ class UserSettingsHolder(BaseSettings):
             in default_settings.__dict__.items()
             if key.isupper()
         }
-        self.load_from_envvar_namespace()
+        self.execute_loaders()
 
     def __getattr__(self, name):
         if name in self._deleted:

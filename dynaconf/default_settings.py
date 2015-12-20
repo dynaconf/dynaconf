@@ -1,1 +1,18 @@
-DYNACONF = True
+# Namespace for envvars
+DYNACONF_NAMESPACE = 'DYNACONF'
+
+# The env var specifying settings module
+ENVVAR_FOR_DYNACONF = "DYNACONF_SETTINGS"
+
+# Default values for redis configs
+REDIS_FOR_DYNACONF = {
+    'host': 'localhost',
+    'port': 6379,
+    'db': 0
+}
+
+# Loaders to read namespace based vars from diferent data stores
+LOADERS_FOR_DYNACONF = [
+    'dynaconf.loaders.env_loader',
+    'dynaconf.loaders.redis_loader'
+]

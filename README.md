@@ -1,6 +1,10 @@
 # dynaconf
 Dynamic config load for Python
 
+Dynaconf can load your settings from a customized python file or module, than you can specify a list of loaders that can read (overriding) settings from environment variables, redis, mongodb, elasticsearch etc..
+
+Dynaconf keeps the values chached and has a data casting system allowing you to define python-typed variables even in environment variables or redis.
+
 
 # install
 ```bash
@@ -10,9 +14,11 @@ pip install dynaconf
 # define your settings module
 
 ```bash
-export DYNACONF_SETTINGS_MODULE=myproject.settings
+export DYNACONF_SETTINGS=myproject.settings
 or
-export DYNACONF_SETTINGS_MODULE=myproject.production_settings
+export DYNACONF_SETTINGS=myproject.production_settings
+or
+export DYNACONF_SETTINGS=/etc/myprogram/settings.py
 ```
 
 # you can export extra values
@@ -28,7 +34,7 @@ Or define all your settings as env_vars starting with **DYNACONF_**
 # Example
 
 ```bash
-export DYNACONF_SETTINGS_MODULE=myproject.settings
+export DYNACONF_SETTINGS=myproject.settings
 ```
 
 ### file: myproject/settings.py
@@ -76,7 +82,7 @@ and then access them
 from dynaconf import settings
 
 # configure() or configure('settingsmodule.path') is needed
-# only when DYNACONF_SETINGS_MODULE is not defined
+# only when DYNACONF_SETINGS is not defined
 settings.configure()
 
 # access default namespace settings
@@ -221,5 +227,45 @@ settings.AINT
 
 ```
 
+# Defining default namespace
 
-> This was inspired by django.conf.settings
+Include in the file defined in DYNACONF_SETTINGS the desired namespace
+
+```python
+DYNACONF_NAMESPACE = 'DYNACONF'
+```
+
+# Storing settings in databases
+
+## Using REDIS
+
+Redis support relies on the following two settings that you can setup in the DYNACONF_SETTINGS file
+
+
+1  Add the configuration for redis client
+```python
+REDIS_FOR_DYNACONF = {
+    'host': 'localhost',
+    'port': 6379,
+    'db': 0
+}
+
+```
+
+
+
+Include **redis_loader** in dynaconf LOADERS_FOR_DYNACONF
+
+> the order is the precedence
+
+```python
+
+# Loaders to read namespace based vars from diferent data stores
+LOADERS_FOR_DYNACONF = [
+    'dynaconf.loaders.env_loader',
+    'dynaconf.loaders.redis_loader'
+]
+```
+
+
+> This was inspired by flask.config and django.conf.settings
