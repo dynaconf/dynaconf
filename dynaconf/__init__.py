@@ -137,36 +137,37 @@ class BaseSettings(object):
         if "_" in namespace:
             raise AttributeError('namespace should not contains _')
         self.DYNACONF_NAMESPACE = namespace.upper()
-        self.load_from_envvar_namespace(namespace=namespace, silent=False)
+        self.execute_loaders(namespace=namespace, silent=False)
 
-    def load_from_envvar_namespace(self, namespace=None, silent=True):
-        namespace = namespace or getattr(
-            self, 'DYNACONF_NAMESPACE', 'DYNACONF')
-        try:
-            data = {
-                key.partition('_')[-1]: parse_conf_data(data)
-                for key, data
-                in os.environ.items()
-                if key.startswith(namespace)
-            }
-            for key, value in data.items():
-                setattr(self, key, value)
-                self.store[key] = value
-        except Exception as e:
-            if silent:
-                return False
-            e.message = 'Unable to load config env namespace (%s)' % e.message
-            raise
+    def execute_loaders(self, namespace=None, silent=True):
+        loaders = getattr(
+            self,
+            'LOADERS_FOR_DYNACONF',
+            self.get('LOADERS_FOR_DYNACONF')
+        )
+        for loader_module_name in loaders:
+            try:
+                loader = importlib.import_module(loader_module_name)
+            except ImportError:
+                loader = self.import_from_filename(loader_module_name)
+            loader.main(self, namespace, silent=False)
 
 
 class Settings(BaseSettings):
+
     def __init__(self, settings_module):
-        # store the settings module in case someone later cares
+        default_loader(self)
         self.SETTINGS_MODULE = settings_module
 
-        mod = importlib.import_module(self.SETTINGS_MODULE)
+        try:
+            mod = importlib.import_module(settings_module)
+            loaded_from = 'module'
+        except ImportError:
+            mod = self.import_from_filename(settings_module)
+            loaded_from = 'filename'
 
         self._explicit_settings = set()
+
         for setting in dir(mod):
             if setting.isupper():
                 setting_value = getattr(mod, setting)
