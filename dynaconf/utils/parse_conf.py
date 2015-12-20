@@ -27,3 +27,16 @@ def parse_conf_data(data):
         value = parts[-1]
         return converters.get(converter_key)(value)
     return data
+
+
+def unparse_conf_data(value):
+    if isinstance(value, int):
+        return "@int %s" % value
+    elif isinstance(value, float):
+        return "@float %s" % value
+    elif isinstance(value, bool):
+        return "@bool %s" % value
+    elif isinstance(value, (list, dict)):
+        return "@json %s" % json.dumps(value)
+    else:
+        return value

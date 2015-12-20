@@ -267,5 +267,28 @@ LOADERS_FOR_DYNACONF = [
 ]
 ```
 
+You can now write variables direct in to redis using namespace  **DYNACONF_VARIABLE** as key
+
+
+You can also use the redis writer
+
+```python
+from dynaconf.utils import redis_writer
+from dynaconf import settings
+
+redis_writer.write(settings, name='Bruno', database='localhost', PORT=1234)
+
+```
+
+The above data will be converted to namespaced values and recorded in redis as:
+
+```
+DYNACONF_NAME='Bruno'
+DYNACONF_DATABASE='localhost'
+DYNACONF_PORT='@int 1234'
+```
+
+> if you want to skip type casting, write as string intead of PORT=1234 use PORT='1234' as redis stores everything as string anyway
+
 
 > This was inspired by flask.config and django.conf.settings
