@@ -292,6 +292,7 @@ DYNACONF_PORT='@int 1234'
 
 > if you want to skip type casting, write as string intead of PORT=1234 use PORT='1234' as redis stores everything as string anyway
 
+Data is read from redis and another loaders only once or when namespace() and using_namespace() are invoked. You can access the fresh value using **settings.get_fresh(key)**
 
 # Using programatically
 
