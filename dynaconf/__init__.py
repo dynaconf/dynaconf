@@ -16,9 +16,6 @@ from dynaconf.conf.functional import LazyObject, empty
 from dynaconf.loaders import default_loader
 
 
-ENVIRONMENT_VARIABLE = default_settings.ENVVAR_FOR_DYNACONF
-
-
 class LazySettings(LazyObject):
     """
     A lazy proxy for either global settings or a custom settings obj
@@ -26,12 +23,18 @@ class LazySettings(LazyObject):
     uses the settings module pointed to by DYNACONF_SETTINGS_MODULE.
     """
 
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(default_settings, k.upper(), v)
+        super(LazySettings, self).__init__()
+
     def _setup(self, name=None):
         """
         Load the settings module pointed to by the environment variable. This
         is used the first time we need any settings at all, if the user has
         not previously configured the settings manually.
         """
+        ENVIRONMENT_VARIABLE = default_settings.ENVVAR_FOR_DYNACONF
         settings_module = os.environ.get(ENVIRONMENT_VARIABLE)
         if not settings_module:
             desc = ("setting %s" % name) if name else "settings"
@@ -40,7 +43,6 @@ class LazySettings(LazyObject):
                 "You must either define the environment variable %s "
                 "or call settings.configure() before accessing settings."
                 % (desc, ENVIRONMENT_VARIABLE))
-
         self._wrapped = Settings(settings_module)
 
     def __getattr__(self, name):

@@ -291,4 +291,26 @@ DYNACONF_PORT='@int 1234'
 > if you want to skip type casting, write as string intead of PORT=1234 use PORT='1234' as redis stores everything as string anyway
 
 
+# Using programatically
+
+Sometimes you want to override settings for your existing Package or Framework
+lets say you have a **conf** module exposing a **settings** object and used to do:
+
+`from myprogram.conf import settings`
+
+Now you want to use Dynaconf, open that `conf.py` or `conf/__init__.py` and do:
+
+```python
+# coding: utf-8
+from dynaconf import LazySettings
+
+settings = LazySettings(
+    ENVVAR_FOR_DYNACONF="MYPROGRAM_SETTINGS_MODULE",
+    DYNACONF_NAMESPACE='MYPROGRAM'
+)
+
+```
+
+Now you can import settings from your own program and dynaconf will do the rest!
+
 > This was inspired by flask.config and django.conf.settings
