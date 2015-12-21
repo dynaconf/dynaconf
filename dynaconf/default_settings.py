@@ -16,3 +16,6 @@ LOADERS_FOR_DYNACONF = [
     'dynaconf.loaders.env_loader',
     # 'dynaconf.loaders.redis_loader'
 ]
+
+# Errors in loaders should be silenced?
+DYNACONF_SILENT_ERRORS = False

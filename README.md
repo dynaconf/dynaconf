@@ -122,6 +122,8 @@ settings.DATABASE
 'DYNADB'
 ```
 
+> namespace() and using_namespace() takes optional argument **clean** defaults to True. If you want to keep the pre-loaded values when switching namespaces set it to False.
+
 # casting values from envvars
 
 Sometimes you need to set some values as specific types, boolean, integer, float or lists and dicts.

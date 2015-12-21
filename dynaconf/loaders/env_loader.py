@@ -1,22 +1,29 @@
 import os
 from dynaconf.utils.parse_conf import parse_conf_data
 
+IDENTIFIER = 'env_loader'
 
-def main(obj, namespace=None, silent=True):
-    namespace = namespace or getattr(
-        obj, 'DYNACONF_NAMESPACE', 'DYNACONF')
+
+def load(obj, namespace=None, silent=True):
+    namespace = namespace or obj.DYNACONF_NAMESPACE
     try:
         data = {
             key.partition('_')[-1]: parse_conf_data(data)
             for key, data
             in os.environ.items()
-            if key.startswith(namespace)
+            if key.startswith('%s_' % namespace)
         }
+        obj.loaded_by_loaders[IDENTIFIER] = data
         for key, value in data.items():
-            setattr(obj, key, value)
-            obj.store[key] = value
+            obj.set(key, value)
     except Exception as e:
-        if silent:
-            return False
         e.message = 'Unable to load config env namespace (%s)' % e.message
+        if silent:
+            obj.logger.error(e.message)
+            return False
         raise
+
+
+def clean(obj, namespace, silent=True):
+    for key in obj.loaded_by_loaders.get(IDENTIFIER, {}):
+        obj.unset(key)

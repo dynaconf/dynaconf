@@ -1,6 +1,6 @@
 from redis import StrictRedis
-from dynacong.utils.parse_conf import unparse_conf_data
-from dynaconf.loaders.redis_loader import main
+from dynaconf.utils.parse_conf import unparse_conf_data
+from dynaconf.loaders.redis_loader import load
 
 
 def write(settings, **kwargs):
@@ -9,4 +9,4 @@ def write(settings, **kwargs):
         key = "{0}_{1}".format(settings.DYNACONF_NAMESPACE, k)
         value = unparse_conf_data(value)
         client.set(key.upper(), value)
-    main(settings)
+    load(settings)

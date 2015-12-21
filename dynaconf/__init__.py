@@ -7,13 +7,14 @@ environment variable;
 import os
 import types
 import errno
+import logging
 import importlib
 from contextlib import contextmanager
 from dynaconf import default_settings
 from dynaconf.utils.parse_conf import converters
 from dynaconf.conf.exceptions import ImproperlyConfigured
 from dynaconf.conf.functional import LazyObject, empty
-from dynaconf.loaders import default_loader
+from dynaconf.loaders import default_loader, module_loader
 
 
 class LazySettings(LazyObject):
@@ -109,6 +110,10 @@ class BaseSettings(object):
             data = converters.get(cast)(data)
         return data
 
+    def get_fresh(self, key, default=None, cast=None):
+        self.execute_loaders()
+        return self.get(key, default=default, cast=cast)
+
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
@@ -124,35 +129,93 @@ class BaseSettings(object):
     def as_json(self, key):
         return self.get(key, cast='@json')
 
+    @property
+    def logger(self):
+        if not hasattr(self, '_logger'):
+            self._logger = logging.getLogger()
+        return self._logger
+
+    @property
+    def loaded_namespaces(self):
+        if not hasattr(self, '_loaded_namespaces'):
+            self._loaded_namespaces = []
+        return self._loaded_namespaces
+
+    @loaded_namespaces.setter
+    def loaded_namespaces(self, value):
+        self._loaded_namespaces = value
+
+    @property
+    def loaded_by_loaders(self):
+        if not hasattr(self, '_loaded_by_loaders'):
+            self._loaded_by_loaders = {}
+        return self._loaded_by_loaders
+
     @contextmanager
-    def using_namespace(self, namespace):
+    def using_namespace(self, namespace, clean=True):
         try:
-            self.namespace(namespace)
+            self.namespace(namespace, clean=clean)
             yield
         finally:
-            self.namespace()
+            if namespace != self.DYNACONF_NAMESPACE:
+                del self.loaded_namespaces[-1]
+            self.namespace(self.current_namespace, clean=clean)
 
-    def namespace(self, namespace=None):
-        namespace = namespace or 'DYNACONF'
+    @property
+    def current_namespace(self):
+        try:
+            return self.loaded_namespaces[-1]
+        except IndexError:
+            return self.DYNACONF_NAMESPACE
+
+    def namespace(self, namespace=None, clean=True):
+        namespace = namespace or self.DYNACONF_NAMESPACE
+
+        if namespace != self.DYNACONF_NAMESPACE:
+            self.loaded_namespaces.append(namespace)
+        else:
+            self.loaded_namespaces = []
+
         if not isinstance(namespace, basestring):
             raise AttributeError('namespace should be a string')
         if "_" in namespace:
             raise AttributeError('namespace should not contains _')
-        self.DYNACONF_NAMESPACE = namespace.upper()
-        self.execute_loaders(namespace=namespace, silent=False)
+        if clean:
+            self.clean(namespace=namespace)
+        self.execute_loaders(namespace=namespace)
 
-    def execute_loaders(self, namespace=None, silent=True):
-        loaders = getattr(
-            self,
-            'LOADERS_FOR_DYNACONF',
-            self.get('LOADERS_FOR_DYNACONF')
-        )
-        for loader_module_name in loaders:
-            try:
-                loader = importlib.import_module(loader_module_name)
-            except ImportError:
-                loader = self.import_from_filename(loader_module_name)
-            loader.main(self, namespace, silent=False)
+    def clean(self, namespace=None, silent=None):
+        silent = silent or self.DYNACONF_SILENT_ERRORS
+        namespace = namespace or self.DYNACONF_NAMESPACE
+        for loader in self.loaders:
+            loader.clean(self, namespace, silent=silent)
+
+    def unset(self, key):
+        delattr(self, key)
+        self.store.pop(key, None)
+
+    def set(self, key, value):
+        setattr(self, key, value)
+        self.store[key] = value
+
+    @property
+    def loaders(self):
+        if not hasattr(self, '_loaders'):
+            self._loaders = []
+            loaders = self.LOADERS_FOR_DYNACONF
+            for loader_module_name in loaders:
+                try:
+                    loader = importlib.import_module(loader_module_name)
+                except ImportError:
+                    loader = self.import_from_filename(loader_module_name)
+                self._loaders.append(loader)
+        return self._loaders
+
+    def execute_loaders(self, namespace=None, silent=None):
+        module_loader(self)
+        silent = silent or self.DYNACONF_SILENT_ERRORS
+        for loader in self.loaders:
+            loader.load(self, namespace, silent=silent)
 
 
 class Settings(BaseSettings):
@@ -160,28 +223,6 @@ class Settings(BaseSettings):
     def __init__(self, settings_module):
         default_loader(self)
         self.SETTINGS_MODULE = settings_module
-
-        try:
-            mod = importlib.import_module(settings_module)
-            loaded_from = 'module'
-        except ImportError:
-            mod = self.import_from_filename(settings_module)
-            loaded_from = 'filename'
-
-        self._explicit_settings = set()
-
-        for setting in dir(mod):
-            if setting.isupper():
-                setting_value = getattr(mod, setting)
-                setattr(self, setting, setting_value)
-                self._explicit_settings.add(setting)
-                self.store[setting] = setting_value
-
-        if not hasattr(self, 'PROJECT_ROOT'):
-            self.PROJECT_ROOT = os.path.realpath(
-                os.path.dirname(os.path.abspath(settings_module))
-            ) if loaded_from == 'module' else os.getcwd()
-
         self.execute_loaders()
 
     def import_from_filename(self, filename, silent=False):
@@ -199,9 +240,6 @@ class Settings(BaseSettings):
             e.strerror = 'Unable to load configuration file (%s)' % e.strerror
             raise
         return mod
-
-    def is_overridden(self, setting):
-        return setting in self._explicit_settings
 
 
 class UserSettingsHolder(BaseSettings):
