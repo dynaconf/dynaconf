@@ -10,3 +10,9 @@ def write(settings, **kwargs):
         value = unparse_conf_data(value)
         client.set(key.upper(), value)
     load(settings)
+
+
+def delete(settings, key):
+    client = StrictRedis(**settings.REDIS_FOR_DYNACONF)
+    key = "{0}_{1}".format(settings.DYNACONF_NAMESPACE, key)
+    client.delete(key)
