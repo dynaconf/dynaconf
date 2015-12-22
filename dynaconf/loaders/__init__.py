@@ -10,7 +10,7 @@ def default_loader(obj):
 
 
 def module_loader(obj, settings_module=None):
-    settings_module = settings_module or obj.SETTINGS_MODULE
+    settings_module = settings_module or obj.settings_module
     try:
         mod = importlib.import_module(settings_module)
         loaded_from = 'module'

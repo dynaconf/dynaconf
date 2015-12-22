@@ -168,6 +168,16 @@ class BaseSettings(object):
         except IndexError:
             return self.DYNACONF_NAMESPACE
 
+    @property
+    def settings_module(self):
+        if not hasattr(self, 'SETTINGS_MODULE'):
+            if not hasattr(self, 'ENVIRONMENT_VARIABLE'):
+                ENVIRONMENT_VARIABLE = default_settings.ENVVAR_FOR_DYNACONF
+            settings_module = os.environ.get(ENVIRONMENT_VARIABLE)
+            self.SETTINGS_MODULE = settings_module
+            self.ENVIRONMENT_VARIABLE = ENVIRONMENT_VARIABLE
+        return self.SETTINGS_MODULE
+
     def namespace(self, namespace=None, clean=True):
         namespace = namespace or self.DYNACONF_NAMESPACE
 
