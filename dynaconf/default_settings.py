@@ -19,3 +19,6 @@ LOADERS_FOR_DYNACONF = [
 
 # Errors in loaders should be silenced?
 DYNACONF_SILENT_ERRORS = False
+
+# always fresh variables
+DYNACONF_ALWAYS_FRESH_VARS = []

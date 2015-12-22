@@ -21,7 +21,7 @@ def parse_conf_data(data):
     export DYNACONF_MONGODB_SETTINGS='@json {"DB": "quokka_db"}'
     export DYNACONF_ALLOWED_EXTENSIONS='@json ["jpg", "png"]'
     """
-    if data.startswith(tuple(converters.keys())):
+    if data and data.startswith(tuple(converters.keys())):
         parts = data.partition(' ')
         converter_key = parts[0]
         value = parts[-1]

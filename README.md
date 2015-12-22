@@ -269,7 +269,9 @@ LOADERS_FOR_DYNACONF = [
 ]
 ```
 
-You can now write variables direct in to redis using namespace  **DYNACONF_VARIABLE** as key
+You can now write variables direct in to a redis hash named `DYNACONF_< NAMESPACE >`
+
+By default **DYNACONF_DYNACONF**
 
 
 You can also use the redis writer
@@ -282,17 +284,53 @@ redis_writer.write(settings, name='Bruno', database='localhost', PORT=1234)
 
 ```
 
-The above data will be converted to namespaced values and recorded in redis as:
+The above data will be converted to namespaced values and recorded in redis as a hash:
 
 ```
-DYNACONF_NAME='Bruno'
-DYNACONF_DATABASE='localhost'
-DYNACONF_PORT='@int 1234'
+DYNACONF_DYNACONF:
+    NAME='Bruno'
+    DATABASE='localhost'
+    PORT='@int 1234'
 ```
 
 > if you want to skip type casting, write as string intead of PORT=1234 use PORT='1234' as redis stores everything as string anyway
 
 Data is read from redis and another loaders only once or when namespace() and using_namespace() are invoked. You can access the fresh value using **settings.get_fresh(key)**
+
+There is also the **fresh** context manager
+
+```python
+from dynaconf import settings
+
+print settings.FOO  # this data was loaded once on import
+
+with settings.fresh():
+    print settings.FOO  # this data is being directly read from loaders
+
+```
+
+And you can also force some variables to be **fresh** setting in your setting file
+
+```python
+DYNACONF_ALWAYS_FRESH_VARS = ['MYSQL_HOST']
+```
+
+or using env vars
+
+```bash
+export DYNACONF_ALWAYS_FRESH_VARS='@json ["MYSQL_HOST"]'
+```
+
+Then
+
+```python
+from dynaconf import settings
+
+print settings.FOO  # This data was loaded once on import
+
+print settings.MYSQL_HOST # This data is being read from redis imediatelly!
+
+```
 
 # Using programatically
 

@@ -49,6 +49,9 @@ class LazySettings(LazyObject):
     def __getattr__(self, name):
         if self._wrapped is empty:
             self._setup(name)
+        always_fresh = getattr(self._wrapped, 'DYNACONF_ALWAYS_FRESH_VARS')
+        if self._wrapped._fresh or name in always_fresh:
+            return self._wrapped.get_fresh(name)
         return getattr(self._wrapped, name)
 
     def configure(self, root=None,
@@ -87,6 +90,8 @@ class BaseSettings(object):
     """
     Common logic for settings whether set by a module or by the user.
     """
+    _fresh = False
+
     @property
     def store(self):
         if not hasattr(self, '_store'):
@@ -111,7 +116,7 @@ class BaseSettings(object):
         return data
 
     def get_fresh(self, key, default=None, cast=None):
-        self.execute_loaders()
+        self.execute_loaders(key=key)
         return self.get(key, default=default, cast=cast)
 
     def __call__(self, *args, **kwargs):
@@ -161,6 +166,12 @@ class BaseSettings(object):
                 del self.loaded_namespaces[-1]
             self.namespace(self.current_namespace, clean=clean)
 
+    @contextmanager
+    def fresh(self):
+        self._fresh = True
+        yield
+        self._fresh = False
+
     @property
     def current_namespace(self):
         try:
@@ -205,8 +216,8 @@ class BaseSettings(object):
         self.store.pop(key, None)
 
     def set(self, key, value):
-        setattr(self, key, value)
-        self.store[key] = value
+        setattr(self, key.upper(), value)
+        self.store[key.upper()] = value
 
     @property
     def loaders(self):
@@ -221,17 +232,20 @@ class BaseSettings(object):
                 self._loaders.append(loader)
         return self._loaders
 
-    def execute_loaders(self, namespace=None, silent=None):
+    def reload(self, namespace=None, silent=None):
+        self.execute_loaders(namespace, silent)
+
+    def execute_loaders(self, namespace=None, silent=None, key=None):
+        default_loader(self)
         module_loader(self)
         silent = silent or self.DYNACONF_SILENT_ERRORS
         for loader in self.loaders:
-            loader.load(self, namespace, silent=silent)
+            loader.load(self, namespace, silent=silent, key=key)
 
 
 class Settings(BaseSettings):
 
     def __init__(self, settings_module):
-        default_loader(self)
         self.SETTINGS_MODULE = settings_module
         self.execute_loaders()
 
