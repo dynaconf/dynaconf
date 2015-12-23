@@ -1,9 +1,8 @@
+import six
 import copy
 import operator
+from six.moves import copyreg
 from functools import total_ordering, wraps
-
-from dynaconf.conf import six
-from dynaconf.conf.six.moves import copyreg
 
 
 # You can't trivially replace this with `functools.partial` because this binds
@@ -15,7 +14,7 @@ def curry(_curried_func, *args, **kwargs):
     return _curried
 
 
-class cached_property(object):
+class cached_property(object):  # noqa
     """
     Decorator that converts a method with a single self argument into a
     property cached on the instance.
@@ -53,7 +52,7 @@ def lazy(func, *resultclasses):
     """
 
     @total_ordering
-    class __proxy__(Promise):
+    class __proxy__(Promise):  # noqa
         """
         Encapsulate a function call and act as a proxy for methods that are
         called on the result of that function. The function is not evaluated
@@ -104,7 +103,7 @@ def lazy(func, *resultclasses):
         @classmethod
         def __promise__(cls, method_name):
             # Builds a wrapper around some magic method
-            def __wrapper__(self, *args, **kw):
+            def __wrapper__(self, *args, **kw):  # noqa
                 # Automatically triggers the evaluation of a lazy value and
                 # applies the given magic method of the result type.
                 res = func(*self.__args, **self.__kw)
@@ -166,7 +165,7 @@ def lazy(func, *resultclasses):
             return self
 
     @wraps(func)
-    def __wrapper__(*args, **kw):
+    def __wrapper__(*args, **kw):  # noqa
         # Creates the proxy object, instead of the actual value.
         return __proxy__(args, kw)
 
@@ -359,7 +358,7 @@ class SimpleLazyObject(LazyObject):
         return copy.deepcopy(self._wrapped, memo)
 
 
-class lazy_property(property):
+class lazy_property(property):  # noqa
     """
     A property that works with subclasses by wrapping the decorated
     functions of the base class.

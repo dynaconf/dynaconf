@@ -11,6 +11,9 @@ def default_loader(obj):
 
 def module_loader(obj, settings_module=None):
     settings_module = settings_module or obj.settings_module
+    if not settings_module:
+        return
+
     try:
         mod = importlib.import_module(settings_module)
         loaded_from = 'module'
@@ -24,6 +27,7 @@ def module_loader(obj, settings_module=None):
             obj.set(setting, setting_value)
 
     if not hasattr(obj, 'PROJECT_ROOT'):
-        obj.PROJECT_ROOT = os.path.realpath(
+        root = os.path.realpath(
             os.path.dirname(os.path.abspath(settings_module))
         ) if loaded_from == 'module' else os.getcwd()
+        obj.set('PROJECT_ROOT', root)

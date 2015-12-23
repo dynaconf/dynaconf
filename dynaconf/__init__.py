@@ -35,15 +35,15 @@ class LazySettings(LazyObject):
         is used the first time we need any settings at all, if the user has
         not previously configured the settings manually.
         """
-        ENVIRONMENT_VARIABLE = default_settings.ENVVAR_FOR_DYNACONF
-        settings_module = os.environ.get(ENVIRONMENT_VARIABLE)
+        environment_variable = default_settings.ENVVAR_FOR_DYNACONF
+        settings_module = os.environ.get(environment_variable)
         if not settings_module:
             desc = ("setting %s" % name) if name else "settings"
             raise ImproperlyConfigured(
                 "Requested %s, but settings are not configured. "
                 "You must either define the environment variable %s "
                 "or call settings.configure() before accessing settings."
-                % (desc, ENVIRONMENT_VARIABLE))
+                % (desc, environment_variable))
         self._wrapped = Settings(settings_module)
 
     def __getattr__(self, name):
@@ -183,10 +183,10 @@ class BaseSettings(object):
     def settings_module(self):
         if not hasattr(self, 'SETTINGS_MODULE'):
             if not hasattr(self, 'ENVIRONMENT_VARIABLE'):
-                ENVIRONMENT_VARIABLE = default_settings.ENVVAR_FOR_DYNACONF
-            settings_module = os.environ.get(ENVIRONMENT_VARIABLE)
-            self.SETTINGS_MODULE = settings_module
-            self.ENVIRONMENT_VARIABLE = ENVIRONMENT_VARIABLE
+                environment_variable = default_settings.ENVVAR_FOR_DYNACONF
+            settings_module = os.environ.get(environment_variable)
+            self.set('SETTINGS_MODULE', settings_module)
+            self.set('ENVIRONMENT_VARIABLE', environment_variable)
         return self.SETTINGS_MODULE
 
     def namespace(self, namespace=None, clean=True):
@@ -246,7 +246,7 @@ class BaseSettings(object):
 class Settings(BaseSettings):
 
     def __init__(self, settings_module):
-        self.SETTINGS_MODULE = settings_module
+        self.set('SETTINGS_MODULE', settings_module)
         self.execute_loaders()
 
     def import_from_filename(self, filename, silent=False):
