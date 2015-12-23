@@ -4,7 +4,7 @@
 
 > **dynaconf** - The **dyna**mic **conf**igurator for your Python Project 
 
-[![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE.md) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![downloads](https://img.shields.io/pypi/dw/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![Code Health](https://landscape.io/github/rochacbruno/dynaconf/master/landscape.svg?style=flat)](https://landscape.io/github/rochacbruno/dynaconf/master)
+[![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![downloads](https://img.shields.io/pypi/dw/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![Coverage Status](https://coveralls.io/repos/rochacbruno/dynaconf/badge.svg?branch=master&service=github)](https://coveralls.io/github/rochacbruno/dynaconf?branch=master) [![Code Health](https://landscape.io/github/rochacbruno/dynaconf/master/landscape.svg?style=flat)](https://landscape.io/github/rochacbruno/dynaconf/master)
 
 
 **dynaconf** is an OSM (**O**bject **S**ettings **M**apper) it can read settings variables from a set of different data stores such as **python settings files**, **environment variables**, **redis**, **memcached**, **ini files**, **json files**, **yaml files** and you can customize **dynaconf** loaders to read from wherever you want. (maybe you really want to read from xml files ughh?)

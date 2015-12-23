@@ -1,0 +1,7 @@
+[run]
+source = dynaconf
+
+[report]
+omit =
+    */python?.?/*
+    */site-packages/nose/*

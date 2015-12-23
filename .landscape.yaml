@@ -1,0 +1,26 @@
+python-targets:
+    - 2
+#    - 3
+    
+pylint:
+  disable:
+    - bare-except
+    - unused-argument
+    - pointless-string-statement
+    - too-many-locals
+    - too-many-arguments
+    - protected-access
+    - unused-variable
+    - super-on-old-class
+
+pep8:
+  disable:
+    - E1002
+
+ignore-paths:
+    - tests
+
+requirements:
+    - test.req
+
+#max-line-length: 120
