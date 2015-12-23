@@ -1,12 +1,17 @@
-# dynaconf
-Dynamic config load for Python
 
-Dynaconf can load your settings from a customized python file or module, than you can specify a list of loaders that can read (overriding) settings from environment variables, redis, mongodb, elasticsearch etc..
+<img src="dynaconf_joystick.png" align="left" width="192px" height="192px"/>
+<img align="left" width="0" height="192px" hspace="10"/>
 
-Dynaconf keeps the values chached and has a data casting system allowing you to define python-typed variables even in environment variables or redis.
+> **dynaconf** - The **dyna**mic **conf**igurator for your Python Project 
+
+[![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE.md) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![downloads](https://img.shields.io/pypi/dw/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![Code Health](https://landscape.io/github/rochacbruno/dynaconf/master/landscape.svg?style=flat)](https://landscape.io/github/rochacbruno/dynaconf/master)
 
 
-# install
+**dynaconf** is an OSM (**O**bject **S**ettings **M**apper) it can read settings variables from a set of different data stores such as **python settings files**, **environment variables**, **redis**, **memcached**, **ini files**, **json files**, **yaml files** and you can customize **dynaconf** loaders to read from wherever you want. (maybe you really want to read from xml files ughh?)
+
+<br><br>
+
+# Install
 ```bash
 pip install dynaconf
 ```
