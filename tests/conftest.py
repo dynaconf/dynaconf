@@ -7,7 +7,7 @@ from dynaconf.loaders.redis_loader import write
 
 @pytest.fixture(scope='module')
 def settings():
-    mode = 'TRAVIS' if os.environ.get('RUNNING_ON_TRAVIS') else 'TEST'
+    mode = 'TRAVIS' if os.environ.get('TRAVIS') else 'TEST'
     return LazySettings(
         LOADERS_FOR_DYNACONF=[
             'dynaconf.loaders.env_loader',
