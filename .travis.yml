@@ -8,7 +8,8 @@ env:
   - DYNATRAVIS_ENV_INT='@int 42'
   - DYNATRAVIS_ENV_FLOAT='@float 42.2'
   - DYNATRAVIS_ENV_LIST='@json ["dyna", "conf"]'
-  - DYNATRAVIS_ENV_DICT='@json {"dyna": "conf"}'
+  # - DYNATRAVIS_ENV_DICT='@json {"dyna": "conf"}' how to fix this?
+  - DYNATRAVIS_ENV_DICT='@json {}'
   - DYNATRAVIS_ENV_PURE_INT=42
   - OTHER_TESTING='@bool yes'
 before_script:
