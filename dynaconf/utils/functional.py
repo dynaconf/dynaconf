@@ -27,7 +27,7 @@ class cached_property(object):  # noqa
         self.__doc__ = getattr(func, '__doc__')
         self.name = name or func.__name__
 
-    def __get__(self, instance, type=None):
+    def __get__(self, instance, type=None):  # noqa
         if instance is None:
             return self
         res = instance.__dict__[self.name] = self.func(instance)
@@ -43,7 +43,7 @@ class Promise(object):
     pass
 
 
-def lazy(func, *resultclasses):
+def lazy(func, *resultclasses):  # noqa
     """
     Turns any callable into a lazy evaluated callable. You need to give result
     classes or types -- at least one is needed so that the automatic forcing of
@@ -366,15 +366,15 @@ class lazy_property(property):  # noqa
     def __new__(cls, fget=None, fset=None, fdel=None, doc=None):
         if fget is not None:
             @wraps(fget)
-            def fget(instance, instance_type=None, name=fget.__name__):
+            def fget(instance, instance_type=None, name=fget.__name__):  # noqa
                 return getattr(instance, name)()
         if fset is not None:
             @wraps(fset)
-            def fset(instance, value, name=fset.__name__):
+            def fset(instance, value, name=fset.__name__):  # noqa
                 return getattr(instance, name)(value)
         if fdel is not None:
             @wraps(fdel)
-            def fdel(instance, name=fdel.__name__):
+            def fdel(instance, name=fdel.__name__):  # noqa
                 return getattr(instance, name)()
         return property(fget, fset, fdel, doc)
 
