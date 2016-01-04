@@ -396,3 +396,6 @@ class Settings(object):
             e.strerror = 'Unable to load configuration file (%s)' % e.strerror
             raise
         return mod
+
+    def path_for(self, *args):
+        return os.path.join(self.PROJECT_ROOT, *args)

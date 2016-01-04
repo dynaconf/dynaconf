@@ -1,3 +1,6 @@
+# default proj root
+PROJECT_ROOT = "."
+
 # Namespace for envvars
 DYNACONF_NAMESPACE = 'DYNACONF'
 
