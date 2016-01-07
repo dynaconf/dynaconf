@@ -398,4 +398,6 @@ class Settings(object):
         return mod
 
     def path_for(self, *args):
+        if args and args[0].startswith('/'):
+            return os.path.join(*args)
         return os.path.join(self.PROJECT_ROOT, *args)
