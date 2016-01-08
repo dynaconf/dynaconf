@@ -278,9 +278,13 @@ class Settings(object):
                 'ENVIRONMENT_VARIABLE',
                 default_settings.ENVVAR_FOR_DYNACONF
             )
-            settings_module = os.environ.get(environment_variable)
+            settings_module = os.environ.get(
+                environment_variable,
+                default_settings.SETTINGS_MODULE_FOR_DYNACONF
+            )
             self.set('SETTINGS_MODULE', settings_module)
             self.set('ENVIRONMENT_VARIABLE', environment_variable)
+
         return self.SETTINGS_MODULE
 
     def namespace(self, namespace=None, clean=True):
@@ -382,6 +386,8 @@ class Settings(object):
 
     @staticmethod
     def import_from_filename(filename, silent=False):
+        if filename == default_settings.SETTINGS_MODULE_FOR_DYNACONF:
+            silent = True
         mod = types.ModuleType('config')
         mod.__file__ = filename
         try:

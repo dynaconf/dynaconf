@@ -1,6 +1,9 @@
 # default proj root
 PROJECT_ROOT = "."
 
+# Default settings file
+SETTINGS_MODULE_FOR_DYNACONF = 'settings.py'
+
 # Namespace for envvars
 DYNACONF_NAMESPACE = 'DYNACONF'
 
