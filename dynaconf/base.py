@@ -328,16 +328,18 @@ class Settings(object):
             loader.clean(self, namespace, silent=silent)
 
     def unset(self, key):
-        delattr(self, key.upper())
-        self.store.pop(key.upper(), None)
+        key = key.strip().upper()
+        delattr(self, key)
+        self.store.pop(key, None)
 
     def unset_all(self, keys):
         for key in keys:
             self.unset(key)
 
     def set(self, key, value):
-        setattr(self, key.upper(), value)
-        self.store[key.upper()] = value
+        key = key.strip().upper()
+        setattr(self, key, value)
+        self.store[key] = value
 
     def update(self, data=None, loader_identifier=None, **kwargs):
         """
