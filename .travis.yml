@@ -1,4 +1,10 @@
 language: python
+addons:
+  apt:
+    sources:
+      - deadsnakes
+    packages:
+      - python3.5
 services:
   - redis-server
 env:
@@ -13,9 +19,11 @@ env:
     - DYNATRAVIS_ENV_PURE_INT=42
     - OTHER_TESTING='@bool yes'
 before_script:
+  - pip install tox-travis
   - sleep 5
 python:
   - "2.7"
+  - "3.4"
 install:
   - "pip install --upgrade -r test.req"
 script: make test
