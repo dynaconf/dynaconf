@@ -11,6 +11,9 @@
 
 <br><br>
 
+# live demo
+You can play with the live demo here: https://repl.it/EGcO/0
+
 # Install
 ```bash
 pip install dynaconf
