@@ -262,6 +262,7 @@ REDIS_FOR_DYNACONF = {
 
 ```
 
+> NOTE: if running on Python 3 include `'decode_responses': True` in `REDIS_FOR_DYNACONF`
 
 
 Include **redis_loader** in dynaconf LOADERS_FOR_DYNACONF
