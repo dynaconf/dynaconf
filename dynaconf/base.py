@@ -5,6 +5,7 @@ import errno
 import logging
 import importlib
 from contextlib import contextmanager
+from six import string_types
 from dynaconf import default_settings
 from dynaconf.utils.parse_conf import converters
 from dynaconf.utils.functional import LazyObject, empty
@@ -313,7 +314,7 @@ class Settings(object):
         else:
             self.loaded_namespaces = []
 
-        if not isinstance(namespace, basestring):
+        if not isinstance(namespace, string_types):
             raise AttributeError('namespace should be a string')
         if "_" in namespace:
             raise AttributeError('namespace should not contains _')

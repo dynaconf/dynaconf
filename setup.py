@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='dynaconf',
-    version="0.2.13",
+    version="0.3.0",
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",
