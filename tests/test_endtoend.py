@@ -33,10 +33,12 @@ def test_end_to_end(settings):
 
     if os.environ.get('TRAVIS'):
         assert settings.ENV_BOOLEAN is True
-        assert settings.OTHER_TESTING is True
         assert settings.ENV_INT == 42
         assert settings.ENV_FLOAT == 42.2
         assert settings.ENV_LIST == ["dyna", "conf"]
         assert settings.ENV_PURE_INT == '42'
         assert settings.as_int('ENV_PURE_INT') == 42
         assert settings.get('ENV_PURE_INT', cast='@int') == 42
+
+        with settings.using_namespace('OTHER'):
+            assert settings.TESTING is True
