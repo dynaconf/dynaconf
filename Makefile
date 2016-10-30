@@ -1,7 +1,7 @@
 .PHONY: test install pep8 release clean doc
 
 test: pep8
-	py.test -v --cov=dynaconf -l --tb=short --maxfail=1 tests/
+	tox
 
 install:
 	python setup.py develop
