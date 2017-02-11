@@ -18,5 +18,5 @@ flake8-print
 flake8-todo
 radon
 
-# editable dyanconf
+# editable dynaconf
 --editable .
