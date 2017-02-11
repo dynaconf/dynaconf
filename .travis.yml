@@ -15,9 +15,11 @@ env:
 before_script:
   - sleep 5
 python:
-  - "2.7"
+  - "3.4"
+  - "3.5"
+  - "3.6"
 install:
-  - "pip install --upgrade -r test.req"
+  - "pip install --upgrade -r requirements_dev.txt"
 script: make test
 after_success:
   - coveralls

@@ -195,6 +195,7 @@ def allow_lazy(func, *resultclasses):
         return lazy_func(*args, **kwargs)
     return wrapper
 
+
 empty = object()
 
 

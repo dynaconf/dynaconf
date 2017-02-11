@@ -1,0 +1,22 @@
+# base
+six
+redis
+wheel
+PyYAML
+toml
+
+# testing
+coveralls
+pytest
+pytest-cov
+
+# style check
+flake8
+pep8-naming
+flake8-debugger
+flake8-print
+flake8-todo
+radon
+
+# editable dyanconf
+--editable .

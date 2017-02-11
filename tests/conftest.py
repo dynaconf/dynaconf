@@ -14,6 +14,7 @@ def settings():
     os.environ['DYNA%s_ALIST' % mode] = '@json ["item1", "item2", "item3"]'
     os.environ['DYNA%s_ADICT' % mode] = '@json {"key": "value"}'
     os.environ['DYNA%s_DEBUG' % mode] = '@bool true'
+    os.environ['DYNA%s_TODELETE' % mode] = '@bool true'
     os.environ['PROJECT1_HOSTNAME'] = 'otherhost.com'
     sets = LazySettings(
         LOADERS_FOR_DYNACONF=[
@@ -26,6 +27,6 @@ def settings():
     return sets
 
 
-def pytest_runtest_setup(item):
-    # called for running each test in 'a' directory
-    print("setting up", item)  # noqa
+# def pytest_runtest_setup(item):
+#     # called for running each test in 'a' directory
+#     print("setting up", item)  # noqa

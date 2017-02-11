@@ -4,20 +4,19 @@
 
 > **dynaconf** - The **dyna**mic **conf**igurator for your Python Project 
 
-[![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![downloads](https://img.shields.io/pypi/dw/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![Coverage Status](https://coveralls.io/repos/rochacbruno/dynaconf/badge.svg?branch=master&service=github)](https://coveralls.io/github/rochacbruno/dynaconf?branch=master) [![Code Health](https://landscape.io/github/rochacbruno/dynaconf/master/landscape.svg?style=flat)](https://landscape.io/github/rochacbruno/dynaconf/master)
+[![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![PyPI](https://img.shields.io/pypi/pyversions/dynaconf.svg)]() [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![Coverage Status](https://coveralls.io/repos/rochacbruno/dynaconf/badge.svg?branch=master&service=github)](https://coveralls.io/github/rochacbruno/dynaconf?branch=master) [![Codacy grade](https://img.shields.io/codacy/grade/5074f5d870a24ddea79def463453545b.svg)](https://www.codacy.com/app/rochacbruno/dynaconf/dashboard)
 
 
 **dynaconf** is an OSM (**O**bject **S**ettings **M**apper) it can read settings variables from a set of different data stores such as **python settings files**, **environment variables**, **redis**, **memcached**, **ini files**, **json files**, **yaml files** and you can customize **dynaconf** loaders to read from wherever you want. (maybe you really want to read from xml files ughh?)
 
 <br><br>
 
-# live demo
-You can play with the live demo here: https://repl.it/EGcO/0
-
 # Install
 ```bash
 pip install dynaconf
 ```
+
+> NOTE: this project officially supports only Python 3+. You can use Python 2.x at your own risk installing with ``pip install dynaconf==0.3.0`` or use the `python2` branch on this repo.
 
 # define your settings module
 
@@ -43,6 +42,8 @@ Or define all your settings as env_vars starting with **DYNACONF_**
 
 ```bash
 export DYNACONF_SETTINGS=myproject.settings
+export DYNACONF_FOO='bar'
+export DYANCONF_NUMBER='@int 1234'
 ```
 
 ### file: myproject/settings.py
@@ -59,6 +60,7 @@ print settings.NAME
 print settings.DATABASE
 print settings.SYSTEM_USER
 print settings.get('FOO')
+print settings.NUMBER
 ```
 
 ### then
@@ -70,6 +72,7 @@ Bruno
 mysql://..
 admin
 bar
+1234
 ```
 
 # Namespace support

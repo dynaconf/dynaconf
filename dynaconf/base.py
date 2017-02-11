@@ -1,15 +1,17 @@
 # coding: utf-8
+import errno
+import importlib
+import logging
+from contextlib import contextmanager
+
 import os
 import types
-import errno
-import logging
-import importlib
-from contextlib import contextmanager
 from six import string_types
+
 from dynaconf import default_settings
-from dynaconf.utils.parse_conf import converters
-from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.loaders import default_loader, module_loader
+from dynaconf.utils.functional import LazyObject, empty
+from dynaconf.utils.parse_conf import converters, parse_conf_data
 
 
 class LazySettings(LazyObject):
@@ -106,6 +108,7 @@ class Settings(object):
     _store = {}
     _loaded_by_loaders = {}
     _loaders = []
+    env = os.environ
 
     SETTINGS_MODULE = None
     DYNACONF_NAMESPACE = None
@@ -115,7 +118,7 @@ class Settings(object):
     DYNACONF_SILENT_ERRORS = None
     DYNACONF_ALWAYS_FRESH_VARS = None
 
-    def __init__(self, settings_module=None, **kwargs):
+    def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         if settings_module:
             self.set('SETTINGS_MODULE', settings_module)
         self.execute_loaders()
@@ -163,12 +166,23 @@ class Settings(object):
         :return: The value if found, default or None
         """
         key = key.upper()
+        if key in self._deleted:
+            return default
         if fresh or self._fresh or key in self.DYNACONF_ALWAYS_FRESH_VARS:
             self.execute_loaders(key=key)
         data = self.store.get(key, default)
         if cast:
             data = converters.get(cast)(data)
         return data
+
+    def exists(self, key, fresh=False):
+        """Check if key exists"""
+        key = key.upper()
+        if key in self._deleted:
+            return False
+        if fresh or self._fresh or key in self.DYNACONF_ALWAYS_FRESH_VARS:
+            self.execute_loaders(key=key)
+        return key in self.store
 
     def get_fresh(self, key, default=None, cast=None):
         """
@@ -180,6 +194,24 @@ class Settings(object):
         :return: The value if found, default or None
         """
         return self.get(key, default=default, cast=cast, fresh=True)
+
+    def get_env(self, key, default=None, cast=None):
+        """
+        Get value from environment variable using os.environ.get
+        :param key: The name of the setting value, will always be upper case
+        :param default: In case of not found it will be returned
+        :param cast: Should cast in to @int, @float, @bool or @json ?
+        :return: The value if found, default or None
+        """
+        key = key.upper()
+        data = self.env.get(key, default)
+        if data and cast:
+            data = converters.get(cast)(data)
+        return data
+
+    def exists_in_env(self, key):
+        """Return True if env variable is exported"""
+        return key.upper() in self.env
 
     def as_bool(self, key):
         return self.get(key, cast='@bool')
@@ -194,7 +226,7 @@ class Settings(object):
         return self.get(key, cast='@json')
 
     @property
-    def logger(self):
+    def logger(self):  # pragma: no cover
         if not self._logger:
             self._logger = logging.getLogger()
         return self._logger
@@ -333,11 +365,12 @@ class Settings(object):
         delattr(self, key)
         self.store.pop(key, None)
 
-    def unset_all(self, keys):
+    def unset_all(self, keys):  # pragma: no cover
         for key in keys:
             self.unset(key)
 
     def set(self, key, value):
+        value = parse_conf_data(value)
         key = key.strip().upper()
         setattr(self, key, value)
         self.store[key] = value
@@ -367,7 +400,7 @@ class Settings(object):
             self.loaded_by_loaders[loader_identifier] = data
 
     @property
-    def loaders(self):
+    def loaders(self):  # pragma: no cover
         if not self._loaders:
             for loader_module_name in self.LOADERS_FOR_DYNACONF:
                 try:
@@ -377,7 +410,7 @@ class Settings(object):
                 self._loaders.append(loader)
         return self._loaders
 
-    def reload(self, namespace=None, silent=None):
+    def reload(self, namespace=None, silent=None):  # pragma: no cover
         self.execute_loaders(namespace, silent)
 
     def execute_loaders(self, namespace=None, silent=None, key=None):
@@ -388,7 +421,7 @@ class Settings(object):
             loader.load(self, namespace, silent=silent, key=key)
 
     @staticmethod
-    def import_from_filename(filename, silent=False):
+    def import_from_filename(filename, silent=False):  # pragma: no cover
         if filename == default_settings.SETTINGS_MODULE_FOR_DYNACONF:
             silent = True
         mod = types.ModuleType('config')

@@ -1,5 +1,7 @@
 import json
 
+from six import string_types
+
 true_values = ('t', 'true', 'enabled', '1', 'on', 'yes')
 converters = {
     '@int': int,
@@ -21,7 +23,9 @@ def parse_conf_data(data):
     export DYNACONF_MONGODB_SETTINGS='@json {"DB": "quokka_db"}'
     export DYNACONF_ALLOWED_EXTENSIONS='@json ["jpg", "png"]'
     """
-    if data and data.startswith(tuple(converters.keys())):
+    if data and isinstance(
+            data, string_types
+    ) and data.startswith(tuple(converters.keys())):
         parts = data.partition(' ')
         converter_key = parts[0]
         value = parts[-1]
@@ -30,12 +34,12 @@ def parse_conf_data(data):
 
 
 def unparse_conf_data(value):
-    if isinstance(value, int):
+    if isinstance(value, bool):
+        return "@bool %s" % value
+    elif isinstance(value, int):
         return "@int %s" % value
     elif isinstance(value, float):
         return "@float %s" % value
-    elif isinstance(value, bool):
-        return "@bool %s" % value
     elif isinstance(value, (list, dict)):
         return "@json %s" % json.dumps(value)
     else:

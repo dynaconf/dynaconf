@@ -1,4 +1,5 @@
 # default proj root
+# pragma: no cover
 PROJECT_ROOT = "."
 
 # Default settings file

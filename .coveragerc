@@ -5,3 +5,7 @@ source = dynaconf
 omit =
     */python?.?/*
     */site-packages/nose/*
+    dynaconf/default_settings.py
+    dynaconf/test_settings.py
+    dynaconf/utils/functional.py
+    dynaconf/utils/redis_writer.py
