@@ -20,7 +20,7 @@ def load(obj, namespace=None, silent=True, key=None):
                 if key.startswith('%s_' % namespace.upper())
             }
             obj.update(data, loader_identifier=IDENTIFIER)
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         e.message = 'Unable to load config env namespace (%s)' % e.message
         if silent:
             obj.logger.error(e.message)

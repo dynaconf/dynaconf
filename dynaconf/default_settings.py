@@ -18,7 +18,7 @@ REDIS_FOR_DYNACONF = {
     'db': 0
 }
 
-# Loaders to read namespace based vars from diferent data stores
+# Loaders to read namespace based vars from different data stores
 LOADERS_FOR_DYNACONF = [
     'dynaconf.loaders.env_loader',
     # 'dynaconf.loaders.redis_loader'

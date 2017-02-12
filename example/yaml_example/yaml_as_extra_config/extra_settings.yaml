@@ -1,0 +1,6 @@
+dynaconf:
+  host: server.com
+  port: 5000
+development:
+  environment: this is development
+  host: dev_server.com

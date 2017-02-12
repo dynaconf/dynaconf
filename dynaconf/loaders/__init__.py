@@ -1,6 +1,7 @@
 import os
 import importlib
 from dynaconf import default_settings
+from dynaconf.loaders import yaml_loader
 
 
 def default_loader(obj):
@@ -9,9 +10,13 @@ def default_loader(obj):
             obj.set(key, value)
 
 
-def module_loader(obj, settings_module=None):
+def module_loader(obj, settings_module=None, namespace=None):
     settings_module = settings_module or obj.settings_module
-    if not settings_module:
+    if not settings_module:  # pragma: no cover
+        return
+
+    if settings_module.endswith(('.yaml', '.yml')):
+        yaml_loader.load(obj, filename=settings_module, namespace=namespace)
         return
 
     try:
