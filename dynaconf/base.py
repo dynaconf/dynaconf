@@ -10,6 +10,7 @@ from six import string_types
 
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader, module_loader
+from dynaconf.loaders import yaml_loader
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data
 
@@ -69,7 +70,10 @@ class LazySettings(LazyObject):
         if self._wrapped is empty:
             self._setup()
         if name in self._wrapped._deleted:  # noqa
-            raise AttributeError("Attribute %s was deleted" % name)
+            raise AttributeError(
+                "Attribute %s was deleted, "
+                "or belongs to different namespace" % name
+            )
         always_fresh = self._wrapped.DYNACONF_ALWAYS_FRESH_VARS
         if self._wrapped._fresh or name in always_fresh:  # noqa
             return self._wrapped.get_fresh(name)
@@ -415,7 +419,11 @@ class Settings(object):
 
     def execute_loaders(self, namespace=None, silent=None, key=None):
         default_loader(self)
-        module_loader(self)
+        module_loader(self, namespace=namespace)
+        if self.exists('YAML'):
+            yaml_loader.load(
+                self, namespace=namespace, filename=self.get('YAML')
+            )
         silent = silent or self.DYNACONF_SILENT_ERRORS
         for loader in self.loaders:
             loader.load(self, namespace, silent=silent, key=key)
