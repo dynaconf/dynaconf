@@ -5,14 +5,17 @@ import logging
 from contextlib import contextmanager
 
 import os
+import sys
 import types
 from six import string_types
 
 from dynaconf import default_settings
-from dynaconf.loaders import default_loader, module_loader
+from dynaconf.loaders import default_loader, module_loader, module_cleaner
 from dynaconf.loaders import yaml_loader
+from dynaconf.transformator import TransformatorList
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data
+from dynaconf.validator import ValidatorList
 
 
 class LazySettings(LazyObject):
@@ -101,7 +104,7 @@ class LazySettings(LazyObject):
         return self._wrapped is not empty
 
 
-class Settings(object):
+class Settings:
     """
     Common logic for settings whether set by a module or by the user.
     """
@@ -140,6 +143,15 @@ class Settings(object):
         self._deleted.add(name)
         if hasattr(self, name):
             super(Settings, self).__delattr__(name)
+
+    def __getitem__(self, item):
+        value = self.get(item)
+        if not value:
+            raise KeyError('{0} does not exists'.format(item))
+        return value
+
+    def __setitem__(self, key, value):
+        self.set(key, value)
 
     @property
     def store(self):
@@ -180,7 +192,8 @@ class Settings(object):
         return data
 
     def exists(self, key, fresh=False):
-        """Check if key exists"""
+        """Check if key exists
+        NOTE: Must implement regex pattern here!!"""
         key = key.upper()
         if key in self._deleted:
             return False
@@ -363,6 +376,8 @@ class Settings(object):
         namespace = namespace or self.DYNACONF_NAMESPACE
         for loader in self.loaders:
             loader.clean(self, namespace, silent=silent)
+            yaml_loader.clean(self, namespace, silent=silent)
+            module_cleaner(self, namespace, silent=silent)
 
     def unset(self, key):
         key = key.strip().upper()
@@ -373,11 +388,16 @@ class Settings(object):
         for key in keys:
             self.unset(key)
 
-    def set(self, key, value):
+    def set(self, key, value, loader_identifier=None):
         value = parse_conf_data(value)
         key = key.strip().upper()
         setattr(self, key, value)
         self.store[key] = value
+
+        if loader_identifier and loader_identifier in self.loaded_by_loaders:
+            self.loaded_by_loaders[loader_identifier][key] = value
+        elif loader_identifier:
+            self.loaded_by_loaders[loader_identifier] = {key: value}
 
     def update(self, data=None, loader_identifier=None, **kwargs):
         """
@@ -430,6 +450,10 @@ class Settings(object):
 
     @staticmethod
     def import_from_filename(filename, silent=False):  # pragma: no cover
+
+        if not filename.endswith('.py'):
+            filename = '{0}.py'.format(filename)
+
         if filename == default_settings.SETTINGS_MODULE_FOR_DYNACONF:
             silent = True
         mod = types.ModuleType('config')
@@ -441,13 +465,27 @@ class Settings(object):
                     mod.__dict__
                 )
         except IOError as e:
+            e.strerror = (
+                'Unable to load configuration file (%s %s)\n'
+            ) % (e.strerror, filename)
             if silent and e.errno in (errno.ENOENT, errno.EISDIR):
-                return False
-            e.strerror = 'Unable to load configuration file (%s)' % e.strerror
-            raise
+                return
+            sys.stderr.write(e.strerror)
         return mod
 
     def path_for(self, *args):
         if args and args[0].startswith('/'):
             return os.path.join(*args)
         return os.path.join(self.PROJECT_ROOT, *args)
+
+    @property
+    def validators(self):
+        if not hasattr(self, '_validators'):
+            self._validators = ValidatorList(self)
+        return self._validators
+
+    @property
+    def transformators(self):
+        if not hasattr(self, '_transformators'):
+            self._transformators = TransformatorList(self)
+        return self._transformators

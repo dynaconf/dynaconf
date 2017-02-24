@@ -31,7 +31,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
 
     namespace = namespace or obj.DYNACONF_NAMESPACE
 
-    clean(obj, namespace, identifier=filename)
+    # clean(obj, namespace, identifier=filename)
 
     if filename.endswith(('.yaml', '.yml')):  # pragma: no cover
         yaml_data = yaml.load(open(filename))
@@ -49,9 +49,9 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
         )
 
     if not key:
-        obj.update(data, loader_identifier=filename)
+        obj.update(data, loader_identifier=IDENTIFIER)
     else:
-        obj.set(key, data.get(key))
+        obj.set(key, data.get(key), loader_identifier=IDENTIFIER)
 
 def clean(obj, namespace, silent=True, identifier=IDENTIFIER):  # noqa
     for key in obj.loaded_by_loaders.get(identifier, {}):
