@@ -19,7 +19,9 @@ def load(obj, namespace=None, silent=True, key=None):
 def load_from_env(identifier, key, namespace, obj, silent):
     try:
         if key:
-            value = os.environ.get('%s_%s' % (namespace.upper(), key))
+            value = os.environ.get(
+                '{0}_{1}'.format(namespace.upper(), key)
+            )
             if value:
                 obj.set(key, value, loader_identifier=identifier)
         else:
@@ -27,11 +29,13 @@ def load_from_env(identifier, key, namespace, obj, silent):
                 key.partition('_')[-1]: parse_conf_data(data)
                 for key, data
                 in os.environ.items()
-                if key.startswith('%s_' % namespace.upper())
+                if key.startswith('{0}_'.format(namespace.upper()))
             }
             obj.update(data, loader_identifier=identifier)
     except Exception as e:  # pragma: no cover
-        e.message = 'Unable to load config env namespace (%s)' % e.message
+        e.message = (
+            'Unable to load config env namespace ({0})'
+        ).format(e.message)
         if silent:
             obj.logger.error(e.message)
         else:

@@ -7,6 +7,7 @@ from dynaconf import LazySettings
 
 @pytest.fixture(scope='module')
 def settings():
+    """Settings fixture with some defaults"""
     mode = 'TRAVIS' if os.environ.get('TRAVIS') else 'TEST'
     os.environ['DYNA%s_HOSTNAME' % mode] = 'host.com'
     os.environ['DYNA%s_PORT' % mode] = '@int 5000'

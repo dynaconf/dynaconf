@@ -8,7 +8,7 @@ settings = LazySettings(
 )
 
 settings.validators.register(
-    Validator('VERSION', 'AGE', 'NAME', defined=True),
+    Validator('VERSION', 'AGE', 'NAME', must_exist=True),
     Validator(
         'AGE',
         lte=30,
@@ -30,7 +30,7 @@ settings.validators.register(
     ),
     Validator(
         'DEV_SERVERS',
-        defined=True,
+        must_exist=True,
         is_type_of=(list, tuple)
     ),
     Validator(
@@ -43,18 +43,18 @@ settings.validators.register(
     Validator(
         'IMAGE_1', 'IMAGE_2',
         namespace='development',
-        defined=True,
-        when=Validator('BASE_IMAGE', defined=True,
+        must_exist=True,
+        when=Validator('BASE_IMAGE', must_exist=True,
                        namespace=settings.DYNACONF_NAMESPACE)
     ),
     Validator(
         'IMAGE_4', 'IMAGE_5',
         namespace=('development', 'production'),
-        defined=True, when=Validator('BASE_IMAGE', defined=False,
-                                     namespace=settings.DYNACONF_NAMESPACE)
+        must_exist=True, when=Validator('BASE_IMAGE', must_exist=False,
+                                        namespace=settings.DYNACONF_NAMESPACE)
     ),
-    Validator('PORT', defined=True, ne=8000, when=Validator('MYSQL_HOST',
-                                                            eq='localhost'))
+    Validator('PORT', must_exist=True, ne=8000, when=Validator('MYSQL_HOST',
+                                                               eq='localhost'))
 )
 
 settings.validators.validate()

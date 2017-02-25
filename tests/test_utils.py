@@ -4,6 +4,7 @@ from dynaconf.utils.parse_conf import unparse_conf_data
 
 
 def test_unparse():
+    """Assert bare types are reversed cast"""
     assert unparse_conf_data('teste') == 'teste'
     assert unparse_conf_data(123) == '@int 123'
     assert unparse_conf_data(123.4) == '@float 123.4'

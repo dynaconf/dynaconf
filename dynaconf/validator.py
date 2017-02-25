@@ -45,7 +45,7 @@ class Validator:
         # When the very first thing to be performed when passed.
         # if no namespace is passed to `when` it is inherited
 
-    `defined` is `exists` requirement. (executed after when)
+    `must_exist` is `exists` requirement. (executed after when)
 
        settings.exists(value)
 
@@ -58,7 +58,7 @@ class Validator:
     def __init__(
         self,
         *names,
-        defined=None,
+        must_exist=None,
         condition=None,
         when=None,
         namespace=None,
@@ -72,7 +72,7 @@ class Validator:
             raise TypeError('condition must be callable')
 
         self.names = names
-        self.defined = defined
+        self.must_exist = must_exist
         self.condition = condition
         self.when = when
         self.operations = operations
@@ -107,13 +107,13 @@ class Validator:
                     exists = settings.exists(name)
 
                     # is name required but not exists?
-                    if self.defined is True and not exists:
+                    if self.must_exist is True and not exists:
                         raise ValidationError(
                             '{0} is required in namespace {1}'.format(
                                 name, namespace
                             )
                         )
-                    elif self.defined is False and exists:
+                    elif self.must_exist is False and exists:
                         raise ValidationError(
                             '{0} cannot exists in namespace {1}'.format(
                                 name, namespace

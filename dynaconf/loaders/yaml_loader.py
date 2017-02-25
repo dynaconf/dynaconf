@@ -41,6 +41,9 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
 
     yaml_data = {key.lower(): value for key, value in yaml_data.items()}
 
+    # ---->
+    # Load from namescape_settings.yaml
+
     try:
         data = yaml_data[namespace.lower()]
     except KeyError:
@@ -48,11 +51,19 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
             '%s namespace not defined in %s' % (namespace, filename)
         )
 
-    if not key:
-        obj.update(data, loader_identifier=IDENTIFIER)
+    if namespace and namespace != obj.DYNACONF_NAMESPACE:
+        identifier = "{0}_{1}".format(IDENTIFIER, namespace.lower())
     else:
-        obj.set(key, data.get(key), loader_identifier=IDENTIFIER)
+        identifier = IDENTIFIER
 
-def clean(obj, namespace, silent=True, identifier=IDENTIFIER):  # noqa
-    for key in obj.loaded_by_loaders.get(identifier, {}):
-        obj.unset(key)
+    if not key:
+        obj.update(data, loader_identifier=identifier)
+    else:
+        obj.set(key, data.get(key), loader_identifier=identifier)
+
+
+def clean(obj, namespace, silent=True):  # noqa
+    for identifier, data in obj.loaded_by_loaders.items():
+        if identifier.startswith('yam_loader_'):
+            for key in data:
+                obj.unset(key)

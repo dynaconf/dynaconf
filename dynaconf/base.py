@@ -70,6 +70,7 @@ class LazySettings(LazyObject):
         super(LazySettings, self).__init__()
 
     def __getattr__(self, name):
+        """Allow getting keys from self.store using dot notation"""
         if self._wrapped is empty:
             self._setup()
         if name in self._wrapped._deleted:  # noqa
@@ -83,9 +84,13 @@ class LazySettings(LazyObject):
         return getattr(self._wrapped, name)
 
     def __call__(self, *args, **kwargs):
+        """Allow direct call of settings('val')
+        in place of settings.get('val')
+        """
         return self.get(*args, **kwargs)
 
     def _setup(self):
+        """Initial setup, run once."""
         environment_variable = default_settings.ENVVAR_FOR_DYNACONF
         settings_module = os.environ.get(environment_variable)
         self._wrapped = Settings(settings_module=settings_module)
@@ -101,6 +106,7 @@ class LazySettings(LazyObject):
 
     @property
     def configured(self):
+        """If wrapped is configured"""
         return self._wrapped is not empty
 
 
@@ -126,6 +132,7 @@ class Settings:
     DYNACONF_ALWAYS_FRESH_VARS = None
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
+        """Execute loaders and custom initialization"""
         if settings_module:
             self.set('SETTINGS_MODULE', settings_module)
         self.execute_loaders()
@@ -133,28 +140,36 @@ class Settings:
             self.set(key, value)
 
     def __call__(self, *args, **kwargs):
+        """Allow direct call of settings('val')
+        in place of settings.get('val')
+        """
         return self.get(*args, **kwargs)
 
     def __setattr__(self, name, value):
+        """Allow settings.FOO = 'value' and deal with _deleted"""
         self._deleted.discard(name)
         super(Settings, self).__setattr__(name, value)
 
     def __delattr__(self, name):
+        """stores reference in _deleted for proper error management"""
         self._deleted.add(name)
         if hasattr(self, name):
             super(Settings, self).__delattr__(name)
 
     def __getitem__(self, item):
+        """Allow getting variables as dict keys settings['KEY']"""
         value = self.get(item)
         if not value:
             raise KeyError('{0} does not exists'.format(item))
         return value
 
     def __setitem__(self, key, value):
+        """Allow settings['KEY'] = 'value'"""
         self.set(key, value)
 
     @property
     def store(self):
+        """Get or create internal storage"""
         if not self._store:
             self._store = {
                 key: value
@@ -165,9 +180,11 @@ class Settings:
         return self._store
 
     def keys(self):
+        """Redirects to store object"""
         return self.store.keys()
 
     def values(self):
+        """Redirects to store object"""
         return self.store.values()
 
     def get(self, key, default=None, cast=None, fresh=False):
@@ -231,35 +248,43 @@ class Settings:
         return key.upper() in self.env
 
     def as_bool(self, key):
+        """Partial method for get with cast"""
         return self.get(key, cast='@bool')
 
     def as_int(self, key):
+        """Partial method for get with cast"""
         return self.get(key, cast='@int')
 
     def as_float(self, key):
+        """Partial method for get with cast"""
         return self.get(key, cast='@float')
 
     def as_json(self, key):
+        """Partial method for get with cast"""
         return self.get(key, cast='@json')
 
     @property
     def logger(self):  # pragma: no cover
+        """Get or create inner logger"""
         if not self._logger:
             self._logger = logging.getLogger()
         return self._logger
 
     @property
     def loaded_namespaces(self):
+        """Get or create internal loaded namespaces list"""
         if not self._loaded_namespaces:
             self._loaded_namespaces = []
         return self._loaded_namespaces
 
     @loaded_namespaces.setter
     def loaded_namespaces(self, value):
+        """Setter for namespace list"""
         self._loaded_namespaces = value
 
     @property
     def loaded_by_loaders(self):
+        """Gets the internal mapping of LOADER -> values"""
         return self._loaded_by_loaders
 
     @contextmanager
@@ -315,6 +340,7 @@ class Settings:
 
     @property
     def current_namespace(self):
+        """Return the current active namespace"""
         try:
             return self.loaded_namespaces[-1]
         except IndexError:
@@ -322,6 +348,7 @@ class Settings:
 
     @property
     def settings_module(self):
+        """Gets or initialize SETTINGS_MODULE variable"""
         if not self.SETTINGS_MODULE:
             environment_variable = getattr(
                 self,
@@ -372,23 +399,27 @@ class Settings:
         self.execute_loaders(namespace=namespace)
 
     def clean(self, namespace=None, silent=None):
+        """Clean all loaded values to reload when switching namespaces"""
         silent = silent or self.DYNACONF_SILENT_ERRORS
         namespace = namespace or self.DYNACONF_NAMESPACE
         for loader in self.loaders:
             loader.clean(self, namespace, silent=silent)
-            yaml_loader.clean(self, namespace, silent=silent)
-            module_cleaner(self, namespace, silent=silent)
+        yaml_loader.clean(self, namespace, silent=silent)
+        module_cleaner(self, namespace, silent=silent)
 
     def unset(self, key):
+        """Unset on all references"""
         key = key.strip().upper()
         delattr(self, key)
         self.store.pop(key, None)
 
     def unset_all(self, keys):  # pragma: no cover
+        """Unset based on a list of keys"""
         for key in keys:
             self.unset(key)
 
     def set(self, key, value, loader_identifier=None):
+        """Set a value storing references for the loader"""
         value = parse_conf_data(value)
         key = key.strip().upper()
         setattr(self, key, value)
@@ -425,6 +456,7 @@ class Settings:
 
     @property
     def loaders(self):  # pragma: no cover
+        """Return available loaders"""
         if not self._loaders:
             for loader_module_name in self.LOADERS_FOR_DYNACONF:
                 try:
@@ -435,9 +467,11 @@ class Settings:
         return self._loaders
 
     def reload(self, namespace=None, silent=None):  # pragma: no cover
+        """Execute all loaders"""
         self.execute_loaders(namespace, silent)
 
     def execute_loaders(self, namespace=None, silent=None, key=None):
+        """Execute all internal and registered loaders"""
         default_loader(self)
         module_loader(self, namespace=namespace)
         if self.exists('YAML'):
@@ -450,7 +484,7 @@ class Settings:
 
     @staticmethod
     def import_from_filename(filename, silent=False):  # pragma: no cover
-
+        """If settings_module is a path use this."""
         if not filename.endswith('.py'):
             filename = '{0}.py'.format(filename)
 
@@ -474,18 +508,21 @@ class Settings:
         return mod
 
     def path_for(self, *args):
+        """Path containing project_root"""
         if args and args[0].startswith('/'):
             return os.path.join(*args)
         return os.path.join(self.PROJECT_ROOT, *args)
 
     @property
     def validators(self):
+        """Gets or creates validator wrapper"""
         if not hasattr(self, '_validators'):
             self._validators = ValidatorList(self)
         return self._validators
 
     @property
     def transformators(self):
+        """Gets or creates transformator wrapper"""
         if not hasattr(self, '_transformators'):
             self._transformators = TransformatorList(self)
         return self._transformators

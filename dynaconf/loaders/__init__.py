@@ -11,6 +11,7 @@ def default_loader(obj):
 
 
 def module_loader(obj, settings_module=None, namespace=None):
+    """Loads from defined settings module, path or yaml"""
     settings_module = settings_module or obj.settings_module
     if not settings_module:  # pragma: no cover
         return
