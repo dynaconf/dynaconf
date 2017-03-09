@@ -24,6 +24,7 @@ def settings():
         ],
         DYNACONF_NAMESPACE="DYNA%s" % mode
     )
+    sets.SIMPLE_BOOL = False
     sets.configure()
     return sets
 

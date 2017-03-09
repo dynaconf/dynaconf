@@ -6,7 +6,9 @@ true_values = ('t', 'true', 'enabled', '1', 'on', 'yes')
 converters = {
     '@int': int,
     '@float': float,
-    '@bool': lambda value: True if value.lower() in true_values else False,
+    '@bool': (
+        lambda value: True if str(value).lower() in true_values else False
+    ),
     '@json': json.loads
 }
 
