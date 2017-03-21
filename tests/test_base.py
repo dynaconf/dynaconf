@@ -3,6 +3,7 @@ import os
 import pytest
 from dynaconf.utils.parse_conf import true_values
 
+
 def test_deleted_raise(settings):
     """asserts variable can be deleted"""
     assert settings.TODELETE is True
@@ -51,7 +52,7 @@ def test_get_env(settings):
     assert os.environ['FRUIT'] == settings.env.get('FRUIT')
 
     settings.env['SALARY'] = '180.235'
-    assert  settings.get_env('salary', cast='@float') == 180.235
+    assert settings.get_env('salary', cast='@float') == 180.235
 
 
 def test_float(settings):
@@ -84,25 +85,25 @@ def test_bool(settings):
         settings.set('feature', true_value)
         assert settings.exists('FEATURE')
         assert settings.FEATURE == true_value
-        assert settings.FEATURE != True
+        assert settings.FEATURE is not True
         assert settings.store['FEATURE'] == true_value
         assert 'FEATURE' not in settings._deleted
         assert 'feature' not in settings._deleted
         assert isinstance(settings.as_bool('feature'), bool)
-        assert settings.as_bool('FEATURE') == True
+        assert settings.as_bool('FEATURE') is True
 
     # anything else is a false value
-    false_values = ['f', 'false', 'False', 'disabled', '0',  'off',  'no']
+    false_values = ['f', 'false', 'False', 'disabled', '0', 'off', 'no']
     for false_value in false_values:
         settings.set('feature', false_value)
         assert settings.exists('FEATURE')
         assert settings.FEATURE == false_value
-        assert settings.FEATURE != False
+        assert settings.FEATURE is not False
         assert settings.store['FEATURE'] == false_value
         assert 'FEATURE' not in settings._deleted
         assert 'feature' not in settings._deleted
         assert isinstance(settings.as_bool('feature'), bool)
-        assert settings.as_bool('FEATURE') == False
+        assert settings.as_bool('FEATURE') is False
 
 
 def test_as_json(settings):
@@ -115,7 +116,6 @@ def test_as_json(settings):
     assert 'fruits' not in settings._deleted
     assert isinstance(settings.as_json('fruits'), list)
     assert settings.as_json('fruits') == ["banana", "apple", "kiwi"]
-
 
     settings.set('person', '{"name": "Bruno"}')
     assert settings.exists('PERSON')
