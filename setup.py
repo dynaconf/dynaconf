@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='dynaconf',
-    version="0.4.2",
+    version="0.4.3",
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",
@@ -32,7 +32,8 @@ setup(
         "flake8-debugger",
         "flake8-print",
         "flake8-todo",
-        "radon"
+        "radon",
+        "flask>=0.12"
     ],
     extras_require={
         "redis": ['redis'],
