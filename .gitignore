@@ -32,6 +32,7 @@ var/
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+Pipfile.lock
 
 # Unit test / coverage reports
 htmlcov/
