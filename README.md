@@ -366,4 +366,27 @@ settings = LazySettings(
 
 Now you can import settings from your own program and dynaconf will do the rest!
 
+
+# Flask Extension
+
+Dynaconf provides an extension to make your `app.config` in Flask to be a `dynaconf` instance.
+
+```python
+from flask import Flask
+from dynaconf.contrib import FlaskDynaconf
+
+app = Flask(__name__)
+FlaskDynaconf(
+    app,
+    ENVVAR_FOR_DYNACONF="MYSITE_SETTINGS_MODULE",
+    DYNACONF_NAMESPACE='MYSITE',
+    SETTINGS_MODULE_FOR_DYNACONF='settings.yml',  # or settings.py, .toml, .ini etc....
+    YAML='.secrets.yml',  3 aditional config where you store sensitive data our of vcs
+    EXTRA_VALUE='You can add aditional config vars here'
+)
+
+```
+
+Take a look at `examples/flask` for more.
+
 > This was inspired by flask.config and django.conf.settings
