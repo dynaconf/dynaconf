@@ -3,6 +3,11 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.4.4
+-----
+
+- HOTFIX: Flask templates always expect `None` if KeyError or Attribute Error
+
 0.4.3
 -----
 

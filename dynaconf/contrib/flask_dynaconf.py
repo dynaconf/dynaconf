@@ -132,10 +132,7 @@ class DynaconfConfig(Config):
         """
         First try to get value from dynaconf then from Flask
         """
-        try:
-            return self._settings[key]
-        except KeyError:
-            return Config.__getitem__(self, key)
+        return self.get(key)
 
     def __getattr__(self, name):
         """
