@@ -20,7 +20,6 @@ python:
   - "3.5"
   - "3.6"
   - "pypy"
-  - "pypy3"
 install:
   - "pip install --upgrade pip"
   - "pip install --upgrade -r requirements_dev.txt"
