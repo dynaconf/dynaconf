@@ -110,7 +110,7 @@ class LazySettings(LazyObject):
         return self._wrapped is not empty
 
 
-class Settings:
+class Settings(object):
     """
     Common logic for settings whether set by a module or by the user.
     """
