@@ -15,6 +15,7 @@ development:
   host: dev_server.com
 """
 
+
 def test_load_from_yaml():
     """Assert loads from YAML string"""
     load(settings, filename=YAML)

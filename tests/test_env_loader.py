@@ -1,5 +1,6 @@
 import os
 from dynaconf.loaders.env_loader import load
+from dynaconf import settings  # noqa
 
 os.environ['DYNACONF_HOSTNAME'] = 'host.com'
 os.environ['DYNACONF_PORT'] = '@int 5000'
@@ -10,8 +11,8 @@ os.environ['DYNACONF_DEBUG'] = '@bool true'
 os.environ['PROJECT1_HOSTNAME'] = 'otherhost.com'
 os.environ['PROJECT1_PORT'] = '@int 8080'
 
-from dynaconf import settings  # noqa
 settings.configure()
+
 
 def test_env_loader():
     assert settings.HOSTNAME == 'host.com'

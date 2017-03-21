@@ -3,18 +3,20 @@
 # $export DYNACONF_HOSTNAME=host.com
 # $export DYNACONF_PORT='@int 5000'
 # or save to REDIS, yaml, json, ini etc...
+
 import os
+
+# Now read dynamic settings in your Python code
+# you import only the 'settings' object always from dynaconf module
+from dynaconf import settings
+
 os.environ['DYNACONF_HOSTNAME'] = 'host.com'
 os.environ['DYNACONF_PORT'] = '@int 5000'
 os.environ['DYNACONF_VALUE'] = '@float 42.1'
 os.environ['DYNACONF_ALIST'] = '@json ["item1", "item2", "item3"]'
 os.environ['DYNACONF_ADICT'] = '@json {"key": "value"}'
-os.environ['DYNACONF_DEBUG'] = '@bool true' # on, enabled, 1, active accepted as keyword here
+os.environ['DYNACONF_DEBUG'] = '@bool true'  # on, enabled, 1, active accepted as keyword here
 os.environ['PROJECT1_HOSTNAME'] = 'otherhost.com'
-
-# Now read dynamic settings in your Python code
-# you import only the 'settings' object always from dynaconf module
-from dynaconf import settings
 
 # Now when reading settings they will be get from your sources dynamically
 # defined data types are casted (but you can also do explicitly if want)
@@ -51,8 +53,8 @@ print(settings.get('FOO', default='bar'))
 
 print("\nNamespaces Support :")
 with settings.using_namespace('PROJECT1'):
-	print("\nThe host for project1 :")
-	print(settings.HOSTNAME)
+    print("\nThe host for project1 :")
+    print(settings.HOSTNAME)
 
 print("\nThe host for default :")
 print(settings.HOSTNAME)
