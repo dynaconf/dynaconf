@@ -1,0 +1,29 @@
+Changelog
+=========
+
+These are all the changes in Dynaconf since the first public release.
+
+0.4.3
+-----
+
+- Python 2.x is back (working and tested)
+- Added Pyenv and Tox
+- Added editorconfig
+- Fixed many PEP8 issues
+- Added dynaconf.contrib.flask
+- added examples/flask
+
+0.4.2
+-----
+
+- Hot fixes
+
+0.4.1
+-----
+
+- Added YAML support (examples/yaml)
+
+Previous
+--------
+
+Major refactoring from old codebase.

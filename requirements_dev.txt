@@ -4,6 +4,7 @@ redis
 wheel
 PyYAML
 toml
+flask>=0.12
 
 # testing
 coveralls

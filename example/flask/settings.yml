@@ -1,0 +1,9 @@
+
+
+# The namespace here should match the name given in `DYNACONF_NAMESPACE`
+MYSITE:
+  DEBUG: True
+  SERVER: flaskdynaconf.com
+  PORT: 6666
+  MESSAGE: Dynaconf works like a charm with Flask
+
