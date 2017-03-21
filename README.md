@@ -16,7 +16,7 @@
 pip install dynaconf
 ```
 
-> NOTE: this project officially supports only Python 3+. You can use Python 2.x at your own risk installing with ``pip install dynaconf==0.3.0`` or use the `python2` branch on this repo.
+> NOTE: this project officially supports and encourages only Python 3+. Currently this is working well and tests are passing on any Python version above 2.7 but at any moment we can drop python2.x support if needed. 
 
 # define your settings module
 
