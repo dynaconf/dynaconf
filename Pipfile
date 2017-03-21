@@ -1,0 +1,19 @@
+[dev-packages]
+pytest = "*"
+pytest-cov = "*"
+pytest-sugar = "*"
+flake8 = "*"
+pdbpp = "*"
+pep8-naming = "*"
+flake8-debugger = "*"
+flake8-print = "*"
+flake8-todo = "*"
+radon = "*"
+
+[packages]
+six = "*"
+redis = "*"
+wheel = "*"
+toml = "*"
+future = "*"
+PyYAML = "*"

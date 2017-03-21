@@ -15,9 +15,11 @@ env:
 before_script:
   - sleep 5
 python:
+  - "2.7"
   - "3.4"
   - "3.5"
   - "3.6"
+  - "pypy"
 install:
   - "pip install --upgrade pip"
   - "pip install --upgrade -r requirements_dev.txt"

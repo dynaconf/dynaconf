@@ -1,6 +1,3 @@
-import os
-
-
 def test_end_to_end(settings):
     """
     settings is fixture configured in conftest.py

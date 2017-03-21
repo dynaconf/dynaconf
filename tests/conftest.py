@@ -1,8 +1,8 @@
 # coding: utf-8
-import pytest
 import os
+import pytest
+
 from dynaconf import LazySettings
-# from dynaconf.loaders.redis_loader import write
 
 
 @pytest.fixture(scope='module')
@@ -27,8 +27,3 @@ def settings():
     sets.SIMPLE_BOOL = False
     sets.configure()
     return sets
-
-
-# def pytest_runtest_setup(item):
-#     # called for running each test in 'a' directory
-#     print("setting up", item)  # noqa
