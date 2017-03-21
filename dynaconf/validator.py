@@ -56,13 +56,13 @@ class Validator(object):
 
     """
     def __init__(
-        self,
-        names,
-        must_exist=None,
-        condition=None,
-        when=None,
-        namespace=None,
-        **operations):
+            self,
+            names,
+            must_exist=None,
+            condition=None,
+            when=None,
+            namespace=None,
+            **operations):
 
         if when is not None and not isinstance(when, Validator):
             raise TypeError('when must be Validator instance')
@@ -158,6 +158,6 @@ class ValidatorList(list):
     def register(self, *args):
         self.extend(args)
 
-    def validate(self, *names):
+    def validate(self):
         for validator in self:
             validator.validate(self.settings)
