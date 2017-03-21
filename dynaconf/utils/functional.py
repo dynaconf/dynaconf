@@ -1,8 +1,10 @@
-import six
 import copy
 import operator
-from six.moves import copyreg
+
 from functools import total_ordering, wraps
+from six.moves import copyreg
+
+import six
 
 
 # You can't trivially replace this with `functools.partial` because this binds
@@ -14,7 +16,7 @@ def curry(_curried_func, *args, **kwargs):
     return _curried
 
 
-class cached_property:  # noqa
+class cached_property(object):  # noqa
     """
     Decorator that converts a method with a single self argument into a
     property cached on the instance.
@@ -34,7 +36,7 @@ class cached_property:  # noqa
         return res
 
 
-class Promise:
+class Promise(object):
     """
     This is just a base class for the proxy class created in
     the closure of the lazy function. It can be used to recognize
@@ -207,7 +209,7 @@ def new_method_proxy(func):
     return inner
 
 
-class LazyObject:
+class LazyObject(object):
     """
     A wrapper for another class that can be used to delay instantiation of the
     wrapped class.
