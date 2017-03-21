@@ -319,10 +319,6 @@ class LazyObject(object):
     __contains__ = new_method_proxy(operator.contains)
 
 
-# Workaround for http://bugs.python.org/issue12370
-_super = super
-
-
 class SimpleLazyObject(LazyObject):
     """
     A lazy object initialized from any function.
