@@ -6,7 +6,7 @@ class ValidationError(Exception):
     pass
 
 
-class Validator:
+class Validator(object):
     """
     Validators are conditions attached to settings variables names
     or patterns.
@@ -57,13 +57,12 @@ class Validator:
     """
     def __init__(
         self,
-        *names,
+        names,
         must_exist=None,
         condition=None,
         when=None,
         namespace=None,
-        **operations
-    ):
+        **operations):
 
         if when is not None and not isinstance(when, Validator):
             raise TypeError('when must be Validator instance')
