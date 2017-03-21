@@ -1,8 +1,32 @@
 
+import io
+import os
+
 try:
     from setuptools import setup, find_packages
 except ImportError:
     from distutils.core import setup, find_packages
+
+
+def read(*names, **kwargs):
+    """Read a file."""
+    return io.open(
+        os.path.join(os.path.dirname(__file__), *names),
+        encoding=kwargs.get('encoding', 'utf8')
+    ).read()
+
+
+def parse_md_to_rst(file):
+    """Read Markdown file and convert to ReStructured Text."""
+    try:
+        from m2r import parse_from_file
+        return parse_from_file(file)
+    except ImportError:
+        # m2r may not be installed in user environment
+        try:
+            return read(file)
+        except:
+            return file.read()
 
 
 setup(
@@ -13,12 +37,7 @@ setup(
     author="Bruno Rocha",
     author_email="rochacbruno@gmail.com",
     description='The dynamic configurator for your Python Project',
-    long_description="""dynaconf is an OSM (Object Settings Mapper) it can
-    read settings variables from a set of different data stores such as python
-    settings files, environment variables, redis, memcached, ini files,
-    json files, yaml files and you can customize dynaconf loaders to read
-    from wherever you want
-    """,
+    long_description=parse_md_to_rst("README.md"),
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,

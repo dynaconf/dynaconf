@@ -5,6 +5,7 @@ wheel
 PyYAML
 toml
 flask>=0.12
+m2r
 
 # testing
 coveralls
