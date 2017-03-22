@@ -3,6 +3,14 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.4.5
+-----
+
+- Make the tests directory a python package
+- Improves the way Tox installs the projects dependencies
+- Remove pdbpp as it breaks with Python 3.3
+- Add Flask and m2r to Pipenv
+
 0.4.4
 -----
 
