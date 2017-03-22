@@ -2,7 +2,7 @@
 import os
 import pytest
 
-from dynaconf import LazySettings
+from dynaconf.base import LazySettings
 
 
 @pytest.fixture(scope='module')
