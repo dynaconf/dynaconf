@@ -141,6 +141,59 @@ settings.DATABASE
 
 > namespace() and using_namespace() takes optional argument **clean** defaults to True. If you want to keep the pre-loaded values when switching namespaces set it to False.
 
+
+## Namespaced environment
+
+It is usual to have e.g `production` and `development` environments, the way to set this is:
+
+### Using `settings.py` as base file you just need other `<environment>_settings.py` files.
+
+```bash
+settings.py
+development_settings.py
+production_settings.py
+```
+
+Then in your environment.
+
+```bash
+export DYNACONF_NAMESPACE=DEVELOPMENT|PRODUCTION  # switch enviroment using env vars.
+```
+
+Or using `namespace`
+
+```python
+
+with settings.using_namespace('development'):
+    # code here
+
+settings.namespace('development')
+```
+
+> NOTE: `settings.py` is the base and `namespace` specific overrides its vars.
+
+### using YAML
+
+Using YAML is easier because it support multiple namespace in one file.
+
+Lets say you have `DYNACONF_NAMESPACE=DYNACONF` (the default)
+```yaml
+DYNACONF:  # this is the global namespace
+  VARIABLE: 'this variable is available on every namespace'
+  HOST: null  # this variable is set to None
+
+DEVELOPMENT:
+  HOST: devserver.com  # overrides the global or sets new
+
+production:  # upper or lower case does not matter
+  host: prodserver.com
+```
+
+Then it will be applied using env var `DYNACONF_NAMESPACE` or context manager.
+
+> HINT: When using yaml namespace identifier and first level vars are case
+> insensitive, dynaconf will always have them read as upper case.
+
 # casting values from envvars
 
 Sometimes you need to set some values as specific types, boolean, integer, float or lists and dicts.
