@@ -2,7 +2,7 @@
 <img src="https://raw.githubusercontent.com/rochacbruno/dynaconf/master/dynaconf_joystick.png" align="left" width="192px" height="192px"/>
 <img align="left" width="0" height="192px" hspace="10"/>
 
-> **dynaconf** - The **dyna**mic **conf**igurator for your Python Project 
+> **dynaconf** - The **dyna**mic **conf**igurator for your Python Project
 
 [![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![PyPI](https://img.shields.io/pypi/pyversions/dynaconf.svg)]() [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![Coverage Status](https://coveralls.io/repos/rochacbruno/dynaconf/badge.svg?branch=master&service=github)](https://coveralls.io/github/rochacbruno/dynaconf?branch=master) [![Codacy grade](https://img.shields.io/codacy/grade/5074f5d870a24ddea79def463453545b.svg)](https://www.codacy.com/app/rochacbruno/dynaconf/dashboard)
 
@@ -16,7 +16,7 @@
 pip install dynaconf
 ```
 
-> NOTE: this project officially supports and encourages only Python 3+. Currently this is working well and tests are passing on any Python version above 2.7 but at any moment we can drop python2.x support if needed. 
+> NOTE: this project officially supports and encourages only Python 3+. Currently this is working well and tests are passing on any Python version above 2.7 but at any moment we can drop python2.x support if needed.
 
 # define your settings module
 
@@ -27,6 +27,10 @@ export DYNACONF_SETTINGS=myproject.production_settings
 or
 export DYNACONF_SETTINGS=/etc/myprogram/settings.py
 ```
+> HINT: The `DYNACONF_SETTINGS` can be `.py` or `.yml` (Support for json, ini, toml is coming, please contribute.)
+
+
+> NOTE: If you do not define DYNACONF_SETTINGS so the default will be `settings.py` on the root directory
 
 # you can export extra values
 
@@ -38,12 +42,14 @@ export DYNACONF_FOO='bar'
 
 Or define all your settings as env_vars starting with **DYNACONF_**
 
+> HINT: You can change `DYNACONF_NAMESPACE` to any name e.g `MYPROJECT` and then environment vars prefixed with `MYPROJECT_` will be loaded.
+
 # Example
 
 ```bash
 export DYNACONF_SETTINGS=myproject.settings
 export DYNACONF_FOO='bar'
-export DYANCONF_NUMBER='@int 1234'
+export DYANCONF_NUMBER='@int 1234'  # force casting as int when reading
 ```
 
 ### file: myproject/settings.py
@@ -204,7 +210,6 @@ export DYNACONF_AFLOAT='@float 42.5'
 ```python
 
 from dynaconf import settings
-settings.configure()
 
 # original value
 settings('USE_SSH')
