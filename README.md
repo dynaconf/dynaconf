@@ -11,6 +11,23 @@
 
 <br><br>
 
+# how it work
+
+In any place of your project you only need to
+
+```
+from dynaconf import settings
+
+# Connecting to a database
+conn = MyDB.connect(username=settings.USERNAME, password=settings.PASSWORD)
+
+# Defaults?
+servername = settings.get('SERVERNAME', 'http://mydefaultserver.com')
+```
+
+## Q: Where those settings values comes from?
+## A: Your choice! settings file, yaml file, ini file, redis server, database, anywhere you want.
+
 # Install
 ```bash
 pip install dynaconf
