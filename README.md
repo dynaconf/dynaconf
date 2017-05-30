@@ -26,7 +26,7 @@ servername = settings.get('SERVERNAME', 'http://mydefaultserver.com')
 ```
 
 ## Q: Where those settings values comes from?
-## A: Your choice! settings file, yaml file, ini file, redis server, database, anywhere you want.
+## A: Your choice! environment variables, settings file, yaml file, toml file, ini file, json file, redis server, database, anywhere you want.
 
 # Install
 ```bash
