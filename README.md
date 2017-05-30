@@ -11,11 +11,11 @@
 
 <br><br>
 
-# how it work
+# how does it work
 
 In any place of your project you only need to
 
-```
+```python
 from dynaconf import settings
 
 # Connecting to a database
