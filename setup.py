@@ -31,7 +31,7 @@ def parse_md_to_rst(file):
 
 setup(
     name='dynaconf',
-    version="0.4.5",
+    version="0.4.6",
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",

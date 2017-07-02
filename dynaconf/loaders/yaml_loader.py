@@ -1,4 +1,5 @@
 # coding: utf-8
+from dynaconf.utils.expanded_object import ExpandedObject
 try:
     import yaml
 except ImportError as e:  # pragma: no cover
@@ -50,6 +51,10 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
         raise KeyError(
             '%s namespace not defined in %s' % (namespace, filename)
         )
+
+    for k, v in data.items():
+        if isinstance(v, dict):
+            data[k] = ExpandedObject(**v)
 
     if namespace and namespace != obj.DYNACONF_NAMESPACE:
         identifier = "{0}_{1}".format(IDENTIFIER, namespace.lower())
