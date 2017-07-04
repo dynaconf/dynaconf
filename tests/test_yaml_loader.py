@@ -11,6 +11,12 @@ YAML = """
 example:
   host: server.com
   port: 8080
+  service:
+    url: service.com
+    port: 80
+    auth:
+        password: qwerty
+        test: 1234
 development:
   host: dev_server.com
 """
@@ -21,6 +27,11 @@ def test_load_from_yaml():
     load(settings, filename=YAML)
     assert settings.HOST == 'server.com'
     assert settings.PORT == 8080
+    assert settings.SERVICE['url'] == 'service.com'
+    assert settings.SERVICE.url == 'service.com'
+    assert settings.SERVICE.port == 80
+    assert settings.SERVICE.auth.password == 'qwerty'
+    assert settings.SERVICE.auth.test == 1234
     load(settings, filename=YAML, namespace='DEVELOPMENT')
     assert settings.HOST == 'dev_server.com'
     load(settings, filename=YAML)

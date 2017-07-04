@@ -22,7 +22,19 @@ def settings():
             'dynaconf.loaders.env_loader',
             'dynaconf.loaders.redis_loader'
         ],
-        DYNACONF_NAMESPACE="DYNA%s" % mode
+        DYNACONF_NAMESPACE="DYNA%s" % mode,
+        boxed_data={
+            'HOST': 'server.com',
+            'port': 8080,
+            'PARAMS': {
+                'username': 'admin',
+                'PASSWORD': 'secret',
+                'token': {
+                    'TYPE': 1,
+                    'value': 2
+                }
+            }
+        }
     )
     sets.SIMPLE_BOOL = False
     sets.configure()

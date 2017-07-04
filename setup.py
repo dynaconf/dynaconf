@@ -31,7 +31,7 @@ def parse_md_to_rst(file):
 
 setup(
     name='dynaconf',
-    version="0.4.5",
+    version="0.5.0",
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",
@@ -42,7 +42,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     platforms='any',
-    install_requires=['six'],
+    install_requires=['six', 'python-box'],
     tests_require=[
         "pytest",
         "pytest-cov",

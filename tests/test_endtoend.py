@@ -40,3 +40,21 @@ def test_end_to_end(settings):
 
         with settings.using_namespace('OTHER'):
             assert settings.TESTING is True
+
+
+def test_boxed_data(settings):
+    assert settings.BOXED_DATA.host == 'server.com'
+    assert settings.BOXED_DATA.port == 8080
+    assert settings.BOXED_DATA.params.username == 'admin'
+    assert settings.BOXED_DATA.params.password == 'secret'
+    assert settings.BOXED_DATA.params.token.type == 1
+    assert settings.BOXED_DATA.params.token.value == 2
+
+
+def test_boxed_data_call(settings):
+    assert settings('boxed_data').host == 'server.com'
+    assert settings('boxed_data').port == 8080
+    assert settings('boxed_data').params.username == 'admin'
+    assert settings('boxed_data').params.password == 'secret'
+    assert settings('boxed_data').params.token.type == 1
+    assert settings('boxed_data').params.token.value == 2
