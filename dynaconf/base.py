@@ -3,7 +3,6 @@ import errno
 import importlib
 import logging
 from contextlib import contextmanager
-from box import Box
 
 import os
 import sys
@@ -17,6 +16,7 @@ from dynaconf.transformator import TransformatorList
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data
 from dynaconf.validator import ValidatorList
+from dynaconf.utils.boxing import DynaBox
 
 
 class LazySettings(LazyObject):
@@ -423,7 +423,7 @@ class Settings(object):
         """Set a value storing references for the loader"""
         value = parse_conf_data(value)
         if isinstance(value, dict):
-            value = Box(value, box_it_up=True)
+            value = DynaBox(value, box_it_up=True)
 
         key = key.strip().upper()
         setattr(self, key, value)

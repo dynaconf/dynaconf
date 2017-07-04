@@ -42,7 +42,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     platforms='any',
-    install_requires=['six'],
+    install_requires=['six', 'python-box'],
     tests_require=[
         "pytest",
         "pytest-cov",
