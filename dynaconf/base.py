@@ -3,6 +3,7 @@ import errno
 import importlib
 import logging
 from contextlib import contextmanager
+from box import Box
 
 import os
 import sys
@@ -421,6 +422,9 @@ class Settings(object):
     def set(self, key, value, loader_identifier=None):
         """Set a value storing references for the loader"""
         value = parse_conf_data(value)
+        if isinstance(value, dict):
+            value = Box(value, box_it_up=True)
+
         key = key.strip().upper()
         setattr(self, key, value)
         self.store[key] = value

@@ -6,6 +6,7 @@ PyYAML
 toml
 flask>=0.12
 m2r
+python-box
 
 # testing
 coveralls

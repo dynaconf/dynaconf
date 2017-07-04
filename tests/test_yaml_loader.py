@@ -27,10 +27,11 @@ def test_load_from_yaml():
     load(settings, filename=YAML)
     assert settings.HOST == 'server.com'
     assert settings.PORT == 8080
-    assert settings.SERVICE.URL == 'service.com'
-    assert settings.SERVICE.PORT == 80
-    assert settings.SERVICE.AUTH.PASSWORD == 'qwerty'
-    assert settings.SERVICE.AUTH.TEST == 1234
+    assert settings.SERVICE['url'] == 'service.com'
+    assert settings.SERVICE.url == 'service.com'
+    assert settings.SERVICE.port == 80
+    assert settings.SERVICE.auth.password == 'qwerty'
+    assert settings.SERVICE.auth.test == 1234
     load(settings, filename=YAML, namespace='DEVELOPMENT')
     assert settings.HOST == 'dev_server.com'
     load(settings, filename=YAML)
