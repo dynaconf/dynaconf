@@ -39,6 +39,17 @@ conn = MyDB.connect(username=settings.USERNAME, password=settings.PASSWORD)
 
 # Defaults?
 servername = settings.get('SERVERNAME', 'http://mydefaultserver.com')
+
+# namespaces and environment?
+with settings.using_namespace('development'):
+    ...
+    
+# Type casting?
+$ export DYNACONF_VALUE='@float 66.6'
+# or 
+settings.as_float('VALUE')
+
+# And more!!! Try it.
 ```
 
 ### Q: Where those settings values comes from?
