@@ -11,6 +11,22 @@
 
 <br><br>
 
+
+# Why?
+
+> Store config in the environment
+>
+> An app’s config is everything that is likely to vary between deploys (staging, production, developer environments, etc). This includes:
+>
+> Resource handles to the database, Memcached, and other backing services
+> Credentials to external services such as Amazon S3 or Twitter
+> Per-deploy values such as the canonical hostname for the deploy
+> Apps sometimes store config as constants in the code. This is a violation of twelve-factor, which requires strict separation of config > from code. Config varies substantially across deploys, code does not.
+>
+> A litmus test for whether an app has all config correctly factored out of the code is whether the codebase could be made open source at > any moment, without compromising any credentials.
+
+https://12factor.net/config 
+
 # how does it work
 
 In any place of your project you only need to
@@ -25,8 +41,8 @@ conn = MyDB.connect(username=settings.USERNAME, password=settings.PASSWORD)
 servername = settings.get('SERVERNAME', 'http://mydefaultserver.com')
 ```
 
-## Q: Where those settings values comes from?
-## A: Your choice! environment variables, settings file, yaml file, toml file, ini file, json file, redis server, database, anywhere you want.
+### Q: Where those settings values comes from?
+##### A: Your choice! environment variables, settings file, yaml file, toml file, ini file, json file, redis server, database, anywhere you want.
 
 # Install
 ```bash
