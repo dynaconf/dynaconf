@@ -10,14 +10,19 @@ def default_loader(obj):
             obj.set(key, value, loader_identifier='DEFAULT')
 
 
-def module_loader(obj, settings_module=None, namespace=None):
+def module_loader(obj, settings_module=None, namespace=None, silent=False):
     """Loads from defined settings module, path or yaml"""
     settings_module = settings_module or obj.settings_module
     if not settings_module:  # pragma: no cover
         return
 
     if settings_module.endswith(('.yaml', '.yml')):
-        yaml_loader.load(obj, filename=settings_module, namespace=namespace)
+        yaml_loader.load(
+            obj,
+            filename=settings_module,
+            namespace=namespace,
+            silent=silent
+        )
         return
 
     # load from default defined module if exists (never gets cleaned)

@@ -46,7 +46,12 @@ def test_no_filename_is_none():
 def test_key_error_on_invalid_namespace():
     """Assert error raised if namespace is not found in YAML"""
     with pytest.raises(KeyError):
-        load(settings, filename=YAML, namespace='FOOBAR')
+        load(settings, filename=YAML, namespace='FOOBAR', silent=False)
+
+
+def test_no_key_error_on_invalid_namespace():
+    """Assert error raised if namespace is not found in YAML"""
+    load(settings, filename=YAML, namespace='FOOBAR', silent=True)
 
 
 def test_load_single_key():

@@ -289,7 +289,7 @@ class Settings(object):
         return self._loaded_by_loaders
 
     @contextmanager
-    def using_namespace(self, namespace, clean=True):
+    def using_namespace(self, namespace, clean=True, silent=False):
         """
         This context manager allows the contextual use of a different namespace
         Example:
@@ -306,10 +306,11 @@ class Settings(object):
 
         :param namespace: Upper case name of namespace without any _
         :param clean: If preloaded vars should be cleaned
+        :param silent: Silence errors
         :return: context
         """
         try:
-            self.namespace(namespace, clean=clean)
+            self.namespace(namespace, clean=clean, silent=silent)
             yield
         finally:
             if namespace != self.DYNACONF_NAMESPACE:
@@ -365,7 +366,7 @@ class Settings(object):
 
         return self.SETTINGS_MODULE
 
-    def namespace(self, namespace=None, clean=True):
+    def namespace(self, namespace=None, clean=True, silent=True):
         """
         Used to interactively change the namespace
         $ export DYNACONF_MESSAGE='This is in DYNACONF namespace'
@@ -382,6 +383,7 @@ class Settings(object):
 
         :param namespace: Upper case namespace name without any _
         :param clean: Should clean preloaded vars?
+        :param silent: Silence errors
         :return: None
         """
         namespace = namespace or self.DYNACONF_NAMESPACE
@@ -397,7 +399,7 @@ class Settings(object):
             raise AttributeError('namespace should not contains _')
         if clean:
             self.clean(namespace=namespace)
-        self.execute_loaders(namespace=namespace)
+        self.execute_loaders(namespace=namespace, silent=silent)
 
     def clean(self, namespace=None, silent=None):
         """Clean all loaded values to reload when switching namespaces"""
@@ -480,7 +482,9 @@ class Settings(object):
         module_loader(self, namespace=namespace)
         if self.exists('YAML'):
             yaml_loader.load(
-                self, namespace=namespace, filename=self.get('YAML')
+                self, namespace=namespace,
+                filename=self.get('YAML'),
+                silent=silent
             )
         silent = silent or self.DYNACONF_SILENT_ERRORS
         for loader in self.loaders:

@@ -23,8 +23,8 @@ def load(obj, namespace=None, silent=True, key=None):
     :param key: if defined load a single key, else load all in namespace
     :return: None
     """
-    redis = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    namespace = namespace or obj.DYNACONF_NAMESPACE
+    redis = StrictRedis(**obj.get('REDIS_FOR_DYNACONF'))
+    namespace = namespace or obj.get('DYNACONF_NAMESPACE')
     holder = "DYNACONF_%s" % namespace
     try:
         if key:
@@ -41,7 +41,8 @@ def load(obj, namespace=None, silent=True, key=None):
     except Exception as e:
         e.message = 'Unable to load config from redis (%s)' % e.message
         if silent:
-            obj.logger.error(e.message)
+            if hasattr(obj, 'logger'):
+                obj.logger.error(e.message)
             return False
         raise
 
