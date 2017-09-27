@@ -66,6 +66,7 @@ class LazySettings(LazyObject):
         handle initialization for the customization cases
         :param kwargs: values that overrides default_settings
         """
+        self._kwargs = kwargs
         for k, v in kwargs.items():
             setattr(default_settings, k.upper(), v)
         super(LazySettings, self).__init__()
@@ -94,7 +95,9 @@ class LazySettings(LazyObject):
         """Initial setup, run once."""
         environment_variable = default_settings.ENVVAR_FOR_DYNACONF
         settings_module = os.environ.get(environment_variable)
-        self._wrapped = Settings(settings_module=settings_module)
+        self._wrapped = Settings(
+            settings_module=settings_module, **self._kwargs
+        )
 
     def configure(self, settings_module=None, **kwargs):
         """
@@ -103,6 +106,7 @@ class LazySettings(LazyObject):
         :param settings_module:
         :param kwargs:
         """
+        kwargs.update(self._kwargs)
         self._wrapped = Settings(settings_module=settings_module, **kwargs)
 
     @property
@@ -136,9 +140,10 @@ class Settings(object):
         """Execute loaders and custom initialization"""
         if settings_module:
             self.set('SETTINGS_MODULE', settings_module)
-        self.execute_loaders()
         for key, value in kwargs.items():
             self.set(key, value)
+        # execute loaders only after setting defaults got from kwargs
+        self.execute_loaders()
 
     def __call__(self, *args, **kwargs):
         """Allow direct call of settings('val')
@@ -478,15 +483,15 @@ class Settings(object):
 
     def execute_loaders(self, namespace=None, silent=None, key=None):
         """Execute all internal and registered loaders"""
+        silent = silent or self.DYNACONF_SILENT_ERRORS
         default_loader(self)
-        module_loader(self, namespace=namespace)
+        module_loader(self, namespace=namespace, silent=silent)
         if self.exists('YAML'):
             yaml_loader.load(
                 self, namespace=namespace,
                 filename=self.get('YAML'),
                 silent=silent
             )
-        silent = silent or self.DYNACONF_SILENT_ERRORS
         for loader in self.loaders:
             loader.load(self, namespace, silent=silent, key=key)
 

@@ -220,6 +220,7 @@ class LazyObject(object):
 
     # Avoid infinite recursion when tracing __init__ (#19456).
     _wrapped = None
+    _kwargs = None
 
     def __init__(self):
         self._wrapped = empty
@@ -227,9 +228,9 @@ class LazyObject(object):
     __getattr__ = new_method_proxy(getattr)
 
     def __setattr__(self, name, value):
-        if name == "_wrapped":
+        if name in ["_wrapped", "_kwargs"]:
             # Assign to __dict__ to avoid infinite __setattr__ loops.
-            self.__dict__["_wrapped"] = value
+            self.__dict__[name] = value
         else:
             if self._wrapped is empty:
                 self._setup()

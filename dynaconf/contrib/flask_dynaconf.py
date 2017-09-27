@@ -3,7 +3,7 @@ from flask.config import Config
 from dynaconf import LazySettings
 
 
-class FlaskDynaconf:
+class FlaskDynaconf(object):
     """
     The arguments are.
     app = The created app
@@ -99,6 +99,8 @@ class FlaskDynaconf:
         root_path = app.root_path
         if self.instance_relative_config:
             root_path = app.instance_path
+        if self.dynaconf_instance:
+            self.settings.update(self.kwargs)
         return DynaconfConfig(
             root_path=root_path,
             defaults=app.config,

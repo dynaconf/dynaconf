@@ -33,38 +33,55 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
 
     # clean(obj, namespace, identifier=filename)
 
-    if filename.endswith(('.yaml', '.yml')):  # pragma: no cover
-        yaml_data = yaml.load(open(filename))
-    else:
-        # for tests it is possible to pass YAML string
-        yaml_data = yaml.load(filename)
+    # can be a filename settings.yml
+    # can be a multiple fileset settings1.yml, settings2.yaml etc
+    # and also a list of strings ['aaa:a', 'bbb:c']
+    # and can also be a single string 'aa:a'
+    if not isinstance(filename, (list, tuple)):
+        split_files = filename.split(',')
+        if all([f.endswith(('.yaml', '.yml')) for f in split_files]):
+            files = split_files  # it is a ['file.yml', ...]
+        else:  # it is a single YAML string
+            files = [filename]
+    else:  # it is already a list/tuple
+        files = filename
 
-    yaml_data = {key.lower(): value for key, value in yaml_data.items()}
-
-    # ---->
-    # Load from namescape_settings.yaml
-
-    data = {}
-    try:
-        data = yaml_data[namespace.lower()]
-    except KeyError as e:
-        if silent:
-            if hasattr(obj, 'logger'):
-                obj.logger.error(str(e))
+    for yaml_file in files:
+        if yaml_file.endswith(('.yaml', '.yml')):  # pragma: no cover
+            yaml_data = yaml.load(open(yaml_file))
         else:
-            raise KeyError(
-                '%s namespace not defined in %s' % (namespace, filename)
-            )
+            # for tests it is possible to pass YAML string
+            yaml_data = yaml.load(yaml_file)
 
-    if namespace and namespace != obj.get('DYNACONF_NAMESPACE'):
-        identifier = "{0}_{1}".format(IDENTIFIER, namespace.lower())
-    else:
-        identifier = IDENTIFIER
+        if not yaml_data and silent:
+            continue
 
-    if not key:
-        obj.update(data, loader_identifier=identifier)
-    else:
-        obj.set(key, data.get(key), loader_identifier=identifier)
+        yaml_data = {key.lower(): value for key, value in yaml_data.items()}
+
+        # ---->
+        # Load from namespace_filename.yaml
+
+        data = {}
+        try:
+            data = yaml_data[namespace.lower()]
+        except KeyError as e:
+            if silent:
+                if hasattr(obj, 'logger'):
+                    obj.logger.error(str(e))
+            else:
+                raise KeyError(
+                    '%s namespace not defined in %s' % (namespace, filename)
+                )
+
+        if namespace and namespace != obj.get('DYNACONF_NAMESPACE'):
+            identifier = "{0}_{1}".format(IDENTIFIER, namespace.lower())
+        else:
+            identifier = IDENTIFIER
+
+        if not key:
+            obj.update(data, loader_identifier=identifier)
+        else:
+            obj.set(key, data.get(key), loader_identifier=identifier)
 
 
 def clean(obj, namespace, silent=True):  # noqa

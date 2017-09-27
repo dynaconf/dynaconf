@@ -3,6 +3,14 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.5.1
+-----
+- Fixes on YAML and accepting `a.yml,b.yml,c.yml` as multiple filenames
+
+0.5.0
+-----
+- YAML silent errors
+
 0.4.5
 -----
 
