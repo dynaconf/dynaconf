@@ -67,7 +67,9 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
         except KeyError as e:
             if silent:
                 if hasattr(obj, 'logger'):
-                    obj.logger.error(str(e))
+                    obj.logger.debug(
+                        '%s namespace not defined in yaml source' % namespace
+                    )
             else:
                 raise KeyError(
                     '%s namespace not defined in %s' % (namespace, filename)
