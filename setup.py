@@ -17,12 +17,12 @@ def read(*names, **kwargs):
 
 
 def parse_md_to_rst(file):
-    """Read Markdown file and convert to ReStructured Text."""
+    """Read Markdown file and convert to ReStructured Text.""" 
     try:
-        from m2r import parse_from_file
-        return parse_from_file(file)
+        from pypandoc import convert_file
+        return convert_file(file, 'rst')
     except ImportError:
-        # m2r may not be installed in user environment
+        # pypandoc may not be installed in user environment
         try:
             return read(file)
         except:
