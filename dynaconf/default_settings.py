@@ -1,9 +1,31 @@
 # default proj root
 # pragma: no cover
+from os import path
+
 PROJECT_ROOT = "."
 
-# Default settings file
-SETTINGS_MODULE_FOR_DYNACONF = 'settings.py'
+_found_config_files = [
+    f for f in ('settings.py', 'settings.yml', 'settings.yaml')
+    if path.exists(path.join(PROJECT_ROOT, f))
+]
+if len(_found_config_files) == 0:
+    _found_config_files.append('settings.py')
+
+
+class MultipleConfigFilesError(Exception):
+    pass
+
+
+if len(_found_config_files) > 1:
+    raise MultipleConfigFilesError(
+        'Found multiple config files on root directory: {}. '
+        'Only one settings file is allowed. '
+        'So you can change change file names and use DYNACONF_SETTINGS '
+        'env var to set the file you want to use'.format(
+            '.'.join(_found_config_files))
+    )
+
+SETTINGS_MODULE_FOR_DYNACONF = _found_config_files[0]
 
 # Namespace for envvars
 DYNACONF_NAMESPACE = 'DYNACONF'
