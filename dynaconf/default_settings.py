@@ -1,9 +1,15 @@
 # default proj root
 # pragma: no cover
+from os import path
+
 PROJECT_ROOT = "."
 
-# Default settings file
-SETTINGS_MODULE_FOR_DYNACONF = 'settings.py'
+for _config_file in ('settings.py', 'settings.yml', 'settings.yaml'):
+    if path.exists(path.join(PROJECT_ROOT, _config_file)):
+        SETTINGS_MODULE_FOR_DYNACONF = _config_file
+        break
+else:
+    SETTINGS_MODULE_FOR_DYNACONF = 'settings.py'
 
 # Namespace for envvars
 DYNACONF_NAMESPACE = 'DYNACONF'

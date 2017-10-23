@@ -61,8 +61,13 @@ pip install dynaconf
 ```
 
 > NOTE: this project officially supports and encourages only Python 3+. Currently this is working well and tests are passing on any Python version above 2.7 but at any moment we can drop python2.x support if needed.
+# settings module
+
+If you have a settings.py, settings.yml or a settings.yaml in project's root, dynaconf will load it for you.
+Otherwise see next section.
 
 # define your settings module
+
 
 ```bash
 export DYNACONF_SETTINGS=myproject.settings
