@@ -1,0 +1,9 @@
+HOST = 'server.com'
+PORT = 500
+USERNAME = 'ADMIN'
+PASSWORD = 'secret'
+LEVELS = 'debug info warning'.split()
+TEST_LOADERS = {'dev': 'test_dev', 'prod': 'test_produ'}
+MONEY = 500.50
+AGE = 42
+ENABLED = True

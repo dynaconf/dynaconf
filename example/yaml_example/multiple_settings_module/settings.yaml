@@ -1,0 +1,18 @@
+dynaconf:
+  host: server.com
+  port: 5000
+  username: admin
+  PASSWORD: Secret
+  levels:
+    - debug
+    - info
+    - warning
+  test_loaders:
+    dev: test_dev
+    prod: test_prod
+  money: 500.50
+  age: 42
+  enabled: true
+development:
+  environment: this is development
+  host: dev_server.com
