@@ -1,6 +1,9 @@
 # coding: utf-8
-from flask.config import Config
 from dynaconf import LazySettings
+try:
+    from flask.config import Config
+except ImportError:
+    Config = object
 
 
 class FlaskDynaconf(object):
