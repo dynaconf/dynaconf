@@ -1,0 +1,4 @@
+DYNACONF:
+    SECRET_KEY: 'your secret key goes here'
+    DEBUG: True
+    ALLOWED_HOSTS: ['localhost','127.0.0.1']

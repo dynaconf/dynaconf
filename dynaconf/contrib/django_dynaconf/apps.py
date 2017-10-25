@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class BarConfig(AppConfig):
+class DJangoDynaconfig(AppConfig):
     name = 'dj_dynaconf'
