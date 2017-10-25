@@ -64,7 +64,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
         data = {}
         try:
             data = yaml_data[namespace.lower()]
-        except KeyError as e:
+        except KeyError:
             if silent:
                 if hasattr(obj, 'logger'):
                     obj.logger.debug(
