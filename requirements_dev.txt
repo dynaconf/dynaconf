@@ -2,11 +2,13 @@
 six
 redis
 wheel
+twine
 PyYAML
 toml
-flask>=0.12
-m2r
+flask>=1.0
 python-box
+python-dotenv
+setuptools>=38.6.0
 
 # testing
 coveralls

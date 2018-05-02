@@ -83,6 +83,8 @@ class FlaskDynaconf(object):
                  dynaconf_instance=None, **kwargs):
         """kwargs holds initial dynaconf configuration"""
         self.kwargs = kwargs
+        if 'DYNACONF_NAMESPACE' not in kwargs:
+            kwargs['DYNACONF_NAMESPACE'] = 'FLASK'
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config
         if app:

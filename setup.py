@@ -16,33 +16,21 @@ def read(*names, **kwargs):
     ).read()
 
 
-def parse_md_to_rst(file):
-    """Read Markdown file and convert to ReStructured Text."""
-    try:
-        from m2r import parse_from_file
-        return parse_from_file(file)
-    except ImportError:
-        # m2r may not be installed in user environment
-        try:
-            return read(file)
-        except:
-            return file.read()
-
-
 setup(
     name='dynaconf',
-    version="0.5.2",
+    version="0.5.5",
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",
     author_email="rochacbruno@gmail.com",
     description='The dynamic configurator for your Python Project',
-    long_description=parse_md_to_rst("README.md"),
+    long_description=read("README.md"),
+    long_description_content_type='text/markdown',
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
     platforms='any',
-    install_requires=['six', 'python-box'],
+    install_requires=['six', 'python-box', 'python-dotenv'],
     tests_require=[
         "pytest",
         "pytest-cov",
@@ -52,7 +40,8 @@ setup(
         "flake8-print",
         "flake8-todo",
         "radon",
-        "flask>=0.12"
+        "flask>=0.12",
+        "python-dotenv"
     ],
     extras_require={
         "redis": ['redis'],
@@ -60,6 +49,7 @@ setup(
         "toml": ['toml'],
         "all": ['redis', 'PyYAML', 'toml'],
     },
+    setup_requires=['setuptools>=38.6.0'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',

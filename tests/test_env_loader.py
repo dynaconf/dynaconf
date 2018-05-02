@@ -22,3 +22,17 @@ def test_single_key():
     load(settings, namespace='PROJECT1', key='HOSTNAME')
     assert settings.HOSTNAME == 'otherhost.com'
     assert settings.PORT == 5000
+
+
+def test_dotenv_loader():
+    assert settings.DOTENV_INT == 1
+    assert settings.DOTENV_STR == "hello"
+    assert settings.DOTENV_FLOAT == 4.2
+    assert settings.DOTENV_BOOL is False
+    assert settings.DOTENV_JSON == ['1', '2']
+    assert settings.DOTENV_NOTE is None
+
+
+def test_dotenv_other_namespace_loader():
+    load(settings, namespace='FLASK')
+    assert settings.DOTENV_STR == "flask"

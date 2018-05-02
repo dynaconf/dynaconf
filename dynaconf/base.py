@@ -5,18 +5,21 @@ import logging
 from contextlib import contextmanager
 
 import os
-import sys
 import types
 from six import string_types
 
 from dynaconf import default_settings
-from dynaconf.loaders import default_loader, module_loader, module_cleaner
+from dynaconf.loaders import (
+    default_loader, module_loader, module_cleaner, pre_env_loader
+)
 from dynaconf.loaders import yaml_loader
 from dynaconf.transformator import TransformatorList
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data
 from dynaconf.validator import ValidatorList
 from dynaconf.utils.boxing import DynaBox
+
+from dotenv import find_dotenv
 
 
 class LazySettings(LazyObject):
@@ -272,9 +275,7 @@ class Settings(object):
     @property
     def logger(self):  # pragma: no cover
         """Get or create inner logger"""
-        if not self._logger:
-            self._logger = logging.getLogger()
-        return self._logger
+        return raw_logger()
 
     @property
     def loaded_namespaces(self):
@@ -468,6 +469,10 @@ class Settings(object):
     @property
     def loaders(self):  # pragma: no cover
         """Return available loaders"""
+        if self.LOADERS_FOR_DYNACONF in (None, 0, "0", "false"):
+            self.logger.info('No loader defined')
+            return []
+
         if not self._loaders:
             for loader_module_name in self.LOADERS_FOR_DYNACONF:
                 try:
@@ -475,6 +480,7 @@ class Settings(object):
                 except ImportError:
                     loader = self.import_from_filename(loader_module_name)
                 self._loaders.append(loader)
+
         return self._loaders
 
     def reload(self, namespace=None, silent=None):  # pragma: no cover
@@ -485,8 +491,15 @@ class Settings(object):
         """Execute all internal and registered loaders"""
         silent = silent or self.DYNACONF_SILENT_ERRORS
         default_loader(self)
+        pre_env_loader(self, namespace, silent, key)
         module_loader(self, namespace=namespace, silent=silent)
         if self.exists('YAML'):
+            self.logger.warning(
+                "The use of YAML var is deprecated, please define multiple "
+                "filepaths instead: "
+                "e.g: SETTINGS_MODULE_FOR_DYNACONF = "
+                "'settings.py,settings.yaml,settings.toml'"
+            )
             yaml_loader.load(
                 self, namespace=namespace,
                 filename=self.get('YAML'),
@@ -506,7 +519,7 @@ class Settings(object):
         mod = types.ModuleType('config')
         mod.__file__ = filename
         try:
-            with open(filename) as config_file:
+            with open(find_dotenv(filename, usecwd=True)) as config_file:
                 exec(
                     compile(config_file.read(), filename, 'exec'),
                     mod.__dict__
@@ -517,7 +530,7 @@ class Settings(object):
             ) % (e.strerror, filename)
             if silent and e.errno in (errno.ENOENT, errno.EISDIR):
                 return
-            sys.stderr.write(e.strerror)
+            raw_logger().warning(e.strerror)
         return mod
 
     def path_for(self, *args):
@@ -539,3 +552,18 @@ class Settings(object):
         if not hasattr(self, '_transformators'):
             self._transformators = TransformatorList(self)
         return self._transformators
+
+
+def raw_logger():
+    """Get or create inner logger"""
+    level = os.environ.get('DEBUG_LEVEL_FOR_DYNACONF', 'ERROR')
+    try:
+        from logzero import setup_logger
+        return setup_logger(
+            "dynaconf",
+            level=level
+        )
+    except ImportError:
+        logger = logging.getLogger("dynaconf")
+        logger.setLevel(level)
+        return logger

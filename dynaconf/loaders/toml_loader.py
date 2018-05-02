@@ -1,34 +1,34 @@
 # coding: utf-8
 try:
-    import yaml
+    import toml
 except ImportError as e:  # pragma: no cover
-    yaml = None
+    toml = None
 
 from dotenv import find_dotenv
 
-IDENTIFIER = 'yaml_loader'
+IDENTIFIER = 'toml_loader'
 
 
 def load(obj, namespace=None, silent=True, key=None, filename=None):
     """
-    Reads and loads in to "settings" a single key or all keys from yaml file
+    Reads and loads in to "settings" a single key or all keys from toml file
     :param obj: the settings instance
     :param namespace: settings namespace default='DYNACONF'
     :param silent: if errors should raise
     :param key: if defined load a single key, else load all in namespace
     :return: None
     """
-    if yaml is None:  # pragma: no cover
+    if toml is None:  # pragma: no cover
         obj.logger.warning(
-            "PyYAML package is not installed in your environment.\n"
+            "toml package is not installed in your environment.\n"
             "To use this loader you have to install it with\n"
-            "pip install PyYAML\n"
+            "pip install toml\n"
             "or\n"
-            "pip install dynaconf[yaml]"
+            "pip install dynaconf[toml]"
         )
         return
 
-    filename = filename or obj.get('YAML')
+    filename = filename or obj.get('TOML')
     if not filename:
         return
 
@@ -37,49 +37,48 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
     # clean(obj, namespace, identifier=filename)
 
     # can be a filename settings.yml
-    # can be a multiple fileset settings1.yml, settings2.yaml etc
+    # can be a multiple fileset settings1.toml, settings2.toml etc
     # and also a list of strings ['aaa:a', 'bbb:c']
     # and can also be a single string 'aa:a'
     if not isinstance(filename, (list, tuple)):
         split_files = filename.split(',')
-        if all([f.endswith(('.yaml', '.yml')) for f in split_files]):
-            files = split_files  # it is a ['file.yml', ...]
-        else:  # it is a single YAML string
+        if all([f.endswith(('.toml', '.tml')) for f in split_files]):
+            files = split_files  # it is a ['file.toml', ...]
+        else:  # it is a single TOML string
             files = [filename]
     else:  # it is already a list/tuple
         files = filename
 
-    for yaml_file in files:
-        if yaml_file.endswith(('.yaml', '.yml')):  # pragma: no cover
+    for toml_file in files:
+        if toml_file.endswith(('.toml', '.tml')):  # pragma: no cover
+            obj.logger.debug('Trying to load TOML {}'.format(toml_file))
             try:
-                yaml_data = yaml.load(
-                    open(find_dotenv(yaml_file, usecwd=True))
+                toml_data = toml.load(
+                    open(find_dotenv(toml_file, usecwd=True))
                 )
             except IOError as e:
                 obj.logger.warning(
-                    "Unable to load YAML file {}".format(str(e)))
-                yaml_data = None
-            else:
-                obj.logger.debug('YAML {} has been loaded'.format(yaml_file))
+                    "Unable to load TOML file {}".format(str(e)))
+                toml_data = None
         else:
-            # for tests it is possible to pass YAML string
-            yaml_data = yaml.load(yaml_file)
+            # for tests it is possible to pass TOML string
+            toml_data = toml.loads(toml_file)
 
-        if not yaml_data:
+        if not toml_data:
             continue
 
-        yaml_data = {key.lower(): value for key, value in yaml_data.items()}
+        toml_data = {key.lower(): value for key, value in toml_data.items()}
 
         # ---->
-        # Load from namespace_filename.yaml
+        # Load from namespace_filename.toml
 
         data = {}
         try:
-            data = yaml_data[namespace.lower()]
+            data = toml_data[namespace.lower()]
         except KeyError:
             if silent:
                 obj.logger.debug(
-                    '%s namespace not defined in yaml source' % namespace
+                    '%s namespace not defined in toml source' % namespace
                 )
             else:
                 raise KeyError(
@@ -99,6 +98,6 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
 
 def clean(obj, namespace, silent=True):  # noqa
     for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('yam_loader_'):
+        if identifier.startswith('toml_loader_'):
             for key in data:
                 obj.unset(key)

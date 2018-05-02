@@ -3,7 +3,7 @@
 PROJECT_ROOT = "."
 
 # Default settings file
-SETTINGS_MODULE_FOR_DYNACONF = 'settings.py'
+SETTINGS_MODULE_FOR_DYNACONF = 'settings.py,settings.yaml,settings.toml'
 
 # Namespace for envvars
 DYNACONF_NAMESPACE = 'DYNACONF'
@@ -25,7 +25,10 @@ LOADERS_FOR_DYNACONF = [
 ]
 
 # Errors in loaders should be silenced?
-DYNACONF_SILENT_ERRORS = False
+DYNACONF_SILENT_ERRORS = SILENT_ERRORS = False
 
 # always fresh variables
-DYNACONF_ALWAYS_FRESH_VARS = []
+DYNACONF_ALWAYS_FRESH_VARS = ALWAYS_FRESH_VARS = []
+
+# debug
+DEBUG_LEVEL_FOR_DYNACONF = 'ERROR'

@@ -3,6 +3,15 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.5.5
+-----
+- Implemented TOMl loader
+
+0.5.3
+-----
+- Added placeholder data markers @note @comment @none and @null
+- Added support for .env on Flask 1.0
+
 0.5.2
 -----
 - Small fix on logger for yaml loader outputting as debug
