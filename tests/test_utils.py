@@ -12,6 +12,7 @@ def test_unparse():
     assert unparse_conf_data(True) == '@bool True'
     assert unparse_conf_data(['a', 'b']) == '@json ["a", "b"]'
     assert unparse_conf_data({'name': 'Bruno'}) == '@json {"name": "Bruno"}'
+    assert unparse_conf_data(None) == "@none "
 
 
 def test_cast_bool(settings):

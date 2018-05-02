@@ -6,9 +6,9 @@ twine
 PyYAML
 toml
 flask>=1.0
-m2r
 python-box
 python-dotenv
+setuptools>=38.6.0
 
 # testing
 coveralls

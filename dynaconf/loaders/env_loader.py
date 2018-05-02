@@ -4,7 +4,7 @@ from dynaconf.utils.parse_conf import parse_conf_data
 
 try:
     from dotenv import load_dotenv, find_dotenv
-except ImportError:
+except ImportError:  # pragma: no cover
     load_dotenv = lambda *args, **kwargs: None  # noqa
     find_dotenv = lambda: None  # noqa
 
