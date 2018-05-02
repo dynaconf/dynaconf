@@ -1,7 +1,7 @@
 import os
 import importlib
 from dynaconf import default_settings
-from dynaconf.loaders import yaml_loader, env_loader
+from dynaconf.loaders import yaml_loader, env_loader, toml_loader
 
 
 def default_loader(obj):
@@ -22,41 +22,59 @@ def module_loader(obj, settings_module=None, namespace=None, silent=False):
     if not settings_module:  # pragma: no cover
         return
 
-    if settings_module.endswith(('.yaml', '.yml')):
-        yaml_loader.load(
-            obj,
-            filename=settings_module,
-            namespace=namespace,
-            silent=silent
-        )
-        return
+    if not isinstance(settings_module, (list, tuple)):
+        files = settings_module.split(',')
+    else:
+        files = [settings_module]
 
-    # load from default defined module if exists (never gets cleaned)
-    load_from_module(obj, settings_module)
+    for mod_file in files:
+        # can be set to multiple files settings.py,settings.yaml,...
 
-    if namespace and namespace != obj.DYNACONF_NAMESPACE:
-        if settings_module.endswith('.py'):
-            dirname = os.path.dirname(settings_module)
-            filename, extension = os.path.splitext(
-                os.path.basename(settings_module)
+        if mod_file.endswith(('.yaml', '.yml')):
+            obj.logger.info("Trying to load YAML {}".format(mod_file))
+            yaml_loader.load(
+                obj,
+                filename=mod_file,
+                namespace=namespace,
+                silent=silent
             )
-            new_filename = "{0}_{1}{2}".format(
-                namespace.lower(), filename, extension
-            )
-            namespace_settings_module = os.path.join(
-                dirname, new_filename
-            )
-        else:
-            namespace_settings_module = "{0}_{1}".format(
-                namespace.lower(), settings_module
-            )
+            continue
 
-        load_from_module(
-            obj,
-            namespace_settings_module,
-            identifier='DEFAULT_MODULE_{0}'.format(namespace.upper()),
-            silent=True
-        )
+        if mod_file.endswith(('.toml',)):
+            toml_loader.load(
+                obj,
+                filename=mod_file,
+                namespace=namespace,
+                silent=silent
+            )
+            continue
+
+        # load from default defined module if exists (never gets cleaned)
+        load_from_module(obj, mod_file)
+
+        if namespace and namespace != obj.DYNACONF_NAMESPACE:
+            if mod_file.endswith('.py'):
+                dirname = os.path.dirname(mod_file)
+                filename, extension = os.path.splitext(
+                    os.path.basename(mod_file)
+                )
+                new_filename = "{0}_{1}{2}".format(
+                    namespace.lower(), filename, extension
+                )
+                namespace_mod_file = os.path.join(
+                    dirname, new_filename
+                )
+            else:
+                namespace_mod_file = "{0}_{1}".format(
+                    namespace.lower(), mod_file
+                )
+
+            load_from_module(
+                obj,
+                namespace_mod_file,
+                identifier='DEFAULT_MODULE_{0}'.format(namespace.upper()),
+                silent=True
+            )
 
 
 def load_from_module(obj, settings_module,

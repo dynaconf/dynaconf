@@ -18,7 +18,7 @@ def read(*names, **kwargs):
 
 setup(
     name='dynaconf',
-    version="0.5.3",
+    version="0.5.5",
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",

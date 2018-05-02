@@ -11,7 +11,7 @@ FlaskDynaconf(
     app,
     ENVVAR_FOR_DYNACONF="MYSITE_SETTINGS_MODULE",
     DYNACONF_NAMESPACE='MYSITE',
-    SETTINGS_MODULE_FOR_DYNACONF='settings.yml,.secrets.yml',
+    SETTINGS_MODULE_FOR_DYNACONF='settings.toml,.secrets.toml',
     EXTRA_VALUE='You can add aditional config vars here'
 )
 

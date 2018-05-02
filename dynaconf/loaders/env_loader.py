@@ -13,10 +13,9 @@ IDENTIFIER = 'env_loader'
 
 
 def load(obj, namespace=None, silent=True, key=None):
-
     # load_from_dotenv_if_installed
     load_dotenv(
-        obj.get('DOTENV_PATH', find_dotenv()),
+        obj.get('DOTENV_PATH', find_dotenv(usecwd=True)),
         verbose=obj.get('DOTENV_VERBOSE', False),
         override=obj.get('DOTENV_OVERRIDE', False)
     )

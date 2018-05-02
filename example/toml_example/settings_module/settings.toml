@@ -1,0 +1,21 @@
+[dynaconf]
+host = "server.com from TOML"
+port = 5000.0
+username = "admin"
+PASSWORD = "Secret"
+levels = [
+  "debug",
+  "info",
+  "warning"
+]
+money = 500.5
+age = 42.0
+enabled = true
+
+  [dynaconf.test_loaders]
+  dev = "test_dev"
+  prod = "test_prod"
+
+[development]
+environment = "this is development from toml"
+host = "dev_server.com from toml"

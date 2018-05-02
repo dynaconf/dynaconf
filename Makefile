@@ -9,8 +9,9 @@ install:
 pep8:
 	@flake8 dynaconf --ignore=F403
 
-release: test
-	@python setup.py sdist bdist_wheel upload
+release: clean test
+	@python setup.py sdist bdist_wheel
+	@twine upload dist/*
 
 clean:
 	@find ./ -name '*.pyc' -exec rm -f {} \;

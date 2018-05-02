@@ -3,6 +3,10 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.5.5
+-----
+- Implemented TOMl loader
+
 0.5.3
 -----
 - Added placeholder data markers @note @comment @none and @null
