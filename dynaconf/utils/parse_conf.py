@@ -9,7 +9,13 @@ converters = {
     '@bool': (
         lambda value: True if str(value).lower() in true_values else False
     ),
-    '@json': json.loads
+    '@json': json.loads,
+    # Special markers to be used as placeholders e.g: in prefilled forms
+    # will always return None when evaluated
+    '@note': lambda value: None,
+    '@comment': lambda value: None,
+    '@null': lambda value: None,
+    '@none': lambda value: None,
 }
 
 
@@ -44,5 +50,7 @@ def unparse_conf_data(value):
         return "@float %s" % value
     elif isinstance(value, (list, dict)):
         return "@json %s" % json.dumps(value)
+    elif value is None:
+        return "@none "
     else:
         return value

@@ -10,7 +10,9 @@ import types
 from six import string_types
 
 from dynaconf import default_settings
-from dynaconf.loaders import default_loader, module_loader, module_cleaner
+from dynaconf.loaders import (
+    default_loader, module_loader, module_cleaner, pre_env_loader
+)
 from dynaconf.loaders import yaml_loader
 from dynaconf.transformator import TransformatorList
 from dynaconf.utils.functional import LazyObject, empty
@@ -485,6 +487,7 @@ class Settings(object):
         """Execute all internal and registered loaders"""
         silent = silent or self.DYNACONF_SILENT_ERRORS
         default_loader(self)
+        pre_env_loader(self, namespace, silent, key)
         module_loader(self, namespace=namespace, silent=silent)
         if self.exists('YAML'):
             yaml_loader.load(

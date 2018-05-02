@@ -31,7 +31,7 @@ def parse_md_to_rst(file):
 
 setup(
     name='dynaconf',
-    version="0.5.2",
+    version="0.5.3",
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",
@@ -42,7 +42,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     platforms='any',
-    install_requires=['six', 'python-box'],
+    install_requires=['six', 'python-box', 'python-dotenv'],
     tests_require=[
         "pytest",
         "pytest-cov",
@@ -52,7 +52,8 @@ setup(
         "flake8-print",
         "flake8-todo",
         "radon",
-        "flask>=0.12"
+        "flask>=0.12",
+        "python-dotenv"
     ],
     extras_require={
         "redis": ['redis'],

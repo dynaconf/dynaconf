@@ -1,13 +1,19 @@
 import os
 import importlib
 from dynaconf import default_settings
-from dynaconf.loaders import yaml_loader
+from dynaconf.loaders import yaml_loader, env_loader
 
 
 def default_loader(obj):
     for key, value in default_settings.__dict__.items():
         if key.isupper():
             obj.set(key, value, loader_identifier='DEFAULT')
+
+
+def pre_env_loader(obj, namespace=None, silent=False, key=None):
+    """Load default env values before any other env loader"""
+    namespace = namespace or 'DYNACONF'
+    env_loader.load_from_env('env_loader', key, namespace, obj, silent)
 
 
 def module_loader(obj, settings_module=None, namespace=None, silent=False):

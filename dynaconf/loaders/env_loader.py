@@ -2,12 +2,24 @@
 import os
 from dynaconf.utils.parse_conf import parse_conf_data
 
-IDENTIFIER = 'env_loader'
+try:
+    from dotenv import load_dotenv, find_dotenv
+except ImportError:
+    load_dotenv = lambda *args, **kwargs: None  # noqa
+    find_dotenv = lambda: None  # noqa
 
-# load .env dotenv
+
+IDENTIFIER = 'env_loader'
 
 
 def load(obj, namespace=None, silent=True, key=None):
+
+    # load_from_dotenv_if_installed
+    load_dotenv(
+        obj.get('DOTENV_PATH', find_dotenv()),
+        verbose=obj.get('DOTENV_VERBOSE', False),
+        override=obj.get('DOTENV_OVERRIDE', False)
+    )
 
     # load all from default namespace (this never gets cleaned)
     load_from_env(IDENTIFIER, key, obj.get('DYNACONF_NAMESPACE'), obj, silent)
@@ -39,7 +51,7 @@ def load_from_env(identifier, key, namespace, obj, silent):
     except Exception as e:  # pragma: no cover
         e.message = (
             'Unable to load config env namespace ({0})'
-        ).format(e.message)
+        ).format(str(e))
         if silent:
             obj.logger.error(str(e))
         else:

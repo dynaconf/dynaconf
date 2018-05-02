@@ -4,6 +4,7 @@ services:
 env:
   global:
     - DYNACONF_SETTINGS=dynaconf.test_settings
+    - DYNACONF_DOTENV_PATH=/home/travis/build/rochacbruno/dynaconf/.env
     - DYNATRAVIS_ENV_BOOLEAN='@bool true'
     - DYNATRAVIS_ENV_INT='@int 42'
     - DYNATRAVIS_ENV_FLOAT='@float 42.2'
