@@ -99,7 +99,7 @@ class FlaskDynaconf(object):
 
     def make_config(self, app):
         root_path = app.root_path
-        if self.instance_relative_config:
+        if self.instance_relative_config:  # pragma: no cover
             root_path = app.instance_path
         if self.dynaconf_instance:
             self.settings.update(self.kwargs)

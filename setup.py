@@ -18,7 +18,7 @@ def read(*names, **kwargs):
 
 setup(
     name='dynaconf',
-    version="0.5.5",
+    version="0.5.6",
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",
@@ -47,7 +47,9 @@ setup(
         "redis": ['redis'],
         "yaml": ['PyYAML'],
         "toml": ['toml'],
-        "all": ['redis', 'PyYAML', 'toml'],
+        "ini": ['configobj'],
+        "configobj": ['configobj'],
+        "all": ['redis', 'PyYAML', 'toml', 'configobj'],
     },
     setup_requires=['setuptools>=38.6.0'],
     classifiers=[

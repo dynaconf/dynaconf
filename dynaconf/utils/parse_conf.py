@@ -1,6 +1,7 @@
 import json
 
 from six import string_types
+from dynaconf.utils.boxing import DynaBox
 
 true_values = ('t', 'true', 'enabled', '1', 'on', 'yes')
 converters = {
@@ -19,7 +20,7 @@ converters = {
 }
 
 
-def parse_conf_data(data):
+def _parse_conf_data(data):
     """
     @int @bool @float @json (for lists and dicts)
     strings does not need converters
@@ -39,6 +40,21 @@ def parse_conf_data(data):
         value = parts[-1]
         return converters.get(converter_key)(value)
     return data
+
+
+def parse_conf_data(data):
+    if isinstance(data, (tuple, list)):
+        # recursively parse each sequence item
+        return [parse_conf_data(item) for item in data]
+    elif isinstance(data, (dict, DynaBox)):
+        # recursively parse inner dict items
+        _parsed = {}
+        for k, v in data.items():
+            _parsed[k] = parse_conf_data(v)
+        return _parsed
+    else:
+        # return parsed string value
+        return _parse_conf_data(data)
 
 
 def unparse_conf_data(value):

@@ -1,35 +1,21 @@
 # coding: utf-8
-from dynaconf.constants import YAML_EXTENSIONS
-try:
-    import yaml
-except ImportError as e:  # pragma: no cover
-    yaml = None
-
+from dynaconf.constants import JSON_EXTENSIONS
+import json
 from dynaconf.utils.files import find_file
 
-IDENTIFIER = 'yaml_loader'
+IDENTIFIER = 'json_loader'
 
 
 def load(obj, namespace=None, silent=True, key=None, filename=None):
     """
-    Reads and loads in to "settings" a single key or all keys from yaml file
+    Reads and loads in to "settings" a single key or all keys from json file
     :param obj: the settings instance
     :param namespace: settings namespace default='DYNACONF'
     :param silent: if errors should raise
     :param key: if defined load a single key, else load all in namespace
     :return: None
     """
-    if yaml is None:  # pragma: no cover
-        obj.logger.warning(
-            "PyYAML package is not installed in your environment.\n"
-            "To use this loader you have to install it with\n"
-            "pip install PyYAML\n"
-            "or\n"
-            "pip install dynaconf[yaml]"
-        )
-        return
-
-    filename = filename or obj.get('YAML')
+    filename = filename or obj.get('JSON')
     if not filename:
         return
 
@@ -38,49 +24,48 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
     # clean(obj, namespace, identifier=filename)
 
     # can be a filename settings.yml
-    # can be a multiple fileset settings1.yml, settings2.yaml etc
+    # can be a multiple fileset settings1.json, settings2.json etc
     # and also a list of strings ['aaa:a', 'bbb:c']
     # and can also be a single string 'aa:a'
     if not isinstance(filename, (list, tuple)):
         split_files = filename.split(',')
-        if all([f.endswith(YAML_EXTENSIONS) for f in split_files]):
-            files = split_files  # it is a ['file.yml', ...]
-        else:  # it is a single YAML string
+        if all([f.endswith(JSON_EXTENSIONS) for f in split_files]):  # noqa
+            files = split_files  # it is a ['file.json', ...]
+        else:  # it is a single json string
             files = [filename]
     else:  # it is already a list/tuple
         files = filename
 
-    for yaml_file in files:
-        if yaml_file.endswith(YAML_EXTENSIONS):  # pragma: no cover
+    for json_file in files:
+        if json_file.endswith(JSON_EXTENSIONS):  # pragma: no cover
+            obj.logger.debug('Trying to load json {}'.format(json_file))
             try:
-                yaml_data = yaml.load(
-                    open(find_file(yaml_file, usecwd=True))
+                json_data = json.load(
+                    open(find_file(json_file, usecwd=True))
                 )
-            except IOError as e:
+            except (IOError, json.decoder.JSONDecodeError) as e:
                 obj.logger.warning(
-                    "Unable to load YAML file {}".format(str(e)))
-                yaml_data = None
-            else:
-                obj.logger.debug('YAML {} has been loaded'.format(yaml_file))
+                    "Unable to load json {} file {}".format(json_file, str(e)))
+                json_data = None
         else:
-            # for tests it is possible to pass YAML string
-            yaml_data = yaml.load(yaml_file)
+            # for tests it is possible to pass json string
+            json_data = json.loads(json_file)
 
-        if not yaml_data:
+        if not json_data:
             continue
 
-        yaml_data = {key.lower(): value for key, value in yaml_data.items()}
+        json_data = {key.lower(): value for key, value in json_data.items()}
 
         # ---->
-        # Load from namespace_filename.yaml
+        # Load from namespace_filename.json
 
         data = {}
         try:
-            data = yaml_data[namespace.lower()]
+            data = json_data[namespace.lower()]
         except KeyError:
             if silent:
                 obj.logger.debug(
-                    '%s namespace not defined in yaml source' % namespace
+                    '%s namespace not defined in json source' % namespace
                 )
             else:
                 raise KeyError(
@@ -100,6 +85,6 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
 
 def clean(obj, namespace, silent=True):  # noqa
     for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('yam_loader_'):
+        if identifier.startswith('json_loader_'):
             for key in data:
                 obj.unset(key)

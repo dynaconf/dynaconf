@@ -4,4 +4,5 @@ DEBUG = true
 SERVER = "flaskdynaconf.com"
 PORT = 6666.0
 MESSAGE = "Dynaconf works like a charm with Flask and TOML"
+TEST_RULE='/toml'
 
