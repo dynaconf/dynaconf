@@ -1,4 +1,4 @@
-# The namespace here should match the name given in `DYNACONF_NAMESPACE`
+# The namespace here should match the name given in `NAMESPACE_FOR_DYNACONF`
 [MYSITE]
 DEBUG = true
 SERVER = "flaskdynaconf.com"

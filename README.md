@@ -165,7 +165,7 @@ production_settings.py
 Then in your environment.
 
 ```bash
-export DYNACONF_NAMESPACE=DEVELOPMENT|PRODUCTION  # switch enviroment using env vars.
+export NAMESPACE_FOR_DYNACONF=DEVELOPMENT|PRODUCTION  # switch enviroment using env vars.
 ```
 
 Or using `namespace`
@@ -188,7 +188,7 @@ Just save a `settings.yaml` in the root dir.
 
 Using YAML is easier because it support multiple namespace in a single file.
 
-Lets say you have `DYNACONF_NAMESPACE=DYNACONF` (the default)
+Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
 ```yaml
 DYNACONF:  # this is the global namespace
   VARIABLE: 'this variable is available on every namespace'
@@ -201,7 +201,7 @@ production:  # upper or lower case does not matter
   host: prodserver.com
 ```
 
-Then it will be applied using env var `DYNACONF_NAMESPACE` or context manager.
+Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manager.
 
 > HINT: When using yaml namespace identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
@@ -215,7 +215,7 @@ Just save a `settings.toml` in the root dir.
 
 Using TOML is easier because it support multiple namespace in a single file.
 
-Lets say you have `DYNACONF_NAMESPACE=DYNACONF` (the default)
+Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
 ```toml
 [dynaconf]:  # this is the global namespace
 variable = 'this variable is available on every namespace'
@@ -228,7 +228,7 @@ HOST = 'devserver.com'  # overrides the global or sets new
 host = 'prodserver.com'
 ```
 
-Then it will be applied using env var `DYNACONF_NAMESPACE` or context manager.
+Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manager.
 
 > HINT: When using toml namespace identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
@@ -242,7 +242,7 @@ Just save a `settings.ini` in the root dir.
 
 Using INI is easier because it support multiple namespace in a single file.
 
-Lets say you have `DYNACONF_NAMESPACE=DYNACONF` (the default)
+Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
 
 ```ini
 [DYNACONF]
@@ -255,7 +255,7 @@ HOST = "devserver.com"
 host = "prodserver.com"
 ```
 
-Then it will be applied using env var `DYNACONF_NAMESPACE` or context manager.
+Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manager.
 
 > HINT: When using INI namespace identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
@@ -267,7 +267,7 @@ Just save a `settings.json` in the root dir.
 
 Using JSON is easier because it support multiple namespace in a single file.
 
-Lets say you have `DYNACONF_NAMESPACE=DYNACONF` (the default)
+Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
 ```json
 {
   "DYNACONF": {
@@ -283,7 +283,7 @@ Lets say you have `DYNACONF_NAMESPACE=DYNACONF` (the default)
 }
 ```
 
-Then it will be applied using env var `DYNACONF_NAMESPACE` or context manager.
+Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manager.
 
 > HINT: When using json namespace identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
@@ -398,7 +398,7 @@ settings.AINT
 Include in the file defined in DYNACONF_SETTINGS or in the `.env` file or in the customized Settings class the desired namespace
 
 ```python
-DYNACONF_NAMESPACE = 'DYNACONF'
+NAMESPACE_FOR_DYNACONF = 'DYNACONF'
 ```
 
 # Storing settings in databases
@@ -512,7 +512,7 @@ from dynaconf import LazySettings
 
 settings = LazySettings(
     ENVVAR_FOR_DYNACONF="MYPROGRAM_SETTINGS_MODULE",
-    DYNACONF_NAMESPACE='MYPROGRAM'
+    NAMESPACE_FOR_DYNACONF='MYPROGRAM'
 )
 
 ```
@@ -536,7 +536,7 @@ The `FlaskDynaconf` takes optional arguments
 
 ```python
 ENVVAR_FOR_DYNACONF="MYSITE_SETTINGS_MODULE"  # defaults to `DYNACONF_SETTINGS` 
-DYNACONF_NAMESPACE='MYSITE'  # defaults to `FLASK_`
+NAMESPACE_FOR_DYNACONF='MYSITE'  # defaults to `FLASK_`
 SETTINGS_MODULE_FOR_DYNACONF='settings.yml'  # defaults to `settings.py`
 YAML='.secrets.yml',  # aditional config
 EXTRA_VALUE='You can add aditional config vars here'

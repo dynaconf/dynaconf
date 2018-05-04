@@ -54,6 +54,9 @@ def test_get_env(settings):
     settings.env['SALARY'] = '180.235'
     assert settings.get_env('salary', cast='@float') == 180.235
 
+    settings.env['ENVINT'] = '@int 24'
+    assert settings.get_env('envint', cast=True) == 24
+
 
 def test_float(settings):
     settings.set('money', '500.42')
@@ -143,3 +146,34 @@ def test_namespace_should_not_have_underline(settings):
 def test_path_for(settings):
     assert settings.path_for('/tmp', 'bla') == '/tmp/bla'
     assert settings.path_for('foo', 'bar', 'blaz') == './foo/bar/blaz'
+
+
+def test_get_item(settings):
+    assert settings['DOTENV_INT'] == 1
+    assert settings['PORT'] == 5000
+    with pytest.raises(KeyError):
+        settings['DONOTEXISTTHISKEY']
+
+
+def test_set_item(settings):
+    settings['FOO'] = 'bar'
+    assert settings.FOO == 'bar'
+    assert 'FOO' in settings._defaults
+    assert settings('FOO') == 'bar'
+    assert settings.get('FOO') == 'bar'
+
+
+def test_set(settings):
+    # NOTE: it is recommended to call set(x, 1) or ['x'] = 1
+    # instead of settings.BAZ = 'bar'
+    settings.set('BAZ', 'bar')
+    assert settings.BAZ == 'bar'
+    assert 'BAZ' in settings._defaults
+    assert settings('BAZ') == 'bar'
+    assert settings.get('BAZ') == 'bar'
+
+
+def test_exists(settings):
+    settings.set('BOOK', 'TAOCP')
+    assert settings.exists('BOOK') == True
+

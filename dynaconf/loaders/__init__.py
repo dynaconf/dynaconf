@@ -7,16 +7,28 @@ from dynaconf.loaders import (
 )
 
 
-def default_loader(obj):
+def default_loader(obj, defaults=None):
+    defaults = defaults or {}
     for key, value in default_settings.__dict__.items():
         if key.isupper():
-            obj.set(key, value, loader_identifier='DEFAULT')
+            obj.set(key, defaults.get(key, value), loader_identifier='DEFS')
+
+
+def load_base_vars(obj):
+    """Overrides for defaults exported to env"""
+    for key in [item for item in dir(default_settings) if item.isupper()]:
+        value = obj.get_env(key)
+        if value:
+            obj.set(key, value)
 
 
 def pre_env_loader(obj, namespace=None, silent=False, key=None):
     """Load default env values before any other env loader"""
+    load_base_vars(obj)
     namespace = namespace or 'DYNACONF'
-    env_loader.load_from_env('env_loader', key, namespace, obj, silent)
+    env_loader.load_from_env(
+        'env_loader_' + namespace.lower(), key, namespace, obj, silent
+    )
 
 
 def module_loader(obj, settings_module=None, namespace=None, silent=False):
@@ -79,7 +91,7 @@ def module_loader(obj, settings_module=None, namespace=None, silent=False):
         # load from default defined module if exists (never gets cleaned)
         load_from_module(obj, mod_file)
 
-        if namespace and namespace != obj.DYNACONF_NAMESPACE:
+        if namespace and namespace != obj.NAMESPACE_FOR_DYNACONF:
             if mod_file.endswith('.py'):
                 dirname = os.path.dirname(mod_file)
                 filename, extension = os.path.splitext(
@@ -121,15 +133,23 @@ def load_from_module(obj, settings_module,
             setting_value = getattr(mod, setting)
             obj.set(setting, setting_value, loader_identifier=identifier)
 
-    if not hasattr(obj, 'PROJECT_ROOT'):
+    if not hasattr(obj, 'PROJECT_ROOT_FOR_DYNACONF'):
         root = os.path.realpath(
             os.path.dirname(os.path.abspath(settings_module))
         ) if loaded_from == 'module' else os.getcwd()
-        obj.set('PROJECT_ROOT', root, loader_identifier=identifier)
+        obj.set('PROJECT_ROOT_FOR_DYNACONF',
+                root, loader_identifier=identifier)
 
 
 def module_cleaner(obj, namespace, silent=True):  # noqa
     for identifier, data in obj.loaded_by_loaders.items():
         if identifier.startswith('DEFAULT_MODULE_'):
+            for key in data:
+                obj.unset(key)
+
+
+def default_cleaner(obj, namespace, silent=True):  # noqa
+    for identifier, data in obj.loaded_by_loaders.items():
+        if identifier.startswith('DEFS_'):
             for key in data:
                 obj.unset(key)

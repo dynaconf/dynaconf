@@ -14,7 +14,7 @@ test_examples:
 	# @cd example/validator/;python app.py
 
 test: pep8
-	py.test -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
+	py.test --boxed -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
 
 install:
 	python setup.py develop

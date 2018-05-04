@@ -15,16 +15,19 @@ IDENTIFIER = 'env_loader'
 def load(obj, namespace=None, silent=True, key=None):
     # load_from_dotenv_if_installed
     load_dotenv(
-        obj.get('DOTENV_PATH', find_dotenv(usecwd=True)),
-        verbose=obj.get('DOTENV_VERBOSE', False),
-        override=obj.get('DOTENV_OVERRIDE', False)
+        obj.get('DOTENV_PATH_FOR_DYNACONF') or find_dotenv(usecwd=True),
+        verbose=obj.get('DOTENV_VERBOSE_FOR_DYNACONF', False),
+        override=obj.get('DOTENV_OVERRIDE_FOR_DYNACONF', False)
     )
 
     # load all from default namespace (this never gets cleaned)
-    load_from_env(IDENTIFIER, key, obj.get('DYNACONF_NAMESPACE'), obj, silent)
+    load_from_env(
+        IDENTIFIER, key, obj.get('NAMESPACE_FOR_DYNACONF'),
+        obj, silent
+    )
 
     # rewrite with different namespace if provided
-    if namespace and namespace != obj.get('DYNACONF_NAMESPACE'):
+    if namespace and namespace != obj.get('NAMESPACE_FOR_DYNACONF'):
         identifier = IDENTIFIER + '_' + namespace.lower()
         load_from_env(identifier, key, namespace, obj, silent)
 

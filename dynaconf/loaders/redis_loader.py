@@ -24,7 +24,7 @@ def load(obj, namespace=None, silent=True, key=None):
     :return: None
     """
     redis = StrictRedis(**obj.get('REDIS_FOR_DYNACONF'))
-    namespace = namespace or obj.get('DYNACONF_NAMESPACE')
+    namespace = namespace or obj.get('NAMESPACE_FOR_DYNACONF')
     holder = "DYNACONF_%s" % namespace
     try:
         if key:
@@ -68,7 +68,7 @@ def write(obj, **kwargs):
     :return:
     """
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = "DYNACONF_%s" % obj.DYNACONF_NAMESPACE
+    holder = "DYNACONF_%s" % obj.NAMESPACE_FOR_DYNACONF
     data = {
         key.upper(): unparse_conf_data(value)
         for key, value in kwargs.items()
@@ -85,7 +85,7 @@ def delete(obj, key=None):
     :return: None
     """
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = "DYNACONF_%s" % obj.DYNACONF_NAMESPACE
+    holder = "DYNACONF_%s" % obj.NAMESPACE_FOR_DYNACONF
     if key:
         client.hdel(holder.upper(), key.upper())
         obj.unset(key)

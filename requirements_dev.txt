@@ -15,6 +15,7 @@ configobj
 coveralls
 pytest
 pytest-cov
+pytest-xdist
 
 # style check
 flake8
