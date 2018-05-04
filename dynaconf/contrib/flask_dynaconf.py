@@ -1,5 +1,12 @@
 # coding: utf-8
-from flask.config import Config
+try:
+    from flask.config import Config
+    flask_installed = True
+except ImportError:
+    flask_installed = False
+    Config = object
+
+
 from dynaconf import LazySettings
 
 
@@ -82,6 +89,11 @@ class FlaskDynaconf(object):
     def __init__(self, app=None, instance_relative_config=False,
                  dynaconf_instance=None, **kwargs):
         """kwargs holds initial dynaconf configuration"""
+        if not flask_installed:
+            raise RuntimeError(
+                "To use this extension Flask must be installed "
+                "install it with: pip install flask"
+            )
         self.kwargs = kwargs
         if 'DYNACONF_NAMESPACE' not in kwargs:
             kwargs['DYNACONF_NAMESPACE'] = 'FLASK'
