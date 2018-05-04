@@ -7,8 +7,9 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![PyPI](https://img.shields.io/pypi/pyversions/dynaconf.svg)]() [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![Coverage Status](https://coveralls.io/repos/rochacbruno/dynaconf/badge.svg?branch=master&service=github)](https://coveralls.io/github/rochacbruno/dynaconf?branch=master) [![Codacy grade](https://img.shields.io/codacy/grade/5074f5d870a24ddea79def463453545b.svg)](https://www.codacy.com/app/rochacbruno/dynaconf/dashboard)
 
 
-**dynaconf** a layered configuration system for Python applications 
-(with strong support for [12-factor applications](https://12factor.net/config)).
+**dynaconf** a layered configuration system for Python applications - 
+with strong support for [12-factor applications](https://12factor.net/config) 
+and **Flask** `app.config` extension.
 
 <br><br>
 
@@ -34,7 +35,9 @@ Connect(user=settings('USERNAME', 'admin'), passwd=settings('PASSWD', 1234))
 
 ##  Where the values come from? 
 
-- `settings.{py|yaml|toml|ini}` file
+> Dynaconf will look for variables in the following order (by default) and you can also customize the order of loaders.
+
+- Settings files files in the order: `settings.{py|yaml|toml|ini|json}` 
 - `.env` file
 - `export`ed Environment Variables
 - Remote storage servers
@@ -229,6 +232,62 @@ Then it will be applied using env var `DYNACONF_NAMESPACE` or context manager.
 
 > HINT: When using toml namespace identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
+
+
+### using INIFILES
+
+> you need to install configobj `pip install configobj`
+
+Just save a `settings.ini` in the root dir.
+
+Using INI is easier because it support multiple namespace in a single file.
+
+Lets say you have `DYNACONF_NAMESPACE=DYNACONF` (the default)
+
+```ini
+[DYNACONF]
+VARIABLE = "this variable is available on every namespace"
+
+[DEVELOPMENT]
+HOST = "devserver.com"
+
+[production]
+host = "prodserver.com"
+```
+
+Then it will be applied using env var `DYNACONF_NAMESPACE` or context manager.
+
+> HINT: When using INI namespace identifier and first level vars are case
+> insensitive, dynaconf will always have them read as upper case.
+
+
+### using JSON
+
+Just save a `settings.json` in the root dir.
+
+Using JSON is easier because it support multiple namespace in a single file.
+
+Lets say you have `DYNACONF_NAMESPACE=DYNACONF` (the default)
+```json
+{
+  "DYNACONF": {
+    "VARIABLE": "this variable is available on every namespace",
+    "HOST": null
+  },
+  "DEVELOPMENT": {
+    "HOST": "devserver.com"
+  },
+  "production": {
+    "host": "prodserver.com"
+  }
+}
+```
+
+Then it will be applied using env var `DYNACONF_NAMESPACE` or context manager.
+
+> HINT: When using json namespace identifier and first level vars are case
+> insensitive, dynaconf will always have them read as upper case.
+
 
 # casting values from envvars
 

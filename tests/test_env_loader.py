@@ -5,8 +5,8 @@ from dynaconf import settings  # noqa
 os.environ['DYNACONF_HOSTNAME'] = 'host.com'
 os.environ['DYNACONF_PORT'] = '@int 5000'
 os.environ['DYNACONF_VALUE'] = '@float 42.1'
-os.environ['DYNACONF_ALIST'] = '@json ["item1", "item2", "item3"]'
-os.environ['DYNACONF_ADICT'] = '@json {"key": "value"}'
+os.environ['DYNACONF_ALIST'] = '@json ["item1", "item2", "item3", 123]'
+os.environ['DYNACONF_ADICT'] = '@json {"key": "value", "int": 42}'
 os.environ['DYNACONF_DEBUG'] = '@bool true'
 os.environ['PROJECT1_HOSTNAME'] = 'otherhost.com'
 os.environ['PROJECT1_PORT'] = '@int 8080'
@@ -16,6 +16,8 @@ settings.configure()
 
 def test_env_loader():
     assert settings.HOSTNAME == 'host.com'
+    assert settings.ALIST == ["item1", "item2", "item3", 123]
+    assert settings.ADICT == {"key": "value", "int": 42}
 
 
 def test_single_key():

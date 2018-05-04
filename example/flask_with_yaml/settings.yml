@@ -6,4 +6,5 @@ MYSITE:
   SERVER: flaskdynaconf.com
   PORT: 6666
   MESSAGE: Dynaconf works like a charm with Flask and YAML
+  TEST_RULE: '/yaml'
 

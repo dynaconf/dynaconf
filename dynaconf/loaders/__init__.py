@@ -1,7 +1,10 @@
 import os
 import importlib
+from dynaconf import constants as ct
 from dynaconf import default_settings
-from dynaconf.loaders import yaml_loader, env_loader, toml_loader
+from dynaconf.loaders import (
+    yaml_loader, env_loader, toml_loader, json_loader, ini_loader
+)
 
 
 def default_loader(obj):
@@ -30,7 +33,8 @@ def module_loader(obj, settings_module=None, namespace=None, silent=False):
     for mod_file in files:
         # can be set to multiple files settings.py,settings.yaml,...
 
-        if mod_file.endswith(('.yaml', '.yml')):
+        # NOTE: all this cascade can be refactored to use a loader class!
+        if mod_file.endswith(ct.YAML_EXTENSIONS):
             obj.logger.info("Trying to load YAML {}".format(mod_file))
             yaml_loader.load(
                 obj,
@@ -40,7 +44,8 @@ def module_loader(obj, settings_module=None, namespace=None, silent=False):
             )
             continue
 
-        if mod_file.endswith(('.toml',)):
+        if mod_file.endswith(ct.TOML_EXTENSIONS):
+            obj.logger.info("Trying to load TOML {}".format(mod_file))
             toml_loader.load(
                 obj,
                 filename=mod_file,
@@ -48,6 +53,28 @@ def module_loader(obj, settings_module=None, namespace=None, silent=False):
                 silent=silent
             )
             continue
+
+        if mod_file.endswith(ct.INI_EXTENSIONS):
+            obj.logger.info("Trying to load INI {}".format(mod_file))
+            ini_loader.load(
+                obj,
+                filename=mod_file,
+                namespace=namespace,
+                silent=silent
+            )
+            continue
+
+        if mod_file.endswith(ct.JSON_EXTENSIONS):
+            obj.logger.info("Trying to load JSON {}".format(mod_file))
+            json_loader.load(
+                obj,
+                filename=mod_file,
+                namespace=namespace,
+                silent=silent
+            )
+            continue
+
+        obj.logger.info("Trying to load Python module {}".format(mod_file))
 
         # load from default defined module if exists (never gets cleaned)
         load_from_module(obj, mod_file)
@@ -85,6 +112,9 @@ def load_from_module(obj, settings_module,
     except ImportError:
         mod = obj.import_from_filename(settings_module, silent=silent)
         loaded_from = 'filename'
+
+    obj.logger.info(
+        "Module {} Loaded from {}".format(settings_module, loaded_from))
 
     for setting in dir(mod):
         if setting.isupper():

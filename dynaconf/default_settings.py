@@ -3,7 +3,13 @@
 PROJECT_ROOT = "."
 
 # Default settings file
-SETTINGS_MODULE_FOR_DYNACONF = 'settings.py,settings.yaml,settings.toml'
+SETTINGS_MODULE_FOR_DYNACONF = (
+    'settings.py,'
+    'settings.yaml,settings.yml,'
+    'settings.toml,settings.tml,'
+    'settings.ini,settings.conf,settings.properties,'
+    'settings.json'
+)
 
 # Namespace for envvars
 DYNACONF_NAMESPACE = 'DYNACONF'

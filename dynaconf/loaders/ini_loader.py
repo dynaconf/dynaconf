@@ -1,35 +1,35 @@
 # coding: utf-8
-from dynaconf.constants import YAML_EXTENSIONS
+from dynaconf.constants import INI_EXTENSIONS
 try:
-    import yaml
+    from configobj import ConfigObj
 except ImportError as e:  # pragma: no cover
-    yaml = None
+    ConfigObj = None
 
 from dynaconf.utils.files import find_file
 
-IDENTIFIER = 'yaml_loader'
+IDENTIFIER = 'ini_loader'
 
 
 def load(obj, namespace=None, silent=True, key=None, filename=None):
     """
-    Reads and loads in to "settings" a single key or all keys from yaml file
+    Reads and loads in to "settings" a single key or all keys from ini file
     :param obj: the settings instance
     :param namespace: settings namespace default='DYNACONF'
     :param silent: if errors should raise
     :param key: if defined load a single key, else load all in namespace
     :return: None
     """
-    if yaml is None:  # pragma: no cover
+    if ConfigObj is None:  # pragma: no cover
         obj.logger.warning(
-            "PyYAML package is not installed in your environment.\n"
+            "configobj package is not installed in your environment.\n"
             "To use this loader you have to install it with\n"
-            "pip install PyYAML\n"
+            "pip install configobj\n"
             "or\n"
-            "pip install dynaconf[yaml]"
+            "pip install dynaconf[ini]"
         )
         return
 
-    filename = filename or obj.get('YAML')
+    filename = filename or obj.get('INI')
     if not filename:
         return
 
@@ -38,49 +38,48 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
     # clean(obj, namespace, identifier=filename)
 
     # can be a filename settings.yml
-    # can be a multiple fileset settings1.yml, settings2.yaml etc
+    # can be a multiple fileset settings1.ini, settings2.ini etc
     # and also a list of strings ['aaa:a', 'bbb:c']
     # and can also be a single string 'aa:a'
     if not isinstance(filename, (list, tuple)):
         split_files = filename.split(',')
-        if all([f.endswith(YAML_EXTENSIONS) for f in split_files]):
-            files = split_files  # it is a ['file.yml', ...]
-        else:  # it is a single YAML string
+        if all([f.endswith(INI_EXTENSIONS) for f in split_files]):  # noqa
+            files = split_files  # it is a ['file.ini', ...]
+        else:  # it is a single ini string
             files = [filename]
     else:  # it is already a list/tuple
         files = filename
 
-    for yaml_file in files:
-        if yaml_file.endswith(YAML_EXTENSIONS):  # pragma: no cover
+    for ini_file in files:
+        if ini_file.endswith(INI_EXTENSIONS):  # pragma: no cover
+            obj.logger.debug('Trying to load ini {}'.format(ini_file))
             try:
-                yaml_data = yaml.load(
-                    open(find_file(yaml_file, usecwd=True))
-                )
+                ini_data = ConfigObj(
+                    open(find_file(ini_file, usecwd=True))
+                ).dict()
             except IOError as e:
                 obj.logger.warning(
-                    "Unable to load YAML file {}".format(str(e)))
-                yaml_data = None
-            else:
-                obj.logger.debug('YAML {} has been loaded'.format(yaml_file))
+                    "Unable to load ini file {}".format(str(e)))
+                ini_data = None
         else:
-            # for tests it is possible to pass YAML string
-            yaml_data = yaml.load(yaml_file)
+            # for tests it is possible to pass ini string
+            ini_data = ConfigObj(ini_file.split('\n')).dict()
 
-        if not yaml_data:
+        if not ini_data:
             continue
 
-        yaml_data = {key.lower(): value for key, value in yaml_data.items()}
+        ini_data = {key.lower(): value for key, value in ini_data.items()}
 
         # ---->
-        # Load from namespace_filename.yaml
+        # Load from namespace_filename.ini
 
         data = {}
         try:
-            data = yaml_data[namespace.lower()]
+            data = ini_data[namespace.lower()]
         except KeyError:
             if silent:
                 obj.logger.debug(
-                    '%s namespace not defined in yaml source' % namespace
+                    '%s namespace not defined in ini source' % namespace
                 )
             else:
                 raise KeyError(
@@ -100,6 +99,6 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
 
 def clean(obj, namespace, silent=True):  # noqa
     for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('yam_loader_'):
+        if identifier.startswith('ini_loader_'):
             for key in data:
                 obj.unset(key)

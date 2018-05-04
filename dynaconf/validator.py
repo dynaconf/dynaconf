@@ -1,4 +1,5 @@
 # coding: utf-8
+# pragma: no cover
 from dynaconf import validator_conditions
 
 
@@ -57,7 +58,7 @@ class Validator(object):
     """
     def __init__(
             self,
-            names,
+            *names,
             must_exist=None,
             condition=None,
             when=None,

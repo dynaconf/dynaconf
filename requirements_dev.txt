@@ -9,6 +9,7 @@ flask>=1.0
 python-box
 python-dotenv
 setuptools>=38.6.0
+configobj
 
 # testing
 coveralls

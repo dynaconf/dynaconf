@@ -6,4 +6,4 @@ print(settings.MYSQL_HOST)  # noqa
 print(settings.MYSQL_PASSWD)  # noqa
 print(settings.EXAMPLE)  # noqa
 
-print(settings.current_namespace)
+print(settings.current_namespace)  # noqa

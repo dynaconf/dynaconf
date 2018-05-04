@@ -1,10 +1,11 @@
 # coding: utf-8
+from dynaconf.constants import TOML_EXTENSIONS
 try:
     import toml
 except ImportError as e:  # pragma: no cover
     toml = None
 
-from dotenv import find_dotenv
+from dynaconf.utils.files import find_file
 
 IDENTIFIER = 'toml_loader'
 
@@ -42,7 +43,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
     # and can also be a single string 'aa:a'
     if not isinstance(filename, (list, tuple)):
         split_files = filename.split(',')
-        if all([f.endswith(('.toml', '.tml')) for f in split_files]):
+        if all([f.endswith(TOML_EXTENSIONS) for f in split_files]):
             files = split_files  # it is a ['file.toml', ...]
         else:  # it is a single TOML string
             files = [filename]
@@ -50,11 +51,11 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
         files = filename
 
     for toml_file in files:
-        if toml_file.endswith(('.toml', '.tml')):  # pragma: no cover
+        if toml_file.endswith(TOML_EXTENSIONS):  # pragma: no cover
             obj.logger.debug('Trying to load TOML {}'.format(toml_file))
             try:
                 toml_data = toml.load(
-                    open(find_dotenv(toml_file, usecwd=True))
+                    open(find_file(toml_file, usecwd=True))
                 )
             except IOError as e:
                 obj.logger.warning(

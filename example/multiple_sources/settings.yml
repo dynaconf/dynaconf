@@ -1,0 +1,2 @@
+dynaconf:
+  yml_var: 1

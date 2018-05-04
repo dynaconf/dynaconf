@@ -18,3 +18,6 @@ def index():
 @app.route('/test')
 def test():
     return app.config['HELLO']
+
+
+app.add_url_rule(app.config.TEST_RULE, view_func=lambda: 'test')
