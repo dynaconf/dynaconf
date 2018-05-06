@@ -9,19 +9,13 @@ import types
 from six import string_types
 
 from dynaconf import default_settings
-from dynaconf.loaders import (
-    default_loader, module_loader,
-    module_cleaner, pre_env_loader,
-    default_cleaner
-)
-from dynaconf.loaders import yaml_loader, toml_loader, ini_loader, json_loader
+from dynaconf.loaders import default_loader, settings_loader, yaml_loader
 from dynaconf.transformator import TransformatorList
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data
+from dynaconf.utils.files import find_file
 from dynaconf.validator import ValidatorList
 from dynaconf.utils.boxing import DynaBox
-
-from dotenv import find_dotenv
 
 
 class LazySettings(LazyObject):
@@ -419,37 +413,45 @@ class Settings(object):
         """
         namespace = namespace or self.NAMESPACE_FOR_DYNACONF
 
+        if not isinstance(namespace, string_types):
+            raise AttributeError('namespace should be a string')
+        if "_" in namespace:
+            raise AttributeError('namespace should not contains _')
+
+        self.logger.debug("Namespace switching to: %s", namespace)
+
         if namespace != self.NAMESPACE_FOR_DYNACONF:
             self.loaded_namespaces.append(namespace)
         else:
             self.loaded_namespaces = []
 
-        if not isinstance(namespace, string_types):
-            raise AttributeError('namespace should be a string')
-        if "_" in namespace:
-            raise AttributeError('namespace should not contains _')
         if clean:
             self.clean(namespace=namespace)
         self.execute_loaders(namespace=namespace, silent=silent)
 
     def clean(self, namespace=None, silent=None):
         """Clean all loaded values to reload when switching namespaces"""
-        silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
-        namespace = namespace or self.NAMESPACE_FOR_DYNACONF
-        for loader in self.loaders:
-            loader.clean(self, namespace, silent=silent)
-        yaml_loader.clean(self, namespace, silent=silent)
-        toml_loader.clean(self, namespace, silent=silent)
-        ini_loader.clean(self, namespace, silent=silent)
-        json_loader.clean(self, namespace, silent=silent)
-        module_cleaner(self, namespace, silent=silent)
-        default_cleaner(self, namespace, silent=silent)
+        for key in list(self.store.keys()):
+            self.unset(key)
+
+        # # Run all cleaners?
+        # silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
+        # namespace = namespace or self.NAMESPACE_FOR_DYNACONF
+        # for loader in self.loaders:
+        #     loader.clean(self, namespace, silent=silent)
+        # json_loader.clean(self, namespace, silent=silent)
+        # ini_loader.clean(self, namespace, silent=silent)
+        # toml_loader.clean(self, namespace, silent=silent)
+        # yaml_loader.clean(self, namespace, silent=silent)
+        # settings_cleaner(self, namespace, silent=silent)
 
     def unset(self, key):
         """Unset on all references"""
         key = key.strip().upper()
-        delattr(self, key)
-        self.store.pop(key, None)
+        if key not in dir(default_settings) and key not in self._defaults:
+            self.logger.debug('Unset %s', key)
+            delattr(self, key)
+            self.store.pop(key, None)
 
     def unset_all(self, keys):  # pragma: no cover
         """Unset based on a list of keys"""
@@ -601,9 +603,10 @@ def raw_logger():
         from logzero import setup_logger
         return setup_logger(
             "dynaconf",
-            level=level
+            level=getattr(logging, level)
         )
     except ImportError:  # pragma: no cover
         logger = logging.getLogger("dynaconf")
-        logger.setLevel(level)
+        logger.setLevel(getattr(logging, level))
+        logger.debug("starting logger")
         return logger

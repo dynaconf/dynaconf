@@ -3,8 +3,8 @@ services:
   - redis-server
 env:
   global:
-    - DYNACONF_SETTINGS=dynaconf.test_settings
-    - DOTENV_PATH_FOR_DYNACONF=/home/travis/build/rochacbruno/dynaconf/.env
+    # - DYNACONF_SETTINGS=dynaconf.test_settings
+    # - DOTENV_PATH_FOR_DYNACONF=/home/travis/build/rochacbruno/dynaconf/.env
     - DYNATRAVIS_ENV_BOOLEAN='@bool true'
     - DYNATRAVIS_ENV_INT='@int 42'
     - DYNATRAVIS_ENV_FLOAT='@float 42.2'
@@ -20,6 +20,8 @@ python:
 install:
   - "pip install --upgrade pip"
   - "pip install --upgrade -r requirements_dev.txt"
-script: make test
+script:
+  - make test_examples
+  - make test
 after_success:
   - coveralls
