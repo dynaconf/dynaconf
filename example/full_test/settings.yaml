@@ -1,0 +1,4 @@
+DYNACONF:
+    YAMLVAR: Come from YAML
+DEV:
+    YAMLVAR: Come from YAML dev

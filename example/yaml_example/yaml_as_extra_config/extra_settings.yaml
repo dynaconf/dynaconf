@@ -1,6 +1,8 @@
 dynaconf:
   host: server.com
   port: 5000
+  works: yaml_as_extra_config
 development:
   environment: this is development
   host: dev_server.com
+  works: only_in_dev

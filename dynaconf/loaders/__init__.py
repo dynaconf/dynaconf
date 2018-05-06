@@ -9,30 +9,33 @@ from dynaconf.loaders import (
 
 def default_loader(obj, defaults=None):
     defaults = defaults or {}
-    for key, value in default_settings.__dict__.items():
-        if key.isupper():
-            obj.set(key, defaults.get(key, value), loader_identifier='DEFS')
+    all_keys = [
+        (key, value)
+        for key, value
+        in default_settings.__dict__.items()
+        if key.isupper()
+    ]
+    for key, value in all_keys:
+        obj.logger.debug("default_loader:loading: %s:%s", key, value)
+        obj.set(key, defaults.get(key, value))
+
+    for key, value in all_keys:
+        # start dotenv to get default env vars from there
+        env_loader.start_dotenv(obj)
+        # check overrides in env vars
+        env_value = obj.get_env(key)
+        if env_value:
+            obj.logger.debug(
+                "default_loader:overriding from envvar: %s:%s",
+                key, env_value
+            )
+            obj.set(key, env_value)
 
 
-def load_base_vars(obj):
-    """Overrides for defaults exported to env"""
-    for key in [item for item in dir(default_settings) if item.isupper()]:
-        value = obj.get_env(key)
-        if value:
-            obj.set(key, value)
-
-
-def pre_env_loader(obj, namespace=None, silent=False, key=None):
-    """Load default env values before any other env loader"""
-    load_base_vars(obj)
-    namespace = namespace or 'DYNACONF'
-    env_loader.load_from_env(
-        'env_loader_' + namespace.lower(), key, namespace, obj, silent
-    )
-
-
-def module_loader(obj, settings_module=None, namespace=None, silent=False):
+def settings_loader(obj, settings_module=None, namespace=None,
+                    silent=False, key=None):
     """Loads from defined settings module, path or yaml"""
+    obj.logger.debug('executing settings_loader: %s', settings_module)
     settings_module = settings_module or obj.settings_module
     if not settings_module:  # pragma: no cover
         return
@@ -42,54 +45,42 @@ def module_loader(obj, settings_module=None, namespace=None, silent=False):
     else:
         files = [settings_module]
 
+    obj.logger.debug("files %s", files)
+
     for mod_file in files:
         # can be set to multiple files settings.py,settings.yaml,...
 
-        # NOTE: all this cascade can be refactored to use a loader class!
-        if mod_file.endswith(ct.YAML_EXTENSIONS):
-            obj.logger.info("Trying to load YAML {}".format(mod_file))
-            yaml_loader.load(
-                obj,
-                filename=mod_file,
-                namespace=namespace,
-                silent=silent
-            )
+        # Cascade all loaders
+        loaders = [
+            {'ext': ct.YAML_EXTENSIONS, 'name': 'YAML', 'loader': yaml_loader},
+            {'ext': ct.TOML_EXTENSIONS, 'name': 'TOML', 'loader': toml_loader},
+            {'ext': ct.INI_EXTENSIONS, 'name': 'INI', 'loader': ini_loader},
+            {'ext': ct.JSON_EXTENSIONS, 'name': 'JSON', 'loader': json_loader},
+        ]
+
+        for loader in loaders:
+            if mod_file.endswith(loader['ext']):
+                obj.logger.debug(
+                    "Trying to load {0}:{1}".format(loader['name'], mod_file)
+                )
+                loader['loader'].load(
+                    obj,
+                    filename=mod_file,
+                    namespace=namespace,
+                    silent=silent,
+                    key=key
+                )
+                continue
+
+        if mod_file.endswith(ct.ALL_EXTENSIONS):
             continue
 
-        if mod_file.endswith(ct.TOML_EXTENSIONS):
-            obj.logger.info("Trying to load TOML {}".format(mod_file))
-            toml_loader.load(
-                obj,
-                filename=mod_file,
-                namespace=namespace,
-                silent=silent
-            )
-            continue
+        # must be Python file or module
 
-        if mod_file.endswith(ct.INI_EXTENSIONS):
-            obj.logger.info("Trying to load INI {}".format(mod_file))
-            ini_loader.load(
-                obj,
-                filename=mod_file,
-                namespace=namespace,
-                silent=silent
-            )
-            continue
-
-        if mod_file.endswith(ct.JSON_EXTENSIONS):
-            obj.logger.info("Trying to load JSON {}".format(mod_file))
-            json_loader.load(
-                obj,
-                filename=mod_file,
-                namespace=namespace,
-                silent=silent
-            )
-            continue
-
-        obj.logger.info("Trying to load Python module {}".format(mod_file))
+        obj.logger.debug("Trying to load Python module {}".format(mod_file))
 
         # load from default defined module if exists (never gets cleaned)
-        load_from_module(obj, mod_file)
+        load_from_module(obj, mod_file, key=key)
 
         if namespace and namespace != obj.NAMESPACE_FOR_DYNACONF:
             if mod_file.endswith('.py'):
@@ -111,27 +102,42 @@ def module_loader(obj, settings_module=None, namespace=None, silent=False):
             load_from_module(
                 obj,
                 namespace_mod_file,
-                identifier='DEFAULT_MODULE_{0}'.format(namespace.upper()),
-                silent=True
+                identifier='PY_MODULE_{0}'.format(namespace.upper()),
+                silent=True,
+                key=key
             )
 
 
 def load_from_module(obj, settings_module,
-                     identifier='DEFAULT_MODULE', silent=False):
+                     identifier='PY_MODULE', silent=False, key=None):
+    obj.logger.debug('executing load_from_module: %s', settings_module)
     try:
         mod = importlib.import_module(settings_module)
         loaded_from = 'module'
     except ImportError:
         mod = obj.import_from_filename(settings_module, silent=silent)
-        loaded_from = 'filename'
+        if mod and mod._is_error:
+            loaded_from = None
+        else:
+            loaded_from = 'filename'
+        obj.logger.debug(mod)
 
-    obj.logger.info(
-        "Module {} Loaded from {}".format(settings_module, loaded_from))
+    if loaded_from:
+        obj.logger.debug(
+            "Module {} Loaded from {}".format(settings_module, loaded_from)
+        )
 
     for setting in dir(mod):
         if setting.isupper():
-            setting_value = getattr(mod, setting)
-            obj.set(setting, setting_value, loader_identifier=identifier)
+            if key is None or key == setting:
+                setting_value = getattr(mod, setting)
+                obj.logger.debug(
+                    'module_loader:loading %s: %s (%s)',
+                    setting,
+                    setting_value,
+                    identifier
+                )
+                obj.set(setting, setting_value, loader_identifier=identifier)
 
     if not hasattr(obj, 'PROJECT_ROOT_FOR_DYNACONF'):
         root = os.path.realpath(
@@ -141,15 +147,10 @@ def load_from_module(obj, settings_module,
                 root, loader_identifier=identifier)
 
 
-def module_cleaner(obj, namespace, silent=True):  # noqa
+def settings_cleaner(obj, namespace, silent=True):  # noqa
+    """The main python module never gets cleaned, only the _namespaced"""
     for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('DEFAULT_MODULE_'):
+        if identifier.startswith('PY_MODULE'):
             for key in data:
-                obj.unset(key)
-
-
-def default_cleaner(obj, namespace, silent=True):  # noqa
-    for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('DEFS_'):
-            for key in data:
+                obj.logger.debug("cleaning: %s (%s)", key, identifier)
                 obj.unset(key)

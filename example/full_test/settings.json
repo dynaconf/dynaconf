@@ -1,0 +1,4 @@
+{
+    "dynaconf": {"jsonvar": "come from json"},
+    "dev": {"jsonvar": "come from json dev"}
+}

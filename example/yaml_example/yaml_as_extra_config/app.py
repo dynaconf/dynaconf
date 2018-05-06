@@ -13,3 +13,4 @@ with settings.using_namespace('DEVELOPMENT'):
 # back to default dynaconf: namespace
 print(settings.get('ENVIRONMENT'))
 print(settings.HOST)
+print(settings.WORKS)

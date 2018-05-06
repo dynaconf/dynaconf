@@ -44,7 +44,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
                     open(find_file(json_file, usecwd=True))
                 )
             except (IOError, json.decoder.JSONDecodeError) as e:
-                obj.logger.warning(
+                obj.logger.debug(
                     "Unable to load json {} file {}".format(json_file, str(e)))
                 json_data = None
         else:
@@ -85,6 +85,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
 
 def clean(obj, namespace, silent=True):  # noqa
     for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('json_loader_'):
+        if identifier.startswith('json_loader'):
             for key in data:
+                obj.logger.debug("cleaning: %s (%s)", key, identifier)
                 obj.unset(key)

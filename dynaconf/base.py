@@ -225,6 +225,7 @@ class Settings(object):
             (fresh or self._fresh or key in self.FRESH_VARS_FOR_DYNACONF) and
             key not in dir(default_settings)
         ):
+            self.unset(key)
             self.execute_loaders(key=key)
         data = self.store.get(key, default)
         if cast:
@@ -338,10 +339,12 @@ class Settings(object):
         """
         try:
             self.namespace(namespace, clean=clean, silent=silent)
+            self.logger.debug("In Namespace: %s", namespace)
             yield
         finally:
             if namespace != self.NAMESPACE_FOR_DYNACONF:
                 del self.loaded_namespaces[-1]
+            self.logger.debug("Out Namespace: %s", namespace)
             self.namespace(self.current_namespace, clean=clean)
 
     @contextmanager
@@ -462,6 +465,7 @@ class Settings(object):
         key = key.strip().upper()
         setattr(self, key, value)
         self.store[key] = value
+        self._deleted.discard(key)
 
         # set loader identifiers so cleaners know which keys to clean
         if loader_identifier and loader_identifier in self.loaded_by_loaders:
@@ -519,10 +523,16 @@ class Settings(object):
     def execute_loaders(self, namespace=None, silent=None, key=None):
         """Execute all internal and registered loaders"""
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
-        default_loader(self, self._defaults)
-        pre_env_loader(self, namespace, silent, key)
-        module_loader(self, namespace=namespace, silent=silent)
-        if self.exists('YAML'):
+        if key is None:
+            default_loader(self, self._defaults)
+        settings_loader(self, namespace=namespace, silent=silent, key=key)
+        self.load_extra_yaml(namespace, silent, key)  # DEPRECATED
+        for loader in self.loaders:
+            self.logger.debug('Loading %s', loader.__name__)
+            loader.load(self, namespace, silent=silent, key=key)
+
+    def load_extra_yaml(self, namespace, silent, key):
+        if self.get('YAML') is not None:
             self.logger.warning(
                 "The use of YAML var is deprecated, please define multiple "
                 "filepaths instead: "
@@ -532,10 +542,9 @@ class Settings(object):
             yaml_loader.load(
                 self, namespace=namespace,
                 filename=self.get('YAML'),
-                silent=silent
+                silent=silent,
+                key=key
             )
-        for loader in self.loaders:
-            loader.load(self, namespace, silent=silent, key=key)
 
     @staticmethod
     def import_from_filename(filename, silent=False):  # pragma: no cover
@@ -547,8 +556,9 @@ class Settings(object):
             silent = True
         mod = types.ModuleType('config')
         mod.__file__ = filename
+        mod._is_error = False
         try:
-            with open(find_dotenv(filename, usecwd=True)) as config_file:
+            with open(find_file(filename)) as config_file:
                 exec(
                     compile(config_file.read(), filename, 'exec'),
                     mod.__dict__
@@ -559,7 +569,8 @@ class Settings(object):
             ) % (e.strerror, filename)
             if silent and e.errno in (errno.ENOENT, errno.EISDIR):
                 return
-            raw_logger().warning(e.strerror)
+            raw_logger().debug(e.strerror)
+            mod._is_error = True
         return mod
 
     def path_for(self, *args):

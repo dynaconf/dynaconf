@@ -32,3 +32,5 @@ print(settings.ENVIRONMENT)
 settings.namespace()
 print(settings.HOST)
 print(settings.get('ENVIRONMENT'))
+
+print(settings.WORKS)

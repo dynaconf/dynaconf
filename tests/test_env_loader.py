@@ -65,10 +65,22 @@ def test_get_fresh():
     assert settings.get('THISMUSTEXIST') == 1
 
     os.environ['DYNACONF_THISMUSTEXIST'] = '@int 23'
-    # del os.environ['DYNACONF_THISMUSTEXIST']
+    del os.environ['DYNACONF_THISMUSTEXIST']
     # this should error because envvar got cleaned
     # but it is not, so cleaners should be fixed
-    assert settings.get_fresh('THISMUSTEXIST') == 23
+    assert settings.get_fresh('THISMUSTEXIST') is None
+    with pytest.raises(AttributeError):
+        settings.THISMUSTEXIST
+    with pytest.raises(KeyError):
+        settings['THISMUSTEXIST']
+
+    os.environ['DYNACONF_THISMUSTEXIST'] = '@int 23'
+    os.environ['BLARG_THISMUSTEXIST'] = '@int 99'
+    # namespace switch is deleting the variable
+    with settings.using_namespace('BLARG'):
+        assert settings.get('THISMUSTEXIST') == 99
+
+    assert settings.get('THISMUSTEXIST') == 23
 
 
 def test_always_fresh():

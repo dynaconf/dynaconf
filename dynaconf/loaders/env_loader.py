@@ -12,7 +12,7 @@ except ImportError:  # pragma: no cover
 IDENTIFIER = 'env_loader'
 
 
-def load(obj, namespace=None, silent=True, key=None):
+def start_dotenv(obj):
     # load_from_dotenv_if_installed
     load_dotenv(
         obj.get('DOTENV_PATH_FOR_DYNACONF') or find_dotenv(usecwd=True),
@@ -20,14 +20,20 @@ def load(obj, namespace=None, silent=True, key=None):
         override=obj.get('DOTENV_OVERRIDE_FOR_DYNACONF', False)
     )
 
+
+def load(obj, namespace=None, silent=True, key=None):
+    default_namespace = obj.get('NAMESPACE_FOR_DYNACONF')
     # load all from default namespace (this never gets cleaned)
     load_from_env(
-        IDENTIFIER, key, obj.get('NAMESPACE_FOR_DYNACONF'),
-        obj, silent
+        IDENTIFIER,
+        key,
+        default_namespace,
+        obj,
+        silent
     )
 
     # rewrite with different namespace if provided
-    if namespace and namespace != obj.get('NAMESPACE_FOR_DYNACONF'):
+    if namespace and namespace != default_namespace:
         identifier = IDENTIFIER + '_' + namespace.lower()
         load_from_env(identifier, key, namespace, obj, silent)
 
@@ -41,6 +47,12 @@ def load_from_env(identifier, key, namespace, obj, silent):
                 '{0}_{1}'.format(NAMESPACE, key)
             )
             if value:
+                obj.logger.debug(
+                    "env_loader:loading by key: %s:%s (%s)",
+                    key,
+                    value,
+                    identifier
+                )
                 obj.set(key, value, loader_identifier=identifier)
         else:
             data = {
@@ -49,6 +61,11 @@ def load_from_env(identifier, key, namespace, obj, silent):
                 in os.environ.items()
                 if key.startswith(NAMESPACE_)
             }
+            obj.logger.debug(
+                "env_loader:loading:%s (%s)",
+                data,
+                identifier
+            )
             obj.update(data, loader_identifier=identifier)
     except Exception as e:  # pragma: no cover
         e.message = (
@@ -62,6 +79,7 @@ def load_from_env(identifier, key, namespace, obj, silent):
 
 def clean(obj, namespace, silent=True):  # noqa
     for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('env_loader_'):
+        if identifier.startswith('env_loader'):
             for key in data:
+                obj.logger.debug("cleaning: %s (%s)", key, identifier)
                 obj.unset(key)

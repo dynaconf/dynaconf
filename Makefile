@@ -1,17 +1,19 @@
-.PHONY: test install pep8 release clean doc
+.PHONY: test install pep8 release clean doc test_examples
 
 test_examples:
-	@cd example/;python full_example.py
-	@cd example/app;python app.py
-	@cd example/app_with_dotenv;python app.py
-	@cd example/multiple_sources;python app.py
-	@cd example/toml_example/settings_module/;python app.py
-	@cd example/yaml_example/settings_module/;python app.py
-	@cd example/yaml_example/yaml_as_extra_config/;python app.py
-	@cd example/flask_with_dotenv;flask routes
-	@cd example/flask_with_toml;flask routes
-	@cd example/flask_with_yaml;flask routes
-	# @cd example/validator/;python app.py
+	@cd example/;pwd;python full_example.py | grep -c full_example
+	@cd example/app;pwd;python app.py | grep -c app
+	@cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv
+	@cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources
+	@cd example/toml_example/settings_module/;pwd;python app.py | grep -c toml_example
+	@cd example/yaml_example/settings_module/;pwd;python app.py | grep -c yaml_example
+	@cd example/yaml_example/yaml_as_extra_config/;pwd;python app.py | grep -c yaml_as_extra_config
+	@cd example/flask_with_dotenv;pwd;flask routes | grep -c flask_with_dotenv
+	@cd example/flask_with_toml;pwd;flask routes | grep -c flask_with_toml
+	@cd example/flask_with_yaml;pwd;flask routes | grep -c flask_with_yaml
+	@cd example/flask_with_json;pwd;flask routes | grep -c flask_with_json
+	@cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini
+	@cd example/validator/;pwd;python app.py | grep -c validator
 
 test: pep8
 	py.test --boxed -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/

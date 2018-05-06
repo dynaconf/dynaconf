@@ -2,7 +2,6 @@
 from dynaconf import LazySettings, Validator, Transformator
 
 settings = LazySettings(
-    ENVVAR_FOR_DYNACONF="EXAMPLE_SETTINGS_MODULE",
     NAMESPACE_FOR_DYNACONF='EXAMPLE',
     silent=True
 )
