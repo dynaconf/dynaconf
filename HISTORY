@@ -3,6 +3,20 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.7.1
+-----
+- Added backwards compatibility check for old style kwargs
+
+0.7.0
+-----
+
+- Refactor on loaders and cleaners
+- Added support for .secrets files
+- Better test coverage
+- Added test_examples job to CI
+- Dotenv loader runs in a pre-load mode
+- BREAKING_CHANGE: Changed default variables to *_FOR_DYNACONF pattern
+
 0.6.0
 -----
 - Drop Python 2.x from Travis CI (must work but will not be tested) 

@@ -2,6 +2,7 @@
 
 test_examples:
 	@cd example/;pwd;python full_example.py | grep -c full_example
+	@cd example/;pwd;python compat.py
 	@cd example/app;pwd;python app.py | grep -c app
 	@cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv
 	@cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources

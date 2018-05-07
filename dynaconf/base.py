@@ -65,6 +65,7 @@ class LazySettings(LazyObject):
         handle initialization for the customization cases
         :param kwargs: values that overrides default_settings
         """
+        compat_kwargs(kwargs)
         self._kwargs = kwargs
         for k, v in kwargs.items():
             setattr(default_settings, k.upper(), v)
@@ -109,6 +110,7 @@ class LazySettings(LazyObject):
         :param settings_module:
         :param kwargs:
         """
+        compat_kwargs(kwargs)
         kwargs.update(self._kwargs)
         self._wrapped = Settings(settings_module=settings_module, **kwargs)
 
@@ -142,6 +144,7 @@ class Settings(object):
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         """Execute loaders and custom initialization"""
+        compat_kwargs(kwargs)
         if settings_module:
             self.set('SETTINGS_MODULE', settings_module)
         for key, value in kwargs.items():
@@ -603,3 +606,22 @@ def raw_logger():
         logger.setLevel(getattr(logging, level))
         logger.debug("starting logger")
         return logger
+
+
+def compat_kwargs(kwargs):
+    """To keep backwards compat change the kwargs to new names"""
+    rules = {
+        'DYNACONF_NAMESPACE': 'NAMESPACE_FOR_DYNACONF',
+        'DYNACONF_SETTINGS_MODULE': 'SETTINGS_MODULE_FOR_DYNACONF',
+        'PROJECT_ROOT': 'PROJECT_ROOT_FOR_DYNACONF',
+        'DYNACONF_SILENT_ERRORS': 'SILENT_ERRORS_FOR_DYNACONF',
+        'DYNACONF_ALWAYS_FRESH_VARS': 'FRESH_VARS_FOR_DYNACONF'
+    }
+    for old, new in rules.items():
+        if old in kwargs:
+            raw_logger().warning(
+                "You are using %s which is a deprecated settings "
+                "replace it with %s",
+                old, new
+            )
+            kwargs[new] = kwargs[old]
