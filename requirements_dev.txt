@@ -26,5 +26,8 @@ flake8-print
 flake8-todo
 radon
 
+# documentation
+sphinx
+
 # editable dynaconf
 --editable .
