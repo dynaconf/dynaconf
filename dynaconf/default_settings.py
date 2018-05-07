@@ -4,11 +4,12 @@ PROJECT_ROOT_FOR_DYNACONF = "."
 
 # Default settings file
 SETTINGS_MODULE_FOR_DYNACONF = (
-    'settings.py,'
-    'settings.yaml,settings.yml,'
-    'settings.toml,settings.tml,'
+    'settings.py,.secrets.py,'
+    'settings.yaml,settings.yml,.secrets.yaml,.secrets.yml,'
+    'settings.toml,settings.tml,.secrets.toml,.secrets.tml,'
     'settings.ini,settings.conf,settings.properties,'
-    'settings.json'
+    '.secrets.ini,.secrets.conf,.secrets.properties,'
+    'settings.json,.secrets.json'
 )
 
 # Namespace for envvars

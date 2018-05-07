@@ -13,11 +13,20 @@ and **Flask** `app.config` extension.
 
 <br><br>
 
-```python
-# install it in a Python 3 environment
+## install Dynaconf in a Python 3 environment
+
+```bash
+# to use with settings.py, settings.json, .env or environment vars
 pip3 install dynaconf
-# optionally
-pip3 install PyYAML toml redis
+
+# to include support for more file formats
+pip3 install dynaconf[yaml]
+pip3 install dynaconf[toml]
+pip3 install dynaconf[ini]
+pip3 install dynaconf[redis]
+
+# for a complete installation
+pip3 install dynaconf[all]
 ```
 
 ## How does it work?
@@ -37,7 +46,7 @@ Connect(user=settings('USERNAME', 'admin'), passwd=settings('PASSWD', 1234))
 
 > Dynaconf will look for variables in the following order (by default) and you can also customize the order of loaders.
 
-- Settings files files in the order: `settings.{py|yaml|toml|ini|json}` 
+- Settings files files in the order: `settings.{py|yaml|toml|ini|json}`
 - `.env` file
 - `export`ed Environment Variables
 - Remote storage servers
@@ -66,7 +75,7 @@ from dynaconf import settings
 Connect(user=settings.USERNAME, passwd=settings.PASSWD)
 ```
 
-> NOTE: You can customize the prefix `DYNACONF_` to your own namespace like `MYAPP_USERNAME`.
+> NOTE: You can customize the prefix `DYNACONF_` to your own namespace like `MYAPP_USERNAME` exporting `NAMESPACE_FOR_DYNACONF=MYAPP`.
 
 # Features
 
@@ -92,6 +101,65 @@ Connect(user=settings.USERNAME, passwd=settings.PASSWD)
     - Validate the config variables and define rules
 
 # Examples 
+
+## Choose a file format to store your settings or store it in environment variables
+
+Choose the file format that best fit your project and call it `settings.{py|yaml|toml|ini}` 
+put this file in the root directory of your project. If you don't want to have a `settings` file
+dynaconf can also read values from environment variables or `.env` files.
+
+### Example
+
+`settings.toml` to store project settings
+
+```toml
+[dynaconf]
+server = 'foo.com'
+password = null
+```
+
+`.secrets.toml` to store project sensible settings
+
+```toml
+[dynaconf]
+password = 'My5up3r53c4et'
+```
+
+`.env` to override values in specific environments
+
+```bash
+DYNACONF_USERNAME=admin
+```
+
+> The `.env` is optional, it also works if `export DYNACONF_VARIABLE=x` is used
+
+`.gitignore` to remove `.secrets.*` and `.env` from VCS
+
+```bash
+.env
+.secrets.*
+```
+
+then finally
+
+`program.py`
+
+```python
+from dynaconf import settings
+
+print(settings.USERNAME)
+print(settings.SERVER)
+```
+
+`outputs$`
+
+```bash
+admin
+foo.com
+```
+
+It is possible to have multiple sources at the same time but the **recommendation**
+is to pick a single format for your configurations and use envvars or .env to override it.
 
 ## Namespace support
 
@@ -182,7 +250,7 @@ settings.namespace('development')
 
 ### using YAML
 
-> you need to install PyYAML `pip install PyYAML`
+> you need to install with `pip install dynaconf[yaml]`
 
 Just save a `settings.yaml` in the root dir.
 
@@ -209,7 +277,7 @@ Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manage
 
 ### using TOML
 
-> you need to install toml `pip install toml`
+> you need to install with `pip install dynaconf[toml]`
 
 Just save a `settings.toml` in the root dir.
 
@@ -236,7 +304,7 @@ Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manage
 
 ### using INIFILES
 
-> you need to install configobj `pip install configobj`
+> you need to install dynaconf with `pip install dynaconf[ini]`
 
 Just save a `settings.ini` in the root dir.
 
@@ -287,7 +355,6 @@ Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manage
 
 > HINT: When using json namespace identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
-
 
 # casting values from envvars
 
@@ -395,17 +462,15 @@ settings.AINT
 
 # Defining default namespace
 
-Include in the file defined in DYNACONF_SETTINGS or in the `.env` file or in the customized Settings class the desired namespace
+Include in the `settings.py` or in the file defined in the envvar DYNACONF_SETTINGS or in the `.env` file or in the customized LazySettings class the desired namespace
 
 ```python
-NAMESPACE_FOR_DYNACONF = 'DYNACONF'
+NAMESPACE_FOR_DYNACONF = 'MYPROGRAM'
 ```
 
 # Storing settings in databases
 
 ## Using REDIS
-
-Redis support relies on the following two settings that you can setup in the DYNACONF_SETTINGS file
 
 
 1  Add the configuration for redis client
@@ -413,7 +478,8 @@ Redis support relies on the following two settings that you can setup in the DYN
 REDIS_FOR_DYNACONF = {
     'host': 'localhost',
     'port': 6379,
-    'db': 0
+    'db': 0,
+    'decode_responses': True
 }
 
 ```
@@ -532,6 +598,9 @@ app = Flask(__name__)
 FlaskDynaconf(app)
 ```
 
+Now the `app.config` will read values from `dynaconf.settings`
+
+
 The `FlaskDynaconf` takes optional arguments
 
 ```python
@@ -559,9 +628,22 @@ Dynaconf will perform loads in this order:
 3. Load Settings file in the order defined in `SETTINGS_MODULE_FOR_DYNACONF` by default will to load `'settings.py,settings.yaml,settings.toml'` in this order overriding previous values
 4. Load all loaders defined in `LOADERS_FOR_DYNACONF` by default only `environment variables` will be read again and get higher precedence
 
+The files will be tried to load in the following order allowing overrides
+
+```python
+[
+ 'settings.py', '.secrets.py',
+ 'settings.yaml', 'settings.yml', '.secrets.yaml', '.secrets.yml',
+ 'settings.toml', 'settings.tml', '.secrets.toml', '.secrets.tml',
+ 'settings.ini', 'settings.conf', 'settings.properties',
+ '.secrets.ini', '.secrets.conf', '.secrets.properties',
+ 'settings.json', '.secrets.json'
+]
+```
+
 ## Customizing the loaders
 
-In a setting file like `settings.{py|yaml|toml}` define:
+In a setting file like `settings.{py|yaml|toml|ini|json}` define:
 
 ```python
 LOADERS_FOR_DYNACONF = [

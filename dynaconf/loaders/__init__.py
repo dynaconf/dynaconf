@@ -118,7 +118,7 @@ def load_from_module(obj, settings_module,
     try:
         mod = importlib.import_module(settings_module)
         loaded_from = 'module'
-    except ImportError:
+    except (ImportError, TypeError):
         mod = obj.import_from_filename(settings_module, silent=silent)
         if mod and mod._is_error:
             loaded_from = None
