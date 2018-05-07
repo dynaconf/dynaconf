@@ -1,3 +1,3 @@
 EXAMPLE = True
 MYSQL_HOST = 'server.com'
-WORKS='app'
+WORKS = 'app'

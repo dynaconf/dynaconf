@@ -14,8 +14,11 @@ IDENTIFIER = 'env_loader'
 
 def start_dotenv(obj):
     # load_from_dotenv_if_installed
+    dotenv_path = obj.get('DOTENV_PATH_FOR_DYNACONF') or os.environ.get(
+        'DOTENV_PATH_FOR_DYNACONF') or find_dotenv(usecwd=True)
+    obj.logger.debug('Dotenv path %s', dotenv_path)
     load_dotenv(
-        obj.get('DOTENV_PATH_FOR_DYNACONF') or find_dotenv(usecwd=True),
+        dotenv_path,
         verbose=obj.get('DOTENV_VERBOSE_FOR_DYNACONF', False),
         override=obj.get('DOTENV_OVERRIDE_FOR_DYNACONF', False)
     )

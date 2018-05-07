@@ -27,11 +27,9 @@ jobs:
     - stage: test_examples
       language: python
       python: 3.6
-      before_script:
-        - sleep 5
+      env:
+        DEBUG_LEVEL_FOR_DYNACONF=DEBUG
       install:
         - "pip install --upgrade pip"
         - "pip install --upgrade -r requirements_dev.txt"
       script: make test_examples
-      after_success:
-        - coveralls

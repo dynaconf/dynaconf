@@ -16,6 +16,7 @@ coveralls
 pytest
 pytest-cov
 pytest-xdist
+logzero
 
 # style check
 flake8

@@ -9,20 +9,24 @@ from dynaconf.loaders import (
 
 def default_loader(obj, defaults=None):
     defaults = defaults or {}
-    all_keys = [
-        (key, value)
+    default_settings_values = {
+        key: value
         for key, value
         in default_settings.__dict__.items()
         if key.isupper()
-    ]
-    for key, value in all_keys:
-        obj.logger.debug("default_loader:loading: %s:%s", key, value)
-        obj.set(key, defaults.get(key, value))
+    }
 
-    for key, value in all_keys:
-        # start dotenv to get default env vars from there
-        env_loader.start_dotenv(obj)
-        # check overrides in env vars
+    all_keys = list(default_settings_values.keys()) + list(defaults.keys())
+
+    for key in all_keys:
+        value = defaults.get(key, default_settings_values.get(key))
+        obj.logger.debug("default_loader:loading: %s:%s", key, value)
+        obj.set(key, value)
+
+    # start dotenv to get default env vars from there
+    # check overrides in env vars
+    env_loader.start_dotenv(obj)
+    for key in all_keys:
         env_value = obj.get_env(key)
         if env_value:
             obj.logger.debug(

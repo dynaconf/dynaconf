@@ -375,20 +375,13 @@ class Settings(object):
 
     @property
     def settings_module(self):
-        """Gets or initialize SETTINGS_MODULE variable"""
-        if not self.SETTINGS_MODULE:
-            environment_variable = getattr(
-                self,
-                'ENVIRONMENT_VARIABLE',
-                default_settings.ENVVAR_FOR_DYNACONF
-            )
-            settings_module = os.environ.get(
-                environment_variable,
-                default_settings.SETTINGS_MODULE_FOR_DYNACONF
-            )
+        """Gets SETTINGS_MODULE variable"""
+        settings_module = os.environ.get(
+            self.ENVVAR_FOR_DYNACONF,
+            self.SETTINGS_MODULE_FOR_DYNACONF
+        )
+        if settings_module != self.SETTINGS_MODULE:
             self.set('SETTINGS_MODULE', settings_module)
-            self.set('ENVIRONMENT_VARIABLE', environment_variable)
-
         return self.SETTINGS_MODULE
 
     def namespace(self, namespace=None, clean=True, silent=True):
@@ -554,7 +547,7 @@ class Settings(object):
         if not filename.endswith('.py'):
             filename = '{0}.py'.format(filename)
 
-        if filename == default_settings.SETTINGS_MODULE_FOR_DYNACONF:
+        if filename in default_settings.SETTINGS_MODULE_FOR_DYNACONF:
             silent = True
         mod = types.ModuleType('config')
         mod.__file__ = filename
