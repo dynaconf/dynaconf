@@ -108,24 +108,31 @@ Choose the file format that best fit your project and call it `settings.{py|yaml
 put this file in the root directory of your project. If you don't want to have a `settings` file
 dynaconf can also read values from environment variables or `.env` files.
 
-### Example
+### Try it
 
-`settings.toml` to store project settings
+**0 -** Install `dynaconf` with TOML support
+
+```bash
+pip install dynaconf[toml]
+```
+
+**1 -** Create a `settings.toml` to store default project settings
 
 ```toml
 [dynaconf]
 server = 'foo.com'
-password = null
+username = 'admin'
+password = false
 ```
 
-`.secrets.toml` to store project sensible settings
+**2 -** Create `.secrets.toml` to store project sensible variables
 
 ```toml
 [dynaconf]
 password = 'My5up3r53c4et'
 ```
 
-`.env` to override values in specific environments
+**3 -** Create a `.env` to override values in specific environments
 
 ```bash
 DYNACONF_USERNAME=admin
@@ -133,29 +140,30 @@ DYNACONF_USERNAME=admin
 
 > The `.env` is optional, it also works if `export DYNACONF_VARIABLE=x` is used
 
-`.gitignore` to remove `.secrets.*` and `.env` from VCS
+**4 -** Create a `.gitignore` to remove `.secrets.*` and `.env` from VCS
 
 ```bash
 .env
 .secrets.*
 ```
 
-then finally
-
-`program.py`
+**5 -** Create the `program.py`
 
 ```python
 from dynaconf import settings
 
 print(settings.USERNAME)
 print(settings.SERVER)
+print(settings.PASSWORD)
 ```
 
-`outputs$`
+**6 -** Run it
 
 ```bash
+$ python program.py
 admin
 foo.com
+My5up3r53c4et
 ```
 
 It is possible to have multiple sources at the same time but the **recommendation**
@@ -285,7 +293,7 @@ Using TOML is easier because it support multiple namespace in a single file.
 
 Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
 ```toml
-[dynaconf]:  # this is the global namespace
+[dynaconf]  # this is the global namespace
 variable = 'this variable is available on every namespace'
 HOST = false  # this variable is set to False
 
