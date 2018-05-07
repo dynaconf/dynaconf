@@ -3,6 +3,10 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.7.2
+-----
+- SETTINGS_MODULE translated to SETTINGS_MODULE_FOR_DYNACONF on compat
+
 0.7.1
 -----
 - Added backwards compatibility check for old style kwargs
