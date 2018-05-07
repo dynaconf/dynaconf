@@ -1,9 +1,9 @@
 import pytest
 from dynaconf import LazySettings
-from dynaconf.loaders.ini_loader import load
+from dynaconf.loaders.ini_loader import load, clean
 
 settings = LazySettings(
-    DYNACONF_NAMESPACE='EXAMPLE',
+    NAMESPACE_FOR_DYNACONF='EXAMPLE',
 )
 
 
@@ -100,3 +100,29 @@ def test_load_single_key():
     assert settings.BAR == 'blaz'
     assert settings.exists('BAR') is True
     assert settings.exists('ZAZ') is False
+
+
+def test_empty_value():
+    load(settings, filename="")
+
+
+def test_multiple_filenames():
+    load(settings, filename="a.ini,b.ini,c.conf,d.properties")
+
+
+def test_cleaner():
+    load(settings, filename=INI)
+    assert settings.HOST == 'server.com'
+    assert settings.PORT == 8080
+    assert settings.ALIST == ['item1', 'item2', 23]
+    assert settings.SERVICE['url'] == 'service.com'
+    assert settings.SERVICE.url == 'service.com'
+    assert settings.SERVICE.port == 80
+    assert settings.SERVICE.auth.password == 'qwerty'
+    assert settings.SERVICE.auth.test == 1234
+    load(settings, filename=INI, namespace='DEVELOPMENT')
+    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=INI)
+    assert settings.HOST == 'server.com'
+
+    clean(settings, settings.namespace)

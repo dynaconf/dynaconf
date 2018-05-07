@@ -1,10 +1,10 @@
 
 
-# The namespace here should match the name given in `DYNACONF_NAMESPACE`
+# The namespace here should match the name given in `NAMESPACE_FOR_DYNACONF`
 MYSITE:
   DEBUG: True
   SERVER: flaskdynaconf.com
   PORT: 6666
   MESSAGE: Dynaconf works like a charm with Flask and YAML
-  TEST_RULE: '/yaml'
+  TEST_RULE: '/flask_with_yaml'
 

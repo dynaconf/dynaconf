@@ -10,6 +10,7 @@ import os
 # you import only the 'settings' object always from dynaconf module
 from dynaconf import settings
 
+os.environ['DYNACONF_WORKS'] = 'full_example'
 os.environ['DYNACONF_HOSTNAME'] = 'host.com'
 os.environ['DYNACONF_PORT'] = '@int 5000'
 os.environ['DYNACONF_VALUE'] = '@float 42.1'
@@ -58,3 +59,13 @@ with settings.using_namespace('PROJECT1'):
 
 print("\nThe host for default :")
 print(settings.HOSTNAME)
+
+print("\nNamespaces Support :")
+with settings.using_namespace('PROJECT1'):
+    print("\nThe host for project1 :")
+    print(settings.HOSTNAME)
+
+print("\nThe host for default :")
+print(settings.HOSTNAME)
+
+print(settings.WORKS)

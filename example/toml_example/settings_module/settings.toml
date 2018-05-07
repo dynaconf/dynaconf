@@ -11,6 +11,7 @@ levels = [
 money = 500.5
 age = 42.0
 enabled = true
+works = "toml_example"
 
   [dynaconf.test_loaders]
   dev = "test_dev"
@@ -19,3 +20,4 @@ enabled = true
 [development]
 environment = "this is development from toml"
 host = "dev_server.com from toml"
+works = 'only_in_dev'

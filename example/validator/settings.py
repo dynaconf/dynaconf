@@ -12,3 +12,5 @@ PRESIDENT = 'Lula'
 PROJECT = 'hello_world'
 
 SALARY = 2000
+
+WORKS = 'validator'

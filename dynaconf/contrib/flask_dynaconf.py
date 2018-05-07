@@ -2,7 +2,7 @@
 try:
     from flask.config import Config
     flask_installed = True
-except ImportError:
+except ImportError:  # pragma: no cover
     flask_installed = False
     Config = object
 
@@ -26,7 +26,8 @@ class FlaskDynaconf(object):
                         file
                         Dynaconf supports .py, .yml, .toml
 
-    DYNACONF_NAMESPACE = Namespace prefix for your envvars to become settings
+    NAMESPACE_FOR_DYNACONF = Namespace prefix for your envvars to become
+                             settings
                         example:
                             export MYSITE_SQL_PORT='@int 5445'
 
@@ -62,7 +63,7 @@ class FlaskDynaconf(object):
     1) Load all passed variables when applying FlaskDynaconf
     2) Update with data in SETTINGS_MODULE_FOR_DYNACONF
     3) Update with data in YAML extra file if provided
-    4) Update with data in environmente vars `DYNACONF_NAMESPACE_`
+    4) Update with data in environmente vars `NAMESPACE_FOR_DYNACONF_`
 
     YAML files are very useful to have `namespaced` settings, lets say,
     `production` and `development`.
@@ -77,7 +78,7 @@ class FlaskDynaconf(object):
         FlaskDynaconf(
             app,
             ENVVAR_FOR_DYNACONF="MYSITE_SETTINGS_MODULE",
-            DYNACONF_NAMESPACE='MYSITE',
+            NAMESPACE_FOR_DYNACONF='MYSITE',
             SETTINGS_MODULE_FOR_DYNACONF='settings.yml',
             YAML='.secrets.yml',
             EXTRA_VALUE='You can add aditional config vars here'
@@ -89,14 +90,14 @@ class FlaskDynaconf(object):
     def __init__(self, app=None, instance_relative_config=False,
                  dynaconf_instance=None, **kwargs):
         """kwargs holds initial dynaconf configuration"""
-        if not flask_installed:
+        if not flask_installed:  # pragma: no cover
             raise RuntimeError(
                 "To use this extension Flask must be installed "
                 "install it with: pip install flask"
             )
         self.kwargs = kwargs
-        if 'DYNACONF_NAMESPACE' not in kwargs:
-            kwargs['DYNACONF_NAMESPACE'] = 'FLASK'
+        if 'NAMESPACE_FOR_DYNACONF' not in kwargs:
+            kwargs['NAMESPACE_FOR_DYNACONF'] = 'FLASK'
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config
         if app:
@@ -129,7 +130,7 @@ class DynaconfConfig(Config):
     1) Load all passed variables above
     2) Update with data in SETTINGS_MODULE_FOR_DYNACONF
     3) Update with data in YAML
-    4) Update with data in rnvironmente vars `DYNACONF_NAMESPACE_`
+    4) Update with data in rnvironmente vars `NAMESPACE_FOR_DYNACONF_`
     """
 
     def get(self, key, default=None):

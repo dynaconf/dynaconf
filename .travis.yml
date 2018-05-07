@@ -1,25 +1,35 @@
-language: python
-services:
-  - redis-server
-env:
-  global:
-    - DYNACONF_SETTINGS=dynaconf.test_settings
-    - DYNACONF_DOTENV_PATH=/home/travis/build/rochacbruno/dynaconf/.env
-    - DYNATRAVIS_ENV_BOOLEAN='@bool true'
-    - DYNATRAVIS_ENV_INT='@int 42'
-    - DYNATRAVIS_ENV_FLOAT='@float 42.2'
-    - DYNATRAVIS_ENV_LIST='@json ["dyna", "conf"]'
-    # - DYNATRAVIS_ENV_DICT='@json {"dyna": "conf"}' how to fix this?
-    - DYNATRAVIS_ENV_DICT='@json {}'
-    - DYNATRAVIS_ENV_PURE_INT=42
-    - OTHER_TESTING='@bool yes'
-before_script:
-  - sleep 5
-python:
-  - "3.6"
-install:
-  - "pip install --upgrade pip"
-  - "pip install --upgrade -r requirements_dev.txt"
-script: make test
-after_success:
-  - coveralls
+jobs:
+  include:
+    - stage: tests
+      language: python
+      python: 3.6
+      services:
+        - redis-server
+      env:
+        - DYNACONF_SETTINGS=dynaconf.test_settings
+        - DOTENV_PATH_FOR_DYNACONF=/home/travis/build/rochacbruno/dynaconf/.env
+        - DYNATRAVIS_ENV_BOOLEAN='@bool true'
+        - DYNATRAVIS_ENV_INT='@int 42'
+        - DYNATRAVIS_ENV_FLOAT='@float 42.2'
+        - DYNATRAVIS_ENV_LIST='@json ["dyna", "conf"]'
+        # - DYNATRAVIS_ENV_DICT='@json {"dyna": "conf"}' how to fix this?
+        - DYNATRAVIS_ENV_DICT='@json {}'
+        - DYNATRAVIS_ENV_PURE_INT=42
+        - OTHER_TESTING='@bool yes'
+      before_script:
+        - sleep 5
+      install:
+        - "pip install --upgrade pip"
+        - "pip install --upgrade -r requirements_dev.txt"
+      script: make test
+      after_success:
+        - coveralls
+    - stage: test_examples
+      language: python
+      python: 3.6
+      env:
+        DEBUG_LEVEL_FOR_DYNACONF=DEBUG
+      install:
+        - "pip install --upgrade pip"
+        - "pip install --upgrade -r requirements_dev.txt"
+      script: make test_examples

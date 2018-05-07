@@ -2,8 +2,7 @@
 from dynaconf import LazySettings, Validator, Transformator
 
 settings = LazySettings(
-    ENVVAR_FOR_DYNACONF="EXAMPLE_SETTINGS_MODULE",
-    DYNACONF_NAMESPACE='EXAMPLE',
+    NAMESPACE_FOR_DYNACONF='EXAMPLE',
     silent=True
 )
 
@@ -45,13 +44,15 @@ settings.validators.register(
         namespace='development',
         must_exist=True,
         when=Validator('BASE_IMAGE', must_exist=True,
-                       namespace=settings.DYNACONF_NAMESPACE)
+                       namespace=settings.NAMESPACE_FOR_DYNACONF)
     ),
     Validator(
         'IMAGE_4', 'IMAGE_5',
         namespace=('development', 'production'),
-        must_exist=True, when=Validator('BASE_IMAGE', must_exist=False,
-                                        namespace=settings.DYNACONF_NAMESPACE)
+        must_exist=True, when=Validator(
+            'BASE_IMAGE', must_exist=False,
+            namespace=settings.NAMESPACE_FOR_DYNACONF
+        )
     ),
     Validator('PORT', must_exist=True, ne=8000, when=Validator('MYSQL_HOST',
                                                                eq='localhost'))

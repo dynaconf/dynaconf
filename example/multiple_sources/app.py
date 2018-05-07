@@ -10,3 +10,4 @@ print("Read from settings.conf:", settings.CONF_VAR)  # noqa
 print("Read from settings.properties:", settings.PROPERTIES_VAR)  # noqa
 print("Read from settings.json:", settings.JSON_VAR)  # noqa
 print("Read from .env:", settings.ENV_VAR)  # noqa
+print("Read from .env:", settings.WORKS)  # noqa

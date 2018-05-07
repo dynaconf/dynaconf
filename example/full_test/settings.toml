@@ -1,0 +1,4 @@
+[dynaconf]
+tomlvar='come from toml'
+[dev]
+tomlvar='come from toml dev'

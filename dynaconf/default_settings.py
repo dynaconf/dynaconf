@@ -1,6 +1,6 @@
 # default proj root
 # pragma: no cover
-PROJECT_ROOT = "."
+PROJECT_ROOT_FOR_DYNACONF = "."
 
 # Default settings file
 SETTINGS_MODULE_FOR_DYNACONF = (
@@ -12,7 +12,7 @@ SETTINGS_MODULE_FOR_DYNACONF = (
 )
 
 # Namespace for envvars
-DYNACONF_NAMESPACE = 'DYNACONF'
+NAMESPACE_FOR_DYNACONF = 'DYNACONF'
 
 # The env var specifying settings module
 ENVVAR_FOR_DYNACONF = "DYNACONF_SETTINGS"
@@ -31,10 +31,19 @@ LOADERS_FOR_DYNACONF = [
 ]
 
 # Errors in loaders should be silenced?
-DYNACONF_SILENT_ERRORS = SILENT_ERRORS = False
+SILENT_ERRORS_FOR_DYNACONF = False
 
 # always fresh variables
-DYNACONF_ALWAYS_FRESH_VARS = ALWAYS_FRESH_VARS = []
+FRESH_VARS_FOR_DYNACONF = []
 
 # debug
 DEBUG_LEVEL_FOR_DYNACONF = 'ERROR'
+
+YAML = None
+TOML = None
+JSON = None
+INI = None
+
+DOTENV_PATH_FOR_DYNACONF = None
+DOTENV_VERBOSE_FOR_DYNACONF = False
+DOTENV_OVERRIDE_FOR_DYNACONF = False

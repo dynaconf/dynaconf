@@ -13,6 +13,8 @@ dynaconf:
   money: 500.50
   age: 42
   enabled: true
+  works: yaml_example
 development:
   environment: this is development
   host: dev_server.com
+  works: only_in_dev

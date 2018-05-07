@@ -19,7 +19,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
     if not filename:
         return
 
-    namespace = namespace or obj.get('DYNACONF_NAMESPACE')
+    namespace = namespace or obj.get('NAMESPACE_FOR_DYNACONF')
 
     # clean(obj, namespace, identifier=filename)
 
@@ -44,7 +44,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
                     open(find_file(json_file, usecwd=True))
                 )
             except (IOError, json.decoder.JSONDecodeError) as e:
-                obj.logger.warning(
+                obj.logger.debug(
                     "Unable to load json {} file {}".format(json_file, str(e)))
                 json_data = None
         else:
@@ -72,7 +72,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
                     '%s namespace not defined in %s' % (namespace, filename)
                 )
 
-        if namespace and namespace != obj.get('DYNACONF_NAMESPACE'):
+        if namespace and namespace != obj.get('NAMESPACE_FOR_DYNACONF'):
             identifier = "{0}_{1}".format(IDENTIFIER, namespace.lower())
         else:
             identifier = IDENTIFIER
@@ -85,6 +85,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
 
 def clean(obj, namespace, silent=True):  # noqa
     for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('json_loader_'):
+        if identifier.startswith('json_loader'):
             for key in data:
+                obj.logger.debug("cleaning: %s (%s)", key, identifier)
                 obj.unset(key)

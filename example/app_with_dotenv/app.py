@@ -11,3 +11,4 @@ print(settings.EXAMPLE)  # noqa
 print(settings.MONEY_VALUE)  # noqa
 print(settings.BOOL_VALUE)  # noqa
 print(settings.JSON_VALUE)  # noqa
+print(settings.WORKS)  # noqa
