@@ -1,9 +1,17 @@
+import os
+from dynaconf.utils.parse_conf import parse_conf_data
+
+
+def get(key, default=None):
+    return parse_conf_data(os.environ.get(key.upper(), default))
+
+
 # default proj root
 # pragma: no cover
-PROJECT_ROOT_FOR_DYNACONF = "."
+PROJECT_ROOT_FOR_DYNACONF = get('PROJECT_ROOT_FOR_DYNACONF', ".")
 
 # Default settings file
-SETTINGS_MODULE_FOR_DYNACONF = (
+default_paths = (
     'settings.py,.secrets.py,'
     'settings.yaml,settings.yml,.secrets.yaml,.secrets.yml,'
     'settings.toml,settings.tml,.secrets.toml,.secrets.tml,'
@@ -11,40 +19,65 @@ SETTINGS_MODULE_FOR_DYNACONF = (
     '.secrets.ini,.secrets.conf,.secrets.properties,'
     'settings.json,.secrets.json'
 )
+SETTINGS_MODULE_FOR_DYNACONF = get('SETTINGS_MODULE_FOR_DYNACONF',
+                                   default_paths)
 
 # Namespace for envvars
-NAMESPACE_FOR_DYNACONF = 'DYNACONF'
+NAMESPACE_FOR_DYNACONF = get('NAMESPACE_FOR_DYNACONF', 'DYNACONF')
 
 # The env var specifying settings module
-ENVVAR_FOR_DYNACONF = "DYNACONF_SETTINGS"
+ENVVAR_FOR_DYNACONF = get('ENVVAR_FOR_DYNACONF', 'DYNACONF_SETTINGS')
 
 # Default values for redis configs
-REDIS_FOR_DYNACONF = {
-    'host': 'localhost',
-    'port': 6379,
-    'db': 0
+default_redis = {
+    'host': get('REDIS_FOR_DYNACONF_HOST', 'localhost'),
+    'port': int(get('REDIS_FOR_DYNACONF_PORT', 6379)),
+    'db': int(get('REDIS_FOR_DYNACONF_DB', 0))
 }
+REDIS_FOR_DYNACONF = get('REDIS_FOR_DYNACONF', default_redis)
+REDIS_FOR_DYNACONF_ENABLED = get('REDIS_FOR_DYNACONF_ENABLED', False)
+
+# Hashicorp Vault Project
+vault_scheme = get('VAULT_FOR_DYNACONF_SCHEME', 'http')
+vault_url = get('VAULT_FOR_DYNACONF_URL', 'localhost')
+vault_port = get('VAULT_FOR_DYNACONF_PORT', '8200')
+default_vault = {
+    'url': get('VAULT_FOR_DYNACONF_URL', '{}:{}:{}'.format(
+        vault_scheme, vault_url, vault_port)
+    ),
+    'token': get('VAULT_FOR_DYNACONF_TOKEN', None),
+    'cert': get('VAULT_FOR_DYNACONF_CERT', None),
+    'verify': get('VAULT_FOR_DYNACONF_VERIFY', None),
+    'timeout': get('VAULT_FOR_DYNACONF_TIMEOUT', None),
+    'proxies': get('VAULT_FOR_DYNACONF_PROXIES', None),
+    'allow_redirects': get('VAULT_FOR_DYNACONF_ALLOW_REDIRECTS', None),
+    'session': get('VAULT_FOR_DYNACONF_SESSION', None),
+}
+VAULT_FOR_DYNACONF = get('VAULT_FOR_DYNACONF', default_vault)
+VAULT_FOR_DYNACONF_ENABLED = get('VAULT_FOR_DYNACONF_ENABLED', False)
 
 # Loaders to read namespace based vars from different data stores
-LOADERS_FOR_DYNACONF = [
+default_loaders = [
     'dynaconf.loaders.env_loader',
     # 'dynaconf.loaders.redis_loader'
+    # 'dynaconf.loaders.vault_loader'
 ]
+LOADERS_FOR_DYNACONF = get('LOADERS_FOR_DYNACONF', default_loaders)
 
 # Errors in loaders should be silenced?
-SILENT_ERRORS_FOR_DYNACONF = False
+SILENT_ERRORS_FOR_DYNACONF = get('SILENT_ERRORS_FOR_DYNACONF', False)
 
 # always fresh variables
-FRESH_VARS_FOR_DYNACONF = []
+FRESH_VARS_FOR_DYNACONF = get('FRESH_VARS_FOR_DYNACONF', [])
 
 # debug
-DEBUG_LEVEL_FOR_DYNACONF = 'ERROR'
+DEBUG_LEVEL_FOR_DYNACONF = get('DEBUG_LEVEL_FOR_DYNACONF', 'ERROR')
 
-YAML = None
-TOML = None
-JSON = None
-INI = None
+YAML = get('YAML', None)
+TOML = get('TOML', None)
+JSON = get('JSON', None)
+INI = get('INI', None)
 
-DOTENV_PATH_FOR_DYNACONF = None
-DOTENV_VERBOSE_FOR_DYNACONF = False
-DOTENV_OVERRIDE_FOR_DYNACONF = False
+DOTENV_PATH_FOR_DYNACONF = get('DOTENV_PATH_FOR_DYNACONF', None)
+DOTENV_VERBOSE_FOR_DYNACONF = get('DOTENV_VERBOSE_FOR_DYNACONF', False)
+DOTENV_OVERRIDE_FOR_DYNACONF = get('DOTENV_OVERRIDE_FOR_DYNACONF', False)

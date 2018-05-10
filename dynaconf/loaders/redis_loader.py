@@ -39,10 +39,9 @@ def load(obj, namespace=None, silent=True, key=None):
             if data:
                 obj.update(data, loader_identifier=IDENTIFIER)
     except Exception as e:
-        e.message = 'Unable to load config from redis (%s)' % e.message
         if silent:
             if hasattr(obj, 'logger'):
-                obj.logger.error(e.message)
+                obj.logger.error(str(e))
             return False
         raise
 
