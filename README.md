@@ -624,7 +624,7 @@ EXTRA_VALUE='You can add aditional config vars here'
 By default Dynaconf only outputs the ERROR level to debug it change
 
 ```bash
-export DYNACONF_DEBUG_LEVEL='INFO'
+export DEBUG_LEVEL_FOR_DYNACONF='INFO'
 ```
 
 ## The loading precedende order
