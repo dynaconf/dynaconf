@@ -42,7 +42,7 @@ vault_scheme = get('VAULT_FOR_DYNACONF_SCHEME', 'http')
 vault_url = get('VAULT_FOR_DYNACONF_URL', 'localhost')
 vault_port = get('VAULT_FOR_DYNACONF_PORT', '8200')
 default_vault = {
-    'url': get('VAULT_FOR_DYNACONF_URL', '{}:{}:{}'.format(
+    'url': get('VAULT_FOR_DYNACONF_URL', '{}://{}:{}'.format(
         vault_scheme, vault_url, vault_port)
     ),
     'token': get('VAULT_FOR_DYNACONF_TOKEN', None),
@@ -55,6 +55,8 @@ default_vault = {
 }
 VAULT_FOR_DYNACONF = get('VAULT_FOR_DYNACONF', default_vault)
 VAULT_FOR_DYNACONF_ENABLED = get('VAULT_FOR_DYNACONF_ENABLED', False)
+VAULT_FOR_DYNACONF_PATH = get('VAULT_FOR_DYNACONF_PATH',
+                              '/secret/data/dynaconf')
 
 # Loaders to read namespace based vars from different data stores
 default_loaders = [
