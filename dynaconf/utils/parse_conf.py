@@ -1,9 +1,12 @@
+import os
 import json
 
 from six import string_types
 from dynaconf.utils.boxing import DynaBox
 
 true_values = ('t', 'true', 'enabled', '1', 'on', 'yes')
+false_values = ('f', 'false', 'disabled', '0', 'off', 'no')
+
 converters = {
     '@int': int,
     '@float': float,
@@ -32,6 +35,10 @@ def _parse_conf_data(data):
     export DYNACONF_MONGODB_SETTINGS='@json {"DB": "quokka_db"}'
     export DYNACONF_ALLOWED_EXTENSIONS='@json ["jpg", "png"]'
     """
+    cast_toggler = os.environ.get('AUTO_CAST_FOR_DYNACONF', '').lower()
+    if cast_toggler in false_values:
+        return data
+
     if data and isinstance(
             data, string_types
     ) and data.startswith(tuple(converters.keys())):
