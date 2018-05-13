@@ -39,7 +39,7 @@ REDIS_FOR_DYNACONF_ENABLED = get('REDIS_FOR_DYNACONF_ENABLED', False)
 
 # Hashicorp Vault Project
 vault_scheme = get('VAULT_FOR_DYNACONF_SCHEME', 'http')
-vault_url = get('VAULT_FOR_DYNACONF_URL', 'localhost')
+vault_url = get('VAULT_FOR_DYNACONF_HOST', 'localhost')
 vault_port = get('VAULT_FOR_DYNACONF_PORT', '8200')
 default_vault = {
     'url': get('VAULT_FOR_DYNACONF_URL', '{}://{}:{}'.format(

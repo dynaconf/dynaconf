@@ -483,6 +483,46 @@ NAMESPACE_FOR_DYNACONF = 'MYPROGRAM'
 
 # Storing settings in databases
 
+## Using Hashicorp Vault
+
+The https://www.vaultproject.io/ is a key:value store for secrets and Dynaconf can load
+variables from a Vault secret.
+
+1. Run a vault server
+Run a Vault server installed or via docker:
+
+```bash
+docker run -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+```
+
+2. Install support for vault in dynaconf
+
+```bash
+pip install dynaconf[vault]
+```
+
+3. In your `.env` file or in environment variables do:
+
+```bash
+VAULT_FOR_DYNACONF_ENABLED=1
+VAULT_FOR_DYNACONF_URL="http://localhost:8200"
+VAULT_FOR_DYNACONF_TOKEN="myroot"
+VAULT_FOR_DYNACONF_PATH="/secret/data/dynaconf"
+```
+
+Now you can have keys like `PASSWORD` and `TOKEN` defined in the vault and
+dynaconf will read it.
+
+To write a new secret you can use http://localhost:8200 web admin and write keys
+under the `/secret/dynaconf` secret database.
+
+You can also use the Dynaconf writer via Python terminal
+
+```python
+from dynaconf.loaders.vault_loader import write
+write({'password': '123456'})
+```
+
 ## Using REDIS
 
 
@@ -494,23 +534,14 @@ REDIS_FOR_DYNACONF = {
     'db': 0,
     'decode_responses': True
 }
-
 ```
 
 > NOTE: if running on Python 3 include `'decode_responses': True` in `REDIS_FOR_DYNACONF`
 
+Enable the loader in `.env` or as environment variable
 
-Include **redis_loader** in dynaconf LOADERS_FOR_DYNACONF
-
-> the order is the precedence
-
-```python
-
-# Loaders to read namespace based vars from diferent data stores
-LOADERS_FOR_DYNACONF = [
-    'dynaconf.loaders.env_loader',
-    'dynaconf.loaders.redis_loader'
-]
+```bash
+REDIS_FOR_DYNACONF_ENABLED=1
 ```
 
 You can now write variables direct in to a redis hash named `DYNACONF_< NAMESPACE >`

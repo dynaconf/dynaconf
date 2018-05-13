@@ -10,4 +10,5 @@ omit =
     dynaconf/utils/functional.py
     dynaconf/utils/redis_writer.py
     dynaconf/loaders/redis_loader.py
+    dynaconf/loaders/vault_loader.py
     dynaconf/loaders/__init__.py
