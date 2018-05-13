@@ -9,7 +9,12 @@ import types
 from six import string_types
 
 from dynaconf import default_settings
-from dynaconf.loaders import default_loader, settings_loader, yaml_loader
+from dynaconf.loaders import (
+    default_loader,
+    settings_loader,
+    yaml_loader,
+    enable_external_loaders
+)
 from dynaconf.transformator import TransformatorList
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data
@@ -525,6 +530,7 @@ class Settings(object):
             default_loader(self, self._defaults)
         settings_loader(self, namespace=namespace, silent=silent, key=key)
         self.load_extra_yaml(namespace, silent, key)  # DEPRECATED
+        enable_external_loaders(self)
         for loader in self.loaders:
             self.logger.debug('Loading %s', loader.__name__)
             loader.load(self, namespace, silent=silent, key=key)

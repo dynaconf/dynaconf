@@ -10,6 +10,7 @@ python-box
 python-dotenv
 setuptools>=38.6.0
 configobj
+hvac
 
 # testing
 coveralls

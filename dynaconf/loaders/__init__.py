@@ -112,6 +112,18 @@ def settings_loader(obj, settings_module=None, namespace=None,
             )
 
 
+def enable_external_loaders(obj):
+    """Enable external service loaders like VAULT_ and REDIS_"""
+    for name, loader in ct.EXTERNAL_LOADERS.items():
+        enabled = getattr(
+            obj,
+            '{}_FOR_DYNACONF_ENABLED'.format(name.upper()),
+            False
+        )
+        if enabled and loader not in obj.LOADERS_FOR_DYNACONF:
+            obj.LOADERS_FOR_DYNACONF.append(loader)
+
+
 def load_from_module(obj, settings_module,
                      identifier='PY_MODULE', silent=False, key=None):
     obj.logger.debug('executing load_from_module: %s', settings_module)

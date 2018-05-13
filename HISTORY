@@ -3,6 +3,11 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.7.3
+-----
+- Added AUTO_CAST_FOR_DYNACONF=off to disable the @type casters
+- Added loader for https://www.vaultproject.io/
+
 0.7.2
 -----
 - SETTINGS_MODULE translated to SETTINGS_MODULE_FOR_DYNACONF on compat
