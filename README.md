@@ -383,7 +383,8 @@ You have 2 ways to use the casts.
 
 ### Casting on declaration
 
-Just start your ENV settigs with this
+Dynaconf uses the `AUTO_CAST` of envvars, just start your ENV vars names with a
+typed prefix like in the examples below.
 
 ```bash
 export DYNACONF_DEFAULT_THEME='material'
@@ -395,6 +396,10 @@ export DYNACONF_ALLOWED_EXTENSIONS='@json ["jpg", "png"]'
 ```
 
 Starting the settings values with @ will make dynaconf.settings to cast it in the time od load.
+
+There is support for `@int, @float, @bool, @json, @note`
+
+> **NOTE:** To disable the AUTO_CAST you can set a env var `export AUTO_CAST_FOR_DYNACONF=off`
 
 ### Casting on access
 
