@@ -61,3 +61,11 @@ def test_find_file():
     with open(filename, 'w') as f:
         f.write("TEST=test\n")
     assert find_file(usecwd=True) == filename
+
+
+def test_disable_cast():
+    # this casts for int
+    assert parse_conf_data('@int 42') == 42
+    # now gives pure string
+    os.environ['AUTO_CAST_FOR_DYNACONF'] = 'off'
+    assert parse_conf_data('@int 42') == '@int 42'
