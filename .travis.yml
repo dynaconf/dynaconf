@@ -33,3 +33,21 @@ jobs:
         - "pip install --upgrade pip"
         - "pip install --upgrade -r requirements_dev.txt"
       script: make test_examples
+    - stage: test_vault
+      language: python
+      services:
+        - docker
+      before_install:
+        - docker pull vault
+        - docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+        - docker ps -a
+      python: 3.6
+      env:
+        VAULT_FOR_DYNACONF_ENABLED=1
+        VAULT_FOR_DYNACONF_TOKEN=myroot
+      install:
+        - "pip install --upgrade pip"
+        - "pip install --upgrade -r requirements_dev.txt"
+      before_script:
+        - sleep 5
+      script: make test_vault

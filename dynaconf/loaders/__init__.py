@@ -3,8 +3,9 @@ import importlib
 from dynaconf import constants as ct
 from dynaconf import default_settings
 from dynaconf.loaders import (
-    yaml_loader, env_loader, toml_loader, json_loader, ini_loader
+    yaml_loader, toml_loader, json_loader, ini_loader
 )
+from dynaconf.utils.parse_conf import false_values
 
 
 def default_loader(obj, defaults=None):
@@ -25,7 +26,7 @@ def default_loader(obj, defaults=None):
 
     # start dotenv to get default env vars from there
     # check overrides in env vars
-    env_loader.start_dotenv(obj)
+    default_settings.start_dotenv(obj)
     for key in all_keys:
         env_value = obj.get_env(key)
         if env_value:
@@ -120,7 +121,11 @@ def enable_external_loaders(obj):
             '{}_FOR_DYNACONF_ENABLED'.format(name.upper()),
             False
         )
-        if enabled and loader not in obj.LOADERS_FOR_DYNACONF:
+        if (
+              enabled and
+              enabled not in false_values and
+              loader not in obj.LOADERS_FOR_DYNACONF
+            ):  # noqa
             obj.LOADERS_FOR_DYNACONF.append(loader)
 
 
