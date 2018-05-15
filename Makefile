@@ -1,4 +1,4 @@
-.PHONY: test install pep8 release clean doc test_examples
+.PHONY: test install pep8 release clean doc test_examples test_vault test_redis
 
 test_examples:
 	@cd example/;pwd;python full_example.py | grep -c full_example
@@ -16,10 +16,18 @@ test_examples:
 	@cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini
 	@cd example/validator/;pwd;python app.py | grep -c validator
 
+
 test_vault:
 	@cd example/vault;pwd;python write.py
 	@sleep 5
 	@cd example/vault;pwd;python vault_example.py | grep -c vault_works
+
+
+test_redis:
+	@cd example/redis_example;pwd;python write.py
+	@sleep 5
+	@cd example/redis_example;pwd;python redis_example.py | grep -c redis_works
+
 
 test: pep8
 	py.test --boxed -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/

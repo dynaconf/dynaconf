@@ -421,6 +421,8 @@ class Settings(object):
 
         self.logger.debug("Namespace switching to: %s", namespace)
 
+        namespace = namespace.upper()
+
         if namespace != self.NAMESPACE_FOR_DYNACONF:
             self.loaded_namespaces.append(namespace)
         else:

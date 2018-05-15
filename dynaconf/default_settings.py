@@ -77,7 +77,7 @@ default_vault = {
 VAULT_FOR_DYNACONF = get('VAULT_FOR_DYNACONF', default_vault)
 VAULT_FOR_DYNACONF_ENABLED = get('VAULT_FOR_DYNACONF_ENABLED', False)
 VAULT_FOR_DYNACONF_PATH = get('VAULT_FOR_DYNACONF_PATH',
-                              '/secret/data/dynaconf')
+                              '/secret/data/')  # /namespace will be added
 
 # Loaders to read namespace based vars from different data stores
 default_loaders = [
