@@ -30,12 +30,12 @@ def load(obj, namespace=None, silent=True, key=None):
         if key:
             value = redis.hget(holder.upper(), key)
             if value:
-                parsed_value = parse_conf_data(value.decode('utf-8'))
+                parsed_value = parse_conf_data(value)
                 if parsed_value:
                     obj.set(key, parsed_value)
         else:
             data = {
-                key.decode('utf-8'): parse_conf_data(value.decode('utf-8'))
+                key: parse_conf_data(value)
                 for key, value in redis.hgetall(holder.upper()).items()
             }
             if data:
