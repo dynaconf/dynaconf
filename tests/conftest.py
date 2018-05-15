@@ -9,13 +9,7 @@ from dynaconf.base import LazySettings
 def settings():
     """Settings fixture with some defaults"""
     mode = 'TRAVIS' if os.environ.get('TRAVIS') else 'TEST'
-    if mode == 'TRAVIS':
-        loaders = [
-            'dynaconf.loaders.env_loader',
-            'dynaconf.loaders.redis_loader'
-        ]
-    else:
-        loaders = ['dynaconf.loaders.env_loader']
+    loaders = ['dynaconf.loaders.env_loader']
     os.environ['DYNA%s_HOSTNAME' % mode] = 'host.com'
     os.environ['DYNA%s_PORT' % mode] = '@int 5000'
     os.environ['DYNA%s_VALUE' % mode] = '@float 42.1'

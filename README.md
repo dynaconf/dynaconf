@@ -507,7 +507,7 @@ pip install dynaconf[vault]
 VAULT_FOR_DYNACONF_ENABLED=1
 VAULT_FOR_DYNACONF_URL="http://localhost:8200"
 VAULT_FOR_DYNACONF_TOKEN="myroot"
-VAULT_FOR_DYNACONF_PATH="/secret/data/dynaconf"
+VAULT_FOR_DYNACONF_PATH="/secret/data/"   # the resulting namespace will have namespace added as in /secret/data/dynaconf
 ```
 
 Now you can have keys like `PASSWORD` and `TOKEN` defined in the vault and

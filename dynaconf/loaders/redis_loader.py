@@ -28,12 +28,14 @@ def load(obj, namespace=None, silent=True, key=None):
     holder = "DYNACONF_%s" % namespace
     try:
         if key:
-            value = parse_conf_data(redis.hget(holder.upper(), key))
+            value = redis.hget(holder.upper(), key)
             if value:
-                obj.set(key, value)
+                parsed_value = parse_conf_data(value.decode('utf-8'))
+                if parsed_value:
+                    obj.set(key, parsed_value)
         else:
             data = {
-                key: parse_conf_data(value)
+                key.decode('utf-8'): parse_conf_data(value.decode('utf-8'))
                 for key, value in redis.hgetall(holder.upper()).items()
             }
             if data:
@@ -59,20 +61,25 @@ def clean(obj, namespace, silent=True):  # noqa
         obj.unset(key)
 
 
-def write(obj, **kwargs):
+def write(obj, data=None, **kwargs):
     """
     Write a value in to loader source
     :param obj: settings object
+    :param data: vars to be stored
     :param kwargs: vars to be stored
     :return:
     """
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = "DYNACONF_%s" % obj.NAMESPACE_FOR_DYNACONF
-    data = {
+    holder = "DYNACONF_%s" % obj.current_namespace
+    data = data or {}
+    data.update(kwargs)
+    if not data:
+        raise AttributeError('Data must be provided')
+    redis_data = {
         key.upper(): unparse_conf_data(value)
-        for key, value in kwargs.items()
+        for key, value in data.items()
     }
-    client.hmset(holder.upper(), data)
+    client.hmset(holder.upper(), redis_data)
     load(obj)
 
 
@@ -84,7 +91,7 @@ def delete(obj, key=None):
     :return: None
     """
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = "DYNACONF_%s" % obj.NAMESPACE_FOR_DYNACONF
+    holder = "DYNACONF_%s" % obj.current_namespace
     if key:
         client.hdel(holder.upper(), key.upper())
         obj.unset(key)
