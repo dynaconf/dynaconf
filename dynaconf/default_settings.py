@@ -1,9 +1,30 @@
 import os
 from dynaconf.utils.parse_conf import parse_conf_data
 
+try:
+    from dotenv import load_dotenv, find_dotenv
+except ImportError:  # pragma: no cover
+    load_dotenv = lambda *args, **kwargs: None  # noqa
+    find_dotenv = lambda: None  # noqa
+
 
 def get(key, default=None):
     return parse_conf_data(os.environ.get(key.upper(), default))
+
+
+def start_dotenv(obj=None):
+    # load_from_dotenv_if_installed
+    obj = obj or {}
+    dotenv_path = obj.get('DOTENV_PATH_FOR_DYNACONF') or os.environ.get(
+        'DOTENV_PATH_FOR_DYNACONF') or find_dotenv(usecwd=True)
+    load_dotenv(
+        dotenv_path,
+        verbose=obj.get('DOTENV_VERBOSE_FOR_DYNACONF', False),
+        override=obj.get('DOTENV_OVERRIDE_FOR_DYNACONF', False)
+    )
+
+
+start_dotenv()
 
 
 # default proj root

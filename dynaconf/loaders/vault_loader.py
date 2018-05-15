@@ -17,15 +17,17 @@ def get_client(obj):
 
 def load(obj, namespace=None, silent=None, key=None):
     client = get_client(obj)
-    data = client.read(obj.VAULT_FOR_DYNACONF_PATH).get('data', {}).get('data')
+    data = client.read(obj.VAULT_FOR_DYNACONF_PATH)
+    if data:
+        data = data.get('data', {}).get('data')
 
     try:
-        if key:
+        if data and key:
             value = parse_conf_data(data.get(key))
             if value:
                 obj.set(key, value)
-        else:
-                obj.update(data, loader_identifier=IDENTIFIER)
+        elif data:
+            obj.update(data, loader_identifier=IDENTIFIER)
     except Exception as e:
         if silent:
             if hasattr(obj, 'logger'):
@@ -34,6 +36,6 @@ def load(obj, namespace=None, silent=None, key=None):
         raise
 
 
-def writer(obj, data, lease='1h'):
+def write(obj, data, lease='1h'):
     client = get_client(obj)
     client.write(obj.VAULT_FOR_DYNACONF_PATH, data=data, lease=lease)
