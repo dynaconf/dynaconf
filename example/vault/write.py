@@ -1,4 +1,4 @@
 from dynaconf import settings
-from dynaconf.loaders.vault_loader import writer
+from dynaconf.loaders import vault_loader
 
-writer(settings, {'SECRET': 'vault_works'})
+vault_loader.write(settings, {'SECRET': 'vault_works'})
