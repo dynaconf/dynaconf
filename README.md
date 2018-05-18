@@ -125,7 +125,7 @@ username = 'admin'
 password = false
 ```
 
-**2 -** Create `.secrets.toml` to store project sensible variables
+**2 -** Create `.secrets.toml` to store sensitive variables
 
 ```toml
 [dynaconf]
