@@ -15,6 +15,7 @@ test_examples:
 	@cd example/flask_with_json;pwd;flask routes | grep -c flask_with_json
 	@cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini
 	@cd example/validator/;pwd;python app.py | grep -c validator
+	@cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et
 
 
 test_vault:

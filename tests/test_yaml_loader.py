@@ -30,6 +30,7 @@ example:
   # @float casting not needed, used only for testing
   secret: '@float 42'
   password: 123456
+  host: otheryaml.com
 """
 
 YAMLS = [YAML, YAML2]
@@ -54,7 +55,7 @@ def test_load_from_yaml():
 def test_load_from_multiple_yaml():
     """Assert loads from YAML string"""
     load(settings, filename=YAMLS)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'otheryaml.com'
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
     assert settings.PORT == 8080
@@ -64,12 +65,17 @@ def test_load_from_multiple_yaml():
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
     load(settings, filename=YAMLS, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
-    assert settings.PASSWORD == 88888
+    assert settings.PORT == 8080
+    assert settings.HOST == 'otheryaml.com'
     load(settings, filename=YAMLS)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'otheryaml.com'
     assert settings.PASSWORD == 123456
-
+    load(settings, filename=YAML, namespace='DEVELOPMENT')
+    assert settings.PORT == 8080
+    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=YAML)
+    assert settings.HOST == 'server.com'
+    assert settings.PASSWORD == 99999
 
 def test_no_filename_is_none():
     """Assert if passed no filename return is None"""

@@ -30,6 +30,7 @@ TOML2 = """
 [example]
 secret = "@float 42"
 password = 123456.0
+host = "otheryaml.com"
 """
 
 TOMLS = [TOML, TOML2]
@@ -54,7 +55,7 @@ def test_load_from_toml():
 def test_load_from_multiple_toml():
     """Assert loads from TOML string"""
     load(settings, filename=TOMLS)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'otheryaml.com'
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
     assert settings.PORT == 8080
@@ -64,11 +65,17 @@ def test_load_from_multiple_toml():
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
     load(settings, filename=TOMLS, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
-    assert settings.PASSWORD == 88888
+    assert settings.PORT == 8080
+    assert settings.HOST == 'otheryaml.com'
     load(settings, filename=TOMLS)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'otheryaml.com'
     assert settings.PASSWORD == 123456
+    load(settings, filename=TOML, namespace='DEVELOPMENT')
+    assert settings.PORT == 8080
+    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=TOML)
+    assert settings.HOST == 'server.com'
+    assert settings.PASSWORD == 99999
 
 
 def test_no_filename_is_none():

@@ -6,7 +6,7 @@ IDENTIFIER = 'env_loader'
 
 
 def load(obj, namespace=None, silent=True, key=None):
-    default_namespace = obj.get('NAMESPACE_FOR_DYNACONF')
+    default_namespace = obj.get('BASE_NAMESPACE_FOR_DYNACONF')
     # load all from default namespace (this never gets cleaned)
     load_from_env(
         IDENTIFIER,
@@ -15,6 +15,8 @@ def load(obj, namespace=None, silent=True, key=None):
         obj,
         silent
     )
+
+    namespace = namespace or obj.current_namespace
 
     # rewrite with different namespace if provided
     if namespace and namespace != default_namespace:
