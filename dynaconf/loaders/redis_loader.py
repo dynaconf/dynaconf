@@ -24,7 +24,7 @@ def load(obj, namespace=None, silent=True, key=None):
     :return: None
     """
     redis = StrictRedis(**obj.get('REDIS_FOR_DYNACONF'))
-    namespace = namespace or obj.get('NAMESPACE_FOR_DYNACONF')
+    namespace = namespace or obj.current_namespace
     holder = "DYNACONF_%s" % namespace
     try:
         if key:

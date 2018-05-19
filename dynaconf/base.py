@@ -527,9 +527,9 @@ class Settings(object):
 
     def execute_loaders(self, namespace=None, silent=None, key=None):
         """Execute all internal and registered loaders"""
-        silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
         if key is None:
             default_loader(self, self._defaults)
+        silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
         settings_loader(self, namespace=namespace, silent=silent, key=key)
         self.load_extra_yaml(namespace, silent, key)  # DEPRECATED
         enable_external_loaders(self)
@@ -611,6 +611,9 @@ def raw_logger():
         )
     except ImportError:  # pragma: no cover
         logger = logging.getLogger("dynaconf")
+        logging.basicConfig(
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
         logger.setLevel(getattr(logging, level))
         logger.debug("starting logger")
         return logger
@@ -634,3 +637,7 @@ def compat_kwargs(kwargs):
                 old, new
             )
             kwargs[new] = kwargs[old]
+
+    for key in ['NAMESPACE_FOR_DYNACONF', 'DYNACONF_NAMESPACE']:
+        if key in kwargs:
+            kwargs['BASE_NAMESPACE_FOR_DYNACONF'] = kwargs[key]

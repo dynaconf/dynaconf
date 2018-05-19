@@ -1,0 +1,7 @@
+[example]
+server = 'foo.com'
+username = 'admin'
+password = false
+
+[dev]
+username = 'foo'

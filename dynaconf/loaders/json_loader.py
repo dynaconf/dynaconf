@@ -19,9 +19,7 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
     if not filename:
         return
 
-    namespace = namespace or obj.get('NAMESPACE_FOR_DYNACONF')
-
-    # clean(obj, namespace, identifier=filename)
+    namespace = namespace or obj.current_namespace
 
     # can be a filename settings.yml
     # can be a multiple fileset settings1.json, settings2.json etc
@@ -35,6 +33,16 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
             files = [filename]
     else:  # it is already a list/tuple
         files = filename
+
+    # load
+    namespace_list = [obj.get('BASE_NAMESPACE_FOR_DYNACONF')]
+    # import ipdb; ipdb.set_trace()
+    if namespace and namespace not in namespace_list:
+        namespace_list.append(namespace)
+    load_from_json(obj, files, namespace_list, silent, key)
+
+
+def load_from_json(obj, files, namespaces, silent=True, key=None):
 
     for json_file in files:
         if json_file.endswith(JSON_EXTENSIONS):  # pragma: no cover
@@ -56,31 +64,28 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
 
         json_data = {key.lower(): value for key, value in json_data.items()}
 
-        # ---->
-        # Load from namespace_filename.json
+        for namespace in namespaces:
 
-        data = {}
-        try:
-            data = json_data[namespace.lower()]
-        except KeyError:
-            if silent:
-                obj.logger.debug(
-                    '%s namespace not defined in json source' % namespace
-                )
+            data = {}
+            try:
+                data = json_data[namespace.lower()]
+            except KeyError:
+                message = '%s namespace not defined in %s' % (
+                    namespace, json_file)
+                if silent:
+                    obj.logger.warning(message)
+                else:
+                    raise KeyError(message)
+
+            if namespace != obj.get('BASE_NAMESPACE_FOR_DYNACONF'):
+                identifier = "{0}_{1}".format(IDENTIFIER, namespace.lower())
             else:
-                raise KeyError(
-                    '%s namespace not defined in %s' % (namespace, filename)
-                )
+                identifier = IDENTIFIER
 
-        if namespace and namespace != obj.get('NAMESPACE_FOR_DYNACONF'):
-            identifier = "{0}_{1}".format(IDENTIFIER, namespace.lower())
-        else:
-            identifier = IDENTIFIER
-
-        if not key:
-            obj.update(data, loader_identifier=identifier)
-        else:
-            obj.set(key, data.get(key), loader_identifier=identifier)
+            if not key:
+                obj.update(data, loader_identifier=identifier)
+            else:
+                obj.set(key, data.get(key), loader_identifier=identifier)
 
 
 def clean(obj, namespace, silent=True):  # noqa

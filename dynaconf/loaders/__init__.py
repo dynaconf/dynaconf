@@ -28,8 +28,8 @@ def default_loader(obj, defaults=None):
     # check overrides in env vars
     default_settings.start_dotenv(obj)
     for key in all_keys:
-        env_value = obj.get_env(key)
-        if env_value:
+        env_value = obj.get_env(key, '_not_found')
+        if env_value != '_not_found':
             obj.logger.debug(
                 "default_loader:overriding from envvar: %s:%s",
                 key, env_value
@@ -38,7 +38,7 @@ def default_loader(obj, defaults=None):
 
 
 def settings_loader(obj, settings_module=None, namespace=None,
-                    silent=False, key=None):
+                    silent=True, key=None):
     """Loads from defined settings module, path or yaml"""
     obj.logger.debug('executing settings_loader: %s', settings_module)
     settings_module = settings_module or obj.settings_module
@@ -87,7 +87,7 @@ def settings_loader(obj, settings_module=None, namespace=None,
         # load from default defined module if exists (never gets cleaned)
         load_from_module(obj, mod_file, key=key)
 
-        if namespace and namespace != obj.NAMESPACE_FOR_DYNACONF:
+        if namespace and namespace != obj.BASE_NAMESPACE_FOR_DYNACONF:
             if mod_file.endswith('.py'):
                 dirname = os.path.dirname(mod_file)
                 filename, extension = os.path.splitext(

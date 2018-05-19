@@ -31,6 +31,7 @@ INI2 = """
 [example]
 secret = "@float 42"
 password = '@int 123456'
+host = "otheryaml.com"
 """
 
 INIS = [INI, INI2]
@@ -56,7 +57,7 @@ def test_load_from_ini():
 def test_load_from_multiple_ini():
     """Assert loads from INI string"""
     load(settings, filename=INIS)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'otheryaml.com'
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
     assert settings.PORT == 8080
@@ -66,11 +67,18 @@ def test_load_from_multiple_ini():
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
     load(settings, filename=INIS, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
-    assert settings.PASSWORD == 88888
+    assert settings.PORT == 8080
+    assert settings.HOST == 'otheryaml.com'
     load(settings, filename=INIS)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'otheryaml.com'
     assert settings.PASSWORD == 123456
+    load(settings, filename=INI, namespace='DEVELOPMENT')
+    assert settings.PORT == 8080
+    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=INI)
+    assert settings.HOST == 'server.com'
+    assert settings.PASSWORD == 99999
+
 
 
 def test_no_filename_is_none():

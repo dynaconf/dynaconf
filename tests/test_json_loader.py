@@ -35,7 +35,8 @@ JSON2 = """
 {
   "example": {
     "secret": "@float 42",
-    "password": 123456
+    "password": 123456,
+    "host": "otheryaml.com"
   }
 }
 """
@@ -62,7 +63,7 @@ def test_load_from_json():
 def test_load_from_multiple_json():
     """Assert loads from JSON string"""
     load(settings, filename=JSONS)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'otheryaml.com'
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
     assert settings.PORT == 8080
@@ -72,11 +73,17 @@ def test_load_from_multiple_json():
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
     load(settings, filename=JSONS, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
-    assert settings.PASSWORD == 88888
+    assert settings.PORT == 8080
+    assert settings.HOST == 'otheryaml.com'
     load(settings, filename=JSONS)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'otheryaml.com'
     assert settings.PASSWORD == 123456
+    load(settings, filename=JSON, namespace='DEVELOPMENT')
+    assert settings.PORT == 8080
+    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=JSON)
+    assert settings.HOST == 'server.com'
+    assert settings.PASSWORD == 99999
 
 
 def test_no_filename_is_none():
