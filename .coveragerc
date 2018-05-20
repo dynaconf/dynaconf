@@ -12,3 +12,5 @@ omit =
     dynaconf/loaders/redis_loader.py
     dynaconf/loaders/vault_loader.py
     dynaconf/loaders/__init__.py
+    dynaconf/example/*
+    dynaconf/contrib/django_dynaconf/*

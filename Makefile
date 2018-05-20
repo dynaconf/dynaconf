@@ -16,19 +16,17 @@ test_examples:
 	@cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini
 	@cd example/validator/;pwd;python app.py | grep -c validator
 	@cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et
-
+	@cd example/django_example/;pwd;python manage.py test
 
 test_vault:
 	@cd example/vault;pwd;python write.py
 	@sleep 5
 	@cd example/vault;pwd;python vault_example.py | grep -c vault_works
 
-
 test_redis:
 	@cd example/redis_example;pwd;python write.py
 	@sleep 5
 	@cd example/redis_example;pwd;python redis_example.py | grep -c redis_works
-
 
 test: pep8
 	py.test --boxed -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/

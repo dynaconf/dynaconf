@@ -3,6 +3,10 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.7.5
+-----
+- Added django extension
+
 0.7.4
 -----
 - Fixed error in namespace precedence examples/toml_with_secrets added to test it

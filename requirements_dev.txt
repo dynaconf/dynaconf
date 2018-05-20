@@ -11,6 +11,7 @@ python-dotenv
 setuptools>=38.6.0
 configobj
 hvac
+django
 
 # testing
 coveralls
