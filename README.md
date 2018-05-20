@@ -9,7 +9,7 @@
 
 **dynaconf** a layered configuration system for Python applications - 
 with strong support for [12-factor applications](https://12factor.net/config) 
-and **Flask** `app.config` extension.
+and extensions for **Flask** and **Django**.
 
 <br><br>
 
@@ -24,6 +24,7 @@ pip3 install dynaconf[yaml]
 pip3 install dynaconf[toml]
 pip3 install dynaconf[ini]
 pip3 install dynaconf[redis]
+pip3 install dynaconf[vault]
 
 # for a complete installation
 pip3 install dynaconf[all]
@@ -645,15 +646,26 @@ FlaskDynaconf(app)
 Now the `app.config` will read values from `dynaconf.settings`
 
 
-The `FlaskDynaconf` takes optional arguments
+# Django Extension
+
+Dynaconf provides an extnesion to make `django.conf.settings` to be a dynaconf instance
+
+In your django project's `settings.py` include:
 
 ```python
-ENVVAR_FOR_DYNACONF="MYSITE_SETTINGS_MODULE"  # defaults to `DYNACONF_SETTINGS` 
-NAMESPACE_FOR_DYNACONF='MYSITE'  # defaults to `FLASK_`
-SETTINGS_MODULE_FOR_DYNACONF='settings.yml'  # defaults to `settings.py`
-YAML='.secrets.yml',  # aditional config
-EXTRA_VALUE='You can add aditional config vars here'
+INSTALLED_APPS = [
+    'dynaconf.contrib.django_dynaconf',
+    ...
+]
 ```
+
+> **NOTE**: The extension must be included as the first INSTALLED_APP of the list
+
+Now create your `settings.{py|yaml|toml|ini|json}` in your project's root directory
+(the same folder where `manage.py` is located)
+
+Now when doing `form django.conf import settings` this settings object will read values from dynaconf
+
 
 ## DEBUGGING
 
