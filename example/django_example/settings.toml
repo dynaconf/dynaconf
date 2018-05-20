@@ -1,0 +1,7 @@
+[dynaconf]
+server = 'foo.com'
+username = 'prod user'
+password = false
+STATIC_URL = '/changed/in/settings.toml/by/dynaconf/'
+[dev]
+username = 'dev user'
