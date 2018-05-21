@@ -1,0 +1,44 @@
+# This is the BASE namespace
+# the values from [prod] will be always loaded and used as default values
+# by default it was called [dynaconf] but in the .env file we changed the BASE_NAMESPACE_FOR_DYNACONF to PROD
+[prod]
+host = "server.com from TOML"
+port = 5000.0
+username = "admin"
+PASSWORD = "Secret"
+levels = [
+  "debug",
+  "info",
+  "warning"
+]
+money = 500.5
+age = 42.0
+enabled = true
+works = "only_in_prod"
+
+  [prod.test_loaders]
+  dev = "test_dev"
+  prod = "test_prod"
+
+
+# If other namespace is set by NAMESPACE_FOR_DYNACONF env var
+# or switch using settings.namespace or settings.using_namespace
+# then the [prod] values will be overwritten with:
+
+# When NAMESPACE_FOR_DYNACONF=TESTING
+[testing]
+environment = "this is testing from toml"
+host = "test_server.com from toml"
+works = 'only_in_test'
+
+# When NAMESPACE_FOR_DYNACONF=DEVELOPMENT
+[development]
+environment = "this is development from toml"
+host = "dev_server.com from toml"
+works = 'only_in_dev'
+
+# When NAMESPACE_FOR_DYNACONF=STAGING
+[staging]
+environment = "this is staging from toml"
+host = "staging_server.com from toml"
+works = 'only_in_staging'

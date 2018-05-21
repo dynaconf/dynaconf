@@ -319,7 +319,7 @@ class Settings(object):
         return self._loaded_by_loaders
 
     @contextmanager
-    def using_namespace(self, namespace, clean=True, silent=False):
+    def using_namespace(self, namespace, clean=True, silent=True):
         """
         This context manager allows the contextual use of a different namespace
         Example:
@@ -344,7 +344,7 @@ class Settings(object):
             self.logger.debug("In Namespace: %s", namespace)
             yield
         finally:
-            if namespace != self.NAMESPACE_FOR_DYNACONF:
+            if namespace.lower() != self.NAMESPACE_FOR_DYNACONF.lower():
                 del self.loaded_namespaces[-1]
             self.logger.debug("Out Namespace: %s", namespace)
             self.namespace(self.current_namespace, clean=clean)

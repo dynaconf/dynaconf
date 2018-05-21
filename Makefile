@@ -4,9 +4,10 @@ test_examples:
 	@cd example/;pwd;python full_example.py | grep -c full_example
 	@cd example/;pwd;python compat.py
 	@cd example/app;pwd;python app.py | grep -c app
+	# @cd example/namespaces;pwd;python app.py
 	@cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv
 	@cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources
-	@cd example/toml_example/settings_module/;pwd;python app.py | grep -c toml_example
+	@cd example/toml_example/;pwd;python app.py | grep -c toml_example
 	@cd example/yaml_example/settings_module/;pwd;python app.py | grep -c yaml_example
 	@cd example/yaml_example/yaml_as_extra_config/;pwd;python app.py | grep -c yaml_as_extra_config
 	@cd example/flask_with_dotenv;pwd;flask routes | grep -c flask_with_dotenv
@@ -50,6 +51,7 @@ clean:
 	rm -rf dist
 	rm -rf *.egg-info
 	rm -rf htmlcov
+	rm -rf .tox/
 	python setup.py develop
 
 doc:

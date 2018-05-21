@@ -1,8 +1,5 @@
 from dynaconf import settings
 
-# export DYNACONF_SETTINGS=settings.yaml
-# or run $ source env.sh
-
 # print all values in dynaconf: namespace of yaml file
 print(settings.HOST)
 print(settings.PORT)
@@ -20,7 +17,7 @@ with settings.using_namespace('DEVELOPMENT'):
     print(settings.HOST)
 
 # back to default dynaconf: namespace
-print(settings.get('ENVIRONMENT'))
+print(settings.get('ENVIRONMENT'))  # None
 print(settings.HOST)
 
 # set namespace to development:
