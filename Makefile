@@ -4,7 +4,6 @@ test_examples:
 	@cd example/;pwd;python full_example.py | grep -c full_example
 	@cd example/;pwd;python compat.py
 	@cd example/app;pwd;python app.py | grep -c app
-	# @cd example/namespaces;pwd;python app.py
 	@cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv
 	@cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources
 	@cd example/toml_example/;pwd;python app.py | grep -c toml_example
@@ -17,6 +16,7 @@ test_examples:
 	@cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini
 	@cd example/validator/;pwd;python app.py | grep -c validator
 	@cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et
+	@cd example/namespaces;pwd;python app.py
 	@cd example/django_example/;pwd;python manage.py test
 
 test_vault:
