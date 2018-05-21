@@ -80,7 +80,6 @@ def test_load_from_multiple_ini():
     assert settings.PASSWORD == 99999
 
 
-
 def test_no_filename_is_none():
     """Assert if passed no filename return is None"""
     assert load(settings) is None

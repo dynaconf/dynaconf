@@ -1,7 +1,7 @@
 [dynaconf]
 server = 'foo.com'
 username = 'prod user'
-password = false
+password = false  #  in prod this value must come from .secrets.toml or vault server
 STATIC_URL = '/changed/in/settings.toml/by/dynaconf/'
 [dev]
 username = 'dev user'

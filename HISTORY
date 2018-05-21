@@ -3,6 +3,10 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+0.7.6
+-----
+- Namespace switching fix (for django extension)
+
 0.7.5
 -----
 - Added django extension

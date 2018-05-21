@@ -15,14 +15,14 @@ NAMESPACE_FOR_DYNACONF=dev
     tests.append("""<pre>[dynaconf]
 server = 'foo.com'
 username = 'prod user'
-password = false
+password = false  #  in prod this value must come from .secrets.toml or vault server
 STATIC_URL = '/changed/in/settings.toml/by/dynaconf/'
 
 [dev]
 username = 'dev user'</pre>
     """)
     tests.append('<b>.secrets.toml</b>')
-    tests.append("""<pre>[dynaconf]
+    tests.append("""<pre>[dev]
 password = 'My5up3r53c4et'</pre>
     """)
 
@@ -34,14 +34,12 @@ password = 'My5up3r53c4et'</pre>
     tests.append(f"settings.USERNAME: {settings.USERNAME}")
     tests.append(f"settings.PASSWORD: {settings.PASSWORD}")
 
-    # # Django threading is having problems with namespace switch
-    # # using the .namespace method
-    # with settings.using_namespace('dev'):
-    #     tests.append('<b>$ In dev namespace</b>')
-    #     tests.append(f"settings.STATIC_URL: {settings.STATIC_URL}")
-    #     tests.append(f"settings.SERVER: {settings.SERVER}")
-    #     tests.append(f"settings.USERNAME: {settings.USERNAME}")
-    #     tests.append(f"settings.PASSWORD: {settings.PASSWORD}")
+    with settings.using_namespace('dev'):
+        tests.append('<b>$ In dev namespace</b>')
+        tests.append(f"settings.STATIC_URL: {settings.STATIC_URL}")
+        tests.append(f"settings.SERVER: {settings.SERVER}")
+        tests.append(f"settings.USERNAME: {settings.USERNAME}")
+        tests.append(f"settings.PASSWORD: {settings.PASSWORD}")
 
     # settings.namespace('dev')
     return HttpResponse(
