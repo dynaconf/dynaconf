@@ -30,5 +30,5 @@ foo = 'bar testing'
 [customenv]
 server = 'customserver.com'
 
-[global]
+[global]  # This is the same as using DJANGO_* in envvars
 foo = 'It overrides every other env'

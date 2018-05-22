@@ -1,6 +1,6 @@
 import pytest
 from dynaconf import LazySettings
-from dynaconf.loaders.ini_loader import load, clean
+from dynaconf.loaders.ini_loader import load
 
 settings = LazySettings(
     ENV_FOR_DYNACONF='PRODUCTION',
@@ -142,6 +142,6 @@ def test_cleaner():
     load(settings, filename=INI)
     assert settings.HOST == 'prodserver.com'
 
-    clean(settings, settings.current_env)
+    settings.clean()
     with pytest.raises(AttributeError):
         settings.HOST

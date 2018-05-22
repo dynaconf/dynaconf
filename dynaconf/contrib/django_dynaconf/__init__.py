@@ -14,6 +14,12 @@ Now in the root of your Django project
 
 Put your config files settings.{py|yaml|toml|ini|json}
 and or .secrets.{py|yaml|toml|ini|json}
+
+On your projects root folder now you can start as
+
+DJANGO_DEBUG='@bool false' \
+DJANGO_ALLOWED_HOSTS='@json ["localhost"]' \
+python manage.py runserver
 """
 
 import sys

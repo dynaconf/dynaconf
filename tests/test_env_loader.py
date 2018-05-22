@@ -1,6 +1,6 @@
 import os
 import pytest
-from dynaconf.loaders.env_loader import load, clean
+from dynaconf.loaders.env_loader import load
 from dynaconf import settings  # noqa
 
 # Default env vars
@@ -116,4 +116,6 @@ def test_fresh_context():
 
 
 def test_cleaner():
-    clean(settings, settings.current_env)
+    settings.clean()
+    with pytest.raises(AttributeError):
+        settings.HOSTNAME

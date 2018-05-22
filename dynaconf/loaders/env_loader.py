@@ -71,11 +71,3 @@ def load_from_env(identifier, key, env, obj, silent):
             obj.logger.error(str(e))
         else:
             raise
-
-
-def clean(obj, env, silent=True):  # noqa
-    for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('env_loader'):
-            for key in data:
-                obj.logger.debug("cleaning: %s (%s)", key, identifier)
-                obj.unset(key)

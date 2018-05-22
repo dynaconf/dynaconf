@@ -1,6 +1,7 @@
 .PHONY: test install pep8 release clean doc test_examples test_vault test_redis
 
 test_examples:
+	@cd example/common;pwd;python program.py
 	@cd example/;pwd;python full_example.py | grep -c full_example
 	@cd example/;pwd;python compat.py
 	@cd example/app;pwd;python app.py | grep -c app

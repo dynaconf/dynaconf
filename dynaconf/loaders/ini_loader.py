@@ -105,11 +105,3 @@ def load_from_ini(obj, files, envs, silent=True, key=None):
                 obj.update(data, loader_identifier=identifier)
             elif key in data:
                 obj.set(key, data.get(key), loader_identifier=identifier)
-
-
-def clean(obj, env, silent=True):  # noqa
-    for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('ini_loader'):
-            for key in data:
-                obj.logger.debug("cleaning: %s (%s)", key, identifier)
-                obj.unset(key)

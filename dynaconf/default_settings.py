@@ -53,8 +53,8 @@ PROJECT_ROOT_FOR_DYNACONF = get('PROJECT_ROOT_FOR_DYNACONF', ".")
 # Default settings file
 default_paths = (
     'settings.py,.secrets.py,'
-    'settings.yaml,settings.yml,.secrets.yaml,.secrets.yml,'
     'settings.toml,settings.tml,.secrets.toml,.secrets.tml,'
+    'settings.yaml,settings.yml,.secrets.yaml,.secrets.yml,'
     'settings.ini,settings.conf,settings.properties,'
     '.secrets.ini,.secrets.conf,.secrets.properties,'
     'settings.json,.secrets.json'

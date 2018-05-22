@@ -19,6 +19,7 @@ from dynaconf.transformator import TransformatorList
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data
 from dynaconf.utils.files import find_file
+from dynaconf.utils import BANNER
 from dynaconf.validator import ValidatorList
 from dynaconf.utils.boxing import DynaBox
 
@@ -130,6 +131,8 @@ class Settings(object):
     """
     Common logic for settings whether set by a module or by the user.
     """
+
+    dynaconf_banner = BANNER
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         """Execute loaders and custom initialization"""

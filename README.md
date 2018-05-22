@@ -1,6 +1,11 @@
-
-<img src="https://raw.githubusercontent.com/rochacbruno/dynaconf/master/dynaconf_joystick.png" align="left" width="192px" height="192px"/>
-<img align="left" width="0" height="192px" hspace="10"/>
+```
+██████╗ ██╗   ██╗███╗   ██╗ █████╗  ██████╗ ██████╗ ███╗   ██╗███████╗
+██╔══██╗╚██╗ ██╔╝████╗  ██║██╔══██╗██╔════╝██╔═══██╗████╗  ██║██╔════╝
+██║  ██║ ╚████╔╝ ██╔██╗ ██║███████║██║     ██║   ██║██╔██╗ ██║█████╗
+██║  ██║  ╚██╔╝  ██║╚██╗██║██╔══██║██║     ██║   ██║██║╚██╗██║██╔══╝
+██████╔╝   ██║   ██║ ╚████║██║  ██║╚██████╗╚██████╔╝██║ ╚████║██║
+╚═════╝    ╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝
+```
 
 > **dynaconf** - The **dyna**mic **conf**igurator for your Python Project
 
@@ -16,15 +21,12 @@ and extensions for **Flask** and **Django**.
 ## install Dynaconf in a Python 3 environment
 
 ```bash
-# to use with settings.py, settings.json, .env or environment vars
+# Default installation supports .py, .toml, .json file formats
+# and also reading from environment variables (.env supported)
 pip3 install dynaconf
 
-# to include support for more file formats
-pip3 install dynaconf[yaml]
-pip3 install dynaconf[toml]
-pip3 install dynaconf[ini]
-pip3 install dynaconf[redis]
-pip3 install dynaconf[vault]
+# If you wish to include support for more sources
+pip3 install dynaconf[yaml|ini|redis|vault]
 
 # for a complete installation
 pip3 install dynaconf[all]

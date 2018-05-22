@@ -18,7 +18,7 @@ def read(*names, **kwargs):
 
 setup(
     name='dynaconf',
-    version="0.7.6",
+    version="1.0.0",
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",
@@ -30,7 +30,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     platforms='any',
-    install_requires=['six', 'python-box', 'python-dotenv'],
+    install_requires=['six', 'python-box', 'python-dotenv', 'toml', 'click'],
     tests_require=[
         "pytest",
         "pytest-cov",
@@ -42,7 +42,8 @@ setup(
         "flake8-todo",
         "radon",
         "flask>=0.12",
-        "python-dotenv"
+        "python-dotenv",
+        "toml"
     ],
     extras_require={
         "redis": ['redis'],
@@ -51,7 +52,12 @@ setup(
         "toml": ['toml'],
         "ini": ['configobj'],
         "configobj": ['configobj'],
-        "all": ['redis', 'PyYAML', 'toml', 'configobj', 'hvac'],
+        "all": ['redis', 'PyYAML', 'configobj', 'hvac'],
+    },
+    entry_points={
+        'console_scripts': [
+            'dynaconf=dynaconf.cli:main'
+        ]
     },
     setup_requires=['setuptools>=38.6.0'],
     classifiers=[
@@ -61,8 +67,6 @@ setup(
         'Operating System :: POSIX :: Linux',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ]
 )

@@ -100,15 +100,33 @@ def settings_loader(obj, settings_module=None, env=None,
             env_mod_file = os.path.join(
                 dirname, new_filename
             )
+            global_filename = "{0}_{1}{2}".format(
+                'global', filename, extension
+            )
+            global_mod_file = os.path.join(
+                dirname, global_filename
+            )
         else:
             env_mod_file = "{0}_{1}".format(
                 env.lower(), mod_file
+            )
+            global_mod_file = "{0}_{1}".format(
+                'global', mod_file
             )
 
         load_from_module(
             obj,
             env_mod_file,
             identifier='PY_MODULE_{0}'.format(env.upper()),
+            silent=True,
+            key=key
+        )
+
+        # load from global_settings.py
+        load_from_module(
+            obj,
+            global_mod_file,
+            identifier='PY_MODULE_GLOBAL',
             silent=True,
             key=key
         )
@@ -167,12 +185,3 @@ def load_from_module(obj, settings_module,
         ) if loaded_from == 'module' else os.getcwd()
         obj.set('PROJECT_ROOT_FOR_DYNACONF',
                 root, loader_identifier=identifier)
-
-
-def settings_cleaner(obj, env, silent=True):  # noqa
-    """The main python module never gets cleaned, only the _envd"""
-    for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('PY_MODULE'):
-            for key in data:
-                obj.logger.debug("cleaning: %s (%s)", key, identifier)
-                obj.unset(key)

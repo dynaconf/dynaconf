@@ -47,19 +47,6 @@ def load(obj, env=None, silent=True, key=None):
         raise
 
 
-def clean(obj, env, silent=True):  # noqa
-    """
-    After a load, all loaded vars are stored at loaded_by_loaders
-    clean should clean only the loaded vars.
-    :param obj: the settings instance
-    :param env: settings env default='DYNACONF'
-    :param silent: if errors should raise
-    :return:
-    """
-    for key in obj.loaded_by_loaders.get(IDENTIFIER, {}):
-        obj.unset(key)
-
-
 def write(obj, data=None, **kwargs):
     """
     Write a value in to loader source
