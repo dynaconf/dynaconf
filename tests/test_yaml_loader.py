@@ -3,30 +3,40 @@ from dynaconf import LazySettings
 from dynaconf.loaders.yaml_loader import load, clean
 
 settings = LazySettings(
-    NAMESPACE_FOR_DYNACONF='EXAMPLE',
+    ENV_FOR_DYNACONF='PRODUCTION',
 )
 
 
 YAML = """
 # the bellow is just to ensure `,` will not break string YAML
-a: "a,b"
-example:
+a: 'a,b'
+default:
   password: 99999
   host: server.com
   port: 8080
+  alist:
+    - item1
+    - item2
+    - 23
   service:
     url: service.com
     port: 80
     auth:
-        password: qwerty
-        test: 1234
+      password: qwerty
+      test: 1234
 development:
   password: 88888
-  host: dev_server.com
+  host: devserver.com
+production:
+  password: 11111
+  host: prodserver.com
+global:
+  global_value: global
+
 """
 
 YAML2 = """
-example:
+global:
   # @float casting not needed, used only for testing
   secret: '@float 42'
   password: 123456
@@ -39,17 +49,18 @@ YAMLS = [YAML, YAML2]
 def test_load_from_yaml():
     """Assert loads from YAML string"""
     load(settings, filename=YAML)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
     assert settings.PORT == 8080
+    assert settings.ALIST == ['item1', 'item2', 23]
     assert settings.SERVICE['url'] == 'service.com'
     assert settings.SERVICE.url == 'service.com'
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=YAML, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=YAML, env='DEVELOPMENT')
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=YAML)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
 
 
 def test_load_from_multiple_yaml():
@@ -64,33 +75,34 @@ def test_load_from_multiple_yaml():
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=YAMLS, namespace='DEVELOPMENT')
+    load(settings, filename=YAMLS, env='DEVELOPMENT')
     assert settings.PORT == 8080
     assert settings.HOST == 'otheryaml.com'
     load(settings, filename=YAMLS)
     assert settings.HOST == 'otheryaml.com'
     assert settings.PASSWORD == 123456
-    load(settings, filename=YAML, namespace='DEVELOPMENT')
+    load(settings, filename=YAML, env='DEVELOPMENT')
     assert settings.PORT == 8080
-    assert settings.HOST == 'dev_server.com'
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=YAML)
-    assert settings.HOST == 'server.com'
-    assert settings.PASSWORD == 99999
+    assert settings.HOST == 'prodserver.com'
+    assert settings.PASSWORD == 11111
+
 
 def test_no_filename_is_none():
     """Assert if passed no filename return is None"""
     assert load(settings) is None
 
 
-def test_key_error_on_invalid_namespace():
-    """Assert error raised if namespace is not found in YAML"""
+def test_key_error_on_invalid_env():
+    """Assert error raised if env is not found in YAML"""
     with pytest.raises(KeyError):
-        load(settings, filename=YAML, namespace='FOOBAR', silent=False)
+        load(settings, filename=YAML, env='FOOBAR', silent=False)
 
 
-def test_no_key_error_on_invalid_namespace():
-    """Assert error raised if namespace is not found in YAML"""
-    load(settings, filename=YAML, namespace='FOOBAR', silent=True)
+def test_no_key_error_on_invalid_env():
+    """Assert error raised if env is not found in YAML"""
+    load(settings, filename=YAML, env='FOOBAR', silent=True)
 
 
 def test_load_single_key():
@@ -100,7 +112,7 @@ def test_load_single_key():
        bar: blaz
        zaz: naz
     """
-    load(settings, filename=yaml, namespace='FOO', key='bar')
+    load(settings, filename=yaml, env='FOO', key='bar')
     assert settings.BAR == 'blaz'
     assert settings.exists('BAR') is True
     assert settings.exists('ZAZ') is False
@@ -111,11 +123,11 @@ def test_extra_yaml():
     load(settings, filename=YAML)
     yaml = """
     example:
-       hello: world
+       helloexample: world
     """
     settings.set('YAML', yaml)
-    settings.execute_loaders(namespace='EXAMPLE')
-    assert settings.HELLO == 'world'
+    settings.execute_loaders(env='EXAMPLE')
+    assert settings.HELLOEXAMPLE == 'world'
 
 
 def test_multi_extra_yaml():
@@ -123,15 +135,15 @@ def test_multi_extra_yaml():
     load(settings, filename=YAMLS)
     yaml = """
     example:
-       hello: world
+       helloexample: world
     """
     yaml2 = """
     example:
        foo: bar
     """
     settings.set('YAML', [yaml, yaml2])
-    settings.execute_loaders(namespace='EXAMPLE')
-    assert settings.HELLO == 'world'
+    settings.execute_loaders(env='EXAMPLE')
+    assert settings.HELLOEXAMPLE == 'world'
     assert settings.FOO == 'bar'
 
 
@@ -145,15 +157,19 @@ def test_multiple_filenames():
 
 def test_cleaner():
     load(settings, filename=YAML)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
     assert settings.PORT == 8080
+    assert settings.ALIST == ['item1', 'item2', 23]
     assert settings.SERVICE['url'] == 'service.com'
     assert settings.SERVICE.url == 'service.com'
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=YAML, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=YAML, env='DEVELOPMENT')
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=YAML)
-    assert settings.HOST == 'server.com'
-    clean(settings, settings.namespace)
+    assert settings.HOST == 'prodserver.com'
+
+    clean(settings, settings.current_env)
+    with pytest.raises(AttributeError):
+        settings.HOST

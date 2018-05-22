@@ -1,7 +1,34 @@
-[dynaconf]
+[default]
 server = 'foo.com'
-username = 'prod user'
+username = 'default user'
 password = false  #  in prod this value must come from .secrets.toml or vault server
 STATIC_URL = '/changed/in/settings.toml/by/dynaconf/'
-[dev]
+foo = 'bar'
+
+[development]
 username = 'dev user'
+foo = 'bar dev'
+server = 'devserver.com'
+
+# This is set as the default by .env
+# export ENV_FOR_DYNACONF=PRODUCTION
+[production]
+server = 'prodserver.com'
+username = 'prod user'
+foo = 'bar prod'
+
+[staging]
+server = 'stagingserver.com'
+username = 'staging user'
+foo = 'bar stag'
+
+[testing]
+server = 'stagingserver.com'
+username = 'testing user'
+foo = 'bar testing'
+
+[customenv]
+server = 'customserver.com'
+
+[global]
+foo = 'It overrides every other env'

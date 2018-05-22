@@ -8,8 +8,27 @@ except ImportError:  # pragma: no cover
     find_dotenv = lambda: None  # noqa
 
 
+def try_renamed(key, value, current_key, older_key):
+    if value is None:
+        if key == current_key:
+            value = os.environ.get(older_key)
+    return value
+
+
 def get(key, default=None):
-    return parse_conf_data(os.environ.get(key.upper(), default))
+    value = os.environ.get(key.upper())
+
+    # compatibility renames before 1.x version
+    value = try_renamed(key, value, 'ENV_FOR_DYNACONF',
+                        'NAMESPACE_FOR_DYNACONF')
+    value = try_renamed(key, value, 'ENV_FOR_DYNACONF',
+                        'DYNACONF_NAMESPACE')
+    value = try_renamed(key, value, 'DEFAULT_ENV_FOR_DYNACONF',
+                        'BASE_NAMESPACE_FOR_DYNACONF')
+    value = try_renamed(key, value, 'SETTINGS_MODULE_FOR_DYNACONF',
+                        'DYNACONF_SETTINGS')
+
+    return parse_conf_data(value if value is not None else default)
 
 
 def start_dotenv(obj=None):
@@ -43,12 +62,27 @@ default_paths = (
 SETTINGS_MODULE_FOR_DYNACONF = get('SETTINGS_MODULE_FOR_DYNACONF',
                                    default_paths)
 
-# Namespace for envvars
-NAMESPACE_FOR_DYNACONF = get('NAMESPACE_FOR_DYNACONF', 'DYNACONF')
-BASE_NAMESPACE_FOR_DYNACONF = get('BASE_NAMESPACE_FOR_DYNACONF', 'DYNACONF')
+# # ENV SETTINGS
+# # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`
+
+# The current env by default is DEVELOPMENT
+# to switch is needed to `export ENV_FOR_DYNACONF=PRODUCTION`
+# or put that value in .env file
+# this value is used only when reading files like .toml|yaml|ini|json
+ENV_FOR_DYNACONF = get('ENV_FOR_DYNACONF', 'DEVELOPMENT')
+
+# Default values is taken from DEFAULT pseudo env
+# this value is used only when reading files like .toml|yaml|ini|json
+DEFAULT_ENV_FOR_DYNACONF = get('DEFAULT_ENV_FOR_DYNACONF', 'DEFAULT')
+
+# Global values are taken from DYNACONF env used for exported envvars
+# Values here overwrites all other envs
+# This namespace is used for files and also envvars
+GLOBAL_ENV_FOR_DYNACONF = get('GLOBAL_ENV_FOR_DYNACONF', 'DYNACONF')
 
 # The env var specifying settings module
-ENVVAR_FOR_DYNACONF = get('ENVVAR_FOR_DYNACONF', 'DYNACONF_SETTINGS')
+ENVVAR_FOR_DYNACONF = get('ENVVAR_FOR_DYNACONF',
+                          'SETTINGS_MODULE_FOR_DYNACONF')
 
 # Default values for redis configs
 default_redis = {
@@ -79,9 +113,9 @@ default_vault = {
 VAULT_FOR_DYNACONF = get('VAULT_FOR_DYNACONF', default_vault)
 VAULT_FOR_DYNACONF_ENABLED = get('VAULT_FOR_DYNACONF_ENABLED', False)
 VAULT_FOR_DYNACONF_PATH = get('VAULT_FOR_DYNACONF_PATH',
-                              '/secret/data/')  # /namespace will be added
+                              '/secret/data/')  # /DYNACONF will be added
 
-# Loaders to read namespace based vars from different data stores
+# Loaders to read env based vars from different data stores
 default_loaders = [
     'dynaconf.loaders.env_loader',
     # 'dynaconf.loaders.redis_loader'

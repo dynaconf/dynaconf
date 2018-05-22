@@ -28,7 +28,7 @@ def default_loader(obj, defaults=None):
     # check overrides in env vars
     default_settings.start_dotenv(obj)
     for key in all_keys:
-        env_value = obj.get_env(key, '_not_found')
+        env_value = obj.get_environ(key, '_not_found')
         if env_value != '_not_found':
             obj.logger.debug(
                 "default_loader:overriding from envvar: %s:%s",
@@ -37,7 +37,7 @@ def default_loader(obj, defaults=None):
             obj.set(key, env_value)
 
 
-def settings_loader(obj, settings_module=None, namespace=None,
+def settings_loader(obj, settings_module=None, env=None,
                     silent=True, key=None):
     """Loads from defined settings module, path or yaml"""
     obj.logger.debug('executing settings_loader: %s', settings_module)
@@ -71,7 +71,7 @@ def settings_loader(obj, settings_module=None, namespace=None,
                 loader['loader'].load(
                     obj,
                     filename=mod_file,
-                    namespace=namespace,
+                    env=env,
                     silent=silent,
                     key=key
                 )
@@ -84,33 +84,34 @@ def settings_loader(obj, settings_module=None, namespace=None,
 
         obj.logger.debug("Trying to load Python module {}".format(mod_file))
 
-        # load from default defined module if exists (never gets cleaned)
+        # load from default defined module settings.py or .secrets.py if exists
         load_from_module(obj, mod_file, key=key)
 
-        if namespace and namespace != obj.BASE_NAMESPACE_FOR_DYNACONF:
-            if mod_file.endswith('.py'):
-                dirname = os.path.dirname(mod_file)
-                filename, extension = os.path.splitext(
-                    os.path.basename(mod_file)
-                )
-                new_filename = "{0}_{1}{2}".format(
-                    namespace.lower(), filename, extension
-                )
-                namespace_mod_file = os.path.join(
-                    dirname, new_filename
-                )
-            else:
-                namespace_mod_file = "{0}_{1}".format(
-                    namespace.lower(), mod_file
-                )
-
-            load_from_module(
-                obj,
-                namespace_mod_file,
-                identifier='PY_MODULE_{0}'.format(namespace.upper()),
-                silent=True,
-                key=key
+        # load from the current env e.g: development_settings.py
+        env = env or obj.current_env
+        if mod_file.endswith('.py'):
+            dirname = os.path.dirname(mod_file)
+            filename, extension = os.path.splitext(
+                os.path.basename(mod_file)
             )
+            new_filename = "{0}_{1}{2}".format(
+                env.lower(), filename, extension
+            )
+            env_mod_file = os.path.join(
+                dirname, new_filename
+            )
+        else:
+            env_mod_file = "{0}_{1}".format(
+                env.lower(), mod_file
+            )
+
+        load_from_module(
+            obj,
+            env_mod_file,
+            identifier='PY_MODULE_{0}'.format(env.upper()),
+            silent=True,
+            key=key
+        )
 
 
 def enable_external_loaders(obj):
@@ -168,8 +169,8 @@ def load_from_module(obj, settings_module,
                 root, loader_identifier=identifier)
 
 
-def settings_cleaner(obj, namespace, silent=True):  # noqa
-    """The main python module never gets cleaned, only the _namespaced"""
+def settings_cleaner(obj, env, silent=True):  # noqa
+    """The main python module never gets cleaned, only the _envd"""
     for identifier, data in obj.loaded_by_loaders.items():
         if identifier.startswith('PY_MODULE'):
             for key in data:

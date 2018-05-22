@@ -14,18 +14,17 @@ except ImportError as e:
 IDENTIFIER = 'redis_loader'
 
 
-def load(obj, namespace=None, silent=True, key=None):
+def load(obj, env=None, silent=True, key=None):
     """
     Reads and loads in to "settings" a single key or all keys from redis
     :param obj: the settings instance
-    :param namespace: settings namespace default='DYNACONF'
+    :param env: settings env default='DYNACONF'
     :param silent: if errors should raise
-    :param key: if defined load a single key, else load all in namespace
+    :param key: if defined load a single key, else load all in env
     :return: None
     """
     redis = StrictRedis(**obj.get('REDIS_FOR_DYNACONF'))
-    namespace = namespace or obj.current_namespace
-    holder = "DYNACONF_%s" % namespace
+    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
     try:
         if key:
             value = redis.hget(holder.upper(), key)
@@ -48,12 +47,12 @@ def load(obj, namespace=None, silent=True, key=None):
         raise
 
 
-def clean(obj, namespace, silent=True):  # noqa
+def clean(obj, env, silent=True):  # noqa
     """
     After a load, all loaded vars are stored at loaded_by_loaders
     clean should clean only the loaded vars.
     :param obj: the settings instance
-    :param namespace: settings namespace default='DYNACONF'
+    :param env: settings env default='DYNACONF'
     :param silent: if errors should raise
     :return:
     """
@@ -70,7 +69,7 @@ def write(obj, data=None, **kwargs):
     :return:
     """
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = "DYNACONF_%s" % obj.current_namespace
+    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
     data = data or {}
     data.update(kwargs)
     if not data:
@@ -85,13 +84,13 @@ def write(obj, data=None, **kwargs):
 
 def delete(obj, key=None):
     """
-    Delete a single key if specified, or all namespace if key is none
+    Delete a single key if specified, or all env if key is none
     :param obj: settings object
     :param key: key to delete from store location
     :return: None
     """
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = "DYNACONF_%s" % obj.current_namespace
+    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
     if key:
         client.hdel(holder.upper(), key.upper())
         obj.unset(key)

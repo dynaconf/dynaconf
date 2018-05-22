@@ -10,7 +10,7 @@ app = Flask(__name__)
 FlaskDynaconf(
     app,
     ENVVAR_FOR_DYNACONF="MYSITE_SETTINGS_MODULE",
-    NAMESPACE_FOR_DYNACONF='MYSITE',
+    ENV_FOR_DYNACONF='MYSITE',
     SETTINGS_MODULE_FOR_DYNACONF='settings.yml,.secrets.yml',
     EXTRA_VALUE='You can add aditional config vars here'
 )

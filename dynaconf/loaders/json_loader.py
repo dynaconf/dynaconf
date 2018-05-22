@@ -6,20 +6,20 @@ from dynaconf.utils.files import find_file
 IDENTIFIER = 'json_loader'
 
 
-def load(obj, namespace=None, silent=True, key=None, filename=None):
+def load(obj, env=None, silent=True, key=None, filename=None):
     """
     Reads and loads in to "settings" a single key or all keys from json file
     :param obj: the settings instance
-    :param namespace: settings namespace default='DYNACONF'
+    :param env: settings env default='DYNACONF'
     :param silent: if errors should raise
-    :param key: if defined load a single key, else load all in namespace
+    :param key: if defined load a single key, else load all in env
     :return: None
     """
     filename = filename or obj.get('JSON')
     if not filename:
         return
 
-    namespace = namespace or obj.current_namespace
+    env = env or obj.current_env
 
     # can be a filename settings.yml
     # can be a multiple fileset settings1.json, settings2.json etc
@@ -34,15 +34,21 @@ def load(obj, namespace=None, silent=True, key=None, filename=None):
     else:  # it is already a list/tuple
         files = filename
 
-    # load
-    namespace_list = [obj.get('BASE_NAMESPACE_FOR_DYNACONF')]
-    # import ipdb; ipdb.set_trace()
-    if namespace and namespace not in namespace_list:
-        namespace_list.append(namespace)
-    load_from_json(obj, files, namespace_list, silent, key)
+    # add the default env
+    env_list = [obj.get('DEFAULT_ENV_FOR_DYNACONF')]
+    # add the current env
+    if env and env not in env_list:
+        env_list.append(env)
+    # add the global env
+    global_env = obj.get('GLOBAL_ENV_FOR_DYNACONF')
+    if global_env not in env_list:
+        env_list.append(global_env)
+    env_list.append('GLOBAL')
+    # load all envs
+    load_from_json(obj, files, env_list, silent, key)
 
 
-def load_from_json(obj, files, namespaces, silent=True, key=None):
+def load_from_json(obj, files, envs, silent=True, key=None):
 
     for json_file in files:
         if json_file.endswith(JSON_EXTENSIONS):  # pragma: no cover
@@ -64,31 +70,31 @@ def load_from_json(obj, files, namespaces, silent=True, key=None):
 
         json_data = {key.lower(): value for key, value in json_data.items()}
 
-        for namespace in namespaces:
+        for env in envs:
 
             data = {}
             try:
-                data = json_data[namespace.lower()]
+                data = json_data[env.lower()]
             except KeyError:
-                message = '%s namespace not defined in %s' % (
-                    namespace, json_file)
+                message = '%s env not defined in %s' % (
+                    env, json_file)
                 if silent:
                     obj.logger.warning(message)
                 else:
                     raise KeyError(message)
 
-            if namespace != obj.get('BASE_NAMESPACE_FOR_DYNACONF'):
-                identifier = "{0}_{1}".format(IDENTIFIER, namespace.lower())
+            if env != obj.get('DEFAULT_ENV_FOR_DYNACONF'):
+                identifier = "{0}_{1}".format(IDENTIFIER, env.lower())
             else:
                 identifier = IDENTIFIER
 
             if not key:
                 obj.update(data, loader_identifier=identifier)
-            else:
+            elif key in data:
                 obj.set(key, data.get(key), loader_identifier=identifier)
 
 
-def clean(obj, namespace, silent=True):  # noqa
+def clean(obj, env, silent=True):  # noqa
     for identifier, data in obj.loaded_by_loaders.items():
         if identifier.startswith('json_loader'):
             for key in data:

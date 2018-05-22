@@ -28,40 +28,41 @@ class LazySettings(LazyObject):
     When you do:
     >>> from dynaconf import settings
     a LazySettings is imported and is initialized with only default_settings.
-    When you first access a value, this will be set up using either a
-    defined module in DYNACONF_SETTINGS environment variable.
+
+    Then when you first access a value, this will be set up and loaders will
+    be executes looking for default config files or the file defined in
+    SETTINGS_MODULE_FOR_DYNACONF variable
 
     >>> settings.SETTINGS_MODULE
     Or when you call
     >>> settings.configure(settings_module='/tmp/settings.py')
     You can define in your settings module a list of loaders to get values
     from different stores. By default it will try environment variables
-    starting with NAMESPACE_FOR_DYNACONF (by defaulf "DYNACONF_")
+    starting with GLOBAL_ENV_FOR_DYNACONF (by defaulf "DYNACONF_")
 
     You can also import this directly and customize it.
     in a file proj/conf.py
     >>> from dynaconf import LazySettings
-    >>> config = LazySettings(ENVVAR_FOR_DYNACONF="PROJ_CONF_FILE",
-    ...                       NAMESPACE_FOR_DYNACONF='PROJ',
+    >>> config = LazySettings(ENV_FOR_DYNACONF='PROJ',
     ...                       LOADERS_FOR_DYNACONF=[
     ...                             'dynaconf.loaders.env_loader',
     ...                             'dynaconf.loaders.redis_loader'
     ...                       ])
 
-    save safe values in a settings file
+    save common values in a settings file
     $ echo "SERVER_IP = '10.10.10.10'" > proj/settings.py
 
-    define where the settings file is
-    $ export PROJ_CONF_FILE=proj.settings
+    or use .toml|.yaml|.ini|.json
 
-    save unsafe values in environment variable
-    $ export PROJ_SERVER_PASSWD='super_secret'
+    save sensitive values in .secrets.{py|toml|yaml|ini|json}
+    or export as DYNACONF global environment variable
+    $ export DYNACONF_SERVER_PASSWD='super_secret'
 
     >>> # from proj.conf import config
     >>> print config.SERVER_IP
     >>> print config.SERVER_PASSWD
 
-    and now it reads all variables starting with PROJ_ from envvars
+    and now it reads all variables starting with DYNACONF_ from envvars
     and all values in a hash called DYNACONF_PROJ in redis
     """
 
@@ -83,7 +84,7 @@ class LazySettings(LazyObject):
         if name in self._wrapped._deleted:  # noqa
             raise AttributeError(
                 "Attribute %s was deleted, "
-                "or belongs to different namespace" % name
+                "or belongs to different env" % name
             )
         if (
             name.isupper() and
@@ -129,26 +130,20 @@ class Settings(object):
     """
     Common logic for settings whether set by a module or by the user.
     """
-    _logger = None
-    _fresh = False
-    _loaded_namespaces = []
-    _deleted = set()
-    _store = {}
-    _loaded_by_loaders = {}
-    _loaders = []
-    _defaults = {}
-    env = os.environ
-
-    SETTINGS_MODULE = None
-    NAMESPACE_FOR_DYNACONF = None
-    ENVVAR_FOR_DYNACONF = None
-    REDIS_FOR_DYNACONF = None
-    LOADERS_FOR_DYNACONF = None
-    SILENT_ERRORS_FOR_DYNACONF = None
-    FRESH_VARS_FOR_DYNACONF = None
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         """Execute loaders and custom initialization"""
+        self._logger = None
+        self._fresh = False
+        self._loaded_envs = []
+        self._deleted = set()
+        self._store = {}
+        self._loaded_by_loaders = {}
+        self._loaders = []
+        self._defaults = {}
+        self.environ = os.environ
+        self.SETTINGS_MODULE = None
+
         compat_kwargs(kwargs)
         if settings_module:
             self.set('SETTINGS_MODULE', settings_module)
@@ -166,9 +161,11 @@ class Settings(object):
 
     def __setattr__(self, name, value):
         """Allow settings.FOO = 'value' and deal with _deleted"""
-        self._deleted.discard(name)
-        # self._defaults[name] = value
-        # self._store[name] = value
+        try:
+            self._deleted.discard(name)
+        except AttributeError:
+            pass
+
         super(Settings, self).__setattr__(name, value)
 
     def __delattr__(self, name):
@@ -190,14 +187,7 @@ class Settings(object):
 
     @property
     def store(self):
-        """Get or create internal storage"""
-        if not self._store:
-            self._store = {
-                key: value
-                for key, value
-                in default_settings.__dict__.items()
-                if key.isupper()
-            }
+        """Gets internal storage"""
         return self._store
 
     def keys(self):
@@ -258,7 +248,7 @@ class Settings(object):
         """
         return self.get(key, default=default, cast=cast, fresh=True)
 
-    def get_env(self, key, default=None, cast=None):
+    def get_environ(self, key, default=None, cast=None):
         """
         Get value from environment variable using os.environ.get
         :param key: The name of the setting value, will always be upper case
@@ -268,7 +258,7 @@ class Settings(object):
         :return: The value if found, default or None
         """
         key = key.upper()
-        data = self.env.get(key, default)
+        data = self.environ.get(key, default)
         if data:
             if cast in converters:
                 data = converters.get(cast)(data)
@@ -276,9 +266,9 @@ class Settings(object):
                 data = parse_conf_data(data)
         return data
 
-    def exists_in_env(self, key):
+    def exists_in_environ(self, key):
         """Return True if env variable is exported"""
-        return key.upper() in self.env
+        return key.upper() in self.environ
 
     def as_bool(self, key):
         """Partial method for get with cast"""
@@ -302,16 +292,19 @@ class Settings(object):
         return raw_logger()
 
     @property
-    def loaded_namespaces(self):
-        """Get or create internal loaded namespaces list"""
-        if not self._loaded_namespaces:
-            self._loaded_namespaces = []
-        return self._loaded_namespaces
+    def loaded_envs(self):
+        """Get or create internal loaded envs list"""
+        if not self._loaded_envs:
+            self._loaded_envs = []
+        return self._loaded_envs
 
-    @loaded_namespaces.setter
-    def loaded_namespaces(self, value):
-        """Setter for namespace list"""
-        self._loaded_namespaces = value
+    # compat
+    loaded_namespaces = loaded_envs
+
+    @loaded_envs.setter
+    def loaded_envs(self, value):
+        """Setter for env list"""
+        self._loaded_envs = value
 
     @property
     def loaded_by_loaders(self):
@@ -319,35 +312,38 @@ class Settings(object):
         return self._loaded_by_loaders
 
     @contextmanager
-    def using_namespace(self, namespace, clean=True, silent=True):
+    def using_env(self, env, clean=True, silent=True):
         """
-        This context manager allows the contextual use of a different namespace
+        This context manager allows the contextual use of a different env
         Example:
-        $ export DYNACONF_MESSAGE='This is in DYNACONF namespace'
-        $ export OTHER_MESSAGE='This is in OTHER namespace'
+        $ export DYNACONF_MESSAGE='This is in DYNACONF env'
+        $ export OTHER_MESSAGE='This is in OTHER env'
         >>> from dynaconf import settings
         >>> print settings.MESSAGE
-        'This is in DYNACONF namespace'
-        >>> with settings.using_namespace('OTHER'):
+        'This is in DYNACONF env'
+        >>> with settings.using_env('OTHER'):
         ...    print settings.MESSAGE
-        'This is in OTHER namespace'
+        'This is in OTHER env'
         >>> print settings.MESSAGE
-        'This is in DYNACONF namespace'
+        'This is in DYNACONF env'
 
-        :param namespace: Upper case name of namespace without any _
+        :param env: Upper case name of env without any _
         :param clean: If preloaded vars should be cleaned
         :param silent: Silence errors
         :return: context
         """
         try:
-            self.namespace(namespace, clean=clean, silent=silent)
-            self.logger.debug("In Namespace: %s", namespace)
+            self.setenv(env, clean=clean, silent=silent)
+            self.logger.debug("In env: %s", env)
             yield
         finally:
-            if namespace.lower() != self.NAMESPACE_FOR_DYNACONF.lower():
-                del self.loaded_namespaces[-1]
-            self.logger.debug("Out Namespace: %s", namespace)
-            self.namespace(self.current_namespace, clean=clean)
+            if env.lower() != self.ENV_FOR_DYNACONF.lower():
+                del self.loaded_envs[-1]
+            self.logger.debug("Out env: %s", env)
+            self.setenv(self.current_env, clean=clean)
+
+    # compat
+    using_namespace = using_env
 
     @contextmanager
     def fresh(self):
@@ -374,12 +370,14 @@ class Settings(object):
         self._fresh = False
 
     @property
-    def current_namespace(self):
-        """Return the current active namespace"""
+    def current_env(self):
+        """Return the current active env"""
         try:
-            return self.loaded_namespaces[-1]
+            return self.loaded_envs[-1]
         except IndexError:
-            return self.NAMESPACE_FOR_DYNACONF
+            return self.ENV_FOR_DYNACONF
+    # compat
+    current_namespace = current_env
 
     @property
     def settings_module(self):
@@ -392,61 +390,53 @@ class Settings(object):
             self.set('SETTINGS_MODULE', settings_module)
         return self.SETTINGS_MODULE
 
-    def namespace(self, namespace=None, clean=True, silent=True):
+    def setenv(self, env=None, clean=True, silent=True):
         """
-        Used to interactively change the namespace
-        $ export DYNACONF_MESSAGE='This is in DYNACONF namespace'
-        $ export OTHER_MESSAGE='This is in OTHER namespace'
+        Used to interactively change the env
+        $ export DYNACONF_MESSAGE='This is in DYNACONF env'
+        $ export OTHER_MESSAGE='This is in OTHER env'
         >>> from dynaconf import settings
         >>> print settings.MESSAGE
-        'This is in DYNACONF namespace'
-        >>> settings.namespace('OTHER')  # loaded vars from OTHER*
+        'This is in DYNACONF env'
+        >>> settings.setenv('OTHER')  # loaded vars from OTHER*
         >>> print settings.MESSAGE
-        'This is in OTHER namespace'
-        >>> settings.namespace()  # without params back to default
+        'This is in OTHER env'
+        >>> settings.setenv()  # without params back to default
         >>> print settings.MESSAGE
-        'This is in DYNACONF namespace'
+        'This is in DYNACONF env'
 
-        :param namespace: Upper case namespace name without any _
+        :param env: Upper case env name without any _
         :param clean: Should clean preloaded vars?
         :param silent: Silence errors
         :return: None
         """
-        namespace = namespace or self.NAMESPACE_FOR_DYNACONF
+        env = env or self.ENV_FOR_DYNACONF
 
-        if not isinstance(namespace, string_types):
-            raise AttributeError('namespace should be a string')
-        if "_" in namespace:
-            raise AttributeError('namespace should not contains _')
+        if not isinstance(env, string_types):
+            raise AttributeError('env should be a string')
+        if "_" in env:
+            raise AttributeError('env should not contains _')
 
-        self.logger.debug("Namespace switching to: %s", namespace)
+        self.logger.debug("env switching to: %s", env)
 
-        namespace = namespace.upper()
+        env = env.upper()
 
-        if namespace != self.NAMESPACE_FOR_DYNACONF:
-            self.loaded_namespaces.append(namespace)
+        if env != self.ENV_FOR_DYNACONF:
+            self.loaded_envs.append(env)
         else:
-            self.loaded_namespaces = []
+            self.loaded_envs = []
 
         if clean:
-            self.clean(namespace=namespace)
-        self.execute_loaders(namespace=namespace, silent=silent)
+            self.clean(env=env)
+        self.execute_loaders(env=env, silent=silent)
 
-    def clean(self, namespace=None, silent=None):
-        """Clean all loaded values to reload when switching namespaces"""
+    # compat
+    namespace = setenv
+
+    def clean(self, *args, **kwargs):
+        """Clean all loaded values to reload when switching envs"""
         for key in list(self.store.keys()):
             self.unset(key)
-
-        # # Run all cleaners?
-        # silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
-        # namespace = namespace or self.NAMESPACE_FOR_DYNACONF
-        # for loader in self.loaders:
-        #     loader.clean(self, namespace, silent=silent)
-        # json_loader.clean(self, namespace, silent=silent)
-        # ini_loader.clean(self, namespace, silent=silent)
-        # toml_loader.clean(self, namespace, silent=silent)
-        # yaml_loader.clean(self, namespace, silent=silent)
-        # settings_cleaner(self, namespace, silent=silent)
 
     def unset(self, key):
         """Unset on all references"""
@@ -521,23 +511,25 @@ class Settings(object):
 
         return self._loaders
 
-    def reload(self, namespace=None, silent=None):  # pragma: no cover
+    def reload(self, env=None, silent=None):  # pragma: no cover
         """Execute all loaders"""
-        self.execute_loaders(namespace, silent)
+        self.clean()
+        self.execute_loaders(env, silent)
 
-    def execute_loaders(self, namespace=None, silent=None, key=None):
+    def execute_loaders(self, env=None, silent=None, key=None):
         """Execute all internal and registered loaders"""
         if key is None:
             default_loader(self, self._defaults)
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
-        settings_loader(self, namespace=namespace, silent=silent, key=key)
-        self.load_extra_yaml(namespace, silent, key)  # DEPRECATED
+        settings_loader(self, env=env, silent=silent, key=key)
+        self.load_extra_yaml(env, silent, key)  # DEPRECATED
         enable_external_loaders(self)
         for loader in self.loaders:
             self.logger.debug('Loading %s', loader.__name__)
-            loader.load(self, namespace, silent=silent, key=key)
+            loader.load(self, env, silent=silent, key=key)
 
-    def load_extra_yaml(self, namespace, silent, key):
+    def load_extra_yaml(self, env, silent, key):
+        """This is deprecated, kept for compat"""
         if self.get('YAML') is not None:
             self.logger.warning(
                 "The use of YAML var is deprecated, please define multiple "
@@ -546,7 +538,7 @@ class Settings(object):
                 "'settings.py,settings.yaml,settings.toml'"
             )
             yaml_loader.load(
-                self, namespace=namespace,
+                self, env=env,
                 filename=self.get('YAML'),
                 silent=silent,
                 key=key
@@ -622,7 +614,8 @@ def raw_logger():
 def compat_kwargs(kwargs):
     """To keep backwards compat change the kwargs to new names"""
     rules = {
-        'DYNACONF_NAMESPACE': 'NAMESPACE_FOR_DYNACONF',
+        'DYNACONF_NAMESPACE': 'ENV_FOR_DYNACONF',
+        'NAMESPACE_FOR_DYNACONF': 'ENV_FOR_DYNACONF',
         'DYNACONF_SETTINGS_MODULE': 'SETTINGS_MODULE_FOR_DYNACONF',
         'SETTINGS_MODULE': 'SETTINGS_MODULE_FOR_DYNACONF',
         'PROJECT_ROOT': 'PROJECT_ROOT_FOR_DYNACONF',
@@ -637,7 +630,3 @@ def compat_kwargs(kwargs):
                 old, new
             )
             kwargs[new] = kwargs[old]
-
-    for key in ['NAMESPACE_FOR_DYNACONF', 'DYNACONF_NAMESPACE']:
-        if key in kwargs:
-            kwargs['BASE_NAMESPACE_FOR_DYNACONF'] = kwargs[key]

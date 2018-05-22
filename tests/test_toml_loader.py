@@ -3,34 +3,47 @@ from dynaconf import LazySettings
 from dynaconf.loaders.toml_loader import load, clean
 
 settings = LazySettings(
-    NAMESPACE_FOR_DYNACONF='EXAMPLE',
+    ENV_FOR_DYNACONF='PRODUCTION',
 )
 
 
 TOML = """
-[example]
-password = 99999.0
+a = "a,b"
+[default]
+password = "@int 99999"
 host = "server.com"
-port = 8080.0
+port = "@int 8080"
+alist = [
+  "item1",
+  "item2",
+  "@int 23"
+]
 
-  [example.service]
+  [default.service]
   url = "service.com"
   port = 80.0
 
-    [example.service.auth]
+    [default.service.auth]
     password = "qwerty"
     test = 1234.0
 
 [development]
-password = 88888.0
-host = "dev_server.com"
+password = "@int 88888"
+host = "devserver.com"
+
+[production]
+password = "@int 11111"
+host = "prodserver.com"
+
+[global]
+global_value = "global"
 """
 
 TOML2 = """
-[example]
+[global]
 secret = "@float 42"
 password = 123456.0
-host = "otheryaml.com"
+host = "othertoml.com"
 """
 
 TOMLS = [TOML, TOML2]
@@ -39,23 +52,24 @@ TOMLS = [TOML, TOML2]
 def test_load_from_toml():
     """Assert loads from TOML string"""
     load(settings, filename=TOML)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
     assert settings.PORT == 8080
+    assert settings.ALIST == ['item1', 'item2', 23]
     assert settings.SERVICE['url'] == 'service.com'
     assert settings.SERVICE.url == 'service.com'
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=TOML, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=TOML, env='DEVELOPMENT')
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=TOML)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
 
 
 def test_load_from_multiple_toml():
     """Assert loads from TOML string"""
     load(settings, filename=TOMLS)
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == 'othertoml.com'
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
     assert settings.PORT == 8080
@@ -64,18 +78,18 @@ def test_load_from_multiple_toml():
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=TOMLS, namespace='DEVELOPMENT')
+    load(settings, filename=TOMLS, env='DEVELOPMENT')
     assert settings.PORT == 8080
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == 'othertoml.com'
     load(settings, filename=TOMLS)
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == 'othertoml.com'
     assert settings.PASSWORD == 123456
-    load(settings, filename=TOML, namespace='DEVELOPMENT')
+    load(settings, filename=TOML, env='DEVELOPMENT')
     assert settings.PORT == 8080
-    assert settings.HOST == 'dev_server.com'
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=TOML)
-    assert settings.HOST == 'server.com'
-    assert settings.PASSWORD == 99999
+    assert settings.HOST == 'prodserver.com'
+    assert settings.PASSWORD == 11111
 
 
 def test_no_filename_is_none():
@@ -83,15 +97,15 @@ def test_no_filename_is_none():
     assert load(settings) is None
 
 
-def test_key_error_on_invalid_namespace():
-    """Assert error raised if namespace is not found in TOML"""
+def test_key_error_on_invalid_env():
+    """Assert error raised if env is not found in TOML"""
     with pytest.raises(KeyError):
-        load(settings, filename=TOML, namespace='FOOBAR', silent=False)
+        load(settings, filename=TOML, env='FOOBAR', silent=False)
 
 
-def test_no_key_error_on_invalid_namespace():
-    """Assert error raised if namespace is not found in TOML"""
-    load(settings, filename=TOML, namespace='FOOBAR', silent=True)
+def test_no_key_error_on_invalid_env():
+    """Assert error raised if env is not found in TOML"""
+    load(settings, filename=TOML, env='FOOBAR', silent=True)
 
 
 def test_load_single_key():
@@ -101,7 +115,7 @@ def test_load_single_key():
     bar = "blaz"
     zaz = "naz"
     """
-    load(settings, filename=toml, namespace='FOO', key='bar')
+    load(settings, filename=toml, env='FOO', key='bar')
     assert settings.BAR == 'blaz'
     assert settings.exists('BAR') is True
     assert settings.exists('ZAZ') is False
@@ -117,15 +131,19 @@ def test_multiple_filenames():
 
 def test_cleaner():
     load(settings, filename=TOML)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
     assert settings.PORT == 8080
+    assert settings.ALIST == ['item1', 'item2', 23]
     assert settings.SERVICE['url'] == 'service.com'
     assert settings.SERVICE.url == 'service.com'
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=TOML, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=TOML, env='DEVELOPMENT')
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=TOML)
-    assert settings.HOST == 'server.com'
-    clean(settings, settings.namespace)
+    assert settings.HOST == 'prodserver.com'
+
+    clean(settings, settings.current_env)
+    with pytest.raises(AttributeError):
+        settings.HOST

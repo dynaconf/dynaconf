@@ -9,7 +9,4 @@ for key in dir(django_settings):
     dj['ORIGINAL_SETTINGS_MODULE'] = django_settings.SETTINGS_MODULE
 
 
-settings = LazySettings(
-    NAMESPACE_FOR_DYNACONF='DYNACONF',
-    **dj
-)
+settings = LazySettings(**dj)

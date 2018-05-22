@@ -1,5 +1,5 @@
 {
-  "MYSITE": {
+  "default": {
     "DEBUG": true,
     "SERVER": "flaskdynaconf.com",
     "PORT": 6666,

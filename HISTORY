@@ -3,6 +3,13 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+1.0.0
+-----
+- Breaking changes 
+- `namespace` renamed to `env`
+- added concept of DEFAULT and GLOBAL envs 
+- `env` will default to DEVELOPMENT until changed by envvar `ENV_FOR_DYNACONF`
+
 0.7.6
 -----
 - Namespace switching fix (for django extension)

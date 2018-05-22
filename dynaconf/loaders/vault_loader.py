@@ -16,10 +16,10 @@ def get_client(obj):
     return client
 
 
-def load(obj, namespace=None, silent=None, key=None):
+def load(obj, env=None, silent=None, key=None):
     client = get_client(obj)
-    namespace = namespace or obj.current_namespace
-    path = os.path.join(obj.VAULT_FOR_DYNACONF_PATH, namespace.lower())
+    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
+    path = os.path.join(obj.VAULT_FOR_DYNACONF_PATH, holder.lower())
     data = client.read(path)
     if data:
         data = data.get('data', {}).get('data')
@@ -54,7 +54,7 @@ def write(obj, data=None, lease='1h', **kwargs):
     client = get_client(obj)
     path = os.path.join(
         obj.VAULT_FOR_DYNACONF_PATH,
-        obj.current_namespace.lower()
+        obj.get('GLOBAL_ENV_FOR_DYNACONF').lower()
     )
     client.write(path, data=data, lease=lease)
     load(obj)

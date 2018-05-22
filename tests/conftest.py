@@ -20,7 +20,7 @@ def settings():
     os.environ['PROJECT1_HOSTNAME'] = 'otherhost.com'
     sets = LazySettings(
         LOADERS_FOR_DYNACONF=loaders,
-        NAMESPACE_FOR_DYNACONF="DYNA%s" % mode,
+        ENV_FOR_DYNACONF="DYNA%s" % mode,
         boxed_data={
             'HOST': 'server.com',
             'port': 8080,

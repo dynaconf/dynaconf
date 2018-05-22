@@ -16,7 +16,7 @@ test_examples:
 	@cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini
 	@cd example/validator/;pwd;python app.py | grep -c validator
 	@cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et
-	@cd example/namespaces;pwd;python app.py
+	@cd example/envs;pwd;python app.py
 	@cd example/django_example/;pwd;python manage.py test
 
 test_vault:
@@ -38,7 +38,7 @@ install:
 pep8:
 	@flake8 dynaconf --ignore=F403
 
-release: clean test
+release: clean test_examples test
 	@python setup.py sdist bdist_wheel
 	@twine upload dist/*
 

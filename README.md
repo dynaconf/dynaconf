@@ -76,7 +76,7 @@ from dynaconf import settings
 Connect(user=settings.USERNAME, passwd=settings.PASSWD)
 ```
 
-> NOTE: You can customize the prefix `DYNACONF_` to your own namespace like `MYAPP_USERNAME` exporting `NAMESPACE_FOR_DYNACONF=MYAPP`.
+> NOTE: You can customize the prefix `DYNACONF_` to your own env like `MYAPP_USERNAME` exporting `ENV_FOR_DYNACONF=MYAPP`.
 
 # Features
 
@@ -170,9 +170,9 @@ My5up3r53c4et
 It is possible to have multiple sources at the same time but the **recommendation**
 is to pick a single format for your configurations and use envvars or .env to override it.
 
-## Namespace support
+## env support
 
-When you are working with multiple projects using the same environment maybe you want to use different namespaces for ENV vars based configs
+When you are working with multiple projects using the same environment maybe you want to use different envs for ENV vars based configs
 
 
 ```bash
@@ -187,21 +187,21 @@ and then access them
 ```python
 >>> from dynaconf import settings
 
-# access default namespace settings
+# access default env settings
 >>> settings.DATABASE
 'DYNADB'
 
-# switch namespaces
->>> settings.namespace('PROJ1')
+# switch envs
+>>> settings.setenv('PROJ1')
 >>> settings.DATABASE
 'PROJ1DB'
 
->>> settings.namespace('PROJ2')
+>>> settings.setenv('PROJ2')
 >>> settings.DATABASE
 'PROJ2DB'
 
 # return to default, call it without args
->>> settings.namespace()
+>>> settings.setenv()
 >>> settings.DATABASE
 'DYNADB'
 ```
@@ -212,11 +212,11 @@ You can also use the context manager:
 >>> settings.DATABASE
 'DYNADB'
 
->>> with settings.using_namespace('PROJ1'):
+>>> with settings.using_env('PROJ1'):
 ...    settings.DATABASE
     'PROJ1DB'
 
->>> with settings.using_namespace('PROJ2'):
+>>> with settings.using_env('PROJ2'):
 ...    settings.DATABASE
     'PROJ2DB'
 
@@ -224,10 +224,10 @@ You can also use the context manager:
 'DYNADB'
 ```
 
-> namespace() and using_namespace() takes optional argument **clean** defaults to True. If you want to keep the pre-loaded values when switching namespaces set it to False.
+> env() and using_env() takes optional argument **clean** defaults to True. If you want to keep the pre-loaded values when switching envs set it to False.
 
 
-## Namespaced environment
+## envd environment
 
 It is usual to have e.g `production` and `development` environments, the way to set this is:
 
@@ -242,20 +242,20 @@ production_settings.py
 Then in your environment.
 
 ```bash
-export NAMESPACE_FOR_DYNACONF=DEVELOPMENT|PRODUCTION  # switch enviroment using env vars.
+export ENV_FOR_DYNACONF=DEVELOPMENT|PRODUCTION  # switch enviroment using env vars.
 ```
 
-Or using `namespace`
+Or using `env`
 
 ```python
 
-with settings.using_namespace('development'):
+with settings.using_env('development'):
     # code here
 
-settings.namespace('development')
+settings.setenv('development')
 ```
 
-> NOTE: `settings.py` is the base and `namespace` specific overrides its vars.
+> NOTE: `settings.py` is the base and `env` specific overrides its vars.
 
 ### using YAML
 
@@ -263,12 +263,12 @@ settings.namespace('development')
 
 Just save a `settings.yaml` in the root dir.
 
-Using YAML is easier because it support multiple namespace in a single file.
+Using YAML is easier because it support multiple env in a single file.
 
-Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
+Lets say you have `ENV_FOR_DYNACONF=DYNACONF` (the default)
 ```yaml
-DYNACONF:  # this is the global namespace
-  VARIABLE: 'this variable is available on every namespace'
+DYNACONF:  # this is the global env
+  VARIABLE: 'this variable is available on every env'
   HOST: null  # this variable is set to None
 
 DEVELOPMENT:
@@ -278,9 +278,9 @@ production:  # upper or lower case does not matter
   host: prodserver.com
 ```
 
-Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manager.
+Then it will be applied using env var `ENV_FOR_DYNACONF` or context manager.
 
-> HINT: When using yaml namespace identifier and first level vars are case
+> HINT: When using yaml env identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
 
 
@@ -290,12 +290,12 @@ Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manage
 
 Just save a `settings.toml` in the root dir.
 
-Using TOML is easier because it support multiple namespace in a single file.
+Using TOML is easier because it support multiple env in a single file.
 
-Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
+Lets say you have `ENV_FOR_DYNACONF=DYNACONF` (the default)
 ```toml
-[dynaconf]  # this is the global namespace
-variable = 'this variable is available on every namespace'
+[dynaconf]  # this is the global env
+variable = 'this variable is available on every env'
 HOST = false  # this variable is set to False
 
 [DEVELOPMENT]
@@ -305,9 +305,9 @@ HOST = 'devserver.com'  # overrides the global or sets new
 host = 'prodserver.com'
 ```
 
-Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manager.
+Then it will be applied using env var `ENV_FOR_DYNACONF` or context manager.
 
-> HINT: When using toml namespace identifier and first level vars are case
+> HINT: When using toml env identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
 
 
@@ -317,13 +317,13 @@ Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manage
 
 Just save a `settings.ini` in the root dir.
 
-Using INI is easier because it support multiple namespace in a single file.
+Using INI is easier because it support multiple env in a single file.
 
-Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
+Lets say you have `ENV_FOR_DYNACONF=DYNACONF` (the default)
 
 ```ini
 [DYNACONF]
-VARIABLE = "this variable is available on every namespace"
+VARIABLE = "this variable is available on every env"
 
 [DEVELOPMENT]
 HOST = "devserver.com"
@@ -332,9 +332,9 @@ HOST = "devserver.com"
 host = "prodserver.com"
 ```
 
-Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manager.
+Then it will be applied using env var `ENV_FOR_DYNACONF` or context manager.
 
-> HINT: When using INI namespace identifier and first level vars are case
+> HINT: When using INI env identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
 
 
@@ -342,13 +342,13 @@ Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manage
 
 Just save a `settings.json` in the root dir.
 
-Using JSON is easier because it support multiple namespace in a single file.
+Using JSON is easier because it support multiple env in a single file.
 
-Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
+Lets say you have `ENV_FOR_DYNACONF=DYNACONF` (the default)
 ```json
 {
   "DYNACONF": {
-    "VARIABLE": "this variable is available on every namespace",
+    "VARIABLE": "this variable is available on every env",
     "HOST": null
   },
   "DEVELOPMENT": {
@@ -360,9 +360,9 @@ Lets say you have `NAMESPACE_FOR_DYNACONF=DYNACONF` (the default)
 }
 ```
 
-Then it will be applied using env var `NAMESPACE_FOR_DYNACONF` or context manager.
+Then it will be applied using env var `ENV_FOR_DYNACONF` or context manager.
 
-> HINT: When using json namespace identifier and first level vars are case
+> HINT: When using json env identifier and first level vars are case
 > insensitive, dynaconf will always have them read as upper case.
 
 # casting values from envvars
@@ -474,12 +474,12 @@ settings.AINT
 
 ```
 
-# Defining default namespace
+# Defining default env
 
-Include in the `settings.py` or in the file defined in the envvar DYNACONF_SETTINGS or in the `.env` file or in the customized LazySettings class the desired namespace
+Include in the `settings.py` or in the file defined in the envvar DYNACONF_SETTINGS or in the `.env` file or in the customized LazySettings class the desired env
 
 ```python
-NAMESPACE_FOR_DYNACONF = 'MYPROGRAM'
+ENV_FOR_DYNACONF = 'MYPROGRAM'
 ```
 
 # Storing settings in databases
@@ -508,7 +508,7 @@ pip install dynaconf[vault]
 VAULT_FOR_DYNACONF_ENABLED=1
 VAULT_FOR_DYNACONF_URL="http://localhost:8200"
 VAULT_FOR_DYNACONF_TOKEN="myroot"
-VAULT_FOR_DYNACONF_PATH="/secret/data/"   # the resulting namespace will have namespace added as in /secret/data/dynaconf
+VAULT_FOR_DYNACONF_PATH="/secret/data/"   # the resulting env will have env added as in /secret/data/dynaconf
 ```
 
 Now you can have keys like `PASSWORD` and `TOKEN` defined in the vault and
@@ -545,7 +545,7 @@ Enable the loader in `.env` or as environment variable
 REDIS_FOR_DYNACONF_ENABLED=1
 ```
 
-You can now write variables direct in to a redis hash named `DYNACONF_< NAMESPACE >`
+You can now write variables direct in to a redis hash named `DYNACONF_< env >`
 
 By default **DYNACONF_DYNACONF**
 
@@ -560,7 +560,7 @@ redis_writer.write(settings, name='Bruno', database='localhost', PORT=1234)
 
 ```
 
-The above data will be converted to namespaced values and recorded in redis as a hash:
+The above data will be converted to envd values and recorded in redis as a hash:
 
 ```
 DYNACONF_DYNACONF:
@@ -571,7 +571,7 @@ DYNACONF_DYNACONF:
 
 > if you want to skip type casting, write as string intead of PORT=1234 use PORT='1234' as redis stores everything as string anyway
 
-Data is read from redis and another loaders only once or when namespace() and using_namespace() are invoked. You can access the fresh value using **settings.get_fresh(key)**
+Data is read from redis and another loaders only once or when env() and using_env() are invoked. You can access the fresh value using **settings.get_fresh(key)**
 
 There is also the **fresh** context manager
 
@@ -623,7 +623,7 @@ from dynaconf import LazySettings
 
 settings = LazySettings(
     ENVVAR_FOR_DYNACONF="MYPROGRAM_SETTINGS_MODULE",
-    NAMESPACE_FOR_DYNACONF='MYPROGRAM'
+    ENV_FOR_DYNACONF='MYPROGRAM'
 )
 
 ```

@@ -23,12 +23,12 @@ def test_end_to_end(settings):
 
     assert settings.get('FOO', default='bar') == 'bar'
 
-    with settings.using_namespace('PROJECT1'):
+    with settings.using_env('PROJECT1'):
         assert settings.HOSTNAME == 'otherhost.com'
 
     assert settings.HOSTNAME == 'host.com'
 
-    if settings.exists_in_env('TRAVIS'):
+    if settings.exists_in_environ('TRAVIS'):
         assert settings.ENV_BOOLEAN is True
         assert settings.ENV_INT == 42
         assert settings.ENV_FLOAT == 42.2
@@ -38,7 +38,7 @@ def test_end_to_end(settings):
         assert settings.get('ENV_PURE_INT', cast='@int') == 42
         assert isinstance(settings.ENV_DICT, dict)
 
-        with settings.using_namespace('OTHER'):
+        with settings.using_env('OTHER'):
             assert settings.TESTING is True
 
 
