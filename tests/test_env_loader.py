@@ -3,25 +3,15 @@ import pytest
 from dynaconf.loaders.env_loader import load
 from dynaconf import settings  # noqa
 
-# Default env vars
-os.environ['DEFAULT_HOSTNAME'] = 'host.com'
-os.environ['DEFAULT_PORT'] = '@int 5000'
-os.environ['DEFAULT_ALIST'] = '@json ["item1", "item2", "item3", 123]'
-os.environ['DEFAULT_ADICT'] = '@json {"key": "value", "int": 42}'
-os.environ['DEFAULT_DEBUG'] = '@bool true'
-os.environ['DEFAULT_MUSTBEFRESH'] = 'first'
-os.environ['DEFAULT_MUSTBEALWAYSFRESH'] = 'first'
-os.environ['DEFAULT_SHOULDBEFRESHINCONTEXT'] = 'first'
-
-# CURRENT env  vars
-os.environ['DEVELOPMENT_HOSTNAME'] = 'dev.otherhost.com'
-os.environ['DEVELOPMENT_PORT'] = '@int 8000'
-
-# custom env specific vars
-os.environ['PROJECT1_HOSTNAME'] = 'project1.otherhost.com'
-os.environ['PROJECT1_PORT'] = '@int 8080'
-
 # GLOBAL ENV VARS
+os.environ['DYNACONF_HOSTNAME'] = 'host.com'
+os.environ['DYNACONF_PORT'] = '@int 5000'
+os.environ['DYNACONF_ALIST'] = '@json ["item1", "item2", "item3", 123]'
+os.environ['DYNACONF_ADICT'] = '@json {"key": "value", "int": 42}'
+os.environ['DYNACONF_DEBUG'] = '@bool true'
+os.environ['DYNACONF_MUSTBEFRESH'] = 'first'
+os.environ['DYNACONF_MUSTBEALWAYSFRESH'] = 'first'
+os.environ['DYNACONF_SHOULDBEFRESHINCONTEXT'] = 'first'
 os.environ['DYNACONF_VALUE'] = '@float 42.1'
 
 # os.environ['FRESH_VARS_FOR_DYNACONF'] = '@json ["MUSTBEALWAYSFRESH"]'
@@ -30,18 +20,17 @@ settings.configure(FRESH_VARS_FOR_DYNACONF=["MUSTBEALWAYSFRESH"])
 
 
 def test_env_loader():
-    assert settings.HOSTNAME == 'dev.otherhost.com'
-    assert settings.PORT == 8000
+    assert settings.HOSTNAME == 'host.com'
+    assert settings.PORT == 5000
     assert settings.ALIST == ["item1", "item2", "item3", 123]
     assert settings.ADICT == {"key": "value", "int": 42}
 
 
 def test_single_key():
-    load(settings, env='PROJECT1', key='HOSTNAME')
+    os.environ['DYNACONF_HOSTNAME'] = 'changedhost.com'
+    load(settings, key='HOSTNAME')
     # hostname is reloaded
-    assert settings.HOSTNAME == 'project1.otherhost.com'
-    # port still form DEVELOPMENT (current env)
-    assert settings.PORT == 8000
+    assert settings.HOSTNAME == 'changedhost.com'
 
 
 def test_dotenv_loader():
@@ -53,14 +42,9 @@ def test_dotenv_loader():
     assert settings.DOTENV_NOTE is None
 
 
-def test_dotenv_other_env_loader():
-    load(settings, env='FLASK')
-    assert settings.DOTENV_STR == "flask"
-
-
 def test_get_fresh():
     assert settings.MUSTBEFRESH == 'first'
-    os.environ['DEFAULT_MUSTBEFRESH'] = 'second'
+    os.environ['DYNACONF_MUSTBEFRESH'] = 'second'
     with pytest.raises(AssertionError):
         # fresh should now be second
         assert settings.exists('MUSTBEFRESH')
@@ -68,7 +52,7 @@ def test_get_fresh():
 
     assert settings.get_fresh('MUSTBEFRESH') == 'second'
 
-    os.environ['DEFAULT_THISMUSTEXIST'] = '@int 1'
+    os.environ['DYNACONF_THISMUSTEXIST'] = '@int 1'
     # must tnot exist yet (not loaded)
     assert settings.exists('THISMUSTEXIST') is False
     # must exist because fresh will call loaders
@@ -76,8 +60,8 @@ def test_get_fresh():
     # loaders run only once
     assert settings.get('THISMUSTEXIST') == 1
 
-    os.environ['DEFAULT_THISMUSTEXIST'] = '@int 23'
-    del os.environ['DEFAULT_THISMUSTEXIST']
+    os.environ['DYNACONF_THISMUSTEXIST'] = '@int 23'
+    del os.environ['DYNACONF_THISMUSTEXIST']
     # this should error because envvar got cleaned
     # but it is not, so cleaners should be fixed
     assert settings.get_fresh('THISMUSTEXIST') is None
@@ -86,13 +70,8 @@ def test_get_fresh():
     with pytest.raises(KeyError):
         settings['THISMUSTEXIST']
 
-    os.environ['DEFAULT_THISMUSTEXIST'] = '@int 23'
-    os.environ['BLARG_THISMUSTEXIST'] = '@int 99'
-
-    # env switch is deleting the variable
-    with settings.using_env('BLARG'):
-        assert settings.get('THISMUSTEXIST') == 99
-
+    os.environ['DYNACONF_THISMUSTEXIST'] = '@int 23'
+    load(settings)
     assert settings.get('THISMUSTEXIST') == 23
 
 

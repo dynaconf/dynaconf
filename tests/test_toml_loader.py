@@ -147,3 +147,17 @@ def test_cleaner():
     settings.clean()
     with pytest.raises(AttributeError):
         settings.HOST
+
+
+def test_using_env(tmpdir):
+    load(settings, filename=TOML)
+    assert settings.HOST == 'prodserver.com'
+    # print(settings.GLOBAL_ENV_FOR_DYNACONF)
+    # print(settings._deleted)
+    # print('####### switching to env development')
+
+    tmpfile = tmpdir.mkdir("sub").join("test_using_env.toml")
+    tmpfile.write(TOML)
+    with settings.using_env('DEVELOPMENT', filename=str(tmpfile)):
+        assert settings.HOST == 'devserver.com'
+    assert settings.HOST == 'prodserver.com'

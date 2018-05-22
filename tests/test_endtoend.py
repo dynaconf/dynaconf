@@ -23,9 +23,6 @@ def test_end_to_end(settings):
 
     assert settings.get('FOO', default='bar') == 'bar'
 
-    with settings.using_env('PROJECT1'):
-        assert settings.HOSTNAME == 'otherhost.com'
-
     assert settings.HOSTNAME == 'host.com'
 
     if settings.exists_in_environ('TRAVIS'):

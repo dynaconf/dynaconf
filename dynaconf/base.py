@@ -315,20 +315,20 @@ class Settings(object):
         return self._loaded_by_loaders
 
     @contextmanager
-    def using_env(self, env, clean=True, silent=True):
+    def using_env(self, env, clean=True, silent=True, filename=None):
         """
         This context manager allows the contextual use of a different env
-        Example:
-        $ export DYNACONF_MESSAGE='This is in DYNACONF env'
-        $ export OTHER_MESSAGE='This is in OTHER env'
+        Example of settings.toml:
+        [development]
+        message = 'This is in dev'
+        [other]
+        message = 'this is in other env'
         >>> from dynaconf import settings
         >>> print settings.MESSAGE
-        'This is in DYNACONF env'
+        'This is in dev'
         >>> with settings.using_env('OTHER'):
         ...    print settings.MESSAGE
-        'This is in OTHER env'
-        >>> print settings.MESSAGE
-        'This is in DYNACONF env'
+        'this is in other env'
 
         :param env: Upper case name of env without any _
         :param clean: If preloaded vars should be cleaned
@@ -336,14 +336,14 @@ class Settings(object):
         :return: context
         """
         try:
-            self.setenv(env, clean=clean, silent=silent)
+            self.setenv(env, clean=clean, silent=silent, filename=filename)
             self.logger.debug("In env: %s", env)
             yield
         finally:
             if env.lower() != self.ENV_FOR_DYNACONF.lower():
                 del self.loaded_envs[-1]
             self.logger.debug("Out env: %s", env)
-            self.setenv(self.current_env, clean=clean)
+            self.setenv(self.current_env, clean=clean, filename=filename)
 
     # compat
     using_namespace = using_env
@@ -393,25 +393,25 @@ class Settings(object):
             self.set('SETTINGS_MODULE', settings_module)
         return self.SETTINGS_MODULE
 
-    def setenv(self, env=None, clean=True, silent=True):
+    def setenv(self, env=None, clean=True, silent=True, filename=None):
         """
         Used to interactively change the env
-        $ export DYNACONF_MESSAGE='This is in DYNACONF env'
-        $ export OTHER_MESSAGE='This is in OTHER env'
+        Example of settings.toml:
+        [development]
+        message = 'This is in dev'
+        [other]
+        message = 'this is in other env'
         >>> from dynaconf import settings
         >>> print settings.MESSAGE
-        'This is in DYNACONF env'
-        >>> settings.setenv('OTHER')  # loaded vars from OTHER*
-        >>> print settings.MESSAGE
-        'This is in OTHER env'
-        >>> settings.setenv()  # without params back to default
-        >>> print settings.MESSAGE
-        'This is in DYNACONF env'
+        'This is in dev'
+        >>> with settings.using_env('OTHER'):
+        ...    print settings.MESSAGE
+        'this is in other env'
 
-        :param env: Upper case env name without any _
-        :param clean: Should clean preloaded vars?
+        :param env: Upper case name of env without any _
+        :param clean: If preloaded vars should be cleaned
         :param silent: Silence errors
-        :return: None
+        :return: context
         """
         env = env or self.ENV_FOR_DYNACONF
 
@@ -431,7 +431,7 @@ class Settings(object):
 
         if clean:
             self.clean(env=env)
-        self.execute_loaders(env=env, silent=silent)
+        self.execute_loaders(env=env, silent=silent, filename=filename)
 
     # compat
     namespace = setenv
@@ -519,12 +519,13 @@ class Settings(object):
         self.clean()
         self.execute_loaders(env, silent)
 
-    def execute_loaders(self, env=None, silent=None, key=None):
+    def execute_loaders(self, env=None, silent=None, key=None, filename=None):
         """Execute all internal and registered loaders"""
         if key is None:
             default_loader(self, self._defaults)
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
-        settings_loader(self, env=env, silent=silent, key=key)
+        settings_loader(self, env=env, silent=silent, key=key,
+                        filename=filename)
         self.load_extra_yaml(env, silent, key)  # DEPRECATED
         enable_external_loaders(self)
         for loader in self.loaders:

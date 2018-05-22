@@ -6,23 +6,18 @@ IDENTIFIER = 'env_loader'
 
 
 def load(obj, env=None, silent=True, key=None):
-    default_env = obj.get('DEFAULT_ENV_FOR_DYNACONF')
+    """Loads envvars with prefixes:
+    DYNACONF_ (default global) or $(GLOBAL_ENV_FOR_DYNACONF)_
+    """
     global_env = obj.get('GLOBAL_ENV_FOR_DYNACONF')
-
-    # load all from default env
-    load_from_env(
-        IDENTIFIER,
-        key,
-        default_env,
-        obj,
-        silent
-    )
-
-    # rewrite with current env if provided
-    env = env or obj.current_env
-    if env and env != default_env and env != global_env:
-        identifier = IDENTIFIER + '_' + env.lower()
-        load_from_env(identifier, key, env, obj, silent)
+    if global_env.upper() != 'DYNACONF':
+        load_from_env(
+            IDENTIFIER + '_global',
+            key,
+            'DYNACONF',
+            obj,
+            silent
+        )
 
     # Load the global env if exists and overwrite everything
     load_from_env(

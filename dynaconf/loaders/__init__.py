@@ -38,7 +38,7 @@ def default_loader(obj, defaults=None):
 
 
 def settings_loader(obj, settings_module=None, env=None,
-                    silent=True, key=None):
+                    silent=True, key=None, filename=None):
     """Loads from defined settings module, path or yaml"""
     obj.logger.debug('executing settings_loader: %s', settings_module)
     settings_module = settings_module or obj.settings_module
@@ -51,6 +51,9 @@ def settings_loader(obj, settings_module=None, env=None,
         files = [settings_module]
 
     obj.logger.debug("files %s", files)
+
+    if filename is not None:
+        files.append(filename)
 
     for mod_file in files:
         # can be set to multiple files settings.py,settings.yaml,...
