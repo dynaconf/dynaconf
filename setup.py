@@ -43,7 +43,8 @@ setup(
         "radon",
         "flask>=0.12",
         "python-dotenv",
-        "toml"
+        "toml",
+        "codecov"
     ],
     extras_require={
         "redis": ['redis'],

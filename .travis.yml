@@ -23,7 +23,7 @@ jobs:
         - "pip install --upgrade -r requirements_dev.txt"
       script: make test
       after_success:
-        - coveralls
+        - codecov
     - stage: test_examples
       language: python
       python: 3.6

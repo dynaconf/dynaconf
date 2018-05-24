@@ -14,7 +14,7 @@ hvac
 django
 
 # testing
-coveralls
+codecov
 pytest
 pytest-cov
 pytest-xdist
