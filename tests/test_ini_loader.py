@@ -144,4 +144,15 @@ def test_cleaner():
 
     settings.clean()
     with pytest.raises(AttributeError):
-        settings.HOST
+        assert settings.HOST == 'prodserver.com'
+
+
+def test_using_env(tmpdir):
+    load(settings, filename=INI)
+    assert settings.HOST == 'prodserver.com'
+
+    tmpfile = tmpdir.mkdir("sub").join("test_using_env.ini")
+    tmpfile.write(INI)
+    with settings.using_env('DEVELOPMENT', filename=str(tmpfile)):
+        assert settings.HOST == 'devserver.com'
+    assert settings.HOST == 'prodserver.com'

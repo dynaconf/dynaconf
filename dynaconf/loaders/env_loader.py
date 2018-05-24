@@ -2,7 +2,7 @@
 import os
 from dynaconf.utils.parse_conf import parse_conf_data
 
-IDENTIFIER = 'env_loader'
+IDENTIFIER = 'env'
 
 
 def load(obj, env=None, silent=True, key=None):
@@ -66,3 +66,7 @@ def load_from_env(identifier, key, env, obj, silent):
             obj.logger.error(str(e))
         else:
             raise
+
+
+def write():
+    print('writing .env...')  # noqa

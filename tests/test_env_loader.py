@@ -97,4 +97,4 @@ def test_fresh_context():
 def test_cleaner():
     settings.clean()
     with pytest.raises(AttributeError):
-        settings.HOSTNAME
+        assert settings.HOSTNAME == 'host.com'

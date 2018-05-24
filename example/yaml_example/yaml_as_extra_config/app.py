@@ -5,12 +5,12 @@ print(settings.HOST)
 print(settings.PORT)
 
 
-# using development: env values for context
-with settings.using_env('DEVELOPMENT'):
+# using production values for context
+with settings.using_env('PRODUCTION'):
     print(settings.ENVIRONMENT)
     print(settings.HOST)
 
-# back to default dynaconf: env
+# back to development env
 print(settings.get('ENVIRONMENT'))
 print(settings.HOST)
 print(settings.WORKS)

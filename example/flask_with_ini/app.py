@@ -7,13 +7,7 @@ from dynaconf import FlaskDynaconf
 # create your app
 app = Flask(__name__)
 
-FlaskDynaconf(
-    app,
-    ENVVAR_FOR_DYNACONF="MYSITE_SETTINGS_MODULE",
-    ENV_FOR_DYNACONF='MYSITE',
-    SETTINGS_MODULE_FOR_DYNACONF='settings.ini,.secrets.ini',
-    EXTRA_VALUE='You can add aditional config vars here'
-)
+FlaskDynaconf(app)
 
 
 @app.route('/')

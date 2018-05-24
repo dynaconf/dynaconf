@@ -1,4 +1,5 @@
-
+import os
+from pathlib import Path
 from click.testing import CliRunner
 from dynaconf.cli import main
 
@@ -21,4 +22,19 @@ def test_banner():
 
 
 def test_init():
-    assert 'initing' in run(['init'])
+    run(['init', '-no-wg'])
+
+    sets = Path('settings.toml')
+    secs = Path('.secrets.toml')
+    # gign = Path('.gitignore')
+
+    assert sets.exists() is True
+    assert secs.exists() is True
+    # assert gign.exists() is True
+
+    assert '[default]' in open(sets).read()
+    assert 'secret for' in open(secs).read()
+    # assert ".secrets.*" in open(gign).read()
+
+    os.remove(sets)
+    os.remove(secs)

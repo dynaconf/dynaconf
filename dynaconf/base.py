@@ -1,11 +1,8 @@
 # coding: utf-8
-import errno
+import os
 import importlib
-import logging
 from contextlib import contextmanager
 
-import os
-import types
 from six import string_types
 
 from dynaconf import default_settings
@@ -13,13 +10,13 @@ from dynaconf.loaders import (
     default_loader,
     settings_loader,
     yaml_loader,
+    py_loader,
     enable_external_loaders
 )
 from dynaconf.transformator import TransformatorList
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data
-from dynaconf.utils.files import find_file
-from dynaconf.utils import BANNER
+from dynaconf.utils import BANNER, compat_kwargs, raw_logger
 from dynaconf.validator import ValidatorList
 from dynaconf.utils.boxing import DynaBox
 
@@ -509,7 +506,7 @@ class Settings(object):
                 try:
                     loader = importlib.import_module(loader_module_name)
                 except ImportError:
-                    loader = self.import_from_filename(loader_module_name)
+                    loader = py_loader.import_from_filename(loader_module_name)
                 self._loaders.append(loader)
 
         return self._loaders
@@ -548,33 +545,6 @@ class Settings(object):
                 key=key
             )
 
-    @staticmethod
-    def import_from_filename(filename, silent=False):  # pragma: no cover
-        """If settings_module is a path use this."""
-        if not filename.endswith('.py'):
-            filename = '{0}.py'.format(filename)
-
-        if filename in default_settings.SETTINGS_MODULE_FOR_DYNACONF:
-            silent = True
-        mod = types.ModuleType('config')
-        mod.__file__ = filename
-        mod._is_error = False
-        try:
-            with open(find_file(filename)) as config_file:
-                exec(
-                    compile(config_file.read(), filename, 'exec'),
-                    mod.__dict__
-                )
-        except IOError as e:
-            e.strerror = (
-                'Unable to load configuration file (%s %s)\n'
-            ) % (e.strerror, filename)
-            if silent and e.errno in (errno.ENOENT, errno.EISDIR):
-                return
-            raw_logger().debug(e.strerror)
-            mod._is_error = True
-        return mod
-
     def path_for(self, *args):
         """Path containing PROJECT_ROOT_FOR_DYNACONF"""
         if args and args[0].startswith('/'):
@@ -594,43 +564,3 @@ class Settings(object):
         if not hasattr(self, '_transformators'):
             self._transformators = TransformatorList(self)
         return self._transformators
-
-
-def raw_logger():
-    """Get or create inner logger"""
-    level = os.environ.get('DEBUG_LEVEL_FOR_DYNACONF', 'ERROR')
-    try:  # pragma: no cover
-        from logzero import setup_logger
-        return setup_logger(
-            "dynaconf",
-            level=getattr(logging, level)
-        )
-    except ImportError:  # pragma: no cover
-        logger = logging.getLogger("dynaconf")
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-        logger.setLevel(getattr(logging, level))
-        logger.debug("starting logger")
-        return logger
-
-
-def compat_kwargs(kwargs):
-    """To keep backwards compat change the kwargs to new names"""
-    rules = {
-        'DYNACONF_NAMESPACE': 'ENV_FOR_DYNACONF',
-        'NAMESPACE_FOR_DYNACONF': 'ENV_FOR_DYNACONF',
-        'DYNACONF_SETTINGS_MODULE': 'SETTINGS_MODULE_FOR_DYNACONF',
-        'SETTINGS_MODULE': 'SETTINGS_MODULE_FOR_DYNACONF',
-        'PROJECT_ROOT': 'PROJECT_ROOT_FOR_DYNACONF',
-        'DYNACONF_SILENT_ERRORS': 'SILENT_ERRORS_FOR_DYNACONF',
-        'DYNACONF_ALWAYS_FRESH_VARS': 'FRESH_VARS_FOR_DYNACONF'
-    }
-    for old, new in rules.items():
-        if old in kwargs:
-            raw_logger().warning(
-                "You are using %s which is a deprecated settings "
-                "replace it with %s",
-                old, new
-            )
-            kwargs[new] = kwargs[old]

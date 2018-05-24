@@ -20,7 +20,7 @@ def connect(server, port, username, password):
 
 # Dynaconf takes care of it!
 
-from dynaconf import settings
+from dynaconf import settings  # noqa
 
 print(settings.dynaconf_banner)
 
@@ -47,7 +47,7 @@ print('To switch the env export the ENV_FOR_DYNACONF variable')
 print('$ export ENV_FOR_DYNACONF=production')
 print('Now reading settings from PRODUCTION env:')
 # this next line is not needed in your program, it is the same as `export ENV_FOR_DYNACONF..`
-import os; os.environ['ENV_FOR_DYNACONF'] = 'production'; settings.reload()
+import os; os.environ['ENV_FOR_DYNACONF'] = 'production'; settings.reload()  # noqa
 connect(settings.SERVER, settings.PORT, settings.USERNAME, settings.PASSWORD)
 assert settings.SERVER == 'prodserver.com'
 assert settings.PORT == 5555
@@ -59,7 +59,7 @@ print('\n* Switching environments\n')
 print('We can easily switch to staging env')
 print('$ export ENV_FOR_DYNACONF=staging')
 # this next line is not needed in your program, it is the same as `export ENV_FOR_DYNACONF..`
-import os; os.environ['ENV_FOR_DYNACONF'] = 'staging'; settings.reload()
+os.environ['ENV_FOR_DYNACONF'] = 'staging'; settings.reload()  # noqa
 connect(settings.SERVER, settings.PORT, settings.USERNAME, settings.PASSWORD)
 assert settings.SERVER == 'stagserver.com'
 assert settings.PORT == 5555
@@ -76,7 +76,7 @@ print('  [default](default values) and [global](overrides every value)')
 print('It is also possible to define custom envs')
 print('$ export ENV_FOR_DYNACONF=mycustomenv')
 # this next line is not needed in your program, it is the same as `export ENV_FOR_DYNACONF..`
-import os; os.environ['ENV_FOR_DYNACONF'] = 'mycustomenv'; settings.reload()
+os.environ['ENV_FOR_DYNACONF'] = 'mycustomenv'; settings.reload()  # noqa
 connect(settings.SERVER, settings.PORT, settings.USERNAME, settings.PASSWORD)
 assert settings.SERVER == 'customserver.com'
 assert settings.PORT == 5555
@@ -92,7 +92,7 @@ print('Or via envvars export a value with DYNACONF_ prefix')
 print('$ export DYNACONF_USERNAME="NewUsername"')
 print('You can also put the value in .env file"')
 # this next line is not needed in your program, it is the same as `export DYNACONF_USERNAME..`
-import os; os.environ['DYNACONF_USERNAME'] = 'NewUsername'; settings.reload()
+os.environ['DYNACONF_USERNAME'] = 'NewUsername'; settings.reload()  # noqa
 connect(settings.SERVER, settings.PORT, settings.USERNAME, settings.PASSWORD)
 print('settings.EXTRA_VALUE = ', settings.EXTRA_VALUE)
 assert settings.SERVER == 'customserver.com'
@@ -106,7 +106,7 @@ print('\n* Using environment variables at program call\n')
 print('Another common pattern is defining the value in the program call')
 print('$ DYNACONF_USERNAME=YetAnotherUser python program.py')
 # this next line is not needed in your program, it is the same as `export DYNACONF_USERNAME..`
-import os; os.environ['DYNACONF_USERNAME'] = 'YetAnotherUser'; settings.reload()
+os.environ['DYNACONF_USERNAME'] = 'YetAnotherUser'; settings.reload()  # noqa
 connect(settings.SERVER, settings.PORT, settings.USERNAME, settings.PASSWORD)
 assert settings.SERVER == 'customserver.com'
 assert settings.PORT == 5555
@@ -121,7 +121,7 @@ print('And envvars are by default string typed')
 print('Dynaconf allows type definition on exporting an envvar')
 print('$ export DYNACONF_PORT="@int 8888"')
 # this next line is not needed in your program, it is the same as `export DYNACONF_USERNAME..`
-import os; os.environ['DYNACONF_PORT'] = '@int 8888'; settings.reload()
+os.environ['DYNACONF_PORT'] = '@int 8888'; settings.reload()  # noqa
 connect(settings.SERVER, settings.PORT, settings.USERNAME, settings.PASSWORD)
 assert settings.SERVER == 'customserver.com'
 assert settings.PORT == 8888

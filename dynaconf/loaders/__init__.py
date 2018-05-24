@@ -1,9 +1,8 @@
 import os
-import importlib
 from dynaconf import constants as ct
 from dynaconf import default_settings
 from dynaconf.loaders import (
-    yaml_loader, toml_loader, json_loader, ini_loader
+    yaml_loader, toml_loader, json_loader, ini_loader, py_loader
 )
 from dynaconf.utils.parse_conf import false_values
 
@@ -88,7 +87,7 @@ def settings_loader(obj, settings_module=None, env=None,
         obj.logger.debug("Trying to load Python module {}".format(mod_file))
 
         # load from default defined module settings.py or .secrets.py if exists
-        load_from_module(obj, mod_file, key=key)
+        py_loader.load(obj, mod_file, key=key)
 
         # load from the current env e.g: development_settings.py
         env = env or obj.current_env
@@ -117,19 +116,19 @@ def settings_loader(obj, settings_module=None, env=None,
                 'global', mod_file
             )
 
-        load_from_module(
+        py_loader.load(
             obj,
             env_mod_file,
-            identifier='PY_MODULE_{0}'.format(env.upper()),
+            identifier='py_{0}'.format(env.upper()),
             silent=True,
             key=key
         )
 
         # load from global_settings.py
-        load_from_module(
+        py_loader.load(
             obj,
             global_mod_file,
-            identifier='PY_MODULE_GLOBAL',
+            identifier='py_global',
             silent=True,
             key=key
         )
@@ -149,42 +148,3 @@ def enable_external_loaders(obj):
               loader not in obj.LOADERS_FOR_DYNACONF
             ):  # noqa
             obj.LOADERS_FOR_DYNACONF.append(loader)
-
-
-def load_from_module(obj, settings_module,
-                     identifier='PY_MODULE', silent=False, key=None):
-    obj.logger.debug('executing load_from_module: %s', settings_module)
-    try:
-        mod = importlib.import_module(settings_module)
-        loaded_from = 'module'
-    except (ImportError, TypeError):
-        mod = obj.import_from_filename(settings_module, silent=silent)
-        if mod and mod._is_error:
-            loaded_from = None
-        else:
-            loaded_from = 'filename'
-        obj.logger.debug(mod)
-
-    if loaded_from:
-        obj.logger.debug(
-            "Module {} Loaded from {}".format(settings_module, loaded_from)
-        )
-
-    for setting in dir(mod):
-        if setting.isupper():
-            if key is None or key == setting:
-                setting_value = getattr(mod, setting)
-                obj.logger.debug(
-                    'module_loader:loading %s: %s (%s)',
-                    setting,
-                    setting_value,
-                    identifier
-                )
-                obj.set(setting, setting_value, loader_identifier=identifier)
-
-    if not hasattr(obj, 'PROJECT_ROOT_FOR_DYNACONF'):
-        root = os.path.realpath(
-            os.path.dirname(os.path.abspath(settings_module))
-        ) if loaded_from == 'module' else os.getcwd()
-        obj.set('PROJECT_ROOT_FOR_DYNACONF',
-                root, loader_identifier=identifier)

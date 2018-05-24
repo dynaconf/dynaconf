@@ -1,10 +1,12 @@
-
-
-# The env here should match the name given in `ENV_FOR_DYNACONF`
-MYSITE:
-  DEBUG: True
+default:
+  DEBUG: true
   SERVER: flaskdynaconf.com
   PORT: 6666
   MESSAGE: Dynaconf works like a charm with Flask and YAML
-  TEST_RULE: '/flask_with_yaml'
-
+  TEST_RULE: /flask_with_yaml
+development:
+  DEBUG: true
+  SERVER: dev.flaskdynaconf.com
+production:
+  DEBUG: false
+  SERVER: prod.flaskdynaconf.com

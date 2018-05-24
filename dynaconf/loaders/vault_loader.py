@@ -5,7 +5,7 @@ import os
 from hvac import Client
 from dynaconf.utils.parse_conf import parse_conf_data
 
-IDENTIFIER = 'vault_loader'
+IDENTIFIER = 'vault'
 
 
 def get_client(obj):

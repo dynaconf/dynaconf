@@ -11,7 +11,7 @@ except ImportError as e:
         "pip install dynaconf[redis]"
     )
 
-IDENTIFIER = 'redis_loader'
+IDENTIFIER = 'redis'
 
 
 def load(obj, env=None, silent=True, key=None):
