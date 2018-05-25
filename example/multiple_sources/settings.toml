@@ -1,2 +1,8 @@
-[dynaconf]
+[default]
 toml_var=1
+
+[production]
+toml_prod_var=2
+
+[global]
+toml_global_var=3

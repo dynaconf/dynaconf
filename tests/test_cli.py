@@ -29,7 +29,7 @@ def test_init(fileformat):
             'init',
             '-no-wg',
             '--format={}'.format(fileformat),
-            '-e name=bruno',
+            '-v name=bruno',
             '-y'
         ]
     )
