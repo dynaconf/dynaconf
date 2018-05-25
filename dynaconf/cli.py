@@ -36,7 +36,8 @@ def banner():
                   'file e.g: `dynaconf init -e NAME=foo -e X=2'
               ))
 @click.option('-wg/-no-wg', default=True)
-def init(fileformat, path, env, envvars, wg):
+@click.option('-y', default=False, is_flag=True)
+def init(fileformat, path, env, envvars, wg, y):
     """Inits a dynaconf project
     By default it creates a settings.toml and a .secrets.toml
     for [default|development|staging|testing|production|global] envs.
@@ -61,13 +62,13 @@ def init(fileformat, path, env, envvars, wg):
 
     # create placeholder data for every env
     settings_data = {k: {'value': 'value for {}'.format(k)} for k in ENVS}
+    secrets_data = {k: {'secret': 'secret for {}'.format(k)} for k in ENVS}
     if env_data:
         settings_data[env] = env_data
-    secrets_data = {k: {'secret': 'secret for {}'.format(k)} for k in ENVS}
 
     path = Path(path)
 
-    if str(path).endswith(constants.ALL_EXTENSIONS):
+    if str(path).endswith(constants.ALL_EXTENSIONS + ('py',)):
         settings_path = path
         secrets_path = path.parent / '.secrets.{}'.format(fileformat)
         dotenv_path = path.parent / '.env'
@@ -83,11 +84,23 @@ def init(fileformat, path, env, envvars, wg):
         settings_data = settings_data[env]
         secrets_data = secrets_data[env]
 
+    if not y and settings_path.exists():  # pragma: no cover
+        click.confirm(
+            '{} exists do you want to overwrite it?'.format(settings_path),
+            abort=True
+        )
+
+    if not y and secrets_path.exists():  # pragma: no cover
+        click.confirm(
+            '{} exists do you want to overwrite it?'.format(secrets_path),
+            abort=True
+        )
+
     loader.write(settings_path, settings_data, merge=True)
     loader.write(secrets_path, secrets_data, merge=True)
 
     # write .env file
-    if env not in ['default', 'development']:
+    if env not in ['default', 'development']:  # pragma: no cover
         Path.touch(dotenv_path)
         dotenv_cli.set_key(str(dotenv_path), 'ENV_FOR_DYNACONF', env.upper())
 

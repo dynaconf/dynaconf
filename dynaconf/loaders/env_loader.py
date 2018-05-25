@@ -66,7 +66,3 @@ def load_from_env(identifier, key, env, obj, silent):
             obj.logger.error(str(e))
         else:
             raise
-
-
-def write():
-    print('writing .env...')  # noqa

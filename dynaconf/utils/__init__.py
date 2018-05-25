@@ -27,7 +27,11 @@ def dictmerge(old, new):
 class DynaconfDict(dict):
     """A dict representing en empty Dynaconf object
     useful to run loaders in to a dict for testing"""
-    PROJECT_ROOT_FOR_DYNACONF = '.'
+    def __init__(self, *args, **kwargs):
+        _no_project_root = kwargs.pop('_no_project_root', None)
+        if not _no_project_root:
+            self.PROJECT_ROOT_FOR_DYNACONF = '.'
+        super(DynaconfDict, self).__init__(*args, **kwargs)
 
     @property
     def logger(self):
@@ -36,7 +40,8 @@ class DynaconfDict(dict):
     def set(self, key, value, *args, **kwargs):
         self[key] = value
 
-    def get_environ(self, key, default=None):
+    @staticmethod
+    def get_environ(key, default=None):  # pragma: no cover
         return os.environ.get(key, default)
 
 

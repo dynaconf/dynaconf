@@ -73,7 +73,7 @@ def import_from_filename(filename, silent=False):  # pragma: no cover
 
 
 def write(settings_path, settings_data, merge=True):
-    if settings_path.exists() and merge:
+    if settings_path.exists() and merge:  # pragma: no cover
         existing = DynaconfDict()
         load(existing, str(settings_path))
         settings_data = dictmerge(
