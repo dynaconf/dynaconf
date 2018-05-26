@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 from dynaconf.utils.parse_conf import parse_conf_data
+from dotenv import cli as dotenv_cli
 
 IDENTIFIER = 'env'
 
@@ -66,3 +67,12 @@ def load_from_env(identifier, key, env, obj, silent):
             obj.logger.error(str(e))
         else:
             raise
+
+
+def write(settings_path, settings_data, **kwargs):
+    for key, value in settings_data.items():
+        dotenv_cli.set_key(
+            str(settings_path),
+            key.upper(),
+            value
+        )

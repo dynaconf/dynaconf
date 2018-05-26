@@ -3,7 +3,7 @@
 
 import os
 from hvac import Client
-from dynaconf.utils.parse_conf import parse_conf_data
+from dynaconf.utils.parse_conf import parse_conf_data, false_values
 
 IDENTIFIER = 'vault'
 
@@ -47,6 +47,12 @@ def write(obj, data=None, lease='1h', **kwargs):
     :param kwargs: vars to be stored
     :return:
     """
+    if obj.VAULT_FOR_DYNACONF_ENABLED in false_values:
+        raise RuntimeError(
+            'Vault is not configured \n'
+            'export VAULT_FOR_DYNACONF_ENABLED=1\n'
+            'and configure the VAULT_FOR_DYNACONF_* variables'
+        )
     data = data or {}
     data.update(kwargs)
     if not data:

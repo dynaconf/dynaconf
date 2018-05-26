@@ -4,8 +4,12 @@ import json
 from six import string_types
 from dynaconf.utils.boxing import DynaBox
 
-true_values = ('t', 'true', 'enabled', '1', 'on', 'yes')
-false_values = ('f', 'false', 'disabled', '0', 'off', 'no')
+true_values = (
+    't', 'true', 'enabled', '1', 'on', 'yes', 'True'
+)
+false_values = (
+    'f', 'false', 'disabled', '0', 'off', 'no', 'False'
+)
 
 converters = {
     '@int': int,

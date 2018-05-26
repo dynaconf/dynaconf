@@ -1,5 +1,7 @@
 # coding: utf-8
-from dynaconf.utils.parse_conf import parse_conf_data, unparse_conf_data
+from dynaconf.utils.parse_conf import (
+    parse_conf_data, unparse_conf_data, false_values
+)
 try:
     from redis import StrictRedis
 except ImportError as e:
@@ -55,6 +57,12 @@ def write(obj, data=None, **kwargs):
     :param kwargs: vars to be stored
     :return:
     """
+    if obj.REDIS_FOR_DYNACONF_ENABLED in false_values:
+        raise RuntimeError(
+            'Redis is not configured \n'
+            'export REDIS_FOR_DYNACONF_ENABLED=1\n'
+            'and configure the REDIS_FOR_DYNACONF_* variables'
+        )
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
     holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
     data = data or {}
