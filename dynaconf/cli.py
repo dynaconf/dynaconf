@@ -2,7 +2,7 @@ import click
 import pprint
 import importlib
 from pathlib import Path
-from dynaconf import settings
+from dynaconf import settings, default_settings
 from dynaconf import constants
 from dynaconf.utils.parse_conf import parse_conf_data
 from dotenv import cli as dotenv_cli
@@ -171,9 +171,14 @@ def _list(env, key, more, loader):
         data = settings._loaded_by_loaders.get(identifier, {})
         data = data or settings._loaded_by_loaders.get(loader, {})
 
+    def color(_k):
+        if _k in dir(default_settings):
+            return 'blue'
+        return 'green'
+
     if not key:
         datalines = '\n'.join(
-            '%s: %s' % (click.style(k, bg='green', fg='white'),
+            '%s: %s' % (click.style(k, bg=color(k), fg='white'),
                         pprint.pformat(v))
             for k, v in data.items()
         )
@@ -186,7 +191,7 @@ def _list(env, key, more, loader):
             return
         click.echo(
             '%s: %s' % (
-                click.style(key.upper(), bg='green', fg='white'),
+                click.style(key.upper(), bg=color(key), fg='white'),
                 pprint.pformat(value)
             )
         )
