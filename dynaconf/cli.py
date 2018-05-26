@@ -87,8 +87,12 @@ def init(fileformat, path, env, _vars, wg, y):
         gitignore_path = path.parent / '.gitignore'
     else:
         if fileformat == 'env':
-            if str(path).endswith('.env'):
+            if str(path) in ('.env', './.env'):  # pragma: no cover
                 settings_path = path
+            elif str(path).endswith('/.env'):
+                settings_path = path
+            elif str(path).endswith('.env'):  # pragma: no cover
+                settings_path = path.parent / '.env'
             else:
                 settings_path = path / '.env'
             Path.touch(settings_path)
@@ -126,7 +130,7 @@ def init(fileformat, path, env, _vars, wg, y):
         Path.touch(dotenv_path)
         dotenv_cli.set_key(str(dotenv_path), 'ENV_FOR_DYNACONF', env.upper())
 
-    if wg:  # pragma: no cover
+    if wg:
         # write .gitignore
         ignore_line = ".secrets.*"
         comment = "\n# Ignore dynaconf secret files\n"
@@ -135,7 +139,7 @@ def init(fileformat, path, env, _vars, wg, y):
                 f.writelines([comment, ignore_line, '\n'])
         else:
             existing = ignore_line in open(gitignore_path).read()
-            if not existing:
+            if not existing:  # pragma: no cover
                 with open(gitignore_path, 'a+') as f:
                     f.writelines(
                         [comment, ignore_line, '\n']
@@ -152,6 +156,13 @@ def init(fileformat, path, env, _vars, wg, y):
               help='a loader identifier to filter e.g: toml|yaml')
 def _list(env, key, more, loader):
     """Lists all defined config values"""
+    if env:
+        env = env.strip()
+    if key:
+        key = key.strip()
+    if loader:
+        loader = loader.strip()
+
     if env:
         settings.setenv(env)
 
@@ -240,8 +251,12 @@ def write(to, _vars, _secrets, path, env, y):
             secrets_path = path.parent / '.secrets.{}'.format(to)
         else:
             if to == 'env':
-                if str(path).endswith('.env'):
+                if str(path) in ('.env', './.env'):  # pragma: no cover
                     settings_path = path
+                elif str(path).endswith('/.env'):
+                    settings_path = path
+                elif str(path).endswith('.env'):
+                    settings_path = path.parent / '.env'
                 else:
                     settings_path = path / '.env'
                 Path.touch(settings_path)
@@ -277,7 +292,7 @@ def write(to, _vars, _secrets, path, env, y):
             loader.write(secrets_path, _secrets, merge=True)
             click.echo('Data successful written to {}'.format(secrets_path))
 
-    else:
+    else:  # pragma: no cover
         # lets write to external source
         loader.write(settings, _vars, **_secrets)
         click.echo('Data successful written to {}'.format(to))
