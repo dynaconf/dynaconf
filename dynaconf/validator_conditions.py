@@ -51,5 +51,5 @@ def is_in(value, other):
 
 
 def is_not_in(value, other):
-    """Existence"""
+    """Inexistence"""
     return value not in other

@@ -1,5 +1,4 @@
 # coding: utf-8
-# pragma: no cover
 from dynaconf import validator_conditions
 
 
