@@ -13,12 +13,12 @@ def read(*names, **kwargs):
     return io.open(
         os.path.join(os.path.dirname(__file__), *names),
         encoding=kwargs.get('encoding', 'utf8')
-    ).read()
+    ).read().strip()
 
 
 setup(
     name='dynaconf',
-    version="1.0.0",
+    version=read('dynaconf', 'VERSION'),
     url='https://github.com/rochacbruno/dynaconf',
     license='MIT',
     author="Bruno Rocha",

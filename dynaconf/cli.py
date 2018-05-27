@@ -1,3 +1,5 @@
+import io
+import os
 import click
 import pprint
 import importlib
@@ -23,7 +25,24 @@ def split_vars(_vars):
     } if _vars else {}
 
 
+def read(*names, **kwargs):
+    """Read a file."""
+    return io.open(
+        os.path.join(os.path.dirname(__file__), *names),
+        encoding=kwargs.get('encoding', 'utf8')
+    ).read().strip()
+
+
+def print_version(ctx, param, value):
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(read('VERSION'))
+    ctx.exit()
+
+
 @click.group()
+@click.option('--version', is_flag=True, callback=print_version,
+              expose_value=False, is_eager=True, help="Show dynaconf version")
 def main():
     """Dynaconf - Command Line Interface"""
 

@@ -2,7 +2,7 @@ import os
 import pytest
 from pathlib import Path
 from click.testing import CliRunner
-from dynaconf.cli import main, EXTS, WRITERS, ENVS
+from dynaconf.cli import main, EXTS, WRITERS, ENVS, read
 from dotenv import cli as dotenv_cli
 
 
@@ -13,6 +13,10 @@ def run(cmd):
     result = runner.invoke(main, cmd)
     # assert result.exit_code == 0
     return result.output
+
+
+def test_version():
+    assert read('VERSION') in run(['--version'])
 
 
 def test_help():

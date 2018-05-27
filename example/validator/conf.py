@@ -1,5 +1,5 @@
 # coding: utf-8
-from dynaconf import LazySettings, Validator, Transformator
+from dynaconf import LazySettings, Validator
 
 settings = LazySettings(
     ENV_FOR_DYNACONF='EXAMPLE',
@@ -59,7 +59,3 @@ settings.validators.register(
 )
 
 settings.validators.validate()
-
-settings.transformators.register(
-    Transformator('NAME', using=lambda x: x.replace('n', 'x'))
-)
