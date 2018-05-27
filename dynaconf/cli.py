@@ -73,7 +73,7 @@ def banner():
               type=click.Choice(EXTS))
 @click.option('--path', '-p', default=CWD,
               help='defaults to current directory')
-@click.option('--env', '-e', default='default', type=click.Choice(ENVS),
+@click.option('--env', '-e', default='default',
               help='Sets the working env in `.env` file')
 @click.option('--vars', '_vars', '-v', multiple=True, default=None,
               help=(
@@ -259,7 +259,7 @@ def _list(env, key, more, loader):
 @click.option('--path', '-p', default=CWD,
               help='defaults to current directory/settings.{ext}')
 @click.option(
-    '--env', '-e', default='default', type=click.Choice(ENVS),
+    '--env', '-e', default='default',
     help=(
         'env to write to defaults to DEVELOPMENT for files '
         'for external sources like Redis and Vault '

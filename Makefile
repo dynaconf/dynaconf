@@ -21,12 +21,16 @@ test_examples:
 	@cd example/django_example/;pwd;python manage.py test
 
 test_vault:
-	@cd example/vault;pwd;python write.py
+	# @cd example/vault;pwd;python write.py
+	@cd example/vault;pwd;dynaconf write vault -s SECRET=vault_works
+	@cd example/vault;pwd;dynaconf write vault -e dev -s SECRET=vault_works_in_dev
 	@sleep 5
 	@cd example/vault;pwd;python vault_example.py | grep -c vault_works
 
 test_redis:
-	@cd example/redis_example;pwd;python write.py
+	# @cd example/redis_example;pwd;python write.py
+	@cd example/redis_example;pwd;dynaconf write redis -s SECRET=redis_works
+	@cd example/redis_example;pwd;dynaconf write redis -e dev -s SECRET=redis_works_in_dev
 	@sleep 5
 	@cd example/redis_example;pwd;python redis_example.py | grep -c redis_works
 
