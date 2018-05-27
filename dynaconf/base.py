@@ -13,7 +13,6 @@ from dynaconf.loaders import (
     py_loader,
     enable_external_loaders
 )
-from dynaconf.transformator import TransformatorList
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data
 from dynaconf.utils import BANNER, compat_kwargs, raw_logger
@@ -557,10 +556,3 @@ class Settings(object):
         if not hasattr(self, '_validators'):
             self._validators = ValidatorList(self)
         return self._validators
-
-    @property
-    def transformators(self):
-        """Gets or creates transformator wrapper"""
-        if not hasattr(self, '_transformators'):
-            self._transformators = TransformatorList(self)
-        return self._transformators

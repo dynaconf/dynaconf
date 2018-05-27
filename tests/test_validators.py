@@ -1,5 +1,5 @@
 import pytest
-from dynaconf import LazySettings, Validator, Transformator, ValidationError
+from dynaconf import LazySettings, Validator, ValidationError
 
 
 TOML = """
@@ -106,10 +106,6 @@ def test_validators(tmpdir):
     )
 
     assert settings.validators.validate() is None
-
-    settings.transformators.register(
-        Transformator('NAME', using=lambda x: x.replace('n', 'x'))
-    )
 
     settings.validators.register(
         Validator('TESTVALUEZZ', env='development'),
