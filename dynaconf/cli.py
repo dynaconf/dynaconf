@@ -3,6 +3,7 @@ import os
 import click
 import pprint
 import importlib
+import webbrowser
 from pathlib import Path
 from dynaconf import settings, default_settings
 from dynaconf import constants
@@ -40,11 +41,24 @@ def print_version(ctx, param, value):
     ctx.exit()
 
 
+def open_docs(ctx, param, value):  # pragma: no cover
+    if not value or ctx.resilient_parsing:
+        return
+    url = 'http://dynaconf.readthedocs.io/'
+    webbrowser.open(url, new=2)
+    click.echo("{} opened in browser".format(url))
+    ctx.exit()
+
+
 @click.group()
 @click.option('--version', is_flag=True, callback=print_version,
               expose_value=False, is_eager=True, help="Show dynaconf version")
+@click.option('--docs', is_flag=True, callback=open_docs, expose_value=False,
+              is_eager=True, help="Open documentation in browser")
 def main():
-    """Dynaconf - Command Line Interface"""
+    """Dynaconf - Command Line Interface\n
+    Documentation: http://dynaconf.readthedocs.io/
+    """
 
 
 @main.command()
