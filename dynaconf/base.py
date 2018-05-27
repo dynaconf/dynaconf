@@ -14,7 +14,7 @@ from dynaconf.loaders import (
     enable_external_loaders
 )
 from dynaconf.utils.functional import LazyObject, empty
-from dynaconf.utils.parse_conf import converters, parse_conf_data
+from dynaconf.utils.parse_conf import converters, parse_conf_data, true_values
 from dynaconf.utils import BANNER, compat_kwargs, raw_logger
 from dynaconf.validator import ValidatorList
 from dynaconf.utils.boxing import DynaBox
@@ -556,3 +556,25 @@ class Settings(object):
         if not hasattr(self, '_validators'):
             self._validators = ValidatorList(self)
         return self._validators
+
+    def flag(self, key, env=None):
+        """Feature flagging system
+        write flags to redis
+        $ dynaconf write redis -s DASHBOARD=1 -e premiumuser
+        meaning: Any premium user has DASHBOARD feature enabled
+
+        In your program do:
+
+        # premium user has access to dashboard?
+        >>> if settings.flag('dashboard', 'premiumuser'):
+        ...     activate_dashboard()
+
+        The value is ensured to be loaded fresh from redis server
+
+        It also works with file settings but the recommended is redis
+        as the data can be loaded once it is updated.
+        """
+        if env:
+            with self.using_env(env):
+                return self.get_fresh(key) in true_values
+        return self.get_fresh(key) in true_values
