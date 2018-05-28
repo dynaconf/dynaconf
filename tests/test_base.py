@@ -176,4 +176,3 @@ def test_set(settings):
 def test_exists(settings):
     settings.set('BOOK', 'TAOCP')
     assert settings.exists('BOOK') == True
-
