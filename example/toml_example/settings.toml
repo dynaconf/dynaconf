@@ -14,7 +14,7 @@ enabled = true
 works = "toml_example"
 custom = 'this is custom from [default]'
 
-  [dynaconf.test_loaders]
+  [default.test_loaders]
   dev = "test_dev"
   prod = "test_prod"
 

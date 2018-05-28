@@ -3,5 +3,5 @@ server = 'foo.com'
 username = 'admin'
 password = false
 
-[dev]
+[development]
 username = 'foo'

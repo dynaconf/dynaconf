@@ -1,4 +1,4 @@
-DYNACONF:
+DEFAULT:
     YAMLVAR: Come from YAML
-DEV:
-    YAMLVAR: Come from YAML dev
+staging:
+    YAMLVAR: Come from YAML staging

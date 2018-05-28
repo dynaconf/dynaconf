@@ -11,17 +11,18 @@
 
 [![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![PyPI](https://img.shields.io/pypi/pyversions/dynaconf.svg)]() [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![codecov](https://codecov.io/gh/rochacbruno/dynaconf/branch/master/graph/badge.svg)](https://codecov.io/gh/rochacbruno/dynaconf) [![Codacy grade](https://img.shields.io/codacy/grade/5074f5d870a24ddea79def463453545b.svg)](https://www.codacy.com/app/rochacbruno/dynaconf/dashboard)
 
-**dynaconf** a layered configuration system for Python applications - 
-with strong support for [12-factor applications](https://12factor.net/config) 
+**dynaconf** a layered configuration system for Python applications -
+with strong support for [12-factor applications](https://12factor.net/config)
 and extensions for **Flask** and **Django**.
 
 **Documentation**: http://dynaconf.readthedocs.io/
 
-## Features
+# Features
 
 - Strict separation of settings from code (following [12-factor applications](https://12factor.net/config) Guide).
-- Store parameters in multiple file formats (**toml** recommended and json, yaml, ini and py also supported).
-- Sensitive **secrets** like tokens and passwords can be stored in safe places like `.secrets` or `vault server`.
+- Define comprehensive default values.
+- Store parameters in multiple file formats (**.toml**, .json, .yaml, .ini and .py).
+- Sensitive **secrets** like tokens and passwords can be stored in safe places like `.secrets` file or `vault server`.
 - Parameters can optionally be stored in external services like Redis server.
 - Simple **feature flag** system.
 - Layered **[environment]** system.
@@ -31,8 +32,8 @@ and extensions for **Flask** and **Django**.
 - Have **only one** canonical settings module to rule all your instances.
 - Drop in extension for **Flask** `app.config` object.
 - Drop in extension for **Django** `conf.settings` object.
-- Powerful **$ dynaconf** CLI to help you manage your settings.
-- Customizable Validation System to ensure correct config parameters.
+- Powerful **$ dynaconf** CLI to help you manage your settings via console.
+- Customizable **Validation** System to ensure correct config parameters.
 - Allow the change of **dyna**mic parameters on the fly without the need to redeploy your application.
 
 ## install Dynaconf
@@ -40,39 +41,39 @@ and extensions for **Flask** and **Django**.
 > Python 3.x is required
 
 ```bash
-# Default installation supports .py, .toml, .json file formats
-# and also reading from environment variables (.env supported)
-pip3 install dynaconf
+# Default installation supports .toml, .py and .json file formats
+# and also overriding from environment variables (.env supported)
+$ pip3 install dynaconf
 ```
 
 ## Getting Started
 
-
 ### Accessing config variables in your Python application
 
-In your Python program wherever you need to access a settings variable do:
+In your Python program wherever you need to access a settings variable you use the canonical object `from dynaconf import settings`:
+
+#### Example of program to connect to some database
 
 ```python
-# Example of program to connect to some database
-from someorm import connect
+from some.db import Client
 from dynaconf import settings  # import `dynaconf.settings` canonical settings object
 
-con = connect(
+conn = Client(
     username=settings.USERNAME,             # attribute style access
     password=settings.get('PASSWORD'),      # dict get style access
     port=settings['PORT'],                  # dict item style access
     timeout=settings.as_int('TIMEOUT'),     # Forcing casting if needed
-    host=settings.get('HOST', 'localhost')  # Providing defaults if key not defined
+    host=settings.get('HOST', 'localhost')  # Providing defaults if key is not defined
 )
 ```
 
-### Where the settings values are stored?
+### Where the settings values are stored
 
 Dynaconf aims to have a flexible and usable configuration system. Your applications can be configured via a **configuration files**, through **environment variables**, or both. Configurations are separated into environments: **[development], [staging], [testing] and [production]**. The working environment is selected via an environment variable.
 
 **Sensitive data** like tokens, secret keys and password can be stored in `.secrets.*` files and/or external storages like `Redis` or `vault` secrets server.
 
-Besides the built-in optional support to **redis** as settings storage dynaconf allows you to create **custom loaders** and store the data wherever you want e.g: databases, memory storages, other file formats, nosql databases etc. 
+Besides the built-in optional support to **redis** as settings storage dynaconf allows you to create **custom loaders** and store the data wherever you want e.g: databases, memory storages, other file formats, nosql databases etc.
 
 ### environments
 
@@ -104,6 +105,9 @@ An optional `settings.{toml|py|json|ini|yaml}` file can be used to specify the c
 The recommended file format is **TOML** but you can choose to use any of **.{toml|py|json|ini|yaml}**.
 
 The file must be a series of sections, at most one for **[default]**, optionally one for each **[environment]**, and an optional **[global]** section. Each section contains **key-value** pairs corresponding to configuration parameters for that **[environment]**. If a configuration parameter is missing, the value from **[default]** is used. The following is a complete `settings.toml` file, where every standard configuration parameter is specified within the **[default]** section:
+
+> **NOTE**: if the file format choosen is `.py` as it does not support sections you can create multiple files like `settings.py` for [default], `development_settings.py`, `production_settings.py` and `global_settings.py`. **ATTENTION** using `.py` is not recommended for configuration use **TOML**!
+
 
 ```toml
 [default]
@@ -163,13 +167,17 @@ Once the support is installed no extra configuration is needed to load data from
 the root directory of your application looking for the following files in the exact order below:
 
 ```python
-[
- 'settings.py', '.secrets.py',
- 'settings.toml', 'settings.tml', '.secrets.toml', '.secrets.tml',
- 'settings.yaml', 'settings.yml', '.secrets.yaml', '.secrets.yml',
- 'settings.ini', 'settings.conf', 'settings.properties',
- '.secrets.ini', '.secrets.conf', '.secrets.properties',
- 'settings.json', '.secrets.json',
+DYNACONF_LOADING_ORDER = [
+ 'settings.py',
+ '.secrets.py',
+ 'settings.toml',
+ '.secrets.toml',
+ 'settings.yaml',
+ '.secrets.yaml',
+ 'settings.ini',
+ '.secrets.ini',
+ 'settings.json',
+ '.secrets.json',
  # redis server if REDIS_FOR_DYNACONF_ENABLED=true
  # vault server if VAULT_FOR_DYNACONF_ENABLED=true
  # other sources if custom loaders are defined
@@ -177,7 +185,7 @@ the root directory of your application looking for the following files in the ex
 ]
 ```
 
-> **NOTE:** Dynaconf works in an **override** mode based on the above order, so if you have multiple file formats with conflicting keys defined, the precedence will be based on the loading order.
+> **NOTE:** Dynaconf works in an **layered override** mode based on the above order, so if you have multiple file formats with conflicting keys defined, the precedence will be based on the loading order.
 
 Take a look at the [example](/example) folder to see some examples of use with different file formats.
 
@@ -194,20 +202,20 @@ password = "sek@987342$"
 
 The secrets file supports all the **environment** definitions supported in the **settings** file.
 
-> **IMPORTANT**: The reason to use a `.secrets.*` file is the ability to omit this file when commiting to the repository so a recommended `.gitignore` should include `.secrets.*` line. 
+> **IMPORTANT**: The reason to use a `.secrets.*` file is the ability to omit this file when commiting to the repository so a recommended `.gitignore` should include `.secrets.*` line.
 
 ## Scafolding
 
 Dynaconf provides a **CLI** to easily configure your application configuration, once dynaconf is installed go to the root directory of your application and run:
 
 ```bash
+# creates settings files in current directory
 $ dynaconf init -v key=value -v otherkey=othervalue -s token=1234 -e production
 ```
 
 The above command will create in the current directory
 
-
- `settings.toml` 
+`settings.toml`
 
 ```toml
 [default]
@@ -271,26 +279,33 @@ This prefix itself can be changed to something more significant for your applica
 Environment variables take precedence over all other configuration sources: if the variable is set, it will be used as the value for the parameter. Variable values are parsed as if they were **TOML** syntax. As illustration, consider the following examples:
 
 ```bash
-DYNACONF_INTEGER=1
+DYNACONF_INTEGER=42
 DYNACONF_FLOAT=3.14
 DYNACONF_STRING=Hello
-# Use extra quotes to force a string from other type
-DYNACONF_STRING="'42'"
-DYNACONF_STRING="'true'"
 DYNACONF_STRING="Hello"
+
 # booleans
 DYNACONF_BOOL=true
 DYNACONF_BOOL=false
+
+# Use extra quotes to force a string from other type
+DYNACONF_STRING="'42'"
+DYNACONF_STRING="'true'"
+
 # Arrays must be homogenous in toml syntax
 DYNACONF_ARRAY=[1, 2, 3]
 DYNACONF_ARRAY=[1.1, 2.2, 3.3]
 DYNACONF_ARRAY=['a', 'b', 'c']
 DYNACONF_DICT={key="abc",val=123}
-# toml syntax does not allow `None/null` values so use
+
+# toml syntax does not allow `None/null` values so use @none
 DYNACONF_NONE='@none None'
+
+# toml syntax does not allow mixed type arrays so use @json
+DYNACONF_ARRAY='@json [42, 3.14, "hello", true, ["otherarray"], {"foo": "bar"}]'
 ```
 
-> **NOTE**: Older versions of Dynaconf used the casting prefixes for env vars like `export DYNACONF_INTEGER='@int 123'` still works but this casting is deprecated in favor of using TOML syntax described above. To disable the `@type` casting `export AUTO_CAST_FOR_DYNACONF=false`
+> **NOTE**: Older versions of Dynaconf used the `@casting` prefixes for env vars like `export DYNACONF_INTEGER='@int 123'` still works but this casting is deprecated in favor of using TOML syntax described above. To disable the `@casting` do `export AUTO_CAST_FOR_DYNACONF=false`
 
 #### Boxed values
 
@@ -324,19 +339,20 @@ The https://www.vaultproject.io/ is a key:value store for secrets and Dynaconf c
 variables from a Vault secret.
 
 1. Run a vault server
+
 Run a Vault server installed or via docker:
 
 ```bash
-docker run -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+$ docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
 ```
 
 2. Install support for vault in dynaconf
 
 ```bash
-pip install dynaconf[vault]
+$ pip install dynaconf[vault]
 ```
 
-3. In your `.env` file or in environment variables do:
+3. In your `.env` file or in exported environment variables define:
 
 ```bash
 VAULT_FOR_DYNACONF_ENABLED=true
@@ -358,8 +374,19 @@ $ dynaconf write vault -s password=123456
 
 ## Using REDIS
 
+1. Run a Redis server installed or via docker:
 
-1  Add the configuration for redis client in your `.env` or export envvars
+```bash
+$ docker run -d -p 6379:6379 redis
+```
+
+2. Install support for redis in dynaconf
+
+```bash
+$ pip install dynaconf[redis]
+```
+
+3. In your `.env` file or in exported environment variables define:
 
 ```bash
 REDIS_FOR_DYNACONF_ENABLED=true
@@ -388,7 +415,7 @@ DYNACONF_DYNACONF {
 > if you want to skip type casting, write as string intead of PORT=1234 use PORT="'1234'".
 
 Data is read from redis and another loaders only once when `dynaconf.settings` is first accessed
-or when `.setenv()` or `using_env()` are invoked. 
+or when `.setenv()` or `using_env()` are invoked.
 
 You can access the fresh value using **settings.get_fresh(key)**
 
@@ -574,3 +601,199 @@ You can override settings.py values in the dynaconf settings file.
 
 > **NOTE**: To use `$ dynaconf` CLI the `DJANGO_SETTINGS_MODULE` must be defined and the cli must be called
 > from the same directory where manage.py is placed.
+
+## DEBUGGING
+
+By default Dynaconf only outputs the `ERROR` level of logs and you can change it:
+
+```bash
+export DEBUG_LEVEL_FOR_DYNACONF=DEBUG
+```
+
+## Customizing the loaders
+
+In your project i.e called `myprogram` create your custom loader.
+
+`myprogram/my_custom_loader.py`
+
+```python
+def load(obj, env=None, silent=True, key=None, filename=None):
+    """
+    Reads and loads in to "obj" a single key or all keys from source
+    :param obj: the settings instance
+    :param env: settings current env default='development'
+    :param silent: if errors should raise
+    :param key: if defined load a single key, else load all in env
+    :param filename: Custom filename to load
+    :return: None
+    """
+    # Load data from your custom data source (file, database, memory etc)
+    # use `obj.set` or `obj.update` to include the data in dynaconf
+```
+
+In the `.env` file or exporting the envvar define:
+
+```bash
+LOADERS_FOR_DYNACONF=['myprogram.my_custom_loader', 'dynaconf.loaders.env_loader']
+```
+
+Dynaconf will import your `myprogram.my_custom_loader.load` and call it.
+
+> **IMPORTANT**: the `'dynaconf.loaders.env_loader'` must be the last in the loaders list
+> if you want to keep the behavior of having envvars to override parameters.
+
+In case you need to disable all external loaders and ue only the `settings.*` file loaders define:
+
+```bash
+LOADERS_FOR_DYNACONF=false
+```
+
+## Testing and mocking
+
+For testing it is recommended to just switch to `testing` environment and read the same config files.
+But it is common in unit tests to `mock` some objects and you may need in rare cases to mock the `dynaconf.settings` when running your tests.
+
+```python
+from dynaconf.utils import DynaconfDict
+mocked_settings = DynaconfDict({'FOO': 'BAR'})
+```
+
+DynaconfDict is a dict like obj that can be populated from a file:
+
+```python
+from dynaconf.loaders import toml_loader
+toml_loader.load(mocked_settings, filename='my_file.toml', env='testing')
+```
+
+## Validation
+
+Dynaconf allows the validation of settings parameters, in some cases you may want to validate the settings before starting the program.
+
+Lets say you have `settings.toml`
+
+```toml
+[default]
+version = 1.0.0
+age = 35
+name = "Bruno"
+
+[production]
+PROJECT = "This is not hello_world"
+```
+
+At any point of your program you can do:
+
+```python
+from dynaconf import settings, Validator
+
+# Register validators
+settings.validators.register(
+    # Ensure some parameters exists (are required)
+    Validator('VERSION', 'AGE', 'NAME', must_exist=True),
+
+    # Ensure some password cannot exist
+    Validator('PASSWORD', must_exist=False),
+
+    # Ensure some parameter mets a condition
+    # conditions: (eq, ne, lt, gt, lte, gte, identity, is_type_of, is_in, is_not_in)
+    Validator('AGE', lte=30, gte=10),
+
+    # validate a value is eq in specific env
+    Validator('PROJECT', eq='hello_world', env='production'),
+)
+
+# Fire the validator
+settings.validators.validate()
+```
+
+The above will raise `dynaconf.validators.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")`
+
+
+### Using dynaconf_validators.toml
+
+> **NEW in 1.0.1**
+
+Starting on version 1.0.1 it is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same fodler as your settings files.
+
+`dynaconf_validators.toml` equivalent to program above
+
+```toml
+[default]
+
+version = {must_exist=true}
+name = {must_exist=true}
+password = {must_exist=false}
+
+  [default.age]
+  must_exist = true
+  lte = 30
+  gte = 10
+
+[production]
+project = {eq="hello_world"}
+```
+
+Then to fire the validation use:
+
+```bash
+$ dynaconf validate
+```
+
+## The dynaconf CLI
+
+The `$ dynaconf` cli provides some useful commands
+
+```bash
+Usage: dynaconf [OPTIONS] COMMAND [ARGS]...
+
+  Dynaconf - Command Line Interface
+
+Options:
+  --version  Show dynaconf version
+  --docs     Open documentation in browser
+  --help     Show this message and exit.
+
+Commands:
+  banner    Shows dynaconf awesome banner
+  init      Inits a dynaconf project By default it...
+  list      Lists all defined config values
+  write     Writes data to specific source
+  validate  Validates based on dynaconf_validators.toml file
+```
+
+## More examples
+
+Take a look at [example/](/example) for more.
+
+## Credits
+
+- Dynaconf is inspired by `flask.config` and `django.conf.settings`
+- Some ideas also taken from Rust `config` crate
+- Environments definitions ideas taken from Rust `rocket` framework
+
+## Alternatives
+
+Dynaconf tries to define standard and good practices for config and aims to have flexibility and 100% of test coverage for Python 3.x.
+
+Dynaconf implements the best parts of the alternatives below, to implement Dynaconf lots of configuration libraties have been tested and studied.
+
+But if you are still looking for something different take a look at the following excellent alternatives.
+
+- [Python Decouple](https://github.com/henriquebastos/python-decouple)
+- [PrettyConf](https://github.com/osantana/prettyconf)
+- [Profig](https://bitbucket.org/dhagrow/profig)
+- [Everett](https://github.com/willkg/everett)
+- [Configman](https://configman.readthedocs.io/en/latest/)
+- [PyMLconf](https://pypi.org/project/pymlconf/)
+- [AnyConfig](https://github.com/ssato/python-anyconfig)
+- [Config](https://pypi.org/project/config/)
+- [Conman](https://github.com/the-gigi/conman)
+
+```
+██████╗ ██╗   ██╗███╗   ██╗ █████╗  ██████╗ ██████╗ ███╗   ██╗███████╗
+██╔══██╗╚██╗ ██╔╝████╗  ██║██╔══██╗██╔════╝██╔═══██╗████╗  ██║██╔════╝
+██║  ██║ ╚████╔╝ ██╔██╗ ██║███████║██║     ██║   ██║██╔██╗ ██║█████╗
+██║  ██║  ╚██╔╝  ██║╚██╗██║██╔══██║██║     ██║   ██║██║╚██╗██║██╔══╝
+██████╔╝   ██║   ██║ ╚████║██║  ██║╚██████╗╚██████╔╝██║ ╚████║██║
+╚═════╝    ╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝
+```

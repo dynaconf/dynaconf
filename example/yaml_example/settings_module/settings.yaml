@@ -12,7 +12,6 @@ default:
   enabled: true
   works: yaml_example
   custom: 'this is custom from [default]'
-dynaconf:
   test_loaders:
     dev: test_dev
     prod: test_prod

@@ -1,2 +1,2 @@
-dynaconf:
+default:
   yaml_var: 1

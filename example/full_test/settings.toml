@@ -1,4 +1,4 @@
-[dynaconf]
+[default]
 tomlvar='come from toml'
-[dev]
-tomlvar='come from toml dev'
+[staging]
+tomlvar='come from toml staging'

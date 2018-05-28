@@ -1,7 +1,7 @@
 # This is the BASE env
-# the values from [prod] will be always loaded and used as default values
-# by default it was called [dynaconf] but in the .env file we changed the DEFAULT_ENV_FOR_DYNACONF to PROD
-[prod]
+# the values from [values] will be always loaded and used as default values
+# by default it was called [default] but in the .env file we changed the DEFAULT_ENV_FOR_DYNACONF to VALUES
+[values]
 host = "server.com from TOML"
 port = 5000.0
 username = "admin"
@@ -16,7 +16,7 @@ age = 42.0
 enabled = true
 works = "only_in_prod"
 
-  [prod.test_loaders]
+  [values.test_loaders]
   dev = "test_dev"
   prod = "test_prod"
 

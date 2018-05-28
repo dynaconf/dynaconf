@@ -4,9 +4,6 @@ import toml
 
 from six import string_types
 from dynaconf.utils.boxing import DynaBox
-from dynaconf.utils import raw_logger
-
-logger = raw_logger()
 
 
 true_values = (

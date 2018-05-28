@@ -17,7 +17,6 @@ os.environ['DYNACONF_VALUE'] = '@float 42.1'
 os.environ['DYNACONF_ALIST'] = '@json ["item1", "item2", "item3"]'
 os.environ['DYNACONF_ADICT'] = '@json {"key": "value"}'
 os.environ['DYNACONF_DEBUG'] = '@bool true'  # on, enabled, 1, active accepted as keyword here
-os.environ['PROJECT1_HOSTNAME'] = 'otherhost.com'
 
 # Now when reading settings they will be get from your sources dynamically
 # defined data types are casted (but you can also do explicitly if want)
@@ -51,19 +50,6 @@ print(type(settings.ADICT))
 
 print("\nThe value that may not exist can have a default :")
 print(settings.get('FOO', default='bar'))
-
-print("\nenvs Support :")
-with settings.using_env('PROJECT1'):
-    print("\nThe host for project1 :")
-    print(settings.HOSTNAME)
-
-print("\nThe host for default :")
-print(settings.HOSTNAME)
-
-print("\nenvs Support :")
-with settings.using_env('PROJECT1'):
-    print("\nThe host for project1 :")
-    print(settings.HOSTNAME)
 
 print("\nThe host for default :")
 print(settings.HOSTNAME)

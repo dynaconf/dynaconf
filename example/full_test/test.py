@@ -28,7 +28,7 @@ print("TOMLVAR", settings.TOMLVAR)
 print("INIVAR", settings.INIVAR)
 print("JSONVAR", settings.JSONVAR)
 
-with settings.using_env('dev'):
+with settings.using_env('staging'):
     print("PYVAR", settings.PYVAR)
     print("YAMLVAR", settings.YAMLVAR)
     print("TOMLVAR", settings.TOMLVAR)
@@ -47,7 +47,7 @@ print("INIVAR", settings.INIVAR)
 print("JSONVAR", settings.JSONVAR)
 
 
-settings.setenv('dev')
+settings.setenv('staging')
 print("PYVAR", settings.PYVAR)
 print("YAMLVAR", settings.YAMLVAR)
 print("TOMLVAR", settings.TOMLVAR)
@@ -70,5 +70,3 @@ print("loaders:", settings.loaded_by_loaders)
 print("deleted:", settings._deleted)
 print("dotenv_override:", settings.DOTENV_OVERRIDE_FOR_DYNACONF)
 print("redis:", settings.REDIS_FOR_DYNACONF)
-
-
