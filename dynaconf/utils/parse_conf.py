@@ -1,11 +1,20 @@
 import os
 import json
+import toml
 
 from six import string_types
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils import raw_logger
 
-true_values = ('t', 'true', 'enabled', '1', 'on', 'yes')
-false_values = ('f', 'false', 'disabled', '0', 'off', 'no')
+logger = raw_logger()
+
+
+true_values = (
+    't', 'true', 'enabled', '1', 'on', 'yes', 'True'
+)
+false_values = (
+    'f', 'false', 'disabled', '0', 'off', 'no', 'False', ''
+)
 
 converters = {
     '@int': int,
@@ -23,7 +32,15 @@ converters = {
 }
 
 
-def _parse_conf_data(data):
+def parse_with_toml(data):
+    """Uses TOML syntax to parse data"""
+    try:
+        return toml.loads('key={}'.format(data), DynaBox).key
+    except toml.TomlDecodeError:
+        return data
+
+
+def _parse_conf_data(data, tomlfy=False):
     """
     @int @bool @float @json (for lists and dicts)
     strings does not need converters
@@ -35,33 +52,33 @@ def _parse_conf_data(data):
     export DYNACONF_MONGODB_SETTINGS='@json {"DB": "quokka_db"}'
     export DYNACONF_ALLOWED_EXTENSIONS='@json ["jpg", "png"]'
     """
-    cast_toggler = os.environ.get('AUTO_CAST_FOR_DYNACONF', '').lower()
-    if cast_toggler in false_values:
-        return data
+    cast_toggler = os.environ.get('AUTO_CAST_FOR_DYNACONF', 'true').lower()
+    castenabled = cast_toggler not in false_values
 
-    if data and isinstance(
-            data, string_types
+    if castenabled and data and isinstance(
+        data, string_types
     ) and data.startswith(tuple(converters.keys())):
         parts = data.partition(' ')
         converter_key = parts[0]
         value = parts[-1]
         return converters.get(converter_key)(value)
-    return data
+
+    return parse_with_toml(data) if tomlfy else data
 
 
-def parse_conf_data(data):
+def parse_conf_data(data, tomlfy=False):
     if isinstance(data, (tuple, list)):
         # recursively parse each sequence item
-        return [parse_conf_data(item) for item in data]
+        return [parse_conf_data(item, tomlfy=tomlfy) for item in data]
     elif isinstance(data, (dict, DynaBox)):
         # recursively parse inner dict items
         _parsed = {}
         for k, v in data.items():
-            _parsed[k] = parse_conf_data(v)
+            _parsed[k] = parse_conf_data(v, tomlfy=tomlfy)
         return _parsed
     else:
         # return parsed string value
-        return _parse_conf_data(data)
+        return _parse_conf_data(data, tomlfy=tomlfy)
 
 
 def unparse_conf_data(value):

@@ -17,10 +17,9 @@ def settings():
     os.environ['DYNA%s_ADICT' % mode] = '@json {"key": "value"}'
     os.environ['DYNA%s_DEBUG' % mode] = '@bool true'
     os.environ['DYNA%s_TODELETE' % mode] = '@bool true'
-    os.environ['PROJECT1_HOSTNAME'] = 'otherhost.com'
     sets = LazySettings(
         LOADERS_FOR_DYNACONF=loaders,
-        NAMESPACE_FOR_DYNACONF="DYNA%s" % mode,
+        GLOBAL_ENV_FOR_DYNACONF="DYNA%s" % mode,
         boxed_data={
             'HOST': 'server.com',
             'port': 8080,

@@ -1,9 +1,8 @@
 from dynaconf import settings
 
-# export DYNACONF_SETTINGS=settings.yaml
-# or run $ source env.sh
-
-# print all values in dynaconf: namespace of yaml file
+# print all values in the file
+# using [default] + [development] + [global] values
+print('* All values')
 print(settings.HOST)
 print(settings.PORT)
 print(settings.USERNAME)
@@ -13,24 +12,29 @@ print(settings.TEST_LOADERS)
 print(settings.MONEY)
 print(settings.AGE)
 print(settings.ENABLED)
+print(settings.CUSTOM)
 
-# using development: namespace values for context
-with settings.using_namespace('DEVELOPMENT'):
-    print(settings.ENVIRONMENT)
+print('* Switiching to production')
+# using [production] env values for context
+with settings.using_env('PRODUCTION'):
+    print(settings.CUSTOM)
     print(settings.HOST)
 
-# back to default dynaconf: namespace
-print(settings.get('ENVIRONMENT'))
+print('* Switiching to development')
+# back to default [development] env
+print(settings.get('CUSTOM'))
 print(settings.HOST)
 
-# set namespace to development:
-settings.namespace('development')
+print('* Switiching to production')
+# set env to [production]:
+settings.setenv('production')
 print(settings.HOST)
-print(settings.ENVIRONMENT)
+print(settings.CUSTOM)
 
-# back to default namespace again
-settings.namespace()
+print('* Switiching to development')
+# back to [development] env again
+settings.setenv()
 print(settings.HOST)
-print(settings.get('ENVIRONMENT'))
+print(settings.get('INEXISTENT'))  # None
 
 print(settings.WORKS)

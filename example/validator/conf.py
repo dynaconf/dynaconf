@@ -1,8 +1,8 @@
 # coding: utf-8
-from dynaconf import LazySettings, Validator, Transformator
+from dynaconf import LazySettings, Validator
 
 settings = LazySettings(
-    NAMESPACE_FOR_DYNACONF='EXAMPLE',
+    ENV_FOR_DYNACONF='EXAMPLE',
     silent=True
 )
 
@@ -19,7 +19,7 @@ settings.validators.register(
     ),
     Validator(
         'PRESIDENT',
-        namespace='DEVELOPMENT',
+        env='DEVELOPMENT',
         ne='Trump',
     ),
     Validator(
@@ -33,25 +33,25 @@ settings.validators.register(
         is_type_of=(list, tuple)
     ),
     Validator(
-        'MYSQL_HOST', namespace='DEVELOPMENT', is_in=settings.DEV_SERVERS
+        'MYSQL_HOST', env='DEVELOPMENT', is_in=settings.DEV_SERVERS
     ),
     Validator(
-        'MYSQL_HOST', namespace='PRODUCTION', is_not_in=settings.DEV_SERVERS
+        'MYSQL_HOST', env='PRODUCTION', is_not_in=settings.DEV_SERVERS
     ),
     Validator('NAME', condition=lambda x: x in ('BRUNO', 'MIKE')),
     Validator(
         'IMAGE_1', 'IMAGE_2',
-        namespace='development',
+        env='development',
         must_exist=True,
         when=Validator('BASE_IMAGE', must_exist=True,
-                       namespace=settings.NAMESPACE_FOR_DYNACONF)
+                       env=settings.ENV_FOR_DYNACONF)
     ),
     Validator(
         'IMAGE_4', 'IMAGE_5',
-        namespace=('development', 'production'),
+        env=('development', 'production'),
         must_exist=True, when=Validator(
             'BASE_IMAGE', must_exist=False,
-            namespace=settings.NAMESPACE_FOR_DYNACONF
+            env=settings.ENV_FOR_DYNACONF
         )
     ),
     Validator('PORT', must_exist=True, ne=8000, when=Validator('MYSQL_HOST',
@@ -59,7 +59,3 @@ settings.validators.register(
 )
 
 settings.validators.validate()
-
-settings.transformators.register(
-    Transformator('NAME', using=lambda x: x.replace('n', 'x'))
-)

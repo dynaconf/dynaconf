@@ -1,36 +1,42 @@
 # coding: utf-8
 import os
 from dynaconf.utils.parse_conf import parse_conf_data
+from dotenv import cli as dotenv_cli
 
-IDENTIFIER = 'env_loader'
+IDENTIFIER = 'env'
 
 
-def load(obj, namespace=None, silent=True, key=None):
-    default_namespace = obj.get('BASE_NAMESPACE_FOR_DYNACONF')
-    # load all from default namespace (this never gets cleaned)
+def load(obj, env=None, silent=True, key=None):
+    """Loads envvars with prefixes:
+    DYNACONF_ (default global) or $(GLOBAL_ENV_FOR_DYNACONF)_
+    """
+    global_env = obj.get('GLOBAL_ENV_FOR_DYNACONF')
+    if global_env.upper() != 'DYNACONF':
+        load_from_env(
+            IDENTIFIER + '_global',
+            key,
+            'DYNACONF',
+            obj,
+            silent
+        )
+
+    # Load the global env if exists and overwrite everything
     load_from_env(
-        IDENTIFIER,
+        IDENTIFIER + '_global',
         key,
-        default_namespace,
+        global_env,
         obj,
         silent
     )
 
-    namespace = namespace or obj.current_namespace
 
-    # rewrite with different namespace if provided
-    if namespace and namespace != default_namespace:
-        identifier = IDENTIFIER + '_' + namespace.lower()
-        load_from_env(identifier, key, namespace, obj, silent)
-
-
-def load_from_env(identifier, key, namespace, obj, silent):
-    NAMESPACE = namespace.upper()  # noqa
-    NAMESPACE_ = '{0}_'.format(NAMESPACE)  # noqa
+def load_from_env(identifier, key, env, obj, silent):
+    env = env.upper()  # noqa
+    env_ = '{0}_'.format(env)  # noqa
     try:
         if key:
             value = os.environ.get(
-                '{0}_{1}'.format(NAMESPACE, key)
+                '{0}_{1}'.format(env, key)
             )
             if value:
                 obj.logger.debug(
@@ -39,13 +45,13 @@ def load_from_env(identifier, key, namespace, obj, silent):
                     value,
                     identifier
                 )
-                obj.set(key, value, loader_identifier=identifier)
+                obj.set(key, value, loader_identifier=identifier, tomlfy=True)
         else:
             data = {
-                key.partition(NAMESPACE_)[-1]: parse_conf_data(data)
+                key.partition(env_)[-1]: parse_conf_data(data, tomlfy=True)
                 for key, data
                 in os.environ.items()
-                if key.startswith(NAMESPACE_)
+                if key.startswith(env_)
             }
             obj.logger.debug(
                 "env_loader:loading:%s (%s)",
@@ -55,7 +61,7 @@ def load_from_env(identifier, key, namespace, obj, silent):
             obj.update(data, loader_identifier=identifier)
     except Exception as e:  # pragma: no cover
         e.message = (
-            'Unable to load config env namespace ({0})'
+            'Unable to load config env env ({0})'
         ).format(str(e))
         if silent:
             obj.logger.error(str(e))
@@ -63,9 +69,10 @@ def load_from_env(identifier, key, namespace, obj, silent):
             raise
 
 
-def clean(obj, namespace, silent=True):  # noqa
-    for identifier, data in obj.loaded_by_loaders.items():
-        if identifier.startswith('env_loader'):
-            for key in data:
-                obj.logger.debug("cleaning: %s (%s)", key, identifier)
-                obj.unset(key)
+def write(settings_path, settings_data, **kwargs):
+    for key, value in settings_data.items():
+        dotenv_cli.set_key(
+            str(settings_path),
+            key.upper(),
+            str(value)
+        )

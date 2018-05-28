@@ -1,42 +1,50 @@
 import pytest
 from dynaconf import LazySettings
-from dynaconf.loaders.json_loader import load, clean
+from dynaconf.loaders.json_loader import load
 
 settings = LazySettings(
-    NAMESPACE_FOR_DYNACONF='EXAMPLE',
+    ENV_FOR_DYNACONF='PRODUCTION',
 )
 
 
 JSON = """
 {
-  "a": "a,b",
-  "example": {
-    "password": 99999,
-    "host": "server.com",
-    "port": 8080,
-    "service": {
-      "url": "service.com",
-      "port": 80,
-      "auth": {
-        "password": "qwerty",
-        "test": 1234
-      }
+    "a": "a,b",
+    "default": {
+        "password": "@int 99999",
+        "host": "server.com",
+        "port": "@int 8080",
+        "alist": ["item1", "item2", 23],
+        "service": {
+          "url": "service.com",
+          "port": 80,
+          "auth": {
+            "password": "qwerty",
+            "test": 1234
+          }
+        }
+    },
+    "development": {
+        "password": "@int 88888",
+        "host": "devserver.com"
+    },
+    "production": {
+        "password": "@int 11111",
+        "host": "prodserver.com"
+    },
+    "global": {
+        "global_value": "global"
     }
-  },
-  "development": {
-    "password": 88888,
-    "host": "dev_server.com"
-  }
 }
 """
 
 # the @float is not needed in JSON but kept to ensure it works
 JSON2 = """
 {
-  "example": {
+  "global": {
     "secret": "@float 42",
     "password": 123456,
-    "host": "otheryaml.com"
+    "host": "otherjson.com"
   }
 }
 """
@@ -47,23 +55,24 @@ JSONS = [JSON, JSON2]
 def test_load_from_json():
     """Assert loads from JSON string"""
     load(settings, filename=JSON)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
     assert settings.PORT == 8080
+    assert settings.ALIST == ['item1', 'item2', 23]
     assert settings.SERVICE['url'] == 'service.com'
     assert settings.SERVICE.url == 'service.com'
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=JSON, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=JSON, env='DEVELOPMENT')
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=JSON)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
 
 
 def test_load_from_multiple_json():
     """Assert loads from JSON string"""
     load(settings, filename=JSONS)
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == 'otherjson.com'
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
     assert settings.PORT == 8080
@@ -72,18 +81,18 @@ def test_load_from_multiple_json():
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=JSONS, namespace='DEVELOPMENT')
+    load(settings, filename=JSONS, env='DEVELOPMENT')
     assert settings.PORT == 8080
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == 'otherjson.com'
     load(settings, filename=JSONS)
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == 'otherjson.com'
     assert settings.PASSWORD == 123456
-    load(settings, filename=JSON, namespace='DEVELOPMENT')
+    load(settings, filename=JSON, env='DEVELOPMENT')
     assert settings.PORT == 8080
-    assert settings.HOST == 'dev_server.com'
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=JSON)
-    assert settings.HOST == 'server.com'
-    assert settings.PASSWORD == 99999
+    assert settings.HOST == 'prodserver.com'
+    assert settings.PASSWORD == 11111
 
 
 def test_no_filename_is_none():
@@ -91,15 +100,15 @@ def test_no_filename_is_none():
     assert load(settings) is None
 
 
-def test_key_error_on_invalid_namespace():
-    """Assert error raised if namespace is not found in JSON"""
+def test_key_error_on_invalid_env():
+    """Assert error raised if env is not found in JSON"""
     with pytest.raises(KeyError):
-        load(settings, filename=JSON, namespace='FOOBAR', silent=False)
+        load(settings, filename=JSON, env='FOOBAR', silent=False)
 
 
-def test_no_key_error_on_invalid_namespace():
-    """Assert error raised if namespace is not found in JSON"""
-    load(settings, filename=JSON, namespace='FOOBAR', silent=True)
+def test_no_key_error_on_invalid_env():
+    """Assert error raised if env is not found in JSON"""
+    load(settings, filename=JSON, env='FOOBAR', silent=True)
 
 
 def test_load_single_key():
@@ -112,7 +121,7 @@ def test_load_single_key():
       }
     }
     """
-    load(settings, filename=_JSON, namespace='FOO', key='bar')
+    load(settings, filename=_JSON, env='FOO', key='bar')
     assert settings.BAR == 'blaz'
     assert settings.exists('BAR') is True
     assert settings.exists('ZAZ') is False
@@ -128,15 +137,30 @@ def test_multiple_filenames():
 
 def test_cleaner():
     load(settings, filename=JSON)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
     assert settings.PORT == 8080
+    assert settings.ALIST == ['item1', 'item2', 23]
     assert settings.SERVICE['url'] == 'service.com'
     assert settings.SERVICE.url == 'service.com'
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=JSON, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=JSON, env='DEVELOPMENT')
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=JSON)
-    assert settings.HOST == 'server.com'
-    clean(settings, settings.namespace)
+    assert settings.HOST == 'prodserver.com'
+
+    settings.clean()
+    with pytest.raises(AttributeError):
+        assert settings.HOST == 'prodserver.com'
+
+
+def test_using_env(tmpdir):
+    load(settings, filename=JSON)
+    assert settings.HOST == 'prodserver.com'
+
+    tmpfile = tmpdir.mkdir("sub").join("test_using_env.json")
+    tmpfile.write(JSON)
+    with settings.using_env('DEVELOPMENT', filename=str(tmpfile)):
+        assert settings.HOST == 'devserver.com'
+    assert settings.HOST == 'prodserver.com'

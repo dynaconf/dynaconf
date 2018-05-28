@@ -1,5 +1,7 @@
 # coding: utf-8
-from dynaconf.utils.parse_conf import parse_conf_data, unparse_conf_data
+from dynaconf.utils.parse_conf import (
+    parse_conf_data, unparse_conf_data
+)
 try:
     from redis import StrictRedis
 except ImportError as e:
@@ -11,31 +13,30 @@ except ImportError as e:
         "pip install dynaconf[redis]"
     )
 
-IDENTIFIER = 'redis_loader'
+IDENTIFIER = 'redis'
 
 
-def load(obj, namespace=None, silent=True, key=None):
+def load(obj, env=None, silent=True, key=None):
     """
     Reads and loads in to "settings" a single key or all keys from redis
     :param obj: the settings instance
-    :param namespace: settings namespace default='DYNACONF'
+    :param env: settings env default='DYNACONF'
     :param silent: if errors should raise
-    :param key: if defined load a single key, else load all in namespace
+    :param key: if defined load a single key, else load all in env
     :return: None
     """
     redis = StrictRedis(**obj.get('REDIS_FOR_DYNACONF'))
-    namespace = namespace or obj.current_namespace
-    holder = "DYNACONF_%s" % namespace
+    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
     try:
         if key:
             value = redis.hget(holder.upper(), key)
             if value:
-                parsed_value = parse_conf_data(value)
+                parsed_value = parse_conf_data(value, tomlfy=True)
                 if parsed_value:
                     obj.set(key, parsed_value)
         else:
             data = {
-                key: parse_conf_data(value)
+                key: parse_conf_data(value, tomlfy=True)
                 for key, value in redis.hgetall(holder.upper()).items()
             }
             if data:
@@ -48,19 +49,6 @@ def load(obj, namespace=None, silent=True, key=None):
         raise
 
 
-def clean(obj, namespace, silent=True):  # noqa
-    """
-    After a load, all loaded vars are stored at loaded_by_loaders
-    clean should clean only the loaded vars.
-    :param obj: the settings instance
-    :param namespace: settings namespace default='DYNACONF'
-    :param silent: if errors should raise
-    :return:
-    """
-    for key in obj.loaded_by_loaders.get(IDENTIFIER, {}):
-        obj.unset(key)
-
-
 def write(obj, data=None, **kwargs):
     """
     Write a value in to loader source
@@ -69,8 +57,14 @@ def write(obj, data=None, **kwargs):
     :param kwargs: vars to be stored
     :return:
     """
+    if obj.REDIS_FOR_DYNACONF_ENABLED is False:
+        raise RuntimeError(
+            'Redis is not configured \n'
+            'export REDIS_FOR_DYNACONF_ENABLED=true\n'
+            'and configure the REDIS_FOR_DYNACONF_* variables'
+        )
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = "DYNACONF_%s" % obj.current_namespace
+    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
     data = data or {}
     data.update(kwargs)
     if not data:
@@ -85,13 +79,13 @@ def write(obj, data=None, **kwargs):
 
 def delete(obj, key=None):
     """
-    Delete a single key if specified, or all namespace if key is none
+    Delete a single key if specified, or all env if key is none
     :param obj: settings object
     :param key: key to delete from store location
     :return: None
     """
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = "DYNACONF_%s" % obj.current_namespace
+    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
     if key:
         client.hdel(holder.upper(), key.upper())
         obj.unset(key)

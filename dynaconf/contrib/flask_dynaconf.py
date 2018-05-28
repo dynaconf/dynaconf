@@ -1,4 +1,5 @@
 # coding: utf-8
+import os
 try:
     from flask.config import Config
     flask_installed = True
@@ -26,7 +27,7 @@ class FlaskDynaconf(object):
                         file
                         Dynaconf supports .py, .yml, .toml
 
-    NAMESPACE_FOR_DYNACONF = Namespace prefix for your envvars to become
+    ENV_FOR_DYNACONF = env prefix for your envvars to become
                              settings
                         example:
                             export MYSITE_SQL_PORT='@int 5445'
@@ -63,9 +64,9 @@ class FlaskDynaconf(object):
     1) Load all passed variables when applying FlaskDynaconf
     2) Update with data in SETTINGS_MODULE_FOR_DYNACONF
     3) Update with data in YAML extra file if provided
-    4) Update with data in environmente vars `NAMESPACE_FOR_DYNACONF_`
+    4) Update with data in environmente vars `ENV_FOR_DYNACONF_`
 
-    YAML files are very useful to have `namespaced` settings, lets say,
+    YAML files are very useful to have `envd` settings, lets say,
     `production` and `development`.
 
     You can also achieve the same using multiple `.py` files naming as
@@ -78,9 +79,8 @@ class FlaskDynaconf(object):
         FlaskDynaconf(
             app,
             ENVVAR_FOR_DYNACONF="MYSITE_SETTINGS_MODULE",
-            NAMESPACE_FOR_DYNACONF='MYSITE',
+            ENV_FOR_DYNACONF='MYSITE',
             SETTINGS_MODULE_FOR_DYNACONF='settings.yml',
-            YAML='.secrets.yml',
             EXTRA_VALUE='You can add aditional config vars here'
         )
 
@@ -96,8 +96,11 @@ class FlaskDynaconf(object):
                 "install it with: pip install flask"
             )
         self.kwargs = kwargs
-        if 'NAMESPACE_FOR_DYNACONF' not in kwargs:
-            kwargs['NAMESPACE_FOR_DYNACONF'] = 'FLASK'
+        if 'GLOBAL_ENV_FOR_DYNACONF' not in kwargs:
+            kwargs['GLOBAL_ENV_FOR_DYNACONF'] = 'FLASK'
+        if 'ENV_FOR_DYNACONF' not in kwargs:
+            kwargs['ENV_FOR_DYNACONF'] = os.environ.get(
+                'FLASK_ENV', 'DEVELOPMENT').upper()
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config
         if app:
@@ -129,8 +132,8 @@ class DynaconfConfig(Config):
     0) Load all defaults and Flask defaults
     1) Load all passed variables above
     2) Update with data in SETTINGS_MODULE_FOR_DYNACONF
-    3) Update with data in YAML
-    4) Update with data in rnvironmente vars `NAMESPACE_FOR_DYNACONF_`
+    3) Update with data in toml|yaml|ini|json files
+    4) Update with data in environment vars `ENV_FOR_DYNACONF_`
     """
 
     def get(self, key, default=None):
@@ -147,7 +150,7 @@ class DynaconfConfig(Config):
 
     def __getitem__(self, key):
         """
-        First try to get value from dynaconf then from Flask
+        Flask templates always expects a None when key is not found in config
         """
         return self.get(key)
 

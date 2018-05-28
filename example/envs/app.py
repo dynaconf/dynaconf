@@ -1,10 +1,10 @@
 from dynaconf import settings
 
 
-print('# 1 all values in {} + {}: namespace of yaml file:'.format(
-    settings.BASE_NAMESPACE_FOR_DYNACONF,
-    settings.current_namespace))
-assert settings.current_namespace == 'DEVELOPMENT'
+print('# 1 all values in {} + {}: env of yaml file:'.format(
+    settings.DEFAULT_ENV_FOR_DYNACONF,
+    settings.current_env))
+assert settings.current_env == 'DEVELOPMENT'
 print('HOST::', settings.HOST)
 print('PORT:', settings.PORT)
 print('USERNAME:', settings.USERNAME)
@@ -17,10 +17,10 @@ print('ENABLED:', settings.ENABLED)
 print('ENVIRONMENT:', settings.get('ENVIRONMENT'))
 print('WORKS:', settings.WORKS)
 
-with settings.using_namespace('TESTING'):
-    print('# 2 using {}: namespace values for context:'.format(
-        settings.current_namespace))
-    assert settings.current_namespace == 'TESTING'
+with settings.using_env('TESTING'):
+    print('# 2 using {}: env values for context:'.format(
+        settings.current_env))
+    assert settings.current_env == 'TESTING'
     print('HOST::', settings.HOST)
     print('PORT:', settings.PORT)
     print('USERNAME:', settings.USERNAME)
@@ -33,8 +33,8 @@ with settings.using_namespace('TESTING'):
     print('ENVIRONMENT:', settings.get('ENVIRONMENT'))
     print('WORKS:', settings.WORKS)
 
-print('# 3 back to default {}: namespace:'.format(settings.current_namespace))
-assert settings.current_namespace == 'DEVELOPMENT'
+print('# 3 back to default {}: env:'.format(settings.current_env))
+assert settings.current_env == 'DEVELOPMENT'
 print('HOST::', settings.HOST)
 print('PORT:', settings.PORT)
 print('USERNAME:', settings.USERNAME)
@@ -47,9 +47,9 @@ print('ENABLED:', settings.ENABLED)
 print('ENVIRONMENT:', settings.get('ENVIRONMENT'))
 print('WORKS:', settings.WORKS)
 
-settings.namespace('testing')
-print('# 4 Set to {}: namespace:'.format(settings.current_namespace))
-assert settings.current_namespace == 'TESTING'
+settings.setenv('testing')
+print('# 4 Set to {}: env:'.format(settings.current_env))
+assert settings.current_env == 'TESTING'
 print('HOST::', settings.HOST)
 print('PORT:', settings.PORT)
 print('USERNAME:', settings.USERNAME)
@@ -62,9 +62,9 @@ print('ENABLED:', settings.ENABLED)
 print('ENVIRONMENT:', settings.get('ENVIRONMENT'))
 print('WORKS:', settings.WORKS)
 
-settings.namespace()
-print('# 5 back to default {}: namespace:'.format(settings.current_namespace))
-assert settings.current_namespace == 'DEVELOPMENT'
+settings.setenv()
+print('# 5 back to default {}: env:'.format(settings.current_env))
+assert settings.current_env == 'DEVELOPMENT'
 print('HOST::', settings.HOST)
 print('PORT:', settings.PORT)
 print('USERNAME:', settings.USERNAME)
@@ -78,10 +78,10 @@ print('ENVIRONMENT:', settings.get('ENVIRONMENT'))
 print('WORKS:', settings.WORKS)
 
 
-with settings.using_namespace('staging'):
-    print('# 6 using {}: namespace values for context:'.format(
-        settings.current_namespace))
-    assert settings.current_namespace == 'STAGING'
+with settings.using_env('staging'):
+    print('# 6 using {}: env values for context:'.format(
+        settings.current_env))
+    assert settings.current_env == 'STAGING'
     print('HOST::', settings.HOST)
     print('PORT:', settings.PORT)
     print('USERNAME:', settings.USERNAME)
@@ -94,8 +94,8 @@ with settings.using_namespace('staging'):
     print('ENVIRONMENT:', settings.get('ENVIRONMENT'))
     print('WORKS:', settings.WORKS)
 
-print('# 7 back to default {}: namespace:'.format(settings.current_namespace))
-assert settings.current_namespace == 'DEVELOPMENT'
+print('# 7 back to default {}: env:'.format(settings.current_env))
+assert settings.current_env == 'DEVELOPMENT'
 print('HOST::', settings.HOST)
 print('PORT:', settings.PORT)
 print('USERNAME:', settings.USERNAME)
@@ -108,9 +108,9 @@ print('ENABLED:', settings.ENABLED)
 print('ENVIRONMENT:', settings.get('ENVIRONMENT'))
 print('WORKS:', settings.WORKS)
 
-settings.namespace('staging')
-assert settings.current_namespace == 'STAGING'
-print('# 8 Set to {}: namespace:'.format(settings.current_namespace))
+settings.setenv('staging')
+assert settings.current_env == 'STAGING'
+print('# 8 Set to {}: env:'.format(settings.current_env))
 print('HOST::', settings.HOST)
 print('PORT:', settings.PORT)
 print('USERNAME:', settings.USERNAME)
@@ -123,8 +123,8 @@ print('ENABLED:', settings.ENABLED)
 print('ENVIRONMENT:', settings.get('ENVIRONMENT'))
 print('WORKS:', settings.WORKS)
 
-settings.namespace()
-print('# 9 back to default {}: namespace:'.format(settings.current_namespace))
+settings.setenv()
+print('# 9 back to default {}: env:'.format(settings.current_env))
 print('HOST::', settings.HOST)
 print('PORT:', settings.PORT)
 print('USERNAME:', settings.USERNAME)
@@ -138,4 +138,4 @@ print('ENVIRONMENT:', settings.get('ENVIRONMENT'))
 print('WORKS:', settings.WORKS)
 
 
-assert settings.current_namespace == 'DEVELOPMENT'
+assert settings.current_env == 'DEVELOPMENT'

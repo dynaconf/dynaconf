@@ -1,4 +1,4 @@
-[dynaconf]
+[default]  
 host = "server.com from TOML"
 port = 5000.0
 username = "admin"
@@ -12,12 +12,18 @@ money = 500.5
 age = 42.0
 enabled = true
 works = "toml_example"
+custom = 'this is custom from [default]'
 
   [dynaconf.test_loaders]
   dev = "test_dev"
   prod = "test_prod"
 
 [development]
-environment = "this is development from toml"
+custom = "this is custom from [development]"
 host = "dev_server.com from toml"
-works = 'only_in_dev'
+works = 'toml_example in dev env'
+
+[production]
+custom = "this is custom from [production]"
+host = "prod_server.com from toml"
+works = 'toml_example in prod env'

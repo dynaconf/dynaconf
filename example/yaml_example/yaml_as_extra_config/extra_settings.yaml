@@ -1,8 +1,10 @@
-dynaconf:
+default:
   host: server.com
   port: 5000
-  works: yaml_as_extra_config
 development:
   environment: this is development
   host: dev_server.com
-  works: only_in_dev
+  works: yaml_as_extra_config
+production:
+  environment: this is production
+  host: prod_server.com

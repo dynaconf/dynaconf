@@ -1,6 +1,7 @@
 .PHONY: test install pep8 release clean doc test_examples test_vault test_redis
 
 test_examples:
+	@cd example/common;pwd;python program.py
 	@cd example/;pwd;python full_example.py | grep -c full_example
 	@cd example/;pwd;python compat.py
 	@cd example/app;pwd;python app.py | grep -c app
@@ -16,16 +17,20 @@ test_examples:
 	@cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini
 	@cd example/validator/;pwd;python app.py | grep -c validator
 	@cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et
-	@cd example/namespaces;pwd;python app.py
+	@cd example/envs;pwd;python app.py
 	@cd example/django_example/;pwd;python manage.py test
 
 test_vault:
-	@cd example/vault;pwd;python write.py
+	# @cd example/vault;pwd;python write.py
+	@cd example/vault;pwd;dynaconf write vault -s SECRET=vault_works
+	@cd example/vault;pwd;dynaconf write vault -e dev -s SECRET=vault_works_in_dev
 	@sleep 5
 	@cd example/vault;pwd;python vault_example.py | grep -c vault_works
 
 test_redis:
-	@cd example/redis_example;pwd;python write.py
+	# @cd example/redis_example;pwd;python write.py
+	@cd example/redis_example;pwd;dynaconf write redis -s SECRET=redis_works
+	@cd example/redis_example;pwd;dynaconf write redis -e dev -s SECRET=redis_works_in_dev
 	@sleep 5
 	@cd example/redis_example;pwd;python redis_example.py | grep -c redis_works
 
@@ -38,7 +43,7 @@ install:
 pep8:
 	@flake8 dynaconf --ignore=F403
 
-release: clean test
+release: clean test_examples test
 	@python setup.py sdist bdist_wheel
 	@twine upload dist/*
 

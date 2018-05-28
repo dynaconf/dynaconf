@@ -1,8 +1,14 @@
-# The namespace here should match the name given in `NAMESPACE_FOR_DYNACONF`
-[MYSITE]
+[default]
 DEBUG = true
 SERVER = "flaskdynaconf.com"
 PORT = 6666.0
 MESSAGE = "Dynaconf works like a charm with Flask and TOML"
 TEST_RULE='/flask_with_toml'
 
+[development]
+DEBUG = true 
+SERVER = "dev.flaskdynaconf.com"
+
+[production]
+DEBUG = false
+SERVER = "prod.flaskdynaconf.com"

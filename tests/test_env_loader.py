@@ -1,19 +1,18 @@
 import os
 import pytest
-from dynaconf.loaders.env_loader import load, clean
+from dynaconf.loaders.env_loader import load
 from dynaconf import settings  # noqa
 
+# GLOBAL ENV VARS
 os.environ['DYNACONF_HOSTNAME'] = 'host.com'
 os.environ['DYNACONF_PORT'] = '@int 5000'
-os.environ['DYNACONF_VALUE'] = '@float 42.1'
 os.environ['DYNACONF_ALIST'] = '@json ["item1", "item2", "item3", 123]'
 os.environ['DYNACONF_ADICT'] = '@json {"key": "value", "int": 42}'
 os.environ['DYNACONF_DEBUG'] = '@bool true'
-os.environ['PROJECT1_HOSTNAME'] = 'otherhost.com'
-os.environ['PROJECT1_PORT'] = '@int 8080'
 os.environ['DYNACONF_MUSTBEFRESH'] = 'first'
 os.environ['DYNACONF_MUSTBEALWAYSFRESH'] = 'first'
 os.environ['DYNACONF_SHOULDBEFRESHINCONTEXT'] = 'first'
+os.environ['DYNACONF_VALUE'] = '@float 42.1'
 
 # os.environ['FRESH_VARS_FOR_DYNACONF'] = '@json ["MUSTBEALWAYSFRESH"]'
 # settings.configure()
@@ -22,14 +21,16 @@ settings.configure(FRESH_VARS_FOR_DYNACONF=["MUSTBEALWAYSFRESH"])
 
 def test_env_loader():
     assert settings.HOSTNAME == 'host.com'
+    assert settings.PORT == 5000
     assert settings.ALIST == ["item1", "item2", "item3", 123]
     assert settings.ADICT == {"key": "value", "int": 42}
 
 
 def test_single_key():
-    load(settings, namespace='PROJECT1', key='HOSTNAME')
-    assert settings.HOSTNAME == 'otherhost.com'
-    assert settings.PORT == 5000
+    os.environ['DYNACONF_HOSTNAME'] = 'changedhost.com'
+    load(settings, key='HOSTNAME')
+    # hostname is reloaded
+    assert settings.HOSTNAME == 'changedhost.com'
 
 
 def test_dotenv_loader():
@@ -41,11 +42,6 @@ def test_dotenv_loader():
     assert settings.DOTENV_NOTE is None
 
 
-def test_dotenv_other_namespace_loader():
-    load(settings, namespace='FLASK')
-    assert settings.DOTENV_STR == "flask"
-
-
 def test_get_fresh():
     assert settings.MUSTBEFRESH == 'first'
     os.environ['DYNACONF_MUSTBEFRESH'] = 'second'
@@ -53,7 +49,6 @@ def test_get_fresh():
         # fresh should now be second
         assert settings.exists('MUSTBEFRESH')
         assert settings.get_fresh('MUSTBEFRESH') == 'first'
-
     assert settings.get_fresh('MUSTBEFRESH') == 'second'
 
     os.environ['DYNACONF_THISMUSTEXIST'] = '@int 1'
@@ -75,11 +70,7 @@ def test_get_fresh():
         settings['THISMUSTEXIST']
 
     os.environ['DYNACONF_THISMUSTEXIST'] = '@int 23'
-    os.environ['BLARG_THISMUSTEXIST'] = '@int 99'
-    # namespace switch is deleting the variable
-    with settings.using_namespace('BLARG'):
-        assert settings.get('THISMUSTEXIST') == 99
-
+    load(settings)
     assert settings.get('THISMUSTEXIST') == 23
 
 
@@ -103,4 +94,6 @@ def test_fresh_context():
 
 
 def test_cleaner():
-    clean(settings, settings.namespace)
+    settings.clean()
+    with pytest.raises(AttributeError):
+        assert settings.HOSTNAME == 'host.com'

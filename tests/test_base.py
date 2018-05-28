@@ -46,16 +46,16 @@ def test_values_are_equal(settings):
 
 
 def test_get_env(settings):
-    settings.env['FRUIT'] = 'BANANA'
-    assert settings.exists_in_env('fruit') is True
-    assert settings.env['FRUIT'] == settings.get_env('fruit')
-    assert os.environ['FRUIT'] == settings.env.get('FRUIT')
+    settings.environ['FRUIT'] = 'BANANA'
+    assert settings.exists_in_environ('fruit') is True
+    assert settings.environ['FRUIT'] == settings.get_environ('fruit')
+    assert os.environ['FRUIT'] == settings.environ.get('FRUIT')
 
-    settings.env['SALARY'] = '180.235'
-    assert settings.get_env('salary', cast='@float') == 180.235
+    settings.environ['SALARY'] = '180.235'
+    assert settings.get_environ('salary', cast='@float') == 180.235
 
-    settings.env['ENVINT'] = '@int 24'
-    assert settings.get_env('envint', cast=True) == 24
+    settings.environ['ENVINT'] = '@int 24'
+    assert settings.get_environ('envint', cast=True) == 24
 
 
 def test_float(settings):
@@ -131,15 +131,15 @@ def test_as_json(settings):
     assert settings.as_json('person') == {"name": "Bruno"}
 
 
-def test_namespace_should_be_string(settings):
+def test_env_should_be_string(settings):
     with pytest.raises(AttributeError):
-        with settings.namespace(123456):
+        with settings.setenv(123456):
             pass
 
 
-def test_namespace_should_not_have_underline(settings):
+def test_env_should_not_have_underline(settings):
     with pytest.raises(AttributeError):
-        with settings.namespace('COOL_NAMESPACE'):
+        with settings.setenv('COOL_env'):
             pass
 
 
@@ -176,4 +176,3 @@ def test_set(settings):
 def test_exists(settings):
     settings.set('BOOK', 'TAOCP')
     assert settings.exists('BOOK') == True
-

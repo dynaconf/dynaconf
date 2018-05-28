@@ -5,7 +5,7 @@ import os
 from hvac import Client
 from dynaconf.utils.parse_conf import parse_conf_data
 
-IDENTIFIER = 'vault_loader'
+IDENTIFIER = 'vault'
 
 
 def get_client(obj):
@@ -16,21 +16,21 @@ def get_client(obj):
     return client
 
 
-def load(obj, namespace=None, silent=None, key=None):
+def load(obj, env=None, silent=None, key=None):
     client = get_client(obj)
-    namespace = namespace or obj.current_namespace
-    path = os.path.join(obj.VAULT_FOR_DYNACONF_PATH, namespace.lower())
+    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
+    path = os.path.join(obj.VAULT_FOR_DYNACONF_PATH, holder.lower())
     data = client.read(path)
     if data:
         data = data.get('data', {}).get('data')
 
     try:
         if data and key:
-            value = parse_conf_data(data.get(key))
+            value = parse_conf_data(data.get(key), tomlfy=True)
             if value:
                 obj.set(key, value)
         elif data:
-            obj.update(data, loader_identifier=IDENTIFIER)
+            obj.update(data, loader_identifier=IDENTIFIER, tomlfy=True)
     except Exception as e:
         if silent:
             if hasattr(obj, 'logger'):
@@ -47,6 +47,12 @@ def write(obj, data=None, lease='1h', **kwargs):
     :param kwargs: vars to be stored
     :return:
     """
+    if obj.VAULT_FOR_DYNACONF_ENABLED is False:
+        raise RuntimeError(
+            'Vault is not configured \n'
+            'export VAULT_FOR_DYNACONF_ENABLED=true\n'
+            'and configure the VAULT_FOR_DYNACONF_* variables'
+        )
     data = data or {}
     data.update(kwargs)
     if not data:
@@ -54,7 +60,7 @@ def write(obj, data=None, lease='1h', **kwargs):
     client = get_client(obj)
     path = os.path.join(
         obj.VAULT_FOR_DYNACONF_PATH,
-        obj.current_namespace.lower()
+        obj.get('GLOBAL_ENV_FOR_DYNACONF').lower()
     )
     client.write(path, data=data, lease=lease)
     load(obj)

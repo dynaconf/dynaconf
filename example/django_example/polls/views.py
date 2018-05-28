@@ -7,8 +7,8 @@ def index(request):
     tests.append('<b>.env</b>')
     tests.append("""<pre>DYNACONF_SERVER='prod_server_fromenv.com'
 DEV_SERVER='dev_server_fromenv.com'
-# switch namespaces or omit to default to DYNACONF
-NAMESPACE_FOR_DYNACONF=dev
+# switch envs or omit to default to DYNACONF
+ENV_FOR_DYNACONF=dev
 </pre>
     """)
     tests.append('<b>settings.toml</b>')
@@ -34,14 +34,14 @@ password = 'My5up3r53c4et'</pre>
     tests.append(f"settings.USERNAME: {settings.USERNAME}")
     tests.append(f"settings.PASSWORD: {settings.PASSWORD}")
 
-    with settings.using_namespace('dev'):
-        tests.append('<b>$ In dev namespace</b>')
+    with settings.using_env('dev'):
+        tests.append('<b>$ In dev env</b>')
         tests.append(f"settings.STATIC_URL: {settings.STATIC_URL}")
         tests.append(f"settings.SERVER: {settings.SERVER}")
         tests.append(f"settings.USERNAME: {settings.USERNAME}")
         tests.append(f"settings.PASSWORD: {settings.PASSWORD}")
 
-    # settings.namespace('dev')
+    # settings.setenv('dev')
     return HttpResponse(
         '<br>'.join(tests)
     )

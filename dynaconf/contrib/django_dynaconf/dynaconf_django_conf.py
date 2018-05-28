@@ -10,6 +10,6 @@ for key in dir(django_settings):
 
 
 settings = LazySettings(
-    NAMESPACE_FOR_DYNACONF='DYNACONF',
+    GLOBAL_ENV_FOR_DYNACONF='DJANGO',
     **dj
 )

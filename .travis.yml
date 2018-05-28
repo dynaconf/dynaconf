@@ -15,7 +15,10 @@ jobs:
         # - DYNATRAVIS_ENV_DICT='@json {"dyna": "conf"}' how to fix this?
         - DYNATRAVIS_ENV_DICT='@json {}'
         - DYNATRAVIS_ENV_PURE_INT=42
+        - DYNATRAVIS_ENV_STR_INT="'42'"
         - OTHER_TESTING='@bool yes'
+        - OTHER_ENABLED=true
+        - OTHER_DISABLED=false
       before_script:
         - sleep 5
       install:
@@ -23,7 +26,7 @@ jobs:
         - "pip install --upgrade -r requirements_dev.txt"
       script: make test
       after_success:
-        - coveralls
+        - codecov
     - stage: test_examples
       language: python
       python: 3.6

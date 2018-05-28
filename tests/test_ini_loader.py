@@ -1,14 +1,15 @@
 import pytest
 from dynaconf import LazySettings
-from dynaconf.loaders.ini_loader import load, clean
+from dynaconf.loaders.ini_loader import load
 
 settings = LazySettings(
-    NAMESPACE_FOR_DYNACONF='EXAMPLE',
+    ENV_FOR_DYNACONF='PRODUCTION',
 )
 
 
 INI = """
-[example]
+a = 'a,b'
+[default]
 password = '@int 99999'
 host = "server.com"
 port = '@int 8080'
@@ -24,14 +25,21 @@ alist = item1, item2, '@int 23'
 
 [development]
 password = '@int 88888'
-host = "dev_server.com"
+host = "devserver.com"
+
+[production]
+password = '@int 11111'
+host = "prodserver.com"
+
+[global]
+global_value = 'global'
 """
 
 INI2 = """
-[example]
+[global]
 secret = "@float 42"
 password = '@int 123456'
-host = "otheryaml.com"
+host = "otherini.com"
 """
 
 INIS = [INI, INI2]
@@ -40,7 +48,7 @@ INIS = [INI, INI2]
 def test_load_from_ini():
     """Assert loads from INI string"""
     load(settings, filename=INI)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
     assert settings.PORT == 8080
     assert settings.ALIST == ['item1', 'item2', 23]
     assert settings.SERVICE['url'] == 'service.com'
@@ -48,16 +56,17 @@ def test_load_from_ini():
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=INI, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=INI, env='DEVELOPMENT')
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=INI)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
+    assert settings.PORT == 8080
 
 
 def test_load_from_multiple_ini():
     """Assert loads from INI string"""
     load(settings, filename=INIS)
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == 'otherini.com'
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
     assert settings.PORT == 8080
@@ -66,18 +75,18 @@ def test_load_from_multiple_ini():
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=INIS, namespace='DEVELOPMENT')
+    load(settings, filename=INIS, env='DEVELOPMENT')
     assert settings.PORT == 8080
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == 'otherini.com'
     load(settings, filename=INIS)
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == 'otherini.com'
     assert settings.PASSWORD == 123456
-    load(settings, filename=INI, namespace='DEVELOPMENT')
+    load(settings, filename=INI, env='DEVELOPMENT')
     assert settings.PORT == 8080
-    assert settings.HOST == 'dev_server.com'
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=INI)
-    assert settings.HOST == 'server.com'
-    assert settings.PASSWORD == 99999
+    assert settings.HOST == 'prodserver.com'
+    assert settings.PASSWORD == 11111
 
 
 def test_no_filename_is_none():
@@ -85,25 +94,26 @@ def test_no_filename_is_none():
     assert load(settings) is None
 
 
-def test_key_error_on_invalid_namespace():
-    """Assert error raised if namespace is not found in INI"""
+def test_key_error_on_invalid_env():
+    """Assert error raised if env is not found in INI"""
     with pytest.raises(KeyError):
-        load(settings, filename=INI, namespace='FOOBAR', silent=False)
+        load(settings, filename=INI, env='FOOBAR', silent=False)
 
 
-def test_no_key_error_on_invalid_namespace():
-    """Assert error raised if namespace is not found in INI"""
-    load(settings, filename=INI, namespace='FOOBAR', silent=True)
+def test_no_key_error_on_invalid_env():
+    """Assert error raised if env is not found in INI"""
+    load(settings, filename=INI, env='FOOBAR', silent=True)
 
 
 def test_load_single_key():
     """Test loading a single key"""
     ini = """
+    a = "a,b"
     [foo]
     bar = "blaz"
     zaz = "naz"
     """
-    load(settings, filename=ini, namespace='FOO', key='bar')
+    load(settings, filename=ini, env='FOO', key='bar')
     assert settings.BAR == 'blaz'
     assert settings.exists('BAR') is True
     assert settings.exists('ZAZ') is False
@@ -119,7 +129,7 @@ def test_multiple_filenames():
 
 def test_cleaner():
     load(settings, filename=INI)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
     assert settings.PORT == 8080
     assert settings.ALIST == ['item1', 'item2', 23]
     assert settings.SERVICE['url'] == 'service.com'
@@ -127,9 +137,22 @@ def test_cleaner():
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == 'qwerty'
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=INI, namespace='DEVELOPMENT')
-    assert settings.HOST == 'dev_server.com'
+    load(settings, filename=INI, env='DEVELOPMENT')
+    assert settings.HOST == 'devserver.com'
     load(settings, filename=INI)
-    assert settings.HOST == 'server.com'
+    assert settings.HOST == 'prodserver.com'
 
-    clean(settings, settings.namespace)
+    settings.clean()
+    with pytest.raises(AttributeError):
+        assert settings.HOST == 'prodserver.com'
+
+
+def test_using_env(tmpdir):
+    load(settings, filename=INI)
+    assert settings.HOST == 'prodserver.com'
+
+    tmpfile = tmpdir.mkdir("sub").join("test_using_env.ini")
+    tmpfile.write(INI)
+    with settings.using_env('DEVELOPMENT', filename=str(tmpfile)):
+        assert settings.HOST == 'devserver.com'
+    assert settings.HOST == 'prodserver.com'

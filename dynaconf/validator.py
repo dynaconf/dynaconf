@@ -1,5 +1,4 @@
 # coding: utf-8
-# pragma: no cover
 from dynaconf import validator_conditions
 
 
@@ -14,7 +13,7 @@ class Validator(object):
 
         Validator('MESSAGE', defined=True, eq='Hello World')
 
-    The above ensure MESSAGE is available in default namespace and
+    The above ensure MESSAGE is available in default env and
     is equal to 'Hello World'
 
     `*names` are a one (or more) names or patterns:
@@ -36,7 +35,7 @@ class Validator(object):
         is_not_in: value not in sequence
         identity: value is other
 
-    `namespace` is which namespace to be checked, can be a list or
+    `env` is which env to be checked, can be a list or
     default is used.
 
     `when` holds a validator and its return decides if validator runs or not.
@@ -44,7 +43,7 @@ class Validator(object):
         Validator('NAME', defined=True, when=Validator('OTHER', eq=2))
         # NAME is required only if OTHER eq to 2
         # When the very first thing to be performed when passed.
-        # if no namespace is passed to `when` it is inherited
+        # if no env is passed to `when` it is inherited
 
     `must_exist` is `exists` requirement. (executed after when)
 
@@ -62,7 +61,7 @@ class Validator(object):
             must_exist=None,
             condition=None,
             when=None,
-            namespace=None,
+            env=None,
             **operations):
 
         if when is not None and not isinstance(when, Validator):
@@ -77,46 +76,46 @@ class Validator(object):
         self.when = when
         self.operations = operations
 
-        if isinstance(namespace, str):
-            self.namespaces = [namespace]
-        elif isinstance(namespace, (list, tuple)):
-            self.namespaces = namespace
+        if isinstance(env, str):
+            self.envs = [env]
+        elif isinstance(env, (list, tuple)):
+            self.envs = env
         else:
-            self.namespaces = None
+            self.envs = None
 
     def validate(self, settings):
         """Raise ValidationError if invalid"""
 
-        if self.namespaces is None:
-            self.namespaces = [settings.current_namespace]
+        if self.envs is None:
+            self.envs = [settings.current_env]
 
         if self.when is not None:
             try:
-                # inherit namespace if not defined
-                if self.when.namespaces is None:
-                    self.when.namespaces = self.namespaces
+                # inherit env if not defined
+                if self.when.envs is None:
+                    self.when.envs = self.envs
 
                 self.when.validate(settings)
             except ValidationError:
                 # if when is invalid, return canceling validation flow
                 return
 
-        for namespace in self.namespaces:
-            with settings.using_namespace(namespace):
+        for env in self.envs:
+            with settings.using_env(env):
                 for name in self.names:
                     exists = settings.exists(name)
 
                     # is name required but not exists?
                     if self.must_exist is True and not exists:
                         raise ValidationError(
-                            '{0} is required in namespace {1}'.format(
-                                name, namespace
+                            '{0} is required in env {1}'.format(
+                                name, env
                             )
                         )
                     elif self.must_exist is False and exists:
                         raise ValidationError(
-                            '{0} cannot exists in namespace {1}'.format(
-                                name, namespace
+                            '{0} cannot exists in env {1}'.format(
+                                name, env
                             )
                         )
 
@@ -131,9 +130,9 @@ class Validator(object):
                         if not self.condition(value):
                             raise ValidationError(
                                 '{0} invalid for {1}({2}) '
-                                'in namespace {3}'.format(
+                                'in env {3}'.format(
                                     name, self.condition.__name__,
-                                    value, namespace
+                                    value, env
                                 )
                             )
 
@@ -143,9 +142,9 @@ class Validator(object):
                         if not op_function(value, op_value):
                             raise ValidationError(
                                 '{0} must {1} {2} but it is {3} '
-                                'in namespace {4}'.format(
+                                'in env {4}'.format(
                                     name, op_function.__name__,
-                                    op_value, value, namespace
+                                    op_value, value, env
                                 )
                             )
 

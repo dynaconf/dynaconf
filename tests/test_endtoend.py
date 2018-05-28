@@ -1,3 +1,6 @@
+import os
+
+
 def test_end_to_end(settings):
     """
     settings is fixture configured in conftest.py
@@ -23,23 +26,25 @@ def test_end_to_end(settings):
 
     assert settings.get('FOO', default='bar') == 'bar'
 
-    with settings.using_namespace('PROJECT1'):
-        assert settings.HOSTNAME == 'otherhost.com'
-
     assert settings.HOSTNAME == 'host.com'
 
-    if settings.exists_in_env('TRAVIS'):
+    if settings.exists_in_environ('TRAVIS'):
         assert settings.ENV_BOOLEAN is True
         assert settings.ENV_INT == 42
         assert settings.ENV_FLOAT == 42.2
         assert settings.ENV_LIST == ["dyna", "conf"]
-        assert settings.ENV_PURE_INT == '42'
+        assert settings.ENV_PURE_INT == 42
+        assert settings.ENV_STR_INT == '42'
         assert settings.as_int('ENV_PURE_INT') == 42
         assert settings.get('ENV_PURE_INT', cast='@int') == 42
         assert isinstance(settings.ENV_DICT, dict)
 
-        with settings.using_namespace('OTHER'):
+        os.environ['GLOBAL_ENV_FOR_DYNACONF'] = 'OTHER'
+        with settings.using_env('OTHER'):
             assert settings.TESTING is True
+            assert settings.ENABLED is True
+            assert settings.DISABLED is False
+        os.environ['GLOBAL_ENV_FOR_DYNACONF'] = 'DYNACONF'
 
 
 def test_boxed_data(settings):

@@ -52,16 +52,16 @@ print(type(settings.ADICT))
 print("\nThe value that may not exist can have a default :")
 print(settings.get('FOO', default='bar'))
 
-print("\nNamespaces Support :")
-with settings.using_namespace('PROJECT1'):
+print("\nenvs Support :")
+with settings.using_env('PROJECT1'):
     print("\nThe host for project1 :")
     print(settings.HOSTNAME)
 
 print("\nThe host for default :")
 print(settings.HOSTNAME)
 
-print("\nNamespaces Support :")
-with settings.using_namespace('PROJECT1'):
+print("\nenvs Support :")
+with settings.using_env('PROJECT1'):
     print("\nThe host for project1 :")
     print(settings.HOSTNAME)
 

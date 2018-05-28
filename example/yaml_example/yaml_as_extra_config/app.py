@@ -5,12 +5,12 @@ print(settings.HOST)
 print(settings.PORT)
 
 
-# using development: namespace values for context
-with settings.using_namespace('DEVELOPMENT'):
+# using production values for context
+with settings.using_env('PRODUCTION'):
     print(settings.ENVIRONMENT)
     print(settings.HOST)
 
-# back to default dynaconf: namespace
+# back to development env
 print(settings.get('ENVIRONMENT'))
 print(settings.HOST)
 print(settings.WORKS)

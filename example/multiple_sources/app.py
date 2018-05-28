@@ -1,6 +1,17 @@
 from dynaconf import settings
 
 print("Read from settings.py:", settings.PYTHON_VAR)  # noqa
+
+# BY DEFAULT 'development' is the current env
+print("Read from development_settings.py:", settings.PYTHON_DEV_VAR)  # noqa
+
+# If ENV_FOR_DYNACONF=production is in envvars so
+# print("Read from production_settings.py:", settings.PYTHON_PROD_VAR)  # noqa
+
+# global_ overrides previous configs
+print("Read from global_settings.py:", settings.PYTHON_GLOBAL_VAR)  # noqa
+
+
 print("Read from settings.yaml:", settings.YAML_VAR)  # noqa
 print("Read from settings.yml:", settings.YML_VAR)  # noqa
 print("Read from settings.toml:", settings.TOML_VAR)  # noqa
