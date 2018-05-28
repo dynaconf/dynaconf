@@ -90,7 +90,7 @@ default_redis = {
     'host': get('REDIS_FOR_DYNACONF_HOST', 'localhost'),
     'port': int(get('REDIS_FOR_DYNACONF_PORT', 6379)),
     'db': int(get('REDIS_FOR_DYNACONF_DB', 0)),
-    'decode_responses': True
+    'decode_responses': get('REDIS_FOR_DYNACONF_DECODE', True)
 }
 REDIS_FOR_DYNACONF = get('REDIS_FOR_DYNACONF', default_redis)
 REDIS_FOR_DYNACONF_ENABLED = get('REDIS_FOR_DYNACONF_ENABLED', False)

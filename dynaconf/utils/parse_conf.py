@@ -13,7 +13,7 @@ true_values = (
     't', 'true', 'enabled', '1', 'on', 'yes', 'True'
 )
 false_values = (
-    'f', 'false', 'disabled', '0', 'off', 'no', 'False'
+    'f', 'false', 'disabled', '0', 'off', 'no', 'False', ''
 )
 
 converters = {
@@ -52,7 +52,7 @@ def _parse_conf_data(data, tomlfy=False):
     export DYNACONF_MONGODB_SETTINGS='@json {"DB": "quokka_db"}'
     export DYNACONF_ALLOWED_EXTENSIONS='@json ["jpg", "png"]'
     """
-    cast_toggler = os.environ.get('AUTO_CAST_FOR_DYNACONF', '').lower()
+    cast_toggler = os.environ.get('AUTO_CAST_FOR_DYNACONF', 'true').lower()
     castenabled = cast_toggler not in false_values
 
     if castenabled and data and isinstance(

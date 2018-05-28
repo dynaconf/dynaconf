@@ -9,16 +9,34 @@
 
 > **dynaconf** - The **dyna**mic **conf**igurator for your Python Project
 
-[![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![PyPI](https://img.shields.io/pypi/pyversions/dynaconf.svg)]() [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![Coverage Status](https://coveralls.io/repos/rochacbruno/dynaconf/badge.svg?branch=master&service=github)](https://coveralls.io/github/rochacbruno/dynaconf?branch=master) [![Codacy grade](https://img.shields.io/codacy/grade/5074f5d870a24ddea79def463453545b.svg)](https://www.codacy.com/app/rochacbruno/dynaconf/dashboard)
-
+[![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![PyPI](https://img.shields.io/pypi/pyversions/dynaconf.svg)]() [![Travis CI](http://img.shields.io/travis/rochacbruno/dynaconf.svg)](https://travis-ci.org/rochacbruno/dynaconf) [![codecov](https://codecov.io/gh/rochacbruno/dynaconf/branch/master/graph/badge.svg)](https://codecov.io/gh/rochacbruno/dynaconf) [![Codacy grade](https://img.shields.io/codacy/grade/5074f5d870a24ddea79def463453545b.svg)](https://www.codacy.com/app/rochacbruno/dynaconf/dashboard)
 
 **dynaconf** a layered configuration system for Python applications - 
 with strong support for [12-factor applications](https://12factor.net/config) 
 and extensions for **Flask** and **Django**.
 
-<br><br>
+**Documentation**: http://dynaconf.readthedocs.io/
+
+## Features
+
+- Strict separation of settings from code (following [12-factor applications](https://12factor.net/config) Guide).
+- Store parameters in multiple file formats (**toml** recommended and json, yaml, ini and py also supported).
+- Sensitive **secrets** like tokens and passwords can be stored in safe places like `.secrets` or `vault server`.
+- Parameters can optionally be stored in external services like Redis server.
+- Simple **feature flag** system.
+- Layered **[environment]** system.
+- Environment variables can be used to override parameters.
+- Support for `.env` files to automate the export of environment variables.
+- Correct data types (even for environment variables).
+- Have **only one** canonical settings module to rule all your instances.
+- Drop in extension for **Flask** `app.config` object.
+- Drop in extension for **Django** `conf.settings` object.
+- Powerful **$ dynaconf** CLI to help you manage your settings.
+- Customizable Validation System to ensure correct config parameters.
+- Allow the change of **dyna**mic parameters on the fly without the need to redeploy your application.
 
 ## install Dynaconf
+
 > Python 3.x is required
 
 ```bash
@@ -93,6 +111,7 @@ username = "admin"
 port = 5000
 host = "localhost"
 message = "default message"
+value = "default value"
 
 [development]
 username = "devuser"
@@ -126,6 +145,8 @@ address = "localhost"
 address = "0.0.0.0"
 ```
 
+> **NOTE**: The **[env]** name and first level variables are case insensitive as internally dynaconf will always use upper case, that means **[development]** and **[DEVELOPMENT]** are equivalent and **address** and **ADDRESS** are also equivalent. This rule does not apply for inner data structures as dictionaries and arrays.
+
 ### Settings file supported formats
 
 By default **toml** is the recommended format to store your configuration, however you can switch to a different supported format.
@@ -151,17 +172,20 @@ the root directory of your application looking for the following files in the ex
  'settings.json', '.secrets.json',
  # redis server if REDIS_FOR_DYNACONF_ENABLED=true
  # vault server if VAULT_FOR_DYNACONF_ENABLED=true
+ # other sources if custom loaders are defined
  # All environment variables prefixed with DYNACONF_
 ]
 ```
 
 > **NOTE:** Dynaconf works in an **override** mode based on the above order, so if you have multiple file formats with conflicting keys defined, the precedence will be based on the loading order.
 
+Take a look at the [example](/example) folder to see some examples of use with different file formats.
+
 ## Storing sensitive secrets
 
 To safely store sensitive data Dynaconf also searches for a `.secrets.{toml|py|json|ini|yaml}` file to look for data like tokens and passwords.
 
-example `.secrets.toml:
+example `.secrets.toml`:
 
 ```toml
 [default]
@@ -177,7 +201,7 @@ The secrets file supports all the **environment** definitions supported in the *
 Dynaconf provides a **CLI** to easily configure your application configuration, once dynaconf is installed go to the root directory of your application and run:
 
 ```bash
-dynaconf init -v key=value -v otherkey=othervalue -s token=1234 -e production
+$ dynaconf init -v key=value -v otherkey=othervalue -s token=1234 -e production
 ```
 
 The above command will create in the current directory
@@ -267,3 +291,286 @@ DYNACONF_NONE='@none None'
 ```
 
 > **NOTE**: Older versions of Dynaconf used the casting prefixes for env vars like `export DYNACONF_INTEGER='@int 123'` still works but this casting is deprecated in favor of using TOML syntax described above. To disable the `@type` casting `export AUTO_CAST_FOR_DYNACONF=false`
+
+#### Boxed values
+
+In Dynaconf values are Boxed, it means the dot notation can also be used to access dictionary members, example:
+
+settings.toml
+
+```toml
+[default]
+mysql = {host="server.com", port=3600, auth={user="admin", passwd=1234}}
+```
+
+You can now access
+
+```python
+from dynaconf import settings
+
+connect(
+    host=settings.MYSQL.host,
+    port=settings.MYSQL.port,
+    username=settings.MYSQL.auth.user,
+    passwd=settings.MYSQL.auth.get('passwd'),
+)
+```
+
+# External storages
+
+## Using Hashicorp Vault to store secrets
+
+The https://www.vaultproject.io/ is a key:value store for secrets and Dynaconf can load
+variables from a Vault secret.
+
+1. Run a vault server
+Run a Vault server installed or via docker:
+
+```bash
+docker run -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+```
+
+2. Install support for vault in dynaconf
+
+```bash
+pip install dynaconf[vault]
+```
+
+3. In your `.env` file or in environment variables do:
+
+```bash
+VAULT_FOR_DYNACONF_ENABLED=true
+VAULT_FOR_DYNACONF_URL="http://localhost:8200"
+VAULT_FOR_DYNACONF_TOKEN="myroot"
+```
+
+Now you can have keys like `PASSWORD` and `TOKEN` defined in the vault and
+dynaconf will read it.
+
+To write a new secret you can use http://localhost:8200 web admin and write keys
+under the `/secret/dynaconf` secret database.
+
+You can also use the Dynaconf writer via console
+
+```bash
+$ dynaconf write vault -s password=123456
+```
+
+## Using REDIS
+
+
+1  Add the configuration for redis client in your `.env` or export envvars
+
+```bash
+REDIS_FOR_DYNACONF_ENABLED=true
+REDIS_FOR_DYNACONF_HOST=localhost
+REDIS_FOR_DYNACONF_PORT=6379
+```
+
+You can now write variables direct in to a redis hash named `DYNACONF_< env >`
+
+You can also use the redis writer
+
+```bash
+$ dynaconf write redis -v name=Bruno -v database=localhost -v port=1234
+```
+
+The above data will be recorded in redis as a hash:
+
+```
+DYNACONF_DYNACONF {
+    NAME='Bruno'
+    DATABASE='localhost'
+    PORT='@int 1234'
+}
+```
+
+> if you want to skip type casting, write as string intead of PORT=1234 use PORT="'1234'".
+
+Data is read from redis and another loaders only once when `dynaconf.settings` is first accessed
+or when `.setenv()` or `using_env()` are invoked. 
+
+You can access the fresh value using **settings.get_fresh(key)**
+
+There is also the **fresh** context manager
+
+```python
+from dynaconf import settings
+
+print(settings.FOO)  # this data was loaded once on import
+
+with settings.fresh():
+    print(settings.FOO)  # this data is being freshly reloaded from source
+```
+
+And you can also force some variables to be **fresh** setting in your setting file
+
+```python
+FRESH_VARS_FOR_DYNACONF = ['MYSQL_HOST']
+```
+
+or using env vars
+
+```bash
+export FRESH_VARS_FOR_DYNACONF='["MYSQL_HOST", "OTHERVAR"]'
+```
+
+Then
+
+```python
+from dynaconf import settings
+
+print(settings.FOO)         # This data was loaded once on import
+
+print(settings.MYSQL_HOST)  # This data is being read from redis imediatelly!
+```
+
+# Using programatically
+
+Sometimes you want to override settings for your existing Package or Framework
+lets say you have a **conf** module exposing a **config** object and used to do:
+
+```python
+from myprogram.conf import config
+```
+
+Now you want to use Dynaconf, open that `conf.py` or `conf/__init__.py` and do:
+
+```python
+# coding: utf-8
+from dynaconf import LazySettings
+
+config = LazySettings(GLOBAL_ENV_FOR_DYNACONF="MYPROGRAM")
+```
+
+Now you can use `export MYPROGRAM_FOO=bar` instead of `DYNACONF_FOO=bar`
+
+
+## Switching working environments
+
+To switch the `environment` programatically you can use `setenv` or `using_env`.
+
+Using context manager
+
+```python
+from dynaconf import settings
+
+with settings.using_env('envname'):
+    # now values comes from [envmane] section of config
+    assert settings.HOST == 'host.com
+```
+
+Using env setter
+
+```python
+from dynaconf import settings
+
+settings.setenv('envname')
+# now values comes from [envmane] section of config
+assert settings.HOST == 'host.com'
+
+settings.setenv()
+# now working env are back to previous
+```
+
+
+## Feature flag system (feature toggles)
+
+Feature flagging is a system to dynamically toggle features in your
+application based in some settings value.
+
+Learn more at: https://martinfowler.com/articles/feature-toggles.html
+
+Example:
+
+write flags to redis
+```
+$ dynaconf write redis -s NEWDASHBOARD=1 -e premiumuser
+```
+
+meaning: Any premium user has NEWDASHBOARD feature enabled!
+
+In your program do:
+
+```python
+usertype = 'premiumuser'  # assume you loaded it from your database
+
+# user has access to new dashboard?
+if settings.flag('newdashboard', usertype):
+    activate_new_dashboard()
+else:
+    # User will have old dashboard if not a premiumuser
+    activate_old_dashboard()
+```
+
+The value is ensured to be loaded fresh from redis server so features can be enabled or 
+disabled at any time without the need to redeploy.
+
+It also works with file settings but the recommended is redis
+as the data can be loaded once it is updated.
+
+
+# Framework Extensions
+
+## Flask Extension
+
+Dynaconf providesa drop in replacement for `app.config` 
+This an extension makes your `app.config` in Flask to be a `dynaconf` instance.
+
+```python
+from flask import Flask
+from dynaconf import FlaskDynaconf
+
+app = Flask(__name__)
+FlaskDynaconf(app)
+```
+
+Now the `app.config` will work as a `dynaconf.settings` and **FLASK_** will be the
+global prefix for exporting environment variables.
+
+```bash
+export FLASK_DEBUG=true
+export FLASK_INTVALUE=1
+```
+
+The working environment will also respect the `FLASK_ENV` variable, so `FLASK_ENV=development` to work 
+in development mode or `FLASK_ENV=production` to switch to production.
+
+> **NOTE**: To use `$ dynaconf` CLI the `FLASK_APP` must be defined.
+
+
+## Django Extension
+
+Dynaconf a drop in replacement to `django.conf.settings` 
+This an extension makes your `app.config` in Flask to be a `dynaconf` instance.
+
+
+In your django project's `settings.py` include:
+
+```python
+INSTALLED_APPS = [
+    'dynaconf.contrib.django_dynaconf',
+    ...
+]
+```
+
+> **NOTE**: The extension must be included as the first INSTALLED_APP of the list
+
+Now create your `settings.{py|yaml|toml|ini|json}` in your project's root directory
+(the same folder where `manage.py` is located)
+
+Now **django.conf.settings** will work as a `dynaconf.settings` instance and **DJANGO_** will
+be the global prefix to export environment variables.
+
+```bash
+export DJANGO_DEBUG=true
+export DJANGO_INTVALUE=1
+```
+
+It is recommended that all the **django's** internal config vars should be kept
+in the `settings.py` of your project, then application specific values your can 
+place in dynaconf's `settings.toml` in the root (same folder as manage.py).
+You can override settings.py values in the dynaconf settings file.
+
+> **NOTE**: To use `$ dynaconf` CLI the `DJANGO_SETTINGS_MODULE` must be defined and the cli must be called
+> from the same directory where manage.py is placed.
