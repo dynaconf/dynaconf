@@ -1,3 +1,6 @@
+import os
+
+
 def test_end_to_end(settings):
     """
     settings is fixture configured in conftest.py
@@ -36,12 +39,12 @@ def test_end_to_end(settings):
         assert settings.get('ENV_PURE_INT', cast='@int') == 42
         assert isinstance(settings.ENV_DICT, dict)
 
-        settings.GLOBAL_ENV_FOR_DYNACONF = 'other'
+        os.environ['GLOBAL_ENV_FOR_DYNACONF'] = 'OTHER'
         with settings.using_env('OTHER'):
             assert settings.TESTING is True
             assert settings.ENABLED is True
             assert settings.DISABLED is False
-        settings.GLOBAL_ENV_FOR_DYNACONF = 'dynaconf'
+        os.environ['GLOBAL_ENV_FOR_DYNACONF'] = 'DYNACONF'
 
 
 def test_boxed_data(settings):
