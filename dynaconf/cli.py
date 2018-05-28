@@ -20,7 +20,7 @@ WRITERS = ['ini', 'toml', 'yaml', 'json', 'py', 'redis', 'vault', 'env']
 def split_vars(_vars):
     """Splits values like foo=bar=zaz in {'foo': 'bar=zaz'}"""
     return {
-        k.upper().strip(): parse_conf_data(v.strip())
+        k.upper().strip(): parse_conf_data(v.strip(), tomlfy=True)
         for k, _, v
         in [item.partition('=') for item in _vars]
     } if _vars else {}
@@ -73,16 +73,21 @@ def banner():
               type=click.Choice(EXTS))
 @click.option('--path', '-p', default=CWD,
               help='defaults to current directory')
-@click.option('--env', '-e', default='default',
+@click.option('--env', '-e', default=None,
               help='Sets the working env in `.env` file')
 @click.option('--vars', '_vars', '-v', multiple=True, default=None,
               help=(
-                  'extra global envvars to include in `.env` '
+                  'extra values to write to settings file '
                   'file e.g: `dynaconf init -v NAME=foo -v X=2'
+              ))
+@click.option('--secrets', '_secrets', '-s', multiple=True, default=None,
+              help=(
+                  'secret key values to be written in .secrets '
+                  'e.g: `dynaconf init -s TOKEN=kdslmflds'
               ))
 @click.option('--wg/--no-wg', default=True)
 @click.option('-y', default=False, is_flag=True)
-def init(fileformat, path, env, _vars, wg, y):
+def init(fileformat, path, env, _vars, _secrets, wg, y):
     """Inits a dynaconf project
     By default it creates a settings.toml and a .secrets.toml
     for [default|development|staging|testing|production|global] envs.
@@ -99,17 +104,24 @@ def init(fileformat, path, env, _vars, wg, y):
     """
     click.echo('Cofiguring your Dynaconf environment')
 
+    env = env or settings.current_env.lower()
+
     loader = importlib.import_module(
         "dynaconf.loaders.{}_loader".format(fileformat)
     )
     # Turn foo=bar=zaz in {'foo': 'bar=zaz'}
     env_data = split_vars(_vars)
+    _secrets = split_vars(_secrets)
 
     # create placeholder data for every env
     settings_data = {k: {'value': 'value for {}'.format(k)} for k in ENVS}
     secrets_data = {k: {'secret': 'secret for {}'.format(k)} for k in ENVS}
     if env_data:
         settings_data[env] = env_data
+        settings_data['default'] = {k: 'default' for k in env_data}
+    if _secrets:
+        secrets_data[env] = _secrets
+        secrets_data['default'] = {k: 'default' for k in _secrets}
 
     path = Path(path)
 

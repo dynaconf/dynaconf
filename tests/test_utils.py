@@ -69,3 +69,16 @@ def test_disable_cast():
     # now gives pure string
     os.environ['AUTO_CAST_FOR_DYNACONF'] = 'off'
     assert parse_conf_data('@int 42') == '@int 42'
+
+
+def test_tomlfy():
+    assert parse_conf_data("1", tomlfy=True) == 1
+    assert parse_conf_data("true", tomlfy=True) is True
+    assert parse_conf_data("'true'", tomlfy=True) == 'true'
+    assert parse_conf_data('"42"', tomlfy=True) == "42"
+    assert parse_conf_data("[1, 32, 3]", tomlfy=True) == [1, 32, 3]
+    assert parse_conf_data("[1.1, 32.1, 3.3]", tomlfy=True) == [1.1, 32.1, 3.3]
+    assert parse_conf_data("['a', 'b', 'c']", tomlfy=True) == ['a', 'b', 'c']
+    assert parse_conf_data("[true, false]", tomlfy=True) == [True, False]
+    assert parse_conf_data("{key='value', v=1}", tomlfy=True
+        ) == {'key': 'value', 'v': 1}

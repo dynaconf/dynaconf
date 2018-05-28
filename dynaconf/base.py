@@ -262,7 +262,7 @@ class Settings(object):
             if cast in converters:
                 data = converters.get(cast)(data)
             if cast is True:
-                data = parse_conf_data(data)
+                data = parse_conf_data(data, tomlfy=True)
         return data
 
     def exists_in_environ(self, key):
@@ -450,9 +450,9 @@ class Settings(object):
         for key in keys:
             self.unset(key)
 
-    def set(self, key, value, loader_identifier=None):
+    def set(self, key, value, loader_identifier=None, tomlfy=False):
         """Set a value storing references for the loader"""
-        value = parse_conf_data(value)
+        value = parse_conf_data(value, tomlfy=tomlfy)
         if isinstance(value, dict):
             value = DynaBox(value, box_it_up=True)
 
@@ -471,7 +471,8 @@ class Settings(object):
             # a default value and goes away only when explicitly unset
             self._defaults[key] = value
 
-    def update(self, data=None, loader_identifier=None, **kwargs):
+    def update(self, data=None, loader_identifier=None,
+               tomlfy=False, **kwargs):
         """
         Update values in the current settings object without saving in stores
         >>> from dynaconf import settings
@@ -491,7 +492,8 @@ class Settings(object):
         data = data or {}
         data.update(kwargs)
         for key, value in data.items():
-            self.set(key, value, loader_identifier=loader_identifier)
+            self.set(key, value, loader_identifier=loader_identifier,
+                     tomlfy=tomlfy)
 
     @property
     def loaders(self):  # pragma: no cover
@@ -574,7 +576,7 @@ class Settings(object):
         It also works with file settings but the recommended is redis
         as the data can be loaded once it is updated.
         """
-        if env:
-            with self.using_env(env):
-                return self.get_fresh(key) in true_values
-        return self.get_fresh(key) in true_values
+        env = env or self.GLOBAL_ENV_FOR_DYNACONF
+        with self.using_env(env):
+            value = self.get_fresh(key)
+            return value is True or value in true_values

@@ -33,7 +33,7 @@ def default_loader(obj, defaults=None):
                 "default_loader:overriding from envvar: %s:%s",
                 key, env_value
             )
-            obj.set(key, env_value)
+            obj.set(key, env_value, tomlfy=True)
 
 
 def settings_loader(obj, settings_module=None, env=None,

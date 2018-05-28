@@ -42,6 +42,7 @@ def test_init(fileformat):
             '--no-wg',
             '--format={}'.format(fileformat),
             '-v', 'name=bruno',
+            '-s', 'token=secret',
             '-y'
         ]
     )
@@ -58,7 +59,7 @@ def test_init(fileformat):
     if secs_path:
         secs = Path('.secrets.{}'.format(fileformat))
         assert secs.exists() is True
-        assert 'secret for' in open(secs).read()
+        assert 'TOKEN' in open(secs).read()
         os.remove(secs)
 
 
@@ -84,7 +85,7 @@ def test_init_with_path(fileformat, tmpdir):
 
     sets = Path(path)
     assert sets.exists() is True
-    assert 'value for default' in open(sets).read()
+    assert 'value for development' in open(sets).read()
 
     if secs_path:
         secs = Path(secs_path)

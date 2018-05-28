@@ -28,7 +28,8 @@ def get(key, default=None):
     value = try_renamed(key, value, 'SETTINGS_MODULE_FOR_DYNACONF',
                         'DYNACONF_SETTINGS')
 
-    return parse_conf_data(value if value is not None else default)
+    return parse_conf_data(
+        value, tomlfy=True) if value is not None else default
 
 
 def start_dotenv(obj=None):

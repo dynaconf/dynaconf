@@ -45,10 +45,10 @@ def load_from_env(identifier, key, env, obj, silent):
                     value,
                     identifier
                 )
-                obj.set(key, value, loader_identifier=identifier)
+                obj.set(key, value, loader_identifier=identifier, tomlfy=True)
         else:
             data = {
-                key.partition(env_)[-1]: parse_conf_data(data)
+                key.partition(env_)[-1]: parse_conf_data(data, tomlfy=True)
                 for key, data
                 in os.environ.items()
                 if key.startswith(env_)
@@ -74,5 +74,5 @@ def write(settings_path, settings_data, **kwargs):
         dotenv_cli.set_key(
             str(settings_path),
             key.upper(),
-            value
+            str(value)
         )

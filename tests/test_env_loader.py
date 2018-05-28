@@ -49,7 +49,6 @@ def test_get_fresh():
         # fresh should now be second
         assert settings.exists('MUSTBEFRESH')
         assert settings.get_fresh('MUSTBEFRESH') == 'first'
-
     assert settings.get_fresh('MUSTBEFRESH') == 'second'
 
     os.environ['DYNACONF_THISMUSTEXIST'] = '@int 1'
