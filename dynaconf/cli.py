@@ -1,6 +1,7 @@
 import io
 import os
 import sys
+import toml
 import click
 import pprint
 import importlib
@@ -8,6 +9,7 @@ import webbrowser
 from pathlib import Path
 from dynaconf import default_settings
 from dynaconf import constants
+from dynaconf.validator import Validator
 from dynaconf.utils.parse_conf import parse_conf_data
 from dotenv import cli as dotenv_cli
 from contextlib import suppress
@@ -199,9 +201,16 @@ def init(fileformat, path, env, _vars, _secrets, wg, y):
         loader.write(secrets_path, secrets_data, merge=True)
 
     # write .env file
-    if env not in ['default', 'development']:  # pragma: no cover
+    # if env not in ['default', 'development']:  # pragma: no cover
+    if not dotenv_path.exists():  # pragma: no cover
         Path.touch(dotenv_path)
         dotenv_cli.set_key(str(dotenv_path), 'ENV_FOR_DYNACONF', env.upper())
+    else:  # pragma: no cover
+        click.echo(
+            '.env already exists please set ENV_FOR_DYNACONF={}'.format(
+                env.upper()
+            )
+        )
 
     if wg:
         # write .gitignore
@@ -369,3 +378,44 @@ def write(to, _vars, _secrets, path, env, y):
         # lets write to external source
         loader.write(settings, _vars, **_secrets)
         click.echo('Data successful written to {}'.format(to))
+
+
+@main.command()
+@click.option('--path', '-p', default=CWD,
+              help='defaults to current directory')
+def validate(path):
+    """Validates Dynaconf settings based on rules defined in
+    dynaconf_validators.toml"""
+    # reads the 'dynaconf_validators.toml' from path
+    # for each section register the validator for specific env
+    # call validate
+
+    if not str(path).endswith('.toml'):
+        path = path / "dynaconf_validators.toml"
+
+    if not Path(path).exists():  # pragma: no cover  # noqa
+        click.echo(click.style(
+            "{} not found".format(path), fg="white", bg="red"
+        ))
+        sys.exit(1)
+
+    validation_data = toml.load(open(str(path)))
+
+    for env, name_data in validation_data.items():
+        for name, data in name_data.items():
+            if not isinstance(data, dict):
+                click.echo(click.style(
+                    "Invalid rule for parameter '{}'".format(name),
+                    fg="white", bg="yellow"
+                ))
+            else:
+                data.setdefault('env', env)
+                click.echo(click.style(
+                    "Validating '{}' with '{}'".format(name, data),
+                    fg="white", bg="blue"
+                ))
+                Validator(name, **data).validate(settings)
+
+    click.echo(click.style(
+        "Validation success!", fg="white", bg="green"
+    ))

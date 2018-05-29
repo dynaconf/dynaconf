@@ -201,3 +201,76 @@ def test_write_dotenv(path, tmpdir):
     assert "Data successful written to {}".format(env_file) in result
     assert "TESTVALUE" in open(str(env_file)).read()
     assert "SECRETVALUE" in open(str(env_file)).read()
+
+
+VALIDATION = """
+[default]
+version = {must_exist=true}
+name = {must_exist=true}
+password = {must_exist=false}
+
+# invalid rule, must always be a dict
+a = 1
+
+  [default.age]
+  must_exist = true
+  lte = 30
+  gte = 10
+
+[production]
+project = {eq="hello_world"}
+host = {is_not_in=['test.com']}
+"""
+
+TOML_VALID = """
+[default]
+version = "1.0.0"
+name = "Dynaconf"
+age = 15
+
+[production]
+project = "hello_world"
+password = 'exists only in prod'
+"""
+
+TOML_INVALID = """
+[default]
+version = "1.0.0"
+name = "Dynaconf"
+age = 35
+
+[production]
+project = "This is not hello_world"
+password = 'exists only in prod'
+host = "test.com"
+"""
+
+
+def test_validate(tmpdir):
+    validation_file = tmpdir.join('dynaconf_validators.toml')
+    validation_file.write(VALIDATION)
+
+    toml_valid = tmpdir.mkdir('valid').join('settings.toml')
+    toml_valid.write(TOML_VALID)
+
+    toml_invalid = tmpdir.mkdir('invalid').join('settings.toml')
+    toml_invalid.write(TOML_INVALID)
+
+    os.chdir(str(Path(str(toml_valid)).parent))
+    result = run(
+        [
+            'validate',
+            '-p',
+            str(validation_file)
+        ]
+    )
+
+    os.chdir(str(Path(str(toml_invalid)).parent))
+    result = run(
+        [
+            'validate',
+            '-p',
+            str(Path(str(validation_file)).parent)
+        ]
+    )
+    print(result)
