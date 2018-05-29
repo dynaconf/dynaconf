@@ -16,6 +16,7 @@ server = 'devserver.com'
 server = 'prodserver.com'
 username = 'prod user'
 foo = 'bar prod'
+value = 'this value is for django app'
 
 [staging]
 server = 'stagingserver.com'

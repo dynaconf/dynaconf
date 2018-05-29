@@ -1,14 +1,42 @@
 import io
 import os
+import sys
 import click
 import pprint
 import importlib
 import webbrowser
 from pathlib import Path
-from dynaconf import settings, default_settings
+from dynaconf import default_settings
 from dynaconf import constants
 from dynaconf.utils.parse_conf import parse_conf_data
 from dotenv import cli as dotenv_cli
+from contextlib import suppress
+
+
+flask_app = None
+django_app = None
+
+if 'FLASK_APP' in os.environ:  # pragma: no cover
+    with suppress(ImportError, click.UsageError):
+        from flask.cli import ScriptInfo
+        flask_app = ScriptInfo().load_app()
+        settings = flask_app.config
+        click.echo(click.style('Flask app detected', fg='white', bg='black'))
+
+
+if 'DJANGO_SETTINGS_MODULE' in os.environ:  # pragma: no cover
+    sys.path.insert(0, os.path.abspath('.'))
+    with suppress(Exception):
+        import dynaconf.contrib.django_dynaconf  # noqa
+        from django.conf import settings as django_settings
+        django_settings.configure()
+        settings = django_settings
+        django_app = True
+        click.echo(click.style('Django app detected', fg='white', bg='black'))
+
+
+if not django_app and not flask_app:
+    from dynaconf import settings
 
 
 CWD = Path.cwd()
