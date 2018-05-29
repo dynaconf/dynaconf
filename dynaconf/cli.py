@@ -383,7 +383,7 @@ def write(to, _vars, _secrets, path, env, y):
 @main.command()
 @click.option('--path', '-p', default=CWD,
               help='defaults to current directory')
-def validate(path):
+def validate(path):  # pragma: no cover
     """Validates Dynaconf settings based on rules defined in
     dynaconf_validators.toml"""
     # reads the 'dynaconf_validators.toml' from path
