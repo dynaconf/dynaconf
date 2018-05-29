@@ -403,12 +403,12 @@ def validate(path):
 
     for env, name_data in validation_data.items():
         for name, data in name_data.items():
-            if not isinstance(data, dict):
+            if not isinstance(data, dict):  # pragma: no cover
                 click.echo(click.style(
                     "Invalid rule for parameter '{}'".format(name),
                     fg="white", bg="yellow"
                 ))
-            else:
+            else:  # pragma: no cover
                 data.setdefault('env', env)
                 click.echo(click.style(
                     "Validating '{}' with '{}'".format(name, data),
@@ -416,6 +416,7 @@ def validate(path):
                 ))
                 Validator(name, **data).validate(settings)
 
+    # pragma: no cover
     click.echo(click.style(
         "Validation success!", fg="white", bg="green"
     ))
