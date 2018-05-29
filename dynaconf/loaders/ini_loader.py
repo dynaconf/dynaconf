@@ -33,9 +33,9 @@ def load(obj, env=None, silent=True, key=None, filename=None):
 def write(settings_path, settings_data, merge=True):
     if settings_path.exists() and merge:  # pragma: no cover
         settings_data = dictmerge(
-            ConfigObj(open(settings_path)).dict(),
+            ConfigObj(open(str(settings_path))).dict(),
             settings_data
         )
     new = ConfigObj()
     new.update(settings_data)
-    new.write(open(settings_path, 'bw'))
+    new.write(open(str(settings_path), 'bw'))

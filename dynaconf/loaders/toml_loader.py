@@ -33,7 +33,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
 def write(settings_path, settings_data, merge=True):
     if settings_path.exists() and merge:  # pragma: no cover
         settings_data = dictmerge(
-            toml.load(open(settings_path)),
+            toml.load(open(str(settings_path))),
             settings_data
         )
-    toml.dump(settings_data, open(settings_path, 'w'))
+    toml.dump(settings_data, open(str(settings_path), 'w'))

@@ -7,6 +7,27 @@
 with strong support for `12-factor applications`_
 and extensions for `Flask`_ and `Django`_.
 
+Release v\ |version|. (`Installation`_)
+
+
+.. image:: https://img.shields.io/pypi/l/dynaconf.svg
+    :target: https://pypi.org/project/dynaconf/
+
+.. image:: https://img.shields.io/pypi/wheel/dynaconf.svg
+    :target: https://pypi.org/project/dynaconf/
+
+.. image:: https://img.shields.io/pypi/pyversions/dynaconf.svg
+    :target: https://pypi.org/project/dynaconf/
+
+.. image:: https://img.shields.io/pypi/v/dynaconf.svg
+    :target: https://pypi.org/project/dynaconf/
+
+.. image:: https://img.shields.io/codacy/grade/5074f5d870a24ddea79def463453545b.svg
+     :target: https://www.codacy.com/app/rochacbruno/dynaconf/dashboard
+
+.. image:: https://img.shields.io/badge/Say%20Thanks!-🦉-1EAEDB.svg
+    :target: https://saythanks.io/to/rochacbruno
+
 Features
 --------
 
@@ -84,3 +105,4 @@ Indices and tables
 .. _canonical settings module: guides/usage.html 
 .. _cli: guides/cli.html 
 .. _validation: guides/validation.html
+.. _Installation: guides/usage.html

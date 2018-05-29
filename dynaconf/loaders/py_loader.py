@@ -80,7 +80,7 @@ def write(settings_path, settings_data, merge=True):
             existing,
             settings_data
         )
-    with open(settings_path, 'w') as f:
+    with open(str(settings_path), 'w') as f:
         f.writelines(
             ["{} = {}\n".format(k.upper(), repr(v))
              for k, v in settings_data.items()]

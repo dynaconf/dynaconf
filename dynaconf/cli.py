@@ -180,12 +180,12 @@ def init(fileformat, path, env, _vars, _secrets, wg, y):
         ignore_line = ".secrets.*"
         comment = "\n# Ignore dynaconf secret files\n"
         if not gitignore_path.exists():
-            with open(gitignore_path, 'w') as f:
+            with open(str(gitignore_path), 'w') as f:
                 f.writelines([comment, ignore_line, '\n'])
         else:
-            existing = ignore_line in open(gitignore_path).read()
+            existing = ignore_line in open(str(gitignore_path)).read()
             if not existing:  # pragma: no cover
-                with open(gitignore_path, 'a+') as f:
+                with open(str(gitignore_path), 'a+') as f:
                     f.writelines(
                         [comment, ignore_line, '\n']
                     )
