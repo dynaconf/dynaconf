@@ -40,7 +40,7 @@ from recommonmark.transform import AutoStructify
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.viewcode',
-    'sphinxcontrib.aafig'
+    'customexts.aafig'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
