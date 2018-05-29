@@ -87,33 +87,33 @@ ENVVAR_FOR_DYNACONF = get('ENVVAR_FOR_DYNACONF',
 
 # Default values for redis configs
 default_redis = {
-    'host': get('REDIS_FOR_DYNACONF_HOST', 'localhost'),
-    'port': int(get('REDIS_FOR_DYNACONF_PORT', 6379)),
-    'db': int(get('REDIS_FOR_DYNACONF_DB', 0)),
-    'decode_responses': get('REDIS_FOR_DYNACONF_DECODE', True)
+    'host': get('REDIS_HOST_FOR_DYNACONF', 'localhost'),
+    'port': int(get('REDIS_PORT_FOR_DYNACONF', 6379)),
+    'db': int(get('REDIS_DB_FOR_DYNACONF', 0)),
+    'decode_responses': get('REDIS_DECODE_FOR_DYNACONF', True)
 }
 REDIS_FOR_DYNACONF = get('REDIS_FOR_DYNACONF', default_redis)
-REDIS_FOR_DYNACONF_ENABLED = get('REDIS_FOR_DYNACONF_ENABLED', False)
+REDIS_ENABLED_FOR_DYNACONF = get('REDIS_ENABLED_FOR_DYNACONF', False)
 
 # Hashicorp Vault Project
-vault_scheme = get('VAULT_FOR_DYNACONF_SCHEME', 'http')
-vault_url = get('VAULT_FOR_DYNACONF_HOST', 'localhost')
-vault_port = get('VAULT_FOR_DYNACONF_PORT', '8200')
+vault_scheme = get('VAULT_SCHEME_FOR_DYNACONF', 'http')
+vault_host = get('VAULT_HOST_FOR_DYNACONF', 'localhost')
+vault_port = get('VAULT_PORT_FOR_DYNACONF', '8200')
 default_vault = {
-    'url': get('VAULT_FOR_DYNACONF_URL', '{}://{}:{}'.format(
-        vault_scheme, vault_url, vault_port)
+    'url': get('VAULT_URL_FOR_DYNACONF', '{}://{}:{}'.format(
+        vault_scheme, vault_host, vault_port)
     ),
-    'token': get('VAULT_FOR_DYNACONF_TOKEN', None),
-    'cert': get('VAULT_FOR_DYNACONF_CERT', None),
-    'verify': get('VAULT_FOR_DYNACONF_VERIFY', None),
-    'timeout': get('VAULT_FOR_DYNACONF_TIMEOUT', None),
-    'proxies': get('VAULT_FOR_DYNACONF_PROXIES', None),
-    'allow_redirects': get('VAULT_FOR_DYNACONF_ALLOW_REDIRECTS', None),
-    'session': get('VAULT_FOR_DYNACONF_SESSION', None),
+    'token': get('VAULT_TOKEN_FOR_DYNACONF', None),
+    'cert': get('VAULT_CERT_FOR_DYNACONF', None),
+    'verify': get('VAULT_VERIFY_FOR_DYNACONF', None),
+    'timeout': get('VAULT_TIMEOUT_FOR_DYNACONF', None),
+    'proxies': get('VAULT_PROXIES_FOR_DYNACONF', None),
+    'allow_redirects': get('VAULT_ALLOW_REDIRECTS_FOR_DYNACONF', None),
+    'session': get('VAULT_SESSION_FOR_DYNACONF', None),
 }
 VAULT_FOR_DYNACONF = get('VAULT_FOR_DYNACONF', default_vault)
-VAULT_FOR_DYNACONF_ENABLED = get('VAULT_FOR_DYNACONF_ENABLED', False)
-VAULT_FOR_DYNACONF_PATH = get('VAULT_FOR_DYNACONF_PATH',
+VAULT_ENABLED_FOR_DYNACONF = get('VAULT_ENABLED_FOR_DYNACONF', False)
+VAULT_PATH_FOR_DYNACONF = get('VAULT_PATH_FOR_DYNACONF',
                               '/secret/data/')  # /DYNACONF will be added
 
 # Loaders to read env based vars from different data stores

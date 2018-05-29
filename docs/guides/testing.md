@@ -1,6 +1,11 @@
 # Testing and mocking
 
 For testing it is recommended to just switch to `testing` environment and read the same config files.
+
+```
+ENV_FOR_DYNACONF=testing python program.py
+```
+
 But it is common in unit tests to `mock` some objects and you may need in rare cases to mock the `dynaconf.settings` when running your tests.
 
 ```python

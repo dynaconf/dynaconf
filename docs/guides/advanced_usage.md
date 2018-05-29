@@ -1,5 +1,7 @@
 # Using programatically
 
+## Customizing the settings object
+
 Sometimes you want to override settings for your existing Package or Framework
 lets say you have a **conf** module exposing a **config** object and used to do:
 

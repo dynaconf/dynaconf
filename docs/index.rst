@@ -3,22 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-dynaconf's documentation!
-====================================
-
-.. aafig::
-    :aspect: 60
-    :scale: 100
-    :proportional:
-
-    DDDDD  Y   Y N    N  AAAA   CCCCC  OOOO  N    N FFFFFF                                                                
-    D    D YY YY NN   N AA  AA C      O    O NN   N F                                                              
-    D    D  YYY  NNNN N A    A C      O    O NNNN N FFFF                                                           
-    D    D   Y   N NNNN AAAAAA C      O    O N NNNN F                                                            
-    D    D   Y   N   NN A    A C      O    O N   NN F                                                            
-    DDDDD    Y   N    N A    A  CCCCC  OOOO  N    N F                                                                                                           
-
-
 **dynaconf** a layered configuration system for Python applications -
 with strong support for `12-factor applications`_
 and extensions for `Flask`_ and `Django`_.
@@ -42,6 +26,20 @@ Features
 - Powerful **$ dynaconf** `CLI`_ to help you manage your settings via console.
 - Customizable `Validation`_ System to ensure correct config parameters.
 - Allow the change of **dynamic** parameters on the fly without the need to redeploy your application.
+
+
+.. aafig::
+    :aspect: 60
+    :scale: 100
+    :proportional:
+
+    DDDDD  Y   Y N    N  AAAA   CCCCC  OOOO  N    N FFFFFF                                                                
+    D    D YY YY NN   N AA  AA C      O    O NN   N F                                                              
+    D    D  YYY  NNNN N A    A C      O    O NNNN N FFFF                                                           
+    D    D   Y   N NNNN AAAAAA C      O    O N NNNN F                                                            
+    D    D   Y   N   NN A    A C      O    O N   NN F                                                            
+    DDDDD    Y   N    N A    A  CCCCC  OOOO  N    N F                                                                                                           
+
 
 
 .. toctree::

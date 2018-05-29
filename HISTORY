@@ -3,6 +3,12 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+1.0.1
+-----
+
+- Config variables named strictly with `_FOR_DYNACONF` suffix
+- Documentation added
+
 1.0.0
 -----
 - Breaking changes 

@@ -178,8 +178,8 @@ DYNACONF_LOADING_ORDER = [
  '.secrets.ini',
  'settings.json',
  '.secrets.json',
- # redis server if REDIS_FOR_DYNACONF_ENABLED=true
- # vault server if VAULT_FOR_DYNACONF_ENABLED=true
+ # redis server if REDIS_ENABLED_FOR_DYNACONF=true
+ # vault server if VAULT_ENABLED_FOR_DYNACONF=true
  # other sources if custom loaders are defined
  # All environment variables prefixed with DYNACONF_
 ]
@@ -355,9 +355,9 @@ $ pip install dynaconf[vault]
 3. In your `.env` file or in exported environment variables define:
 
 ```bash
-VAULT_FOR_DYNACONF_ENABLED=true
-VAULT_FOR_DYNACONF_URL="http://localhost:8200"
-VAULT_FOR_DYNACONF_TOKEN="myroot"
+VAULT_ENABLED_FOR_DYNACONF=true
+VAULT_URL_FOR_DYNACONF="http://localhost:8200"
+VAULT_TOKEN_FOR_DYNACONF="myroot"
 ```
 
 Now you can have keys like `PASSWORD` and `TOKEN` defined in the vault and
@@ -389,9 +389,9 @@ $ pip install dynaconf[redis]
 3. In your `.env` file or in exported environment variables define:
 
 ```bash
-REDIS_FOR_DYNACONF_ENABLED=true
-REDIS_FOR_DYNACONF_HOST=localhost
-REDIS_FOR_DYNACONF_PORT=6379
+REDIS_ENABLED_FOR_DYNACONF=true
+REDIS_HOST_FOR_DYNACONF=localhost
+REDIS_PORT_FOR_DYNACONF=6379
 ```
 
 You can now write variables direct in to a redis hash named `DYNACONF_< env >`

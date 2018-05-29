@@ -57,10 +57,10 @@ def write(obj, data=None, **kwargs):
     :param kwargs: vars to be stored
     :return:
     """
-    if obj.REDIS_FOR_DYNACONF_ENABLED is False:
+    if obj.REDIS_ENABLED_FOR_DYNACONF is False:
         raise RuntimeError(
             'Redis is not configured \n'
-            'export REDIS_FOR_DYNACONF_ENABLED=true\n'
+            'export REDIS_ENABLED_FOR_DYNACONF=true\n'
             'and configure the REDIS_FOR_DYNACONF_* variables'
         )
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)

@@ -100,6 +100,20 @@ html_theme = 'alabaster'
 # documentation.
 #
 # html_theme_options = {}
+html_theme_options = {
+    'logo': 'logo.svg',
+    'logo_name': True,
+    'github_user': 'rochacbruno',
+    'github_repo': 'dynaconf',
+    'github_type': 'star',
+    'github_banner': True,
+    'description': 'Layered configuration system for Python applications',
+    'travis_button': True,
+    'codecov_button': True,
+    'show_related': True,
+    'fixed_sidebar': False,
+
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

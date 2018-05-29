@@ -2,6 +2,8 @@
 
 The `$ dynaconf` cli provides some useful commands
 
+## dynaconf --help
+
 ```
 Usage: dynaconf [OPTIONS] COMMAND [ARGS]...
 
@@ -172,3 +174,7 @@ returns dynaconf version
 $ dynaconf --version
 1.0.0
 ```
+
+## dynaconf --docs
+
+Opens Dynaconf documentation in browser

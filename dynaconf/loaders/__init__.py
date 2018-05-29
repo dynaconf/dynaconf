@@ -139,7 +139,7 @@ def enable_external_loaders(obj):
     for name, loader in ct.EXTERNAL_LOADERS.items():
         enabled = getattr(
             obj,
-            '{}_FOR_DYNACONF_ENABLED'.format(name.upper()),
+            '{}_ENABLED_FOR_DYNACONF'.format(name.upper()),
             False
         )
         if (

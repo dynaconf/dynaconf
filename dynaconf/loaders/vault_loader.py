@@ -19,7 +19,7 @@ def get_client(obj):
 def load(obj, env=None, silent=None, key=None):
     client = get_client(obj)
     holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
-    path = os.path.join(obj.VAULT_FOR_DYNACONF_PATH, holder.lower())
+    path = os.path.join(obj.VAULT_PATH_FOR_DYNACONF, holder.lower())
     data = client.read(path)
     if data:
         data = data.get('data', {}).get('data')
@@ -47,10 +47,10 @@ def write(obj, data=None, lease='1h', **kwargs):
     :param kwargs: vars to be stored
     :return:
     """
-    if obj.VAULT_FOR_DYNACONF_ENABLED is False:
+    if obj.VAULT_ENABLED_FOR_DYNACONF is False:
         raise RuntimeError(
             'Vault is not configured \n'
-            'export VAULT_FOR_DYNACONF_ENABLED=true\n'
+            'export VAULT_ENABLED_FOR_DYNACONF=true\n'
             'and configure the VAULT_FOR_DYNACONF_* variables'
         )
     data = data or {}
@@ -59,7 +59,7 @@ def write(obj, data=None, lease='1h', **kwargs):
         raise AttributeError('Data must be provided')
     client = get_client(obj)
     path = os.path.join(
-        obj.VAULT_FOR_DYNACONF_PATH,
+        obj.VAULT_PATH_FOR_DYNACONF,
         obj.get('GLOBAL_ENV_FOR_DYNACONF').lower()
     )
     client.write(path, data=data, lease=lease)

@@ -46,8 +46,8 @@ jobs:
         - docker ps -a
       python: 3.6
       env:
-        VAULT_FOR_DYNACONF_ENABLED=1
-        VAULT_FOR_DYNACONF_TOKEN=myroot
+        VAULT_ENABLED_FOR_DYNACONF=1
+        VAULT_TOKEN_FOR_DYNACONF=myroot
       install:
         - "pip install --upgrade pip"
         - "pip install --upgrade -r requirements_dev.txt"
@@ -64,7 +64,7 @@ jobs:
         - docker ps -a
       python: 3.6
       env:
-        REDIS_FOR_DYNACONF_ENABLED=1
+        REDIS_ENABLED_FOR_DYNACONF=1
       install:
         - "pip install --upgrade pip"
         - "pip install --upgrade -r requirements_dev.txt"

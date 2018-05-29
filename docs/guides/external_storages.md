@@ -1,44 +1,5 @@
 # External storages
 
-## Using Hashicorp Vault to store secrets
-
-The https://www.vaultproject.io/ is a key:value store for secrets and Dynaconf can load
-variables from a Vault secret.
-
-1. Run a vault server
-
-Run a Vault server installed or via docker:
-
-```bash
-$ docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
-```
-
-2. Install support for vault in dynaconf
-
-```bash
-$ pip install dynaconf[vault]
-```
-
-3. In your `.env` file or in exported environment variables define:
-
-```bash
-VAULT_FOR_DYNACONF_ENABLED=true
-VAULT_FOR_DYNACONF_URL="http://localhost:8200"
-VAULT_FOR_DYNACONF_TOKEN="myroot"
-```
-
-Now you can have keys like `PASSWORD` and `TOKEN` defined in the vault and
-dynaconf will read it.
-
-To write a new secret you can use http://localhost:8200 web admin and write keys
-under the `/secret/dynaconf` secret database.
-
-You can also use the Dynaconf writer via console
-
-```bash
-$ dynaconf write vault -s password=123456
-```
-
 ## Using REDIS
 
 1. Run a Redis server installed or via docker:
@@ -56,9 +17,9 @@ $ pip install dynaconf[redis]
 3. In your `.env` file or in exported environment variables define:
 
 ```bash
-REDIS_FOR_DYNACONF_ENABLED=true
-REDIS_FOR_DYNACONF_HOST=localhost
-REDIS_FOR_DYNACONF_PORT=6379
+REDIS_ENABLED_FOR_DYNACONF=true
+REDIS_HOST_FOR_DYNACONF=localhost
+REDIS_PORT_FOR_DYNACONF=6379
 ```
 
 You can now write variables direct in to a redis hash named `DYNACONF_< env >`
@@ -117,4 +78,43 @@ from dynaconf import settings
 print(settings.FOO)         # This data was loaded once on import
 
 print(settings.MYSQL_HOST)  # This data is being read from redis imediatelly!
+```
+
+## Using Hashicorp Vault to store secrets
+
+The https://www.vaultproject.io/ is a key:value store for secrets and Dynaconf can load
+variables from a Vault secret.
+
+1. Run a vault server
+
+Run a Vault server installed or via docker:
+
+```bash
+$ docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+```
+
+2. Install support for vault in dynaconf
+
+```bash
+$ pip install dynaconf[vault]
+```
+
+3. In your `.env` file or in exported environment variables define:
+
+```bash
+VAULT_ENABLED_FOR_DYNACONF=true
+VAULT_URL_FOR_DYNACONF="http://localhost:8200"
+VAULT_TOKEN_FOR_DYNACONF="myroot"
+```
+
+Now you can have keys like `PASSWORD` and `TOKEN` defined in the vault and
+dynaconf will read it.
+
+To write a new secret you can use http://localhost:8200 web admin and write keys
+under the `/secret/dynaconf` secret database.
+
+You can also use the Dynaconf writer via console
+
+```bash
+$ dynaconf write vault -s password=123456
 ```

@@ -4,11 +4,11 @@
 
 > Python 3.x is required
 
-```bash
-# Default installation supports .toml, .py and .json file formats
-# and also overriding from environment variables (.env supported)
+```
 $ pip install dynaconf
 ```
+
+> Default installation supports .toml, .py and .json file formats and also environment variables (.env supported)
 
 ## Usage
 
@@ -20,14 +20,15 @@ In your Python program wherever you need to access a settings variable you use t
 
 ```python
 from some.db import Client
-from dynaconf import settings  # import `dynaconf.settings` canonical settings object
+
+from dynaconf import settings
 
 conn = Client(
     username=settings.USERNAME,             # attribute style access
     password=settings.get('PASSWORD'),      # dict get style access
     port=settings['PORT'],                  # dict item style access
     timeout=settings.as_int('TIMEOUT'),     # Forcing casting if needed
-    host=settings.get('HOST', 'localhost')  # Providing defaults if key is not defined
+    host=settings.get('HOST', 'localhost')  # Providing defaults
 )
 ```
 
@@ -141,8 +142,8 @@ DYNACONF_LOADING_ORDER = [
  '.secrets.ini',
  'settings.json',
  '.secrets.json',
- # redis server if REDIS_FOR_DYNACONF_ENABLED=true
- # vault server if VAULT_FOR_DYNACONF_ENABLED=true
+ # redis server if REDIS_ENABLED_FOR_DYNACONF=true
+ # vault server if VAULT_ENABLED_FOR_DYNACONF=true
  # other sources if custom loaders are defined
  # All environment variables prefixed with DYNACONF_
 ]
