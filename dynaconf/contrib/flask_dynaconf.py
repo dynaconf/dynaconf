@@ -12,8 +12,7 @@ from dynaconf import LazySettings
 
 
 class FlaskDynaconf(object):
-    """
-    The arguments are.
+    """The arguments are.
     app = The created app
     dynaconf_args = Extra args to be passed to Dynaconf (validator for example)
 
@@ -22,7 +21,7 @@ class FlaskDynaconf(object):
     ENVVAR_FOR_DYNACONF = Name of environment variable to use if you want to
                         change the settings file from env vars
                         example:
-                            export MYSITE_SETTINGS_MODULE=/tmp/settings.py
+                        export MYSITE_SETTINGS_MODULE=/tmp/settings.py
                         with the above the settings will be loaded from that
                         file
                         Dynaconf supports .py, .yml, .toml

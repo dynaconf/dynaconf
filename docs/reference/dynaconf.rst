@@ -21,6 +21,14 @@ dynaconf\.base module
     :undoc-members:
     :show-inheritance:
 
+dynaconf\.cli module
+---------------------
+
+.. automodule:: dynaconf.cli
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 dynaconf\.default\_settings module
 ----------------------------------
 
@@ -29,18 +37,18 @@ dynaconf\.default\_settings module
     :undoc-members:
     :show-inheritance:
 
-dynaconf\.test\_settings module
--------------------------------
+dynaconf\.constants module
+----------------------------------
 
-.. automodule:: dynaconf.test_settings
+.. automodule:: dynaconf.constants
     :members:
     :undoc-members:
     :show-inheritance:
 
-dynaconf\.transformator module
-------------------------------
+dynaconf\.test\_settings module
+-------------------------------
 
-.. automodule:: dynaconf.transformator
+.. automodule:: dynaconf.test_settings
     :members:
     :undoc-members:
     :show-inheritance:

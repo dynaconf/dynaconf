@@ -673,7 +673,7 @@ Lets say you have `settings.toml`
 
 ```toml
 [default]
-version = 1.0.0
+version = "1.0.0"
 age = 35
 name = "Bruno"
 
@@ -706,8 +706,7 @@ settings.validators.register(
 settings.validators.validate()
 ```
 
-The above will raise `dynaconf.validators.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")`
-
+The above will raise `dynaconf.validators.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")` and `dynaconf.validators.ValidationError("PROJECT must be eq='hello_world' but it is 'This is not hello_world' in env PRODUCTION")`
 
 ### Using dynaconf_validators.toml
 

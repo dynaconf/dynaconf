@@ -135,7 +135,7 @@ def settings_loader(obj, settings_module=None, env=None,
 
 
 def enable_external_loaders(obj):
-    """Enable external service loaders like VAULT_ and REDIS_"""
+    """Enable external service loaders like `VAULT_` and `REDIS_`"""
     for name, loader in ct.EXTERNAL_LOADERS.items():
         enabled = getattr(
             obj,

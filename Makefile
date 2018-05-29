@@ -1,4 +1,4 @@
-.PHONY: test install pep8 release clean doc test_examples test_vault test_redis
+.PHONY: test install pep8 release clean docs test_examples test_vault test_redis
 
 test_examples:
 	@cd example/common;pwd;python program.py
@@ -57,7 +57,8 @@ clean:
 	rm -rf *.egg-info
 	rm -rf htmlcov
 	rm -rf .tox/
+	rm -rf docs/_build
 	python setup.py develop
 
-doc:
-	@epydoc --html dynaconf -o docs
+docs:
+	@cd docs;make html

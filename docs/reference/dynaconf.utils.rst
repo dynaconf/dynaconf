@@ -28,10 +28,10 @@ dynaconf\.utils\.parse\_conf module
     :undoc-members:
     :show-inheritance:
 
-dynaconf\.utils\.redis\_writer module
+dynaconf\.utils\.files module
 -------------------------------------
 
-.. automodule:: dynaconf.utils.redis_writer
+.. automodule:: dynaconf.utils.files
     :members:
     :undoc-members:
     :show-inheritance:

@@ -21,8 +21,7 @@ from dynaconf.utils.boxing import DynaBox
 
 
 class LazySettings(LazyObject):
-    """
-    When you do:
+    """When you do:
     >>> from dynaconf import settings
     a LazySettings is imported and is initialized with only default_settings.
 
@@ -59,7 +58,7 @@ class LazySettings(LazyObject):
     >>> print config.SERVER_IP
     >>> print config.SERVER_PASSWD
 
-    and now it reads all variables starting with DYNACONF_ from envvars
+    and now it reads all variables starting with `DYNACONF_` from envvars
     and all values in a hash called DYNACONF_PROJ in redis
     """
 
@@ -237,8 +236,7 @@ class Settings(object):
         return key in self.store
 
     def get_fresh(self, key, default=None, cast=None):
-        """
-        This is a shortcut to get(key, fresh=True). always reload from
+        """This is a shortcut to get(key, fresh=True). always reload from
         loaders store before getting the var.
         :param key: The name of the setting value, will always be upper case
         :param default: In case of not found it will be returned
@@ -248,12 +246,11 @@ class Settings(object):
         return self.get(key, default=default, cast=cast, fresh=True)
 
     def get_environ(self, key, default=None, cast=None):
-        """
-        Get value from environment variable using os.environ.get
+        """Get value from environment variable using os.environ.get
         :param key: The name of the setting value, will always be upper case
         :param default: In case of not found it will be returned
         :param cast: Should cast in to @int, @float, @bool or @json ?
-            or cast must be true to use cast inference
+        or cast must be true to use cast inference
         :return: The value if found, default or None
         """
         key = key.upper()

@@ -7,8 +7,7 @@ class ValidationError(Exception):
 
 
 class Validator(object):
-    """
-    Validators are conditions attached to settings variables names
+    """Validators are conditions attached to settings variables names
     or patterns.
 
         Validator('MESSAGE', defined=True, eq='Hello World')
@@ -18,9 +17,9 @@ class Validator(object):
 
     `*names` are a one (or more) names or patterns:
 
-      Validator('NAME')
-      Validator('NAME', 'OTHER_NAME', 'EVEN_OTHER')
-      Validator(r'^NAME', r'OTHER./*')
+        Validator('NAME')
+        Validator('NAME', 'OTHER_NAME', 'EVEN_OTHER')
+        Validator(r'^NAME', r'OTHER./*')
 
     The `**operations` are:
 

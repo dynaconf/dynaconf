@@ -30,6 +30,7 @@ radon
 
 # documentation
 sphinx
+recommonmark
 
 # editable dynaconf
 --editable .
