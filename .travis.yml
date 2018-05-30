@@ -1,10 +1,76 @@
 jobs:
   include:
-    - stage: tests
+
+    - stage: Python 3.4
       language: python
-      python: 3.6
-      # services:
-      #   - redis-server
+      python: "3.4"
+      env:
+        - DYNACONF_SETTINGS=dynaconf.test_settings
+        - DOTENV_PATH_FOR_DYNACONF=/home/travis/build/rochacbruno/dynaconf/.env
+        - DYNATRAVIS_ENV_BOOLEAN='@bool true'
+        - DYNATRAVIS_ENV_INT='@int 42'
+        - DYNATRAVIS_ENV_FLOAT='@float 42.2'
+        - DYNATRAVIS_ENV_LIST='@json ["dyna", "conf"]'
+        # - DYNATRAVIS_ENV_DICT='@json {"dyna": "conf"}' how to fix this?
+        - DYNATRAVIS_ENV_DICT='@json {}'
+        - DYNATRAVIS_ENV_PURE_INT=42
+        - DYNATRAVIS_ENV_STR_INT="'42'"
+        - OTHER_TESTING='@bool yes'
+        - OTHER_ENABLED=true
+        - OTHER_DISABLED=false
+      install:
+        - "pip install --upgrade pip"
+        - "pip install --upgrade -r requirements_dev.txt"
+      script: make test
+
+    - stage: Python 3.5
+      language: python
+      python: "3.5"
+      env:
+        - DYNACONF_SETTINGS=dynaconf.test_settings
+        - DOTENV_PATH_FOR_DYNACONF=/home/travis/build/rochacbruno/dynaconf/.env
+        - DYNATRAVIS_ENV_BOOLEAN='@bool true'
+        - DYNATRAVIS_ENV_INT='@int 42'
+        - DYNATRAVIS_ENV_FLOAT='@float 42.2'
+        - DYNATRAVIS_ENV_LIST='@json ["dyna", "conf"]'
+        # - DYNATRAVIS_ENV_DICT='@json {"dyna": "conf"}' how to fix this?
+        - DYNATRAVIS_ENV_DICT='@json {}'
+        - DYNATRAVIS_ENV_PURE_INT=42
+        - DYNATRAVIS_ENV_STR_INT="'42'"
+        - OTHER_TESTING='@bool yes'
+        - OTHER_ENABLED=true
+        - OTHER_DISABLED=false
+      install:
+        - "pip install --upgrade pip"
+        - "pip install --upgrade -r requirements_dev.txt"
+      script: make test
+
+    # PYYAML IS BROKEN in 3.7 dev
+    # - stage: Python 3.7
+    #   language: python
+    #   python: "3.7-dev"
+    #   env:
+    #     - DYNACONF_SETTINGS=dynaconf.test_settings
+    #     - DOTENV_PATH_FOR_DYNACONF=/home/travis/build/rochacbruno/dynaconf/.env
+    #     - DYNATRAVIS_ENV_BOOLEAN='@bool true'
+    #     - DYNATRAVIS_ENV_INT='@int 42'
+    #     - DYNATRAVIS_ENV_FLOAT='@float 42.2'
+    #     - DYNATRAVIS_ENV_LIST='@json ["dyna", "conf"]'
+    #     # - DYNATRAVIS_ENV_DICT='@json {"dyna": "conf"}' how to fix this?
+    #     - DYNATRAVIS_ENV_DICT='@json {}'
+    #     - DYNATRAVIS_ENV_PURE_INT=42
+    #     - DYNATRAVIS_ENV_STR_INT="'42'"
+    #     - OTHER_TESTING='@bool yes'
+    #     - OTHER_ENABLED=true
+    #     - OTHER_DISABLED=false
+    #   install:
+    #     - "pip install --upgrade pip"
+    #     - "pip install --upgrade -r requirements_dev.txt"
+    #   script: make test
+
+    - stage: Python 3.6 with coverage
+      language: python
+      python: "3.6"
       env:
         - DYNACONF_SETTINGS=dynaconf.test_settings
         - DOTENV_PATH_FOR_DYNACONF=/home/travis/build/rochacbruno/dynaconf/.env
@@ -27,7 +93,8 @@ jobs:
       script: make test
       after_success:
         - codecov
-    - stage: test_examples
+
+    - stage: Examples and Frameworks
       language: python
       python: 3.6
       env:
@@ -36,7 +103,8 @@ jobs:
         - "pip install --upgrade pip"
         - "pip install --upgrade -r requirements_dev.txt"
       script: make test_examples
-    - stage: test_vault
+
+    - stage: Vault
       language: python
       services:
         - docker
@@ -54,7 +122,8 @@ jobs:
       before_script:
         - sleep 5
       script: make test_vault
-    - stage: test_redis
+
+    - stage: Redis
       language: python
       services:
         - docker

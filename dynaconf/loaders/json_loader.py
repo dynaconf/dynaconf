@@ -30,7 +30,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
 def write(settings_path, settings_data, merge=True):
     if settings_path.exists() and merge:  # pragma: no cover
         settings_data = dictmerge(
-            json.load(open(settings_path)),
+            json.load(open(str(settings_path))),
             settings_data
         )
-    json.dump(settings_data, open(settings_path, 'w'))
+    json.dump(settings_data, open(str(settings_path), 'w'))

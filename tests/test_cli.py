@@ -49,18 +49,18 @@ def test_init(fileformat):
 
     sets = Path(path)
     assert sets.exists() is True
-    assert 'bruno' in open(sets).read()
+    assert 'bruno' in open(str(sets)).read()
 
     if fileformat != 'env':
-        os.remove(sets)
+        os.remove(str(sets))
     else:
         dotenv_cli.unset_key(path, 'NAME')
 
     if secs_path:
         secs = Path('.secrets.{}'.format(fileformat))
         assert secs.exists() is True
-        assert 'TOKEN' in open(secs).read()
-        os.remove(secs)
+        assert 'TOKEN' in open(str(secs)).read()
+        os.remove(str(secs))
 
 
 @pytest.mark.parametrize("fileformat", EXTS)
@@ -83,19 +83,19 @@ def test_init_with_path(fileformat, tmpdir):
             ]
         )
 
-    sets = Path(path)
+    sets = Path(str(path))
     assert sets.exists() is True
-    assert 'value for development' in open(sets).read()
+    assert 'value for development' in open(str(sets)).read()
 
     if secs_path:
-        secs = Path(secs_path)
+        secs = Path(str(secs_path))
         assert secs.exists() is True
-        assert 'secret for' in open(secs).read()
+        assert 'secret for' in open(str(secs)).read()
 
     if fileformat != 'env':
-        gign = Path(tmpdir.join('.gitignore'))
+        gign = Path(str(tmpdir.join('.gitignore')))
         assert gign.exists() is True
-        assert ".secrets.*" in open(gign).read()
+        assert ".secrets.*" in open(str(gign)).read()
 
 
 def test_list():
@@ -175,12 +175,12 @@ def test_write(writer, env, onlydir, tmpdir):
     )
     if writer != 'env':
         assert "Data successful written to {}".format(settingspath) in result
-        assert "TESTVALUE" in open(settingspath).read()
-        assert "SECRETVALUE" in open(secretfile).read()
+        assert "TESTVALUE" in open(str(settingspath)).read()
+        assert "SECRETVALUE" in open(str(secretfile)).read()
     else:
         assert "Data successful written to {}".format(env_file) in result
-        assert "TESTVALUE" in open(env_file).read()
-        assert "SECRETVALUE" in open(env_file).read()
+        assert "TESTVALUE" in open(str(env_file)).read()
+        assert "SECRETVALUE" in open(str(env_file)).read()
 
 
 @pytest.mark.parametrize("path", ('.env', './.env'))
@@ -199,5 +199,78 @@ def test_write_dotenv(path, tmpdir):
     )
 
     assert "Data successful written to {}".format(env_file) in result
-    assert "TESTVALUE" in open(env_file).read()
-    assert "SECRETVALUE" in open(env_file).read()
+    assert "TESTVALUE" in open(str(env_file)).read()
+    assert "SECRETVALUE" in open(str(env_file)).read()
+
+
+VALIDATION = """
+[default]
+version = {must_exist=true}
+name = {must_exist=true}
+password = {must_exist=false}
+
+# invalid rule, must always be a dict
+a = 1
+
+  [default.age]
+  must_exist = true
+  lte = 30
+  gte = 10
+
+[production]
+project = {eq="hello_world"}
+host = {is_not_in=['test.com']}
+"""
+
+TOML_VALID = """
+[default]
+version = "1.0.0"
+name = "Dynaconf"
+age = 15
+
+[production]
+project = "hello_world"
+password = 'exists only in prod'
+"""
+
+TOML_INVALID = """
+[default]
+version = "1.0.0"
+name = "Dynaconf"
+age = 35
+
+[production]
+project = "This is not hello_world"
+password = 'exists only in prod'
+host = "test.com"
+"""
+
+
+def test_validate(tmpdir):
+    validation_file = tmpdir.join('dynaconf_validators.toml')
+    validation_file.write(VALIDATION)
+
+    toml_valid = tmpdir.mkdir('valid').join('settings.toml')
+    toml_valid.write(TOML_VALID)
+
+    toml_invalid = tmpdir.mkdir('invalid').join('settings.toml')
+    toml_invalid.write(TOML_INVALID)
+
+    os.chdir(str(Path(str(toml_valid)).parent))
+    result = run(
+        [
+            'validate',
+            '-p',
+            str(validation_file)
+        ]
+    )
+
+    os.chdir(str(Path(str(toml_invalid)).parent))
+    result = run(
+        [
+            'validate',
+            '-p',
+            str(Path(str(validation_file)).parent)
+        ]
+    )
+    print(result)

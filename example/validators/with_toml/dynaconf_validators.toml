@@ -1,0 +1,24 @@
+[default]
+version = {must_exist=true}
+name = {must_exist=true}
+password = {must_exist=false}
+
+# invalid rule, must always be a dict
+a = 1
+
+  [default.age]
+  must_exist = true
+  lte = 30
+  gte = 10
+
+[production]
+project = {eq="hello_world"}
+x = {is_not_in=['test.com']}
+
+[missingimplementation]
+# z = {ne="@get existing value from settings"}
+# w = {condition="@define a python expression"}
+
+  # [missingimplementation.y]
+  # is_not_in=['test.com']
+  # when={names=['host'], ne='qbc', env='production'}
