@@ -8,6 +8,7 @@ IDENTIFIER = 'env'
 
 def load(obj, env=None, silent=True, key=None):
     """Loads envvars with prefixes:
+
     `DYNACONF_` (default global) or `$(GLOBAL_ENV_FOR_DYNACONF)_`
     """
     global_env = obj.get('GLOBAL_ENV_FOR_DYNACONF')
@@ -70,6 +71,7 @@ def load_from_env(identifier, key, env, obj, silent):
 
 
 def write(settings_path, settings_data, **kwargs):
+    """Write data to .env file"""
     for key, value in settings_data.items():
         dotenv_cli.set_key(
             str(settings_path),

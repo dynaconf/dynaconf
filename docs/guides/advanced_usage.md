@@ -1,4 +1,6 @@
-# Using programatically
+# Advanced Usage
+
+Yeah **Dynamic** is part of the name of this library so you can do lots of things :)
 
 ## Customizing the settings object
 
@@ -18,7 +20,7 @@ from dynaconf import LazySettings
 config = LazySettings(GLOBAL_ENV_FOR_DYNACONF="MYPROGRAM")
 ```
 
-Now you can use `export MYPROGRAM_FOO=bar` instead of `DYNACONF_FOO=bar`
+Now you can use `export MYPROGRAM_FOO=bar` instead of ~~DYNACONF_FOO=bar~~
 
 ## Switching working environments
 

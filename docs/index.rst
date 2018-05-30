@@ -79,7 +79,6 @@ Features
    guides/validation
    guides/flask
    guides/django
-   guides/debug
    guides/testing
    guides/extend
    guides/contribute

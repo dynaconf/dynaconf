@@ -1,4 +1,6 @@
-# Customizing the loaders
+# Extending
+
+## Creating new loaders
 
 In your project i.e called `myprogram` create your custom loader.
 
@@ -30,7 +32,7 @@ Dynaconf will import your `myprogram.my_custom_loader.load` and call it.
 > **IMPORTANT**: the `'dynaconf.loaders.env_loader'` must be the last in the loaders list
 > if you want to keep the behavior of having envvars to override parameters.
 
-In case you need to disable all external loaders and ue only the `settings.*` file loaders define:
+In case you need to disable all external loaders and rely only the `settings.*` file loaders define:
 
 ```bash
 LOADERS_FOR_DYNACONF=false

@@ -17,6 +17,15 @@ def get_client(obj):
 
 
 def load(obj, env=None, silent=None, key=None):
+    """Reads and loads in to "settings" a single key or all keys from vault
+
+    :param obj: the settings instance
+    :param env: settings env default='DYNACONF'
+    :param silent: if errors should raise
+    :param key: if defined load a single key, else load all in env
+    :return: None
+    """
+
     client = get_client(obj)
     holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
     path = os.path.join(obj.VAULT_PATH_FOR_DYNACONF, holder.lower())
@@ -40,8 +49,8 @@ def load(obj, env=None, silent=None, key=None):
 
 
 def write(obj, data=None, lease='1h', **kwargs):
-    """
-    Write a value in to loader source
+    """Write a value in to loader source
+
     :param obj: settings object
     :param data: vars to be stored
     :param kwargs: vars to be stored

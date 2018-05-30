@@ -3,22 +3,21 @@ from dynaconf.utils.files import find_file
 
 
 class BaseLoader(object):
-    """Base loader for dynaconf source files."""
+    """Base loader for dynaconf source files.
+
+    :param obj: {[LazySettings]} -- [Dynaconf settings]
+    :param env: {[string]} -- [the current env to be loaded defaults to
+      [development]]
+    :param identifier: {[string]} -- [identifier ini, yaml, json, py, toml]
+    :param module_is_loaded: {[bool]} -- [bool or module object]
+    :param extensions: {[list]} -- [List of extensions with dots ['.a', '.b']]
+    :param file_reader: {[callable]} -- [reads file return dict]
+    :param string_reader: {[callable]} -- [reads string return dict]
+    """
 
     def __init__(self, obj, env, identifier, module_is_loaded, extensions,
                  file_reader, string_reader):
-        """Instantiates a loader for different sources
-
-        Arguments:
-            obj {[LazySettings]} -- [Dynaconf settings]
-            env {[string]} -- [the current env to be loaded defaults to
-                [development]]
-            identifier {[string]} -- [identifier ini, yaml, json, py, toml]
-            module_is_loaded {[bool]} -- [bool or module object]
-            extensions {[list]} -- [List of extensions with dots ['.a', '.b']]
-            file_reader {[callable]} -- [reads file return dict]
-            string_reader {[callable]} -- [reads string return dict]
-        """
+        """Instantiates a loader for different sources"""
         self.obj = obj
         self.env = env or obj.current_env
         self.identifier = identifier
@@ -29,7 +28,11 @@ class BaseLoader(object):
 
     def load(self, filename=None, key=None, silent=True):
         """
-        Reads and loads in to "self.obj" a single key or all keys from source
+        Reads and loads in to `self.obj` a single key or all keys from source
+
+        :param filename: Optional filename to load
+        :param key: if provided load a single key
+        :param silent: if load erros should be silenced
         """
         if self.module_is_loaded is None:  # pragma: no cover
             self.obj.logger.warning(
@@ -70,9 +73,9 @@ class BaseLoader(object):
         env_list.append('GLOBAL')
 
         # load all envs
-        self.read(files, env_list, silent, key)
+        self._read(files, env_list, silent, key)
 
-    def read(self, files, envs, silent=True, key=None):
+    def _read(self, files, envs, silent=True, key=None):
         for source_file in files:
             if source_file.endswith(self.extensions):  # pragma: no cover
                 self.obj.logger.debug('Trying to load {}'.format(source_file))

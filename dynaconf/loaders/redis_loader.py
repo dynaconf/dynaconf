@@ -17,8 +17,8 @@ IDENTIFIER = 'redis'
 
 
 def load(obj, env=None, silent=True, key=None):
-    """
-    Reads and loads in to "settings" a single key or all keys from redis
+    """Reads and loads in to "settings" a single key or all keys from redis
+
     :param obj: the settings instance
     :param env: settings env default='DYNACONF'
     :param silent: if errors should raise
@@ -50,8 +50,8 @@ def load(obj, env=None, silent=True, key=None):
 
 
 def write(obj, data=None, **kwargs):
-    """
-    Write a value in to loader source
+    """Write a value in to loader source
+
     :param obj: settings object
     :param data: vars to be stored
     :param kwargs: vars to be stored

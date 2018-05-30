@@ -5,21 +5,24 @@
 Feature flagging is a system to dynamically toggle features in your
 application based in some settings value.
 
-Learn more at: http://martinfowler.com/articles/feature-toggles.html
+The advantage of using it is to perform changes on the fly without the need to redeploy ou restart the application.
+
+Learn more on how to design your program using Feature Flags: [http://martinfowler.com/articles/feature-toggles.html](http://martinfowler.com/articles/feature-toggles.html)
 
 Example:
 
-write flags to redis
-```
-$ dynaconf write redis -s NEWDASHBOARD=1 -e premiumuser
-```
+Lets say you have 2 versions of your app dashboard and you want to serve the new version only for premium users.
 
-meaning: Any premium user has NEWDASHBOARD feature enabled!
+write flags to [redis](external_storages.html)
+
+```
+$ dynaconf write redis -s NEWDASHBOARD=true -e premiumuser
+```
 
 In your program do:
 
 ```python
-usertype = 'premiumuser'  # assume you loaded it from your database
+usertype = 'premiumuser'  # assume you loaded it as part of your auth
 
 # user has access to new dashboard?
 if settings.flag('newdashboard', usertype):
@@ -29,7 +32,7 @@ else:
     activate_old_dashboard()
 ```
 
-The value is ensured to be loaded fresh from redis server so features can be enabled or 
+The value is ensured to be loaded fresh from redis server so features can be enabled or
 disabled at any time without the need to redeploy.
 
 It also works with file settings but the recommended is redis

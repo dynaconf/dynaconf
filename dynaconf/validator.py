@@ -8,20 +8,20 @@ class ValidationError(Exception):
 
 class Validator(object):
     """Validators are conditions attached to settings variables names
-    or patterns.
+    or patterns::
 
         Validator('MESSAGE', defined=True, eq='Hello World')
 
     The above ensure MESSAGE is available in default env and
     is equal to 'Hello World'
 
-    `*names` are a one (or more) names or patterns:
+    `names` are a one (or more) names or patterns::
 
         Validator('NAME')
         Validator('NAME', 'OTHER_NAME', 'EVEN_OTHER')
         Validator(r'^NAME', r'OTHER./*')
 
-    The `**operations` are:
+    The `operations` are::
 
         eq: value == other
         ne: value != other
@@ -37,18 +37,18 @@ class Validator(object):
     `env` is which env to be checked, can be a list or
     default is used.
 
-    `when` holds a validator and its return decides if validator runs or not.
+    `when` holds a validator and its return decides if validator runs or not::
 
         Validator('NAME', defined=True, when=Validator('OTHER', eq=2))
         # NAME is required only if OTHER eq to 2
         # When the very first thing to be performed when passed.
         # if no env is passed to `when` it is inherited
 
-    `must_exist` is `exists` requirement. (executed after when)
+    `must_exist` is `exists` requirement. (executed after when)::
 
        settings.exists(value)
 
-    condition is a callable to be executed and return boolean:
+    condition is a callable to be executed and return boolean::
 
        Validator('NAME', condition=lambda x: x == 1)
        # it is executed before operations.

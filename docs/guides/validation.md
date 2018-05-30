@@ -72,3 +72,5 @@ Then to fire the validation use:
 ```bash
 $ dynaconf validate
 ```
+
+This returns code 0 (success) if validation is ok.

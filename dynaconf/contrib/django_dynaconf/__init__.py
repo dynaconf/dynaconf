@@ -1,25 +1,25 @@
 """Dynaconf django extension
 
-In the `django_project/settings.py` put as 1st app
+In the `django_project/settings.py` put as 1st app::
 
-INSTALLED_APPS = [
-    'dynaconf.contrib.django_dynaconf',
-    ...
-]
+    INSTALLED_APPS = [
+        'dynaconf.contrib.django_dynaconf',
+        ...
+    ]
 
 It must be included as the first application on the INSTALLED_APPS list.
 
 Now in the root of your Django project
 (the same folder where manage.py is located)
 
-Put your config files settings.{py|yaml|toml|ini|json}
-and or .secrets.{py|yaml|toml|ini|json}
+Put your config files `settings.{py|yaml|toml|ini|json}`
+and or `.secrets.{py|yaml|toml|ini|json}`
 
-On your projects root folder now you can start as
+On your projects root folder now you can start as::
 
-DJANGO_DEBUG='@bool false' \
-DJANGO_ALLOWED_HOSTS='@json ["localhost"]' \
-python manage.py runserver
+    DJANGO_DEBUG='@bool false' \
+    DJANGO_ALLOWED_HOSTS='@json ["localhost"]' \
+    python manage.py runserver
 """
 
 import sys

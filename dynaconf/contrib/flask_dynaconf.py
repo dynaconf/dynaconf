@@ -16,56 +16,41 @@ class FlaskDynaconf(object):
     app = The created app
     dynaconf_args = Extra args to be passed to Dynaconf (validator for example)
 
-    All other values are stored as config vars specially:
+    All other values are stored as config vars specially::
 
-    ENVVAR_FOR_DYNACONF = Name of environment variable to use if you want to
-                        change the settings file from env vars
-                        example:
-                        export MYSITE_SETTINGS_MODULE=/tmp/settings.py
-                        with the above the settings will be loaded from that
-                        file
-                        Dynaconf supports .py, .yml, .toml
+        ENV_FOR_DYNACONF = env prefix for your envvars to become settings
+                            example:
+                                export MYSITE_SQL_PORT='@int 5445'
 
-    ENV_FOR_DYNACONF = env prefix for your envvars to become
-                             settings
-                        example:
-                            export MYSITE_SQL_PORT='@int 5445'
+                            with that exported to env you access using:
+                                app.config.SQL_PORT
+                                app.config.get('SQL_PORT')
+                                app.config.get('sql_port')
+                                # get is case insensitive
+                                app.config['SQL_PORT']
 
-                        with that exported to env you access using:
-                            app.config.SQL_PORT
-                            app.config.get('SQL_PORT')
-                            app.config.get('sql_port')
-                            # get is case insensitive
-                            app.config['SQL_PORT']
+                            Dynaconf uses `@int, @bool, @float, @json` to cast
+                            env vars
 
-                        Dynaconf uses `@int, @bool, @float, @json` to cast env
-                        vars
-
-    SETTINGS_MODULE_FOR_DYNACONF = The name of the module or file to use as
-                                default to load settings. If nothing is passed
-                                it will be `settings.py` or value found in
-                                `ENVVAR_FOR_DYNACONF`
-                                Dynaconf supports .py, .yml, .toml
-
-    YAML = If using YAML for settings module, you pass an extra yaml file here
-        It is general useful to have a different file to store secrets
-        example `.secrets.yml` and then values in that file will
-        override other values. And you can exclude the .secrets from your
-        public repositories.
-
-    --------------------------------------------------------------------------
+        SETTINGS_MODULE_FOR_DYNACONF = The name of the module or file to use as
+                                    default to load settings. If nothing is
+                                    passed it will be `settings.*` or value
+                                    found in `ENVVAR_FOR_DYNACONF`
+                                    Dynaconf supports
+                                    .py, .yml, .toml, ini, json
 
     ATTENTION: Take a look at `settings.yml` and `.secrets.yml` to know the
             required settings format.
 
     Settings load order in Dynaconf:
-    0) Load all defaults and Flask defaults
-    1) Load all passed variables when applying FlaskDynaconf
-    2) Update with data in SETTINGS_MODULE_FOR_DYNACONF
-    3) Update with data in YAML extra file if provided
-    4) Update with data in environmente vars `ENV_FOR_DYNACONF_`
 
-    YAML files are very useful to have `envd` settings, lets say,
+    - Load all defaults and Flask defaults
+    - Load all passed variables when applying FlaskDynaconf
+    - Update with data in settings files
+    - Update with data in environmente vars `ENV_FOR_DYNACONF_`
+
+
+    TOML files are very useful to have `envd` settings, lets say,
     `production` and `development`.
 
     You can also achieve the same using multiple `.py` files naming as
@@ -77,7 +62,6 @@ class FlaskDynaconf(object):
         app = Flask(__name__)
         FlaskDynaconf(
             app,
-            ENVVAR_FOR_DYNACONF="MYSITE_SETTINGS_MODULE",
             ENV_FOR_DYNACONF='MYSITE',
             SETTINGS_MODULE_FOR_DYNACONF='settings.yml',
             EXTRA_VALUE='You can add aditional config vars here'
@@ -127,18 +111,18 @@ class FlaskDynaconf(object):
 
 class DynaconfConfig(Config):
     """
-    Settings load order in Dynaconf
-    0) Load all defaults and Flask defaults
-    1) Load all passed variables above
-    2) Update with data in SETTINGS_MODULE_FOR_DYNACONF
-    3) Update with data in toml|yaml|ini|json files
-    4) Update with data in environment vars `ENV_FOR_DYNACONF_`
+    Settings load order in Dynaconf:
+
+    - Load all defaults and Flask defaults
+    - Load all passed variables when applying FlaskDynaconf
+    - Update with data in settings files
+    - Update with data in environmente vars `ENV_FOR_DYNACONF_`
     """
 
     def get(self, key, default=None):
         """Gets config from dynaconf variables
         if variables does not exists in dynaconf try getting from
-        app.config to support runtime settings."""
+        `app.config` to support runtime settings."""
         return self._settings.get(key, Config.get(self, key, default))
 
     def __init__(self, _settings, *args, **kwargs):

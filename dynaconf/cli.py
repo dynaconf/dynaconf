@@ -80,22 +80,26 @@ def open_docs(ctx, param, value):  # pragma: no cover
     ctx.exit()
 
 
+def show_banner(ctx, param, value):
+    """Shows dynaconf awesome banner"""
+    if not value or ctx.resilient_parsing:
+        return
+    click.echo(settings.dynaconf_banner)
+    click.echo('Learn more at: http://github.com/rochacbruno/dynaconf')
+    ctx.exit()
+
+
 @click.group()
 @click.option('--version', is_flag=True, callback=print_version,
               expose_value=False, is_eager=True, help="Show dynaconf version")
 @click.option('--docs', is_flag=True, callback=open_docs, expose_value=False,
               is_eager=True, help="Open documentation in browser")
+@click.option('--banner', is_flag=True, callback=show_banner,
+              expose_value=False, is_eager=True, help="Show awesome banner")
 def main():
     """Dynaconf - Command Line Interface\n
     Documentation: http://dynaconf.readthedocs.io/
     """
-
-
-@main.command()
-def banner():
-    """Shows dynaconf awesome banner"""
-    click.echo(settings.dynaconf_banner)
-    click.echo('Learn more at: http://github.com/rochacbruno/dynaconf')
 
 
 @main.command()

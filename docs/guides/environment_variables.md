@@ -2,19 +2,23 @@
 
 ## overloading parameters via env vars
 
-All configuration parameters, including **custom** envs and **{VAR}_FOR_DYNACONF** settings, can be overridden through environment variables. To override the configuration parameter **{param}**, use an environment variable named **DYNACONF_{PARAM}**. For instance, to override the **"host"** configuration parameter, you can run your application with:
+All configuration parameters, including **custom** environments and [dynaconf configuration](configuration.html), can be overridden through environment variables.
+
+To override the configuration parameter **{param}**, use an environment variable named **DYNACONF_{PARAM}**. For instance, to override the **"HOST"** configuration parameter, you can run your application with:
 
 ```bash
-DYNACONF_HOST=other.com python yourapp.py
+DYNACONF_HOST='otherhost.com' python yourapp.py
 ```
 
 ## .env files
 
-If you don't want to declare the variables on every program call you can export **DYNACONF_{PARAM}** variables or put the values in `.env` files located in the same directory as your settings files, variables in .env does not overrride existing environment variables.
+If you don't want to declare the variables on every program call you can run `export DYNACONF_{PARAM}` in your shell or put the values in a `.env` file located in the same directory as your settings files (the root directory of your application), variables in `.env` does not overrride existing environment variables.
 
-## Environment variables precedence and type casting
+> **IMPORTANT**: Dynaconf will search for a `.env` located in the root directory of your application, if not found it will continue searching in parent directories until it reaches the root. To avoid conflicts we recommend to have a `.env` even if it is empty.
 
-Environment variables take precedence over all other configuration sources: if the variable is set, it will be used as the value for the parameter even if parameter exists in settings files or in .env. 
+## Precedence and type casting
+
+Environment variables take precedence over all other configuration sources: if the variable is set, it will be used as the value for the parameter even if parameter exists in `settings` files or in `.env`.
 
 Variable values are parsed as if they were **TOML** syntax. As illustration, consider the following examples:
 
