@@ -1,11 +1,4 @@
-```
-██████╗ ██╗   ██╗███╗   ██╗ █████╗  ██████╗ ██████╗ ███╗   ██╗███████╗
-██╔══██╗╚██╗ ██╔╝████╗  ██║██╔══██╗██╔════╝██╔═══██╗████╗  ██║██╔════╝
-██║  ██║ ╚████╔╝ ██╔██╗ ██║███████║██║     ██║   ██║██╔██╗ ██║█████╗
-██║  ██║  ╚██╔╝  ██║╚██╗██║██╔══██║██║     ██║   ██║██║╚██╗██║██╔══╝
-██████╔╝   ██║   ██║ ╚████║██║  ██║╚██████╗╚██████╔╝██║ ╚████║██║
-╚═════╝    ╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝
-```
+[![Dynaconf](/docs/_static/logo_big.svg)](http://dynaconf.readthedocs.io)
 
 > **dynaconf** - The **dyna**mic **conf**igurator for your Python Project
 
@@ -787,6 +780,8 @@ But if you are still looking for something different take a look at the followin
 - [AnyConfig](https://github.com/ssato/python-anyconfig)
 - [Config](https://pypi.org/project/config/)
 - [Conman](https://github.com/the-gigi/conman)
+
+Read the docs: **Documentation**: http://dynaconf.readthedocs.io/
 
 ```
 ██████╗ ██╗   ██╗███╗   ██╗ █████╗  ██████╗ ██████╗ ███╗   ██╗███████╗
