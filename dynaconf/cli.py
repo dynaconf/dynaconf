@@ -268,6 +268,9 @@ def _list(env, key, more, loader):
         data = settings._loaded_by_loaders.get(identifier, {})
         data = data or settings._loaded_by_loaders.get(loader, {})
 
+    # remove to avoid displaying twice
+    data.pop('SETTINGS_MODULE', None)
+
     def color(_k):
         if _k in dir(default_settings):
             return 'blue'

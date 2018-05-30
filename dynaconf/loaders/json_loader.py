@@ -20,7 +20,6 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         obj=obj,
         env=env,
         identifier='json',
-        module_is_loaded=json,
         extensions=JSON_EXTENSIONS,
         file_reader=json.load,
         string_reader=json.loads

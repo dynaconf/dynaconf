@@ -9,7 +9,6 @@ from dynaconf.utils import dictmerge, DynaconfDict, raw_logger
 
 def load(obj, settings_module, identifier='py', silent=False, key=None):
     """Tries to import a python module"""
-    obj.logger.debug('executing load_from_module: %s', settings_module)
     try:
         mod = importlib.import_module(settings_module)
         loaded_from = 'module'
@@ -19,21 +18,24 @@ def load(obj, settings_module, identifier='py', silent=False, key=None):
             loaded_from = None
         else:
             loaded_from = 'filename'
-        obj.logger.debug(mod)
 
-    if loaded_from:
+    if mod and loaded_from:
         obj.logger.debug(
-            "Module {} Loaded from {}".format(settings_module, loaded_from)
+            "py_loader: {}".format(mod)
         )
+    else:
+        obj.logger.debug('py_loader: %s (Ignoring, Not Found)',
+                         settings_module)
+        return
 
     for setting in dir(mod):
         if setting.isupper():
             if key is None or key == setting:
                 setting_value = getattr(mod, setting)
                 obj.logger.debug(
-                    'module_loader:loading %s: %s (%s)',
+                    'py_loader: loading %s: %s (%s)',
                     setting,
-                    setting_value,
+                    '*****' if 'secret' in settings_module else setting_value,
                     identifier
                 )
                 obj.set(setting, setting_value, loader_identifier=identifier)
@@ -53,7 +55,7 @@ def import_from_filename(filename, silent=False):  # pragma: no cover
 
     if filename in default_settings.SETTINGS_MODULE_FOR_DYNACONF:
         silent = True
-    mod = types.ModuleType('config')
+    mod = types.ModuleType(filename.rstrip('.py'))
     mod.__file__ = filename
     mod._is_error = False
     try:
@@ -64,7 +66,7 @@ def import_from_filename(filename, silent=False):  # pragma: no cover
             )
     except IOError as e:
         e.strerror = (
-            'Unable to load configuration file (%s %s)\n'
+            'py_loader: error loading file (%s %s)\n'
         ) % (e.strerror, filename)
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return

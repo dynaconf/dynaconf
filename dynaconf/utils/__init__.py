@@ -60,7 +60,6 @@ def raw_logger():
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
         logger.setLevel(getattr(logging, level))
-        logger.debug("starting logger")
         return logger
 
 

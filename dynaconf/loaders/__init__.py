@@ -5,6 +5,7 @@ from dynaconf.loaders import (
     yaml_loader, toml_loader, json_loader, ini_loader, py_loader
 )
 from dynaconf.utils.parse_conf import false_values
+from dynaconf.utils.files import find_file
 
 
 def default_loader(obj, defaults=None):
@@ -22,7 +23,7 @@ def default_loader(obj, defaults=None):
 
     for key in all_keys:
         value = defaults.get(key, default_settings_values.get(key))
-        obj.logger.debug("default_loader:loading: %s:%s", key, value)
+        obj.logger.debug("default_loader: loading: %s:%s", key, value)
         obj.set(key, value)
 
     # start dotenv to get default env vars from there
@@ -32,7 +33,7 @@ def default_loader(obj, defaults=None):
         env_value = obj.get_environ(key, '_not_found')
         if env_value != '_not_found':
             obj.logger.debug(
-                "default_loader:overriding from envvar: %s:%s",
+                "default_loader: overriding from envvar: %s:%s",
                 key, env_value
             )
             obj.set(key, env_value, tomlfy=True)
@@ -49,7 +50,6 @@ def settings_loader(obj, settings_module=None, env=None,
     :param key: Load a single key if provided
     :param filename: optional filename to override the settings_module
     """
-    obj.logger.debug('executing settings_loader: %s', settings_module)
     settings_module = settings_module or obj.settings_module
     if not settings_module:  # pragma: no cover
         return
@@ -59,12 +59,24 @@ def settings_loader(obj, settings_module=None, env=None,
     else:
         files = [settings_module]
 
-    obj.logger.debug("files %s", files)
+    obj.logger.debug("Looking for files %s", files)
 
     if filename is not None:
         files.append(filename)
 
-    for mod_file in files:
+    found_files = []
+    for item in files:
+        if item.endswith(ct.ALL_EXTENSIONS):
+            found = find_file(item)
+            if found:
+                found_files.append(found)
+        else:
+            # a bare python module name
+            found_files.append(item)
+
+    obj.logger.debug("Found files %s", found_files)
+
+    for mod_file in found_files:
         # can be set to multiple files settings.py,settings.yaml,...
 
         # Cascade all loaders
@@ -77,9 +89,6 @@ def settings_loader(obj, settings_module=None, env=None,
 
         for loader in loaders:
             if mod_file.endswith(loader['ext']):
-                obj.logger.debug(
-                    "Trying to load {0}:{1}".format(loader['name'], mod_file)
-                )
                 loader['loader'].load(
                     obj,
                     filename=mod_file,
@@ -93,26 +102,29 @@ def settings_loader(obj, settings_module=None, env=None,
             continue
 
         # must be Python file or module
-
-        obj.logger.debug("Trying to load Python module {}".format(mod_file))
-
         # load from default defined module settings.py or .secrets.py if exists
         py_loader.load(obj, mod_file, key=key)
 
         # load from the current env e.g: development_settings.py
         env = env or obj.current_env
         if mod_file.endswith('.py'):
+            if '.secrets.py' == mod_file:
+                tmpl = ".{0}_{1}{2}"
+                mod_file = 'secrets.py'
+            else:
+                tmpl = "{0}_{1}{2}"
+
             dirname = os.path.dirname(mod_file)
             filename, extension = os.path.splitext(
                 os.path.basename(mod_file)
             )
-            new_filename = "{0}_{1}{2}".format(
+            new_filename = tmpl.format(
                 env.lower(), filename, extension
             )
             env_mod_file = os.path.join(
                 dirname, new_filename
             )
-            global_filename = "{0}_{1}{2}".format(
+            global_filename = tmpl.format(
                 'global', filename, extension
             )
             global_mod_file = os.path.join(
@@ -159,4 +171,5 @@ def enable_external_loaders(obj):
               enabled not in false_values and
               loader not in obj.LOADERS_FOR_DYNACONF
             ):  # noqa
-            obj.LOADERS_FOR_DYNACONF.append(loader)
+            obj.logger.debug('loaders: Enabling %s', loader)
+            obj.LOADERS_FOR_DYNACONF.insert(0, loader)

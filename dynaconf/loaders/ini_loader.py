@@ -19,11 +19,14 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :param filename: Optional custom filename to load
     :return: None
     """
+    if ConfigObj is None:  # pragma: no cover
+        BaseLoader.warn_not_installed(obj, 'ini')
+        return
+
     loader = BaseLoader(
         obj=obj,
         env=env,
         identifier='ini',
-        module_is_loaded=ConfigObj,
         extensions=INI_EXTENSIONS,
         file_reader=lambda fileobj: ConfigObj(fileobj).dict(),
         string_reader=lambda strobj: ConfigObj(strobj.split('\n')).dict()

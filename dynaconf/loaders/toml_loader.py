@@ -19,11 +19,14 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :param filename: Optional custom filename to load
     :return: None
     """
+    if toml is None:  # pragma: no cover
+        BaseLoader.warn_not_installed(obj, 'toml')
+        return
+
     loader = BaseLoader(
         obj=obj,
         env=env,
         identifier='toml',
-        module_is_loaded=toml,
         extensions=TOML_EXTENSIONS,
         file_reader=toml.load,
         string_reader=toml.loads

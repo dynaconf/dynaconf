@@ -10,7 +10,6 @@ from dynaconf.loaders import (
     default_loader,
     settings_loader,
     yaml_loader,
-    py_loader,
     enable_external_loaders
 )
 from dynaconf.utils.functional import LazyObject, empty
@@ -155,6 +154,7 @@ class Settings(object):
         self._defaults = {}
         self.environ = os.environ
         self.SETTINGS_MODULE = None
+        self._not_installed_warnings = []
 
         compat_kwargs(kwargs)
         if settings_module:
@@ -541,16 +541,13 @@ class Settings(object):
     @property
     def loaders(self):  # pragma: no cover
         """Return available loaders"""
-        if self.LOADERS_FOR_DYNACONF in (None, 0, "0", "false"):
+        if self.LOADERS_FOR_DYNACONF in (None, 0, "0", "false", False):
             self.logger.info('No loader defined')
             return []
 
         if not self._loaders:
             for loader_module_name in self.LOADERS_FOR_DYNACONF:
-                try:
-                    loader = importlib.import_module(loader_module_name)
-                except ImportError:
-                    loader = py_loader.import_from_filename(loader_module_name)
+                loader = importlib.import_module(loader_module_name)
                 self._loaders.append(loader)
 
         return self._loaders
@@ -576,7 +573,7 @@ class Settings(object):
         self.load_extra_yaml(env, silent, key)  # DEPRECATED
         enable_external_loaders(self)
         for loader in self.loaders:
-            self.logger.debug('Loading %s', loader.__name__)
+            self.logger.debug('Dynaconf executing: %s', loader.__name__)
             loader.load(self, env, silent=silent, key=key)
 
     def load_extra_yaml(self, env, silent, key):

@@ -19,11 +19,14 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :param filename: Optional custom filename to load
     :return: None
     """
+    if yaml is None:  # pragma: no cover
+        BaseLoader.warn_not_installed(obj, 'yaml')
+        return
+
     loader = BaseLoader(
         obj=obj,
         env=env,
         identifier='yaml',
-        module_is_loaded=yaml,
         extensions=YAML_EXTENSIONS,
         file_reader=yaml.load,
         string_reader=yaml.load

@@ -41,10 +41,11 @@ def load_from_env(identifier, key, env, obj, silent):
             )
             if value:
                 obj.logger.debug(
-                    "env_loader:loading by key: %s:%s (%s)",
+                    "env_loader: loading by key: %s:%s (%s:%s)",
                     key,
                     value,
-                    identifier
+                    identifier,
+                    env
                 )
                 obj.set(key, value, loader_identifier=identifier, tomlfy=True)
         else:
@@ -54,15 +55,17 @@ def load_from_env(identifier, key, env, obj, silent):
                 in os.environ.items()
                 if key.startswith(env_)
             }
-            obj.logger.debug(
-                "env_loader:loading:%s (%s)",
-                data,
-                identifier
-            )
-            obj.update(data, loader_identifier=identifier)
+            if data:
+                obj.logger.debug(
+                    "env_loader: loading: %s (%s:%s)",
+                    data,
+                    identifier,
+                    env
+                )
+                obj.update(data, loader_identifier=identifier)
     except Exception as e:  # pragma: no cover
         e.message = (
-            'Unable to load config env env ({0})'
+            'env_loader: Error ({0})'
         ).format(str(e))
         if silent:
             obj.logger.error(str(e))

@@ -3,6 +3,13 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+1.0.2
+-----
+- Improved docs
+- Fix error when some loader is not installed
+- Fix loader import error 
+- Improved logs
+
 1.0.1
 -----
 

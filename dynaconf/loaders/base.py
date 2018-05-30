@@ -1,5 +1,9 @@
 # coding: utf-8
 from dynaconf.utils.files import find_file
+from dynaconf.utils import raw_logger
+
+
+logger = raw_logger()
 
 
 class BaseLoader(object):
@@ -9,22 +13,30 @@ class BaseLoader(object):
     :param env: {[string]} -- [the current env to be loaded defaults to
       [development]]
     :param identifier: {[string]} -- [identifier ini, yaml, json, py, toml]
-    :param module_is_loaded: {[bool]} -- [bool or module object]
     :param extensions: {[list]} -- [List of extensions with dots ['.a', '.b']]
     :param file_reader: {[callable]} -- [reads file return dict]
     :param string_reader: {[callable]} -- [reads string return dict]
     """
 
-    def __init__(self, obj, env, identifier, module_is_loaded, extensions,
+    def __init__(self, obj, env, identifier, extensions,
                  file_reader, string_reader):
         """Instantiates a loader for different sources"""
         self.obj = obj
         self.env = env or obj.current_env
         self.identifier = identifier
-        self.module_is_loaded = module_is_loaded
         self.extensions = extensions
         self.file_reader = file_reader
         self.string_reader = string_reader
+
+    @staticmethod
+    def warn_not_installed(obj, identifier):  # pragma: no cover
+        if identifier not in obj._not_installed_warnings:
+            logger.warning(
+                "%(ident)s support is not installed in your environment. "
+                "`pip install dynaconf[%(ident)s]`",
+                {'ident': identifier}
+            )
+        obj._not_installed_warnings.append(identifier)
 
     def load(self, filename=None, key=None, silent=True):
         """
@@ -34,15 +46,6 @@ class BaseLoader(object):
         :param key: if provided load a single key
         :param silent: if load erros should be silenced
         """
-        if self.module_is_loaded is None:  # pragma: no cover
-            self.obj.logger.warning(
-                "%(ident)s support is not installed in your environment.\n"
-                "To use this loader you have to install it with\n"
-                "pip install dynaconf[%(ident)s]",
-                {'ident': self.identifier}
-            )
-            return
-
         filename = filename or self.obj.get(self.identifier.upper())
         if not filename:
             return
@@ -78,16 +81,16 @@ class BaseLoader(object):
     def _read(self, files, envs, silent=True, key=None):
         for source_file in files:
             if source_file.endswith(self.extensions):  # pragma: no cover
-                self.obj.logger.debug('Trying to load {}'.format(source_file))
                 try:
                     source_data = self.file_reader(
                         open(find_file(source_file))
                     )
-                except IOError as e:
+                    self.obj.logger.debug('{}_loader: {}'.format(
+                        self.identifier, source_file))
+                except IOError:
                     self.obj.logger.debug(
-                        "Unable to load file {}: {}".format(
-                            source_file, str(e)
-                        )
+                        '{}_loader: {} (Ignored, file not Found)'.format(
+                            self.identifier, source_file)
                     )
                     source_data = None
             else:
@@ -109,12 +112,14 @@ class BaseLoader(object):
                 try:
                     data = source_data[env.lower()]
                 except KeyError:
-                    message = '%s env not defined in %s' % (
-                        env, source_file)
-                    if silent:
-                        self.obj.logger.warning(message)
-                    else:
-                        raise KeyError(message)
+                    if env != self.obj.get('GLOBAL_ENV_FOR_DYNACONF'):
+                        message = '%s_loader: %s env not defined in %s' % (
+                            self.identifier, env, source_file)
+                        if silent:
+                            self.obj.logger.warning(message)
+                        else:
+                            raise KeyError(message)
+                    continue
 
                 if env != self.obj.get('DEFAULT_ENV_FOR_DYNACONF'):
                     identifier = "{0}_{1}".format(self.identifier, env.lower())
@@ -126,3 +131,11 @@ class BaseLoader(object):
                 elif key in data:
                     self.obj.set(key, data.get(key),
                                  loader_identifier=identifier)
+
+                self.obj.logger.debug(
+                    '{}_loader: {}: {}'.format(
+                        self.identifier,
+                        env.lower(),
+                        list(data.keys()) if 'secret' in source_file else data
+                    )
+                )

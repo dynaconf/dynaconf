@@ -2,8 +2,17 @@
 # pip install hvac
 
 import os
-from hvac import Client
 from dynaconf.utils.parse_conf import parse_conf_data
+
+try:
+    from hvac import Client
+except ImportError as e:
+    raise ImportError(
+        "vault package is not installed in your environment. "
+        "`pip install dynaconf[vault]` or disable the vault loader with "
+        "export VAULT_ENABLED_FOR_DYNACONF=false"
+    )
+
 
 IDENTIFIER = 'vault'
 
@@ -12,7 +21,9 @@ def get_client(obj):
     client = Client(
         **{k: v for k, v in obj.VAULT_FOR_DYNACONF.items() if v is not None}
     )
-    assert client.is_authenticated(), "Vault authentication error"
+    assert client.is_authenticated(), (
+        "Vault authentication error is VAULT_TOKEN_FOR_DYNACONF defined?"
+    )
     return client
 
 
@@ -37,8 +48,21 @@ def load(obj, env=None, silent=None, key=None):
         if data and key:
             value = parse_conf_data(data.get(key), tomlfy=True)
             if value:
+                obj.logger.debug(
+                    "vault_loader: loading by key: %s:%s (%s:%s)",
+                    key,
+                    '****',
+                    IDENTIFIER,
+                    holder
+                )
                 obj.set(key, value)
         elif data:
+            obj.logger.debug(
+                "vault_loader: loading: %s (%s:%s)",
+                list(data.keys()),
+                IDENTIFIER,
+                holder
+            )
             obj.update(data, loader_identifier=IDENTIFIER, tomlfy=True)
     except Exception as e:
         if silent:
