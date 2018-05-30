@@ -24,7 +24,7 @@ def test_help():
 
 
 def test_banner():
-    assert 'Learn more at:' in run(['banner'])
+    assert 'Learn more at:' in run(['--banner'])
 
 
 @pytest.mark.parametrize("fileformat", EXTS)

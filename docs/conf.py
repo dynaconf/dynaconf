@@ -19,6 +19,7 @@
 #
 import os
 import sys
+import datetime
 sys.path.insert(0, os.path.abspath('.'))
 from dynaconf.cli import read
 from django.conf import settings
@@ -57,7 +58,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'dynaconf'
-copyright = '2015, Bruno Rocha'
+copyright = '2015-%s, Bruno Rocha' % datetime.date.today().year
 author = 'Bruno Rocha'
 
 # The version info for the project you're documenting, acts as replacement for

@@ -21,42 +21,50 @@ from dynaconf.utils.boxing import DynaBox
 
 
 class LazySettings(LazyObject):
-    """When you do:
-    >>> from dynaconf import settings
+    """When you do::
+
+        >>> from dynaconf import settings
+
     a LazySettings is imported and is initialized with only default_settings.
 
     Then when you first access a value, this will be set up and loaders will
     be executes looking for default config files or the file defined in
-    SETTINGS_MODULE_FOR_DYNACONF variable
+    SETTINGS_MODULE_FOR_DYNACONF variable::
 
-    >>> settings.SETTINGS_MODULE
-    Or when you call
-    >>> settings.configure(settings_module='/tmp/settings.py')
+        >>> settings.SETTINGS_MODULE
+
+    Or when you call::
+
+        >>> settings.configure(settings_module='/tmp/settings.py')
+
     You can define in your settings module a list of loaders to get values
     from different stores. By default it will try environment variables
-    starting with GLOBAL_ENV_FOR_DYNACONF (by defaulf "DYNACONF_")
+    starting with GLOBAL_ENV_FOR_DYNACONF (by defaulf `DYNACONF_`)
 
     You can also import this directly and customize it.
-    in a file proj/conf.py
-    >>> from dynaconf import LazySettings
-    >>> config = LazySettings(ENV_FOR_DYNACONF='PROJ',
-    ...                       LOADERS_FOR_DYNACONF=[
-    ...                             'dynaconf.loaders.env_loader',
-    ...                             'dynaconf.loaders.redis_loader'
-    ...                       ])
+    in a file `proj/conf.py`::
 
-    save common values in a settings file
-    $ echo "SERVER_IP = '10.10.10.10'" > proj/settings.py
+        >>> from dynaconf import LazySettings
+        >>> config = LazySettings(ENV_FOR_DYNACONF='PROJ',
+        ...                       LOADERS_FOR_DYNACONF=[
+        ...                             'dynaconf.loaders.env_loader',
+        ...                             'dynaconf.loaders.redis_loader'
+        ...                       ])
 
-    or use .toml|.yaml|.ini|.json
+    save common values in a settings file::
+
+        $ echo "SERVER_IP = '10.10.10.10'" > proj/settings.py
+
+    or use `.toml|.yaml|.ini|.json`
 
     save sensitive values in .secrets.{py|toml|yaml|ini|json}
-    or export as DYNACONF global environment variable
-    $ export DYNACONF_SERVER_PASSWD='super_secret'
+    or export as DYNACONF global environment variable::
 
-    >>> # from proj.conf import config
-    >>> print config.SERVER_IP
-    >>> print config.SERVER_PASSWD
+        $ export DYNACONF_SERVER_PASSWD='super_secret'
+
+        >>> # from proj.conf import config
+        >>> print config.SERVER_IP
+        >>> print config.SERVER_PASSWD
 
     and now it reads all variables starting with `DYNACONF_` from envvars
     and all values in a hash called DYNACONF_PROJ in redis
@@ -65,6 +73,7 @@ class LazySettings(LazyObject):
     def __init__(self, **kwargs):
         """
         handle initialization for the customization cases
+
         :param kwargs: values that overrides default_settings
         """
         compat_kwargs(kwargs)
@@ -109,8 +118,9 @@ class LazySettings(LazyObject):
         """
         Allows user to reconfigure settings object passing a new settings
         module or separated kwargs
-        :param settings_module:
-        :param kwargs:
+
+        :param settings_module: defines the setttings file
+        :param kwargs:  override default settings
         """
         compat_kwargs(kwargs)
         kwargs.update(self._kwargs)
@@ -130,7 +140,11 @@ class Settings(object):
     dynaconf_banner = BANNER
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
-        """Execute loaders and custom initialization"""
+        """Execute loaders and custom initialization
+
+        :param settings_module: defines the setttings file
+        :param kwargs:  override default settings
+        """
         self._logger = None
         self._fresh = False
         self._loaded_envs = []
@@ -152,13 +166,13 @@ class Settings(object):
         self.execute_loaders()
 
     def __call__(self, *args, **kwargs):
-        """Allow direct call of settings('val')
-        in place of settings.get('val')
+        """Allow direct call of `settings('val')`
+        in place of `settings.get('val')`
         """
         return self.get(*args, **kwargs)
 
     def __setattr__(self, name, value):
-        """Allow settings.FOO = 'value' and deal with _deleted"""
+        """Allow `settings.FOO = 'value'` and deal with `_deleted`"""
         try:
             self._deleted.discard(name)
         except AttributeError:
@@ -167,20 +181,20 @@ class Settings(object):
         super(Settings, self).__setattr__(name, value)
 
     def __delattr__(self, name):
-        """stores reference in _deleted for proper error management"""
+        """stores reference in `_deleted` for proper error management"""
         self._deleted.add(name)
         if hasattr(self, name):
             super(Settings, self).__delattr__(name)
 
     def __getitem__(self, item):
-        """Allow getting variables as dict keys settings['KEY']"""
+        """Allow getting variables as dict keys `settings['KEY']`"""
         value = self.get(item)
         if not value:
             raise KeyError('{0} does not exists'.format(item))
         return value
 
     def __setitem__(self, key, value):
-        """Allow settings['KEY'] = 'value'"""
+        """Allow `settings['KEY'] = 'value'`"""
         self.set(key, value)
 
     @property
@@ -198,9 +212,11 @@ class Settings(object):
 
     def get(self, key, default=None, cast=None, fresh=False):
         """
-        Get a value from settings store, this is the prefered way to access
-        >>> from dynaconf import settings
-        >>> settings.get('KEY')
+        Get a value from settings store, this is the prefered way to access::
+
+            >>> from dynaconf import settings
+            >>> settings.get('KEY')
+
         :param key: The name of the setting value, will always be upper case
         :param default: In case of not found it will be returned
         :param cast: Should cast in to @int, @float, @bool or @json ?
@@ -224,7 +240,11 @@ class Settings(object):
 
     def exists(self, key, fresh=False):
         """Check if key exists
-        NOTE: Must implement regex pattern here!!"""
+
+        :param key: the name of setting variable
+        :param fresh: if key should be taken from source direclty
+        :return: Boolean
+        """
         key = key.upper()
         if key in self._deleted:
             return False
@@ -236,8 +256,9 @@ class Settings(object):
         return key in self.store
 
     def get_fresh(self, key, default=None, cast=None):
-        """This is a shortcut to get(key, fresh=True). always reload from
+        """This is a shortcut to `get(key, fresh=True)`. always reload from
         loaders store before getting the var.
+
         :param key: The name of the setting value, will always be upper case
         :param default: In case of not found it will be returned
         :param cast: Should cast in to @int, @float, @bool or @json ?
@@ -247,10 +268,11 @@ class Settings(object):
 
     def get_environ(self, key, default=None, cast=None):
         """Get value from environment variable using os.environ.get
+
         :param key: The name of the setting value, will always be upper case
         :param default: In case of not found it will be returned
         :param cast: Should cast in to @int, @float, @bool or @json ?
-        or cast must be true to use cast inference
+         or cast must be true to use cast inference
         :return: The value if found, default or None
         """
         key = key.upper()
@@ -267,19 +289,19 @@ class Settings(object):
         return key.upper() in self.environ
 
     def as_bool(self, key):
-        """Partial method for get with cast"""
+        """Partial method for get with bool cast"""
         return self.get(key, cast='@bool')
 
     def as_int(self, key):
-        """Partial method for get with cast"""
+        """Partial method for get with int cast"""
         return self.get(key, cast='@int')
 
     def as_float(self, key):
-        """Partial method for get with cast"""
+        """Partial method for get with float cast"""
         return self.get(key, cast='@float')
 
     def as_json(self, key):
-        """Partial method for get with cast"""
+        """Partial method for get with json cast"""
         return self.get(key, cast='@json')
 
     @property
@@ -311,21 +333,26 @@ class Settings(object):
     def using_env(self, env, clean=True, silent=True, filename=None):
         """
         This context manager allows the contextual use of a different env
-        Example of settings.toml:
-        [development]
-        message = 'This is in dev'
-        [other]
-        message = 'this is in other env'
-        >>> from dynaconf import settings
-        >>> print settings.MESSAGE
-        'This is in dev'
-        >>> with settings.using_env('OTHER'):
-        ...    print settings.MESSAGE
-        'this is in other env'
+        Example of settings.toml::
+
+            [development]
+            message = 'This is in dev'
+            [other]
+            message = 'this is in other env'
+
+        Program::
+
+            >>> from dynaconf import settings
+            >>> print settings.MESSAGE
+            'This is in dev'
+            >>> with settings.using_env('OTHER'):
+            ...    print settings.MESSAGE
+            'this is in other env'
 
         :param env: Upper case name of env without any _
         :param clean: If preloaded vars should be cleaned
         :param silent: Silence errors
+        :param filename: Custom filename to load (optional)
         :return: context
         """
         try:
@@ -344,19 +371,20 @@ class Settings(object):
     @contextmanager
     def fresh(self):
         """
-        this context manager force the load of a key direct from the store
-        $ export DYNACONF_VALUE='Original'
-        >>> from dynaconf import settings
-        >>> print settings.VALUE
-        'Original'
-        $ export DYNACONF_VALUE='Changed Value'
-        >>> print settings.VALUE  # will not be reloaded from env vars
-        'Original
-        >>> with settings.fresh(): # inside this context all is reloaded
-        ...    print settings.VALUE
-        'Changed Value'
+        this context manager force the load of a key direct from the store::
 
-        an alternative is using settings.get_fresh(key)
+            $ export DYNACONF_VALUE='Original'
+            >>> from dynaconf import settings
+            >>> print settings.VALUE
+            'Original'
+            $ export DYNACONF_VALUE='Changed Value'
+            >>> print settings.VALUE  # will not be reloaded from env vars
+            'Original
+            >>> with settings.fresh(): # inside this context all is reloaded
+            ...    print settings.VALUE
+            'Changed Value'
+
+        an alternative is using `settings.get_fresh(key)`
 
         :return: context
         """
@@ -387,23 +415,27 @@ class Settings(object):
         return self.SETTINGS_MODULE
 
     def setenv(self, env=None, clean=True, silent=True, filename=None):
-        """
-        Used to interactively change the env
-        Example of settings.toml:
-        [development]
-        message = 'This is in dev'
-        [other]
-        message = 'this is in other env'
-        >>> from dynaconf import settings
-        >>> print settings.MESSAGE
-        'This is in dev'
-        >>> with settings.using_env('OTHER'):
-        ...    print settings.MESSAGE
-        'this is in other env'
+        """Used to interactively change the env
+        Example of settings.toml::
+
+            [development]
+            message = 'This is in dev'
+            [other]
+            message = 'this is in other env'
+
+        Program::
+
+            >>> from dynaconf import settings
+            >>> print settings.MESSAGE
+            'This is in dev'
+            >>> with settings.using_env('OTHER'):
+            ...    print settings.MESSAGE
+            'this is in other env'
 
         :param env: Upper case name of env without any _
         :param clean: If preloaded vars should be cleaned
         :param silent: Silence errors
+        :param filename: Custom filename to load (optional)
         :return: context
         """
         env = env or self.ENV_FOR_DYNACONF
@@ -435,7 +467,10 @@ class Settings(object):
             self.unset(key)
 
     def unset(self, key):
-        """Unset on all references"""
+        """Unset on all references
+
+        :param key: The key to be unset
+        """
         key = key.strip().upper()
         if key not in dir(default_settings) and key not in self._defaults:
             self.logger.debug('Unset %s', key)
@@ -443,12 +478,21 @@ class Settings(object):
             self.store.pop(key, None)
 
     def unset_all(self, keys):  # pragma: no cover
-        """Unset based on a list of keys"""
+        """Unset based on a list of keys
+
+        :param keys: a list of keys
+        """
         for key in keys:
             self.unset(key)
 
     def set(self, key, value, loader_identifier=None, tomlfy=False):
-        """Set a value storing references for the loader"""
+        """Set a value storing references for the loader
+
+        :param key: The key to store
+        :param value: The value to store
+        :param loader_identifier: Optional loader name e.g: toml, yaml etc.
+        :param tomlfy: Bool define if value is parsed by toml (defaults False)
+        """
         value = parse_conf_data(value, tomlfy=tomlfy)
         if isinstance(value, dict):
             value = DynaBox(value, box_it_up=True)
@@ -471,18 +515,20 @@ class Settings(object):
     def update(self, data=None, loader_identifier=None,
                tomlfy=False, **kwargs):
         """
-        Update values in the current settings object without saving in stores
-        >>> from dynaconf import settings
-        >>> print settings.NAME
-        'Bruno'
-        >>> settings.update({'NAME': 'John'}, other_value=1)
-        >>> print settings.NAME
-        'John'
-        >>> print settings.OTHER_VALUE
-        1
+        Update values in the current settings object without saving in stores::
+
+            >>> from dynaconf import settings
+            >>> print settings.NAME
+            'Bruno'
+            >>> settings.update({'NAME': 'John'}, other_value=1)
+            >>> print settings.NAME
+            'John'
+            >>> print settings.OTHER_VALUE
+            1
 
         :param data: Data to be updated
         :param loader_identifier: Only to be used by custom loaders
+        :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param kwargs: extra values to update
         :return: None
         """
@@ -510,12 +556,18 @@ class Settings(object):
         return self._loaders
 
     def reload(self, env=None, silent=None):  # pragma: no cover
-        """Execute all loaders"""
+        """Clean end Execute all loaders"""
         self.clean()
         self.execute_loaders(env, silent)
 
     def execute_loaders(self, env=None, silent=None, key=None, filename=None):
-        """Execute all internal and registered loaders"""
+        """Execute all internal and registered loaders
+
+        :param env: The environment to load
+        :param silent: If loading erros is silenced
+        :param key: if provided load a single key
+        :param filename: optinal custom filename to load
+        """
         if key is None:
             default_loader(self, self._defaults)
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
@@ -528,7 +580,11 @@ class Settings(object):
             loader.load(self, env, silent=silent, key=key)
 
     def load_extra_yaml(self, env, silent, key):
-        """This is deprecated, kept for compat"""
+        """This is deprecated, kept for compat
+
+        .. deprecated:: 1.0.0
+            Use multiple settings files instead.
+        """
         if self.get('YAML') is not None:
             self.logger.warning(
                 "The use of YAML var is deprecated, please define multiple "
@@ -562,16 +618,19 @@ class Settings(object):
         $ dynaconf write redis -s DASHBOARD=1 -e premiumuser
         meaning: Any premium user has DASHBOARD feature enabled
 
-        In your program do:
+        In your program do::
 
-        # premium user has access to dashboard?
-        >>> if settings.flag('dashboard', 'premiumuser'):
-        ...     activate_dashboard()
+            # premium user has access to dashboard?
+            >>> if settings.flag('dashboard', 'premiumuser'):
+            ...     activate_dashboard()
 
         The value is ensured to be loaded fresh from redis server
 
         It also works with file settings but the recommended is redis
         as the data can be loaded once it is updated.
+
+        :param key: The flag name
+        :param env: The env to look for
         """
         env = env or self.GLOBAL_ENV_FOR_DYNACONF
         with self.using_env(env):

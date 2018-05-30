@@ -8,6 +8,8 @@ from dynaconf.utils.parse_conf import false_values
 
 
 def default_loader(obj, defaults=None):
+    """Loads default settings and check if there are overridings
+    exported as environment variables"""
     defaults = defaults or {}
     default_settings_values = {
         key: value
@@ -38,7 +40,15 @@ def default_loader(obj, defaults=None):
 
 def settings_loader(obj, settings_module=None, env=None,
                     silent=True, key=None, filename=None):
-    """Loads from defined settings module, path or yaml"""
+    """Loads from defined settings module
+
+    :param obj: A dynaconf instance
+    :param settings_module: A path or a list of paths e.g settings.toml
+    :param env: Env to look for data defaults: development
+    :param silent: Boolean to raise loading errors
+    :param key: Load a single key if provided
+    :param filename: optional filename to override the settings_module
+    """
     obj.logger.debug('executing settings_loader: %s', settings_module)
     settings_module = settings_module or obj.settings_module
     if not settings_module:  # pragma: no cover
@@ -135,7 +145,9 @@ def settings_loader(obj, settings_module=None, env=None,
 
 
 def enable_external_loaders(obj):
-    """Enable external service loaders like `VAULT_` and `REDIS_`"""
+    """Enable external service loaders like `VAULT_` and `REDIS_`
+    looks forenv variables like `REDIS_ENABLED_FOR_DYNACONF`
+    """
     for name, loader in ct.EXTERNAL_LOADERS.items():
         enabled = getattr(
             obj,

@@ -8,6 +8,7 @@ from dynaconf.utils import dictmerge, DynaconfDict, raw_logger
 
 
 def load(obj, settings_module, identifier='py', silent=False, key=None):
+    """Tries to import a python module"""
     obj.logger.debug('executing load_from_module: %s', settings_module)
     try:
         mod = importlib.import_module(settings_module)
@@ -46,7 +47,7 @@ def load(obj, settings_module, identifier='py', silent=False, key=None):
 
 
 def import_from_filename(filename, silent=False):  # pragma: no cover
-    """If settings_module is a path use this."""
+    """If settings_module is a filename path import it."""
     if not filename.endswith('.py'):
         filename = '{0}.py'.format(filename)
 
@@ -73,6 +74,12 @@ def import_from_filename(filename, silent=False):  # pragma: no cover
 
 
 def write(settings_path, settings_data, merge=True):
+    """Write data to a settings file.
+
+    :param settings_path: the filepath
+    :param settings_data: a dictionary with data
+    :param merge: boolean if existing file should be merged with new data
+    """
     if settings_path.exists() and merge:  # pragma: no cover
         existing = DynaconfDict()
         load(existing, str(settings_path))

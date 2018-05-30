@@ -61,4 +61,5 @@ clean:
 	python setup.py develop
 
 docs:
+	rm -rf docs/_build
 	@cd docs;make html

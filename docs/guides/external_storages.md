@@ -1,5 +1,11 @@
 # External storages
 
+An external storage is needed in some programs for scenarios like:
+
+1) Having a single storage for settings and distribute across multiple instances
+2) The need to change setings on the fly without redeploying or restarting the app (see [Feature Flags](feature_flag.html))
+3) Storing sensitive values in a safe sealed **Vault**
+
 ## Using REDIS
 
 1. Run a Redis server installed or via docker:
@@ -118,3 +124,9 @@ You can also use the Dynaconf writer via console
 ```bash
 $ dynaconf write vault -s password=123456
 ```
+
+## Custom Storages
+
+Do you want to store settings in other databases like NoSQL, Relational Databases or other services?
+
+Please see how to [extend dynaconf](extend.html) to add your custom loaders.

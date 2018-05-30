@@ -2,6 +2,8 @@
 
 The `$ dynaconf` cli provides some useful commands
 
+> **IMPORTANT** if you are using [Flask Extension](flask.html) the env var `FLASK_APP` must be defined to use the CLI, and if using [Django Extension](django.html) the `DJANGO_SETTINGS_MODULE` must be defined.
+
 ## dynaconf --help
 
 ```
@@ -12,10 +14,10 @@ Usage: dynaconf [OPTIONS] COMMAND [ARGS]...
 Options:
   --version  Show dynaconf version
   --docs     Open documentation in browser
+  --banner   Show awesome banner
   --help     Show this message and exit.
 
 Commands:
-  banner    Shows dynaconf awesome banner
   init      Inits a dynaconf project By default it...
   list      Lists all defined config values
   write     Writes data to specific source
@@ -26,9 +28,10 @@ Commands:
 
 Use init to easily configure your application configuration, once dynaconf is installed go to the root directory of your application and run:
 
+creates settings files in current directory
+
 ```
-# creates settings files in current directory
-$ dynaconf init -v key=value -v otherkey=othervalue -s token=1234 -e production
+$ dynaconf init -v key=value -v foo=bar -s token=1234 -e production
 ```
 
 The above command will create in the current directory
@@ -38,11 +41,11 @@ The above command will create in the current directory
 ```ini
 [default]
 KEY = "default"
-OTHERKEY = "default"
+FOO = "default"
 
 [production]
 KEY = "value"
-OTHERKEY = "othervalue"
+FOO = "bar"
 ```
 
 also `.secrets.toml`
@@ -68,7 +71,7 @@ And will include the `.secrets.toml` in the `.gitignore`
 .secrets.*
 ```
 
-> For sensitive data in production is recommended using [vault server](sensitive_secrets.html)
+> For sensitive data in production is recommended using [Vault Server](sensitive_secrets.html)
 
 ```
 Usage: dynaconf init [OPTIONS]
@@ -166,6 +169,8 @@ Then to fire the validation use:
 $ dynaconf validate
 ```
 
+If validates it returns status 0 (success) and this command can be called in your CI/CD/Deploy jobs.
+
 ## dynaconf --version
 
 returns dynaconf version
@@ -178,3 +183,21 @@ $ dynaconf --version
 ## dynaconf --docs
 
 Opens Dynaconf documentation in browser
+
+
+## dynaconf --banner
+
+Prints this awesome ascii made banner in the console :)
+
+```
+$ dynaconf --banner
+
+██████╗ ██╗   ██╗███╗   ██╗ █████╗  ██████╗ ██████╗ ███╗   ██╗███████╗
+██╔══██╗╚██╗ ██╔╝████╗  ██║██╔══██╗██╔════╝██╔═══██╗████╗  ██║██╔════╝
+██║  ██║ ╚████╔╝ ██╔██╗ ██║███████║██║     ██║   ██║██╔██╗ ██║█████╗
+██║  ██║  ╚██╔╝  ██║╚██╗██║██╔══██║██║     ██║   ██║██║╚██╗██║██╔══╝
+██████╔╝   ██║   ██║ ╚████║██║  ██║╚██████╗╚██████╔╝██║ ╚████║██║
+╚═════╝    ╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝
+
+Learn more at: http://github.com/rochacbruno/dynaconf
+```
