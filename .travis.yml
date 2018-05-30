@@ -8,7 +8,7 @@ jobs:
         - "python setup.py install"
       script:
         - dynaconf init -v FOO=running_on_travis -y
-        - dynaconf write toml -v OTHERVALUE=Hello_Travis
+        - dynaconf write toml -v OTHERVALUE=Hello_Travis -y
         - dynaconf list | grep -c running_on_travis
         - dynaconf list | grep -c Hello_Travis
         - dynaconf --version
