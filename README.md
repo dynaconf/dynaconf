@@ -1,4 +1,4 @@
-[![Dynaconf](/docs/_static/logo_big.svg)](http://dynaconf.readthedocs.io)
+[![Dynaconf](https://raw.githubusercontent.com/rochacbruno/dynaconf/master/docs/_static/logo_big.svg?sanitize=true)](http://dynaconf.readthedocs.io)
 
 > **dynaconf** - The **dyna**mic **conf**igurator for your Python Project
 

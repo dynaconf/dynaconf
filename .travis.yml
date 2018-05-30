@@ -1,6 +1,18 @@
 jobs:
   include:
 
+    - stage: Install and CLI test
+      language: python
+      python: "3.6"
+      install:
+        - "python setup.py install"
+      script:
+        - dynaconf init -v FOO=running_on_travis -y
+        - dynaconf write toml -v OTHERVALUE=Hello_Travis
+        - dynaconf list | grep -c running_on_travis
+        - dynaconf list | grep -c Hello_Travis
+        - dynaconf --version
+
     - stage: Python 3.4
       language: python
       python: "3.4"
