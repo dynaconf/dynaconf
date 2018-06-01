@@ -59,24 +59,25 @@ def settings_loader(obj, settings_module=None, env=None,
     else:
         files = [settings_module]
 
-    obj.logger.debug("Looking for files %s", files)
+    obj.logger.debug("Looking for %s", files)
 
     if filename is not None:
         files.append(filename)
 
     found_files = []
+    modules_names = []
     for item in files:
-        if item.endswith(ct.ALL_EXTENSIONS):
+        if item.endswith(ct.ALL_EXTENSIONS + ('.py',)):
             found = find_file(item)
             if found:
                 found_files.append(found)
         else:
-            # a bare python module name
-            found_files.append(item)
+            # a bare python module name w/o extension
+            modules_names.append(item)
 
     obj.logger.debug("Found files %s", found_files)
 
-    for mod_file in found_files:
+    for mod_file in (modules_names + found_files):
         # can be set to multiple files settings.py,settings.yaml,...
 
         # Cascade all loaders

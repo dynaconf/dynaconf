@@ -112,7 +112,8 @@ class BaseLoader(object):
                 try:
                     data = source_data[env.lower()]
                 except KeyError:
-                    if env != self.obj.get('GLOBAL_ENV_FOR_DYNACONF'):
+                    if env not in (self.obj.get('GLOBAL_ENV_FOR_DYNACONF'),
+                                   'GLOBAL'):
                         message = '%s_loader: %s env not defined in %s' % (
                             self.identifier, env, source_file)
                         if silent:
