@@ -301,16 +301,16 @@ def _list(env, key, more, loader):
 
 
 @main.command()
-@click.argument('to', '--to', required=True, type=click.Choice(WRITERS))
+@click.argument('to', required=True, type=click.Choice(WRITERS))
 @click.option('--vars', '_vars', '-v', multiple=True, default=None,
               help=(
                   'key values to be written '
-                  'e.g: `dynaconf write --to toml -e NAME=foo -e X=2'
+                  'e.g: `dynaconf write toml -e NAME=foo -e X=2'
               ))
 @click.option('--secrets', '_secrets', '-s', multiple=True, default=None,
               help=(
                   'secret key values to be written in .secrets '
-                  'e.g: `dynaconf write --to toml -s TOKEN=kdslmflds -s X=2'
+                  'e.g: `dynaconf write toml -s TOKEN=kdslmflds -s X=2'
               ))
 @click.option('--path', '-p', default=CWD,
               help='defaults to current directory/settings.{ext}')
