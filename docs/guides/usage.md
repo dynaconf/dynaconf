@@ -51,7 +51,7 @@ At any point in time, your application is operating in a given configuration env
 
 > You can also define **[custom environment]** and use the pseudo-envs **[default]** to provide comprehensive default values and **[global]** to provide global values to overrride in any other environment.
 
-Without any action, your applications by default run in the **[development]** environment. The environment can be changed via the `ÈNV_FOR_DYNACONF` environment variable. For example, to launch an application in the **[staging]** environment, we can run:
+Without any action, your applications by default run in the **[development]** environment. The environment can be changed via the `ENV_FOR_DYNACONF` environment variable. For example, to launch an application in the **[staging]** environment, we can run:
 
 ```bash
 export ENV_FOR_DYNACONF=staging
