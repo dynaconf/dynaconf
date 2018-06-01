@@ -56,7 +56,6 @@ class AafigTransform(transforms.Transform):
     default_priority = 500 # TODO
 
     def apply(self):
-        #print '>>>>>>>>>>>>>>>>>>>>>', self.document.transformer.components['writer']
         current_node = self.startnode
         details = current_node.details
         image_node = details['image_node']
@@ -64,7 +63,7 @@ class AafigTransform(transforms.Transform):
         text = current_node.rawsource
         #merge_defaults(options, self)
         # XXX: this is an ugly hack to find out the writer being used
-        print '>>>>>>>>>>>>>>>>>>>>>', self.document.transformer.components
+        print('>>>>>>>>>>>>>>>>>>>>>', self.document.transformer.components)
         if hasattr(self.document.settings, 'stylesheet_path'): # HTML
             options['format'] = 'png'
         else: # LaTeX
