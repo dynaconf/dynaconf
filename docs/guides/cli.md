@@ -127,10 +127,10 @@ Usage: dynaconf write [OPTIONS] TO
   Writes data to specific source
 
 Options:
-  -v, --vars TEXT     key values to be written e.g: `dynaconf write --to toml
+  -v, --vars TEXT     key values to be written e.g: `dynaconf write toml
                       -e NAME=foo -e X=2
   -s, --secrets TEXT  secret key values to be written in .secrets e.g:
-                      `dynaconf write --to toml -s TOKEN=kdslmflds -s X=2
+                      `dynaconf write toml -s TOKEN=kdslmflds -s X=2
   -p, --path TEXT     defaults to current directory/settings.{ext}
   -e, --env TEXT      env to write to defaults to DEVELOPMENT for files for
                       external sources like Redis and Vault it will be
