@@ -56,9 +56,6 @@ def raw_logger():
         )
     except ImportError:  # pragma: no cover
         logger = logging.getLogger("dynaconf")
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
         logger.setLevel(getattr(logging, level))
         return logger
 
