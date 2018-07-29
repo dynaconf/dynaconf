@@ -3,6 +3,12 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+1.0.3
+-----
+
+- Excluded example and tests from realease dist 
+- removed root logger configuration
+
 1.0.2
 -----
 - Improved docs
