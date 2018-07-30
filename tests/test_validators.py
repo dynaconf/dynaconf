@@ -16,6 +16,8 @@ PRESIDENT = 'Lula'
 PROJECT = 'hello_world'
 SALARY = 2000
 WORKS = 'validator'
+ZERO = 0
+FALSE = false
 
 [development]
 MYSQL_HOST = 'development.com'
@@ -102,7 +104,18 @@ def test_validators(tmpdir):
         ),
         Validator('PORT',
                   must_exist=True, ne=8000,
-                  when=Validator('MYSQL_HOST', eq='localhost'))
+                  when=Validator('MYSQL_HOST', eq='localhost')),
+        #
+        Validator(
+            'ZERO',
+            is_type_of=int,
+            eq=0,
+        ),
+        Validator(
+            'FALSE',
+            is_type_of=bool,
+            eq=False,
+        ),
     )
 
     assert settings.validators.validate() is None
