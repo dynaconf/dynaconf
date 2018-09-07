@@ -79,11 +79,18 @@ class FlaskDynaconf(object):
                 "install it with: pip install flask"
             )
         self.kwargs = kwargs
-        if 'GLOBAL_ENV_FOR_DYNACONF' not in kwargs:
-            kwargs['GLOBAL_ENV_FOR_DYNACONF'] = 'FLASK'
-        if 'ENV_FOR_DYNACONF' not in kwargs:
-            kwargs['ENV_FOR_DYNACONF'] = os.environ.get(
-                'FLASK_ENV', 'DEVELOPMENT').upper()
+
+        kwargs.setdefault('GLOBAL_ENV_FOR_DYNACONF', 'FLASK')
+
+        env_prefix = '{0}_ENV'.format(
+            kwargs['GLOBAL_ENV_FOR_DYNACONF']
+        )  # FLASK_ENV
+
+        kwargs.setdefault(
+            'ENV_FOR_DYNACONF',
+            os.environ.get(env_prefix, 'DEVELOPMENT').upper()
+        )
+
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config
         if app:

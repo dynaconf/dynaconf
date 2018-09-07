@@ -3,6 +3,12 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+1.0.5
+-----
+
+- Enhancements to Django and Flask Extensions to allow customized `DJANGO_ENV` and `FLASK_ENV` or `PROJECT_ENV` to switch environments
+- Added more documentation
+
 1.0.4
 -----
 
