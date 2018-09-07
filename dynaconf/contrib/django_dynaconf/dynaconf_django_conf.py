@@ -9,7 +9,6 @@ for key in dir(django_settings):
     dj['ORIGINAL_SETTINGS_MODULE'] = django_settings.SETTINGS_MODULE
 
 
-settings = LazySettings(
-    GLOBAL_ENV_FOR_DYNACONF='DJANGO',
-    **dj
-)
+dj.setdefault('GLOBAL_ENV_FOR_DYNACONF', 'DJANGO')
+
+settings = LazySettings(**dj)
