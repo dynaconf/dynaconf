@@ -3,6 +3,12 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
+1.0.4
+-----
+
+- Fix Django definition of GLOBAL_ENV 
+- Fix in __getitem__ method
+
 1.0.3
 -----
 
