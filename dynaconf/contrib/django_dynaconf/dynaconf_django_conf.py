@@ -1,3 +1,4 @@
+import os
 from dynaconf import LazySettings
 from django.conf import settings as django_settings
 
@@ -10,5 +11,14 @@ for key in dir(django_settings):
 
 
 dj.setdefault('GLOBAL_ENV_FOR_DYNACONF', 'DJANGO')
+
+env_prefix = '{0}_ENV'.format(
+    dj['GLOBAL_ENV_FOR_DYNACONF']
+)  # DJANGO_ENV
+
+dj.setdefault(
+    'ENV_FOR_DYNACONF',
+    os.environ.get(env_prefix, 'DEVELOPMENT').upper()
+)
 
 settings = LazySettings(**dj)
