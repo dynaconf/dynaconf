@@ -22,8 +22,8 @@ Release v\ |version|. (`Installation`_)
 .. image:: https://img.shields.io/pypi/v/dynaconf.svg
     :target: https://pypi.org/project/dynaconf/
 
-.. image:: https://img.shields.io/codacy/grade/5074f5d870a24ddea79def463453545b.svg
-     :target: https://www.codacy.com/app/rochacbruno/dynaconf/dashboard
+.. image:: https://api.codacy.com/project/badge/Grade/5074f5d870a24ddea79def463453545b    
+    :target: https://www.codacy.com/app/rochacbruno/dynaconf?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rochacbruno/dynaconf&amp;utm_campaign=Badge_Grade
 
 .. image:: https://img.shields.io/badge/Say%20Thanks!-🦉-1EAEDB.svg
     :target: https://saythanks.io/to/rochacbruno

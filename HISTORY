@@ -3,7 +3,10 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
-1.0.6 - Unreleased
+1.0.7 - Unreleased
+-----
+
+1.0.6
 -----
 
 - Fixed issue #81 -  added ENCODING_FOR_DYNACONF to handle different settings files encodings specially on Windows

@@ -21,7 +21,7 @@ import os
 import sys
 import datetime
 sys.path.insert(0, os.path.abspath('.'))
-from dynaconf.cli import read
+from dynaconf.cli import read_file_in_root_directory as read
 from django.conf import settings
 settings.configure()
 
