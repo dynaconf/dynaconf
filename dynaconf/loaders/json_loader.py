@@ -1,4 +1,6 @@
 # coding: utf-8
+import io
+from dynaconf import default_settings
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.constants import JSON_EXTENSIONS
 from dynaconf.utils import dictmerge
@@ -34,9 +36,22 @@ def write(settings_path, settings_data, merge=True):
     :param settings_data: a dictionary with data
     :param merge: boolean if existing file should be merged with new data
     """
+
     if settings_path.exists() and merge:  # pragma: no cover
         settings_data = dictmerge(
-            json.load(open(str(settings_path))),
+            json.load(
+                io.open(
+                    str(settings_path),
+                    encoding=default_settings.ENCODING_FOR_DYNACONF
+                )
+            ),
             settings_data
         )
-    json.dump(settings_data, open(str(settings_path), 'w'))
+
+    json.dump(
+        settings_data,
+        io.open(
+            str(settings_path), 'w',
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        )
+    )

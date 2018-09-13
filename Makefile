@@ -2,6 +2,7 @@
 
 test_examples:
 	@cd example/common;pwd;python program.py
+	@cd example/common-encoding;pwd;python program.py
 	@cd example/;pwd;python full_example.py | grep -c full_example
 	@cd example/;pwd;python compat.py
 	@cd example/app;pwd;python app.py | grep -c app

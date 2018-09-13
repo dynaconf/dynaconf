@@ -1,4 +1,6 @@
 # coding: utf-8
+import io
+from dynaconf import default_settings
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.constants import INI_EXTENSIONS
 from dynaconf.utils import dictmerge
@@ -43,7 +45,12 @@ def write(settings_path, settings_data, merge=True):
     """
     if settings_path.exists() and merge:  # pragma: no cover
         settings_data = dictmerge(
-            ConfigObj(open(str(settings_path))).dict(),
+            ConfigObj(
+                io.open(
+                    str(settings_path),
+                    encoding=default_settings.ENCODING_FOR_DYNACONF
+                )
+            ).dict(),
             settings_data
         )
     new = ConfigObj()
