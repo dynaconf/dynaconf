@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5074f5d870a24ddea79def463453545b)](https://app.codacy.com/app/rochacbruno/dynaconf?utm_source=github.com&utm_medium=referral&utm_content=rochacbruno/dynaconf&utm_campaign=Badge_Grade_Dashboard)
 [![Dynaconf](https://raw.githubusercontent.com/rochacbruno/dynaconf/master/docs/_static/logo_big.svg?sanitize=true)](http://dynaconf.readthedocs.io)
 
 > **dynaconf** - The **dyna**mic **conf**igurator for your Python Project
