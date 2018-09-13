@@ -1,8 +1,10 @@
+import io
 import os
 import pytest
 from pathlib import Path
 from click.testing import CliRunner
-from dynaconf.cli import main, EXTS, WRITERS, ENVS, read
+from dynaconf import default_settings
+from dynaconf.cli import main, EXTS, WRITERS, ENVS, read_file_in_root_directory
 from dotenv import cli as dotenv_cli
 
 
@@ -16,7 +18,7 @@ def run(cmd):
 
 
 def test_version():
-    assert read('VERSION') in run(['--version'])
+    assert read_file_in_root_directory('VERSION') in run(['--version'])
 
 
 def test_help():
@@ -49,7 +51,11 @@ def test_init(fileformat):
 
     sets = Path(path)
     assert sets.exists() is True
-    assert 'bruno' in open(str(sets)).read()
+
+    assert 'bruno' in io.open(
+        str(sets),
+        encoding=default_settings.ENCODING_FOR_DYNACONF
+    ).read()
 
     if fileformat != 'env':
         os.remove(str(sets))
@@ -59,7 +65,10 @@ def test_init(fileformat):
     if secs_path:
         secs = Path('.secrets.{}'.format(fileformat))
         assert secs.exists() is True
-        assert 'TOKEN' in open(str(secs)).read()
+        assert 'TOKEN' in io.open(
+            str(secs),
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        ).read()
         os.remove(str(secs))
 
 
@@ -85,17 +94,26 @@ def test_init_with_path(fileformat, tmpdir):
 
     sets = Path(str(path))
     assert sets.exists() is True
-    assert 'value for development' in open(str(sets)).read()
+    assert 'value for development' in io.open(
+        str(sets),
+        encoding=default_settings.ENCODING_FOR_DYNACONF
+    ).read()
 
     if secs_path:
         secs = Path(str(secs_path))
         assert secs.exists() is True
-        assert 'secret for' in open(str(secs)).read()
+        assert 'secret for' in io.open(
+            str(secs),
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        ).read()
 
     if fileformat != 'env':
         gign = Path(str(tmpdir.join('.gitignore')))
         assert gign.exists() is True
-        assert ".secrets.*" in open(str(gign)).read()
+        assert ".secrets.*" in io.open(
+            str(gign),
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        ).read()
 
 
 def test_list():
@@ -175,12 +193,24 @@ def test_write(writer, env, onlydir, tmpdir):
     )
     if writer != 'env':
         assert "Data successful written to {}".format(settingspath) in result
-        assert "TESTVALUE" in open(str(settingspath)).read()
-        assert "SECRETVALUE" in open(str(secretfile)).read()
+        assert "TESTVALUE" in io.open(
+            str(settingspath),
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        ).read()
+        assert "SECRETVALUE" in io.open(
+            str(secretfile),
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        ).read()
     else:
         assert "Data successful written to {}".format(env_file) in result
-        assert "TESTVALUE" in open(str(env_file)).read()
-        assert "SECRETVALUE" in open(str(env_file)).read()
+        assert "TESTVALUE" in io.open(
+            str(env_file),
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        ).read()
+        assert "SECRETVALUE" in io.open(
+            str(env_file),
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        ).read()
 
 
 @pytest.mark.parametrize("path", ('.env', './.env'))
@@ -199,8 +229,14 @@ def test_write_dotenv(path, tmpdir):
     )
 
     assert "Data successful written to {}".format(env_file) in result
-    assert "TESTVALUE" in open(str(env_file)).read()
-    assert "SECRETVALUE" in open(str(env_file)).read()
+    assert "TESTVALUE" in io.open(
+        str(env_file),
+        encoding=default_settings.ENCODING_FOR_DYNACONF
+    ).read()
+    assert "SECRETVALUE" in io.open(
+        str(env_file),
+        encoding=default_settings.ENCODING_FOR_DYNACONF
+    ).read()
 
 
 VALIDATION = """

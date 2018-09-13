@@ -1,0 +1,15 @@
+[default]
+encoded_variable="This has accents like ç and ã é ó ú just to test encoding à"
+port = 5555
+[development]
+server = 'devserver.com'
+[production]
+server = 'prodserver.com'
+[staging]
+server = 'stagserver.com'
+[testing]
+server = 'testserver.com'
+[mycustomenv]
+server = 'customserver.com'
+[global]
+username = 'admin'

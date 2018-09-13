@@ -9,7 +9,9 @@ Dynaconf can be configured through variables suffixed with `_FOR_DYNACONF` those
 +-----------------+---------+--------------------------------------------------+-------------------------+--------------------------------------------------------------+
 | PROJECT_ROOT    | str     | Directory to look for settings                   | "."                     | PROJECT_ROOT_FOR_DYNACONF="/tmp"                             |
 +-----------------+---------+--------------------------------------------------+-------------------------+--------------------------------------------------------------+
-| SETTINGS_MODULE | str     | List of comma separated files to load            | List of supportes files | SETTINGS_MODULE_FOR_DYNACONF= "config.toml,settings.yaml"    |
+| ENCODING        | str     | Encoding to read settings files                  | utf-8                   | ENCODING_FOR_DYNACONF="cp1252"                               |
++-----------------+---------+--------------------------------------------------+-------------------------+--------------------------------------------------------------+
+| SETTINGS_MODULE | str     | List of comma separated files to load            | List of supportes files | SETTINGS_MODULE_FOR_DYNACONF="config.toml,settings.yaml"     |
 +-----------------+---------+--------------------------------------------------+-------------------------+--------------------------------------------------------------+
 | ENV             | str     | Working environment                              | "development"           | ENV_FOR_DYNACONF=production                                  |
 +-----------------+---------+--------------------------------------------------+-------------------------+--------------------------------------------------------------+

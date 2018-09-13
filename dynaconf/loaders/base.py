@@ -1,4 +1,5 @@
 # coding: utf-8
+import io
 from dynaconf.utils.files import find_file
 from dynaconf.utils import raw_logger
 
@@ -83,7 +84,12 @@ class BaseLoader(object):
             if source_file.endswith(self.extensions):  # pragma: no cover
                 try:
                     source_data = self.file_reader(
-                        open(find_file(source_file))
+                        io.open(
+                            find_file(source_file),
+                            encoding=self.obj.get(
+                                'ENCODING_FOR_DYNACONF', 'utf-8'
+                            )
+                        )
                     )
                     self.obj.logger.debug('{}_loader: {}'.format(
                         self.identifier, source_file))

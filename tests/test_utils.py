@@ -1,7 +1,9 @@
 # coding: utf-8
+import io
 import os
 import pytest
 import tempfile
+from dynaconf import default_settings
 from dynaconf.utils.parse_conf import unparse_conf_data, parse_conf_data
 from dynaconf.utils.files import find_file
 
@@ -58,7 +60,10 @@ def test_find_file():
 
     # now place a .env file a few levels up and make sure it's found
     filename = os.path.join(child1, '.env')
-    with open(filename, 'w') as f:
+    with io.open(
+        filename, 'w',
+        encoding=default_settings.ENCODING_FOR_DYNACONF
+    ) as f:
         f.write("TEST=test\n")
     assert find_file(usecwd=True) == filename
 

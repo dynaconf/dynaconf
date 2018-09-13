@@ -1,3 +1,4 @@
+import io
 import os
 import errno
 import types
@@ -59,7 +60,10 @@ def import_from_filename(filename, silent=False):  # pragma: no cover
     mod.__file__ = filename
     mod._is_error = False
     try:
-        with open(find_file(filename)) as config_file:
+        with io.open(
+            find_file(filename),
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        ) as config_file:
             exec(
                 compile(config_file.read(), filename, 'exec'),
                 mod.__dict__
@@ -89,7 +93,10 @@ def write(settings_path, settings_data, merge=True):
             existing,
             settings_data
         )
-    with open(str(settings_path), 'w') as f:
+    with io.open(
+        str(settings_path), 'w',
+        encoding=default_settings.ENCODING_FOR_DYNACONF
+    ) as f:
         f.writelines(
             ["{} = {}\n".format(k.upper(), repr(v))
              for k, v in settings_data.items()]

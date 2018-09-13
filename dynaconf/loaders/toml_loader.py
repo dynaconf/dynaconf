@@ -1,4 +1,6 @@
 # coding: utf-8
+import io
+from dynaconf import default_settings
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.constants import TOML_EXTENSIONS
 from dynaconf.utils import dictmerge
@@ -43,7 +45,19 @@ def write(settings_path, settings_data, merge=True):
     """
     if settings_path.exists() and merge:  # pragma: no cover
         settings_data = dictmerge(
-            toml.load(open(str(settings_path))),
+            toml.load(
+                io.open(
+                    str(settings_path),
+                    encoding=default_settings.ENCODING_FOR_DYNACONF
+                )
+            ),
             settings_data
         )
-    toml.dump(settings_data, open(str(settings_path), 'w'))
+
+    toml.dump(
+        settings_data,
+        io.open(
+            str(settings_path), 'w',
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        )
+    )

@@ -46,6 +46,8 @@ ENVS = ['default', 'development', 'staging', 'testing', 'production', 'global']
 EXTS = ['ini', 'toml', 'yaml', 'json', 'py', 'env']
 WRITERS = ['ini', 'toml', 'yaml', 'json', 'py', 'redis', 'vault', 'env']
 
+ENC = default_settings.ENCODING_FOR_DYNACONF
+
 
 def split_vars(_vars):
     """Splits values like foo=bar=zaz in {'foo': 'bar=zaz'}"""
@@ -56,18 +58,18 @@ def split_vars(_vars):
     } if _vars else {}
 
 
-def read(*names, **kwargs):
+def read_file_in_root_directory(*names, **kwargs):
     """Read a file."""
     return io.open(
         os.path.join(os.path.dirname(__file__), *names),
-        encoding=kwargs.get('encoding', 'utf8')
+        encoding=kwargs.get('encoding', 'utf-8')
     ).read().strip()
 
 
 def print_version(ctx, param, value):
     if not value or ctx.resilient_parsing:
         return
-    click.echo(read('VERSION'))
+    click.echo(read_file_in_root_directory('VERSION'))
     ctx.exit()
 
 
@@ -221,12 +223,14 @@ def init(fileformat, path, env, _vars, _secrets, wg, y):
         ignore_line = ".secrets.*"
         comment = "\n# Ignore dynaconf secret files\n"
         if not gitignore_path.exists():
-            with open(str(gitignore_path), 'w') as f:
+            with io.open(str(gitignore_path), 'w', encoding=ENC) as f:
                 f.writelines([comment, ignore_line, '\n'])
         else:
-            existing = ignore_line in open(str(gitignore_path)).read()
+            existing = ignore_line in io.open(
+                str(gitignore_path), encoding=ENC
+            ).read()
             if not existing:  # pragma: no cover
-                with open(str(gitignore_path), 'a+') as f:
+                with io.open(str(gitignore_path), 'a+', encoding=ENC) as f:
                     f.writelines(
                         [comment, ignore_line, '\n']
                     )
