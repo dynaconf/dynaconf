@@ -12,17 +12,19 @@ BANNER = """
 """
 
 
-def dictmerge(old, new):
+def object_merge(old, new):
     """
-    Recursively update a dict.
-    Subdict's won't be overwritten but also updated.
+    Recursively merge two data structures
     """
-    for key, value in old.items():
-        if key not in new:
-            new[key] = value
-        elif isinstance(value, dict):
-            dictmerge(value, new[key])
-    return new
+    if isinstance(old, list) and isinstance(new, list):
+        for item in old[::-1]:
+            new.insert(0, item)
+    if isinstance(old, dict) and isinstance(new, dict):
+        for key, value in old.items():
+            if key not in new:
+                new[key] = value
+            else:
+                object_merge(value, new[key])
 
 
 class DynaconfDict(dict):

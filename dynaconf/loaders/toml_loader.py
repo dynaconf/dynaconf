@@ -3,7 +3,7 @@ import io
 from dynaconf import default_settings
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.constants import TOML_EXTENSIONS
-from dynaconf.utils import dictmerge
+from dynaconf.utils import object_merge
 try:
     import toml
 except ImportError as e:  # pragma: no cover
@@ -44,7 +44,7 @@ def write(settings_path, settings_data, merge=True):
     :param merge: boolean if existing file should be merged with new data
     """
     if settings_path.exists() and merge:  # pragma: no cover
-        settings_data = dictmerge(
+        object_merge(
             toml.load(
                 io.open(
                     str(settings_path),

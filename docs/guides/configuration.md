@@ -29,6 +29,8 @@ Dynaconf can be configured through variables suffixed with `_FOR_DYNACONF` those
 +-----------------+---------+--------------------------------------------------+-------------------------+--------------------------------------------------------------+
 | AUTO_CAST       | bool    | `@casting` like `@int` is parsed                 | true                    | DOTENV_OVERRIDE_FOR_DYNACONF=false                           |
 +-----------------+---------+--------------------------------------------------+-------------------------+--------------------------------------------------------------+
+| MERGE_ENABLED   | bool    | Merge vars instead of overwriting them           | false                   | MERGE_ENABLED_FOR_DYNACONF=true                              |
++-----------------+---------+--------------------------------------------------+-------------------------+--------------------------------------------------------------+
 | REDIS_ENABLED   | bool    | Redis loader is enabled                          | false                   | REDIS_ENABLED_FOR_DYNACONF=true                              |
 +-----------------+---------+--------------------------------------------------+-------------------------+--------------------------------------------------------------+
 | VAULT_ENABLED   | bool    | Vault server is enabled                          | false                   | VAULT_ENABLED_FOR_DYNACONF=true                              |
