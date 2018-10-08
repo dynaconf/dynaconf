@@ -10,7 +10,7 @@ this extension makes your Django's `conf.settings` in to a `dynaconf` instance.
 In your django project's `settings.py` include:
 
 ```python
-# *Django `check` requires this before loading isntalled apps, this can be overwriten by dynaconf later
+# *Django `check` requires this before loading installed apps, this can be overwriten by dynaconf later
 SECRET_KEY = True  
 
 # Load dynaconf
