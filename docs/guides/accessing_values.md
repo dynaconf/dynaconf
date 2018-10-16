@@ -41,6 +41,20 @@ settings.get('TIMEOUT', 300)
 
 > Returns the default (300) if not defined
 
+Using dotted-path lookup
+
+```python
+settings.get('AUTH.USER', 'anonymous')
+```
+
+> Returns the default ('anonymous') if not defined
+
+Explicitly disabling dotted-path lookup
+
+```python
+settings.get('AUTH.USER', dotted_lookup=False)
+```
+
 ## Forcing type casting
 
 ```python

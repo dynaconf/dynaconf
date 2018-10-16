@@ -176,3 +176,26 @@ def test_set(settings):
 def test_exists(settings):
     settings.set('BOOK', 'TAOCP')
     assert settings.exists('BOOK') == True
+
+
+def test_dotted_traversal_access(settings):
+    settings.set('PARAMS', {'PASSWORD': 'secret', 'SSL': {'CONTEXT': 'SECURE'}})
+    assert settings.get('PARAMS') == {
+        'PASSWORD': 'secret',
+        'SSL': {
+            'CONTEXT': 'SECURE'
+        }
+    }
+
+    assert settings('PARAMS.PASSWORD') == 'secret'
+    assert settings('PARAMS.TOKEN.IMAGINARY', 1234) == 1234
+    assert settings('IMAGINARY_KEY') is None
+
+    assert settings['PARAMS.PASSWORD'] == 'secret'
+
+    # Dotted traversal should not work for dictionary-like key access.
+    with pytest.raises(KeyError):
+        settings['PARAMS.DOESNOTEXIST']
+
+    # Disable dot-traversal on a per-call basis.
+    assert settings('PARAMS.PASSWORD', dotted_lookup=False) is None
