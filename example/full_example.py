@@ -54,4 +54,7 @@ print(settings.get('FOO', default='bar'))
 print("\nThe host for default :")
 print(settings.HOSTNAME)
 
+print("\nDotted path lookup value :")
+print(settings('ADICT.KEY'))
+
 print(settings.WORKS)
