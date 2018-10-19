@@ -85,6 +85,9 @@ GLOBAL_ENV_FOR_DYNACONF = get('GLOBAL_ENV_FOR_DYNACONF', 'DYNACONF')
 # The default encoding to open settings files
 ENCODING_FOR_DYNACONF = get('ENCODING_FOR_DYNACONF', 'utf-8')
 
+# Merge objects on load
+MERGE_ENABLED_FOR_DYNACONF = get('MERGE_ENABLED_FOR_DYNACONF', False)
+
 # The env var specifying settings module
 ENVVAR_FOR_DYNACONF = get('ENVVAR_FOR_DYNACONF',
                           'SETTINGS_MODULE_FOR_DYNACONF')

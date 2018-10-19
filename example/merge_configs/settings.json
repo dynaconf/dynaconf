@@ -1,0 +1,22 @@
+{
+    "default": {
+        "json_var": 1, 
+        "a_big_dict": {
+            "file": {"settings.json.default": true},
+            "nested_1": {
+                "nested_2": {
+                    "nested_3": {
+                        "nested_4": {
+                            "json": true
+                        }
+                    }
+                }
+            } 
+        }
+    },
+    "global": { 
+        "a_big_dict": {
+            "file": {"settings.json.global": true}
+        }
+    }
+}

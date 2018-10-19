@@ -14,7 +14,7 @@ from dynaconf.loaders import (
 )
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data, true_values
-from dynaconf.utils import BANNER, compat_kwargs, raw_logger
+from dynaconf.utils import BANNER, compat_kwargs, raw_logger, object_merge
 from dynaconf.validator import ValidatorList
 from dynaconf.utils.boxing import DynaBox
 
@@ -494,10 +494,15 @@ class Settings(object):
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         """
         value = parse_conf_data(value, tomlfy=tomlfy)
+        key = key.strip().upper()
+
+        if getattr(self, 'MERGE_ENABLED_FOR_DYNACONF', False):
+            attr = getattr(self, key, None)
+            object_merge(attr, value)
+
         if isinstance(value, dict):
             value = DynaBox(value, box_it_up=True)
 
-        key = key.strip().upper()
         setattr(self, key, value)
         self.store[key] = value
         self._deleted.discard(key)

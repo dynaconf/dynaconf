@@ -5,7 +5,7 @@ import types
 import importlib
 from dynaconf import default_settings
 from dynaconf.utils.files import find_file
-from dynaconf.utils import dictmerge, DynaconfDict, raw_logger
+from dynaconf.utils import DynaconfDict, object_merge, raw_logger
 
 
 def load(obj, settings_module, identifier='py', silent=False, key=None):
@@ -89,7 +89,7 @@ def write(settings_path, settings_data, merge=True):
     if settings_path.exists() and merge:  # pragma: no cover
         existing = DynaconfDict()
         load(existing, str(settings_path))
-        settings_data = dictmerge(
+        object_merge(
             existing,
             settings_data
         )

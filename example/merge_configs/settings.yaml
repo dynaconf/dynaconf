@@ -1,0 +1,10 @@
+default:
+  yaml_var: 1
+  a_big_dict:
+    file:
+      settings.yaml: true
+    nested_1:
+      nested_2:
+        nested_3:
+          nested_4:
+            yaml: true

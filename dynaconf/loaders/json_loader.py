@@ -3,7 +3,7 @@ import io
 from dynaconf import default_settings
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.constants import JSON_EXTENSIONS
-from dynaconf.utils import dictmerge
+from dynaconf.utils import object_merge
 import json
 
 
@@ -38,7 +38,7 @@ def write(settings_path, settings_data, merge=True):
     """
 
     if settings_path.exists() and merge:  # pragma: no cover
-        settings_data = dictmerge(
+        object_merge(
             json.load(
                 io.open(
                     str(settings_path),

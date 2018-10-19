@@ -68,12 +68,13 @@ def test_find_file():
     assert find_file(usecwd=True) == filename
 
 
-def test_disable_cast():
+def test_disable_cast(monkeypatch):
     # this casts for int
     assert parse_conf_data('@int 42') == 42
     # now gives pure string
-    os.environ['AUTO_CAST_FOR_DYNACONF'] = 'off'
-    assert parse_conf_data('@int 42') == '@int 42'
+    with monkeypatch.context() as m:
+        m.setenv('AUTO_CAST_FOR_DYNACONF', 'off')
+        assert parse_conf_data('@int 42') == '@int 42'
 
 
 def test_tomlfy():
@@ -86,4 +87,4 @@ def test_tomlfy():
     assert parse_conf_data("['a', 'b', 'c']", tomlfy=True) == ['a', 'b', 'c']
     assert parse_conf_data("[true, false]", tomlfy=True) == [True, False]
     assert parse_conf_data("{key='value', v=1}", tomlfy=True
-        ) == {'key': 'value', 'v': 1}
+                           ) == {'key': 'value', 'v': 1}
