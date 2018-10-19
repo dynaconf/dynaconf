@@ -1,0 +1,18 @@
+[default]
+tml_var=1
+
+  [default.a_big_dict.file]
+  'settings.tml.default' = true
+
+[production]
+tml_prod_var=2
+
+  [production.a_big_dict.file]
+  comment = 'This should not be merged unless ENV=production'
+  'settings.tml.production' = true
+
+[global]
+tml_global_var=3
+
+  [global.a_big_dict.file]
+  'settings.tml.global' = true

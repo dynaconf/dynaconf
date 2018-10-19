@@ -1,0 +1,21 @@
+[default]
+toml_var=1
+
+  [default.a_big_dict.file]
+  'settings.toml.default' = true
+
+  [default.a_big_dict.nested_1.nested_2.nested_3.nested_4]
+  toml = true
+
+[production]
+toml_prod_var=2
+
+  [production.a_big_dict.file]
+  comment = 'This should not be merged unless ENV=production'
+  'settings.toml.production' = true
+
+[global]
+toml_global_var=3
+
+  [global.a_big_dict.file]
+  'settings.toml.global' = true

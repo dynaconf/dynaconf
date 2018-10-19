@@ -7,6 +7,7 @@ test_examples:
 	@cd example/;pwd;python compat.py
 	@cd example/app;pwd;python app.py | grep -c app
 	@cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv
+	@cd example/merge_configs;pwd;python app.py | grep -c merge_configs
 	@cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources
 	@cd example/toml_example/;pwd;python app.py | grep -c toml_example
 	@cd example/yaml_example/settings_module/;pwd;python app.py | grep -c yaml_example
