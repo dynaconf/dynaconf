@@ -438,7 +438,7 @@ class Settings(object):
             self.ENVVAR_FOR_DYNACONF,
             self.SETTINGS_MODULE_FOR_DYNACONF
         )
-        if settings_module != self.SETTINGS_MODULE:
+        if settings_module != getattr(self, 'SETTINGS_MODULE', None):
             self.set('SETTINGS_MODULE', settings_module)
         return self.SETTINGS_MODULE
 

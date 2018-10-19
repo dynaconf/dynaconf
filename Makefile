@@ -9,6 +9,7 @@ test_examples:
 	@cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv
 	@cd example/merge_configs;pwd;python app.py | grep -c merge_configs
 	@cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources
+	@cd example/multiple_folders;pwd;python app.py | grep -c var2_prod
 	@cd example/toml_example/;pwd;python app.py | grep -c toml_example
 	@cd example/yaml_example/settings_module/;pwd;python app.py | grep -c yaml_example
 	@cd example/yaml_example/yaml_as_extra_config/;pwd;python app.py | grep -c yaml_as_extra_config
