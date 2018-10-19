@@ -175,13 +175,78 @@ def test_set(settings):
 
 def test_set_merge(settings):
     settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
-    settings.set("MERGE_KEY", {"items": [{"name": "item 1"}, {"name": "item 2"}]})
-    settings.set("MERGE_KEY", {"items": [{"name": "item 3"}, {"name": "item 4"}]})
+    settings.set("MERGE_KEY", {
+        "items": [{"name": "item 1"}, {"name": "item 2"}]
+    })
+    settings.set("MERGE_KEY", {
+        "items": [{"name": "item 3"}, {"name": "item 4"}]
+    })
     assert settings.MERGE_KEY == {
-        "items": [{"name": "item 1"}, {"name": "item 2"}, {"name": "item 3"}, {"name": "item 4"}]
+        "items": [
+            {"name": "item 1"}, {"name": "item 2"},
+            {"name": "item 3"}, {"name": "item 4"}
+        ]
     }
 
 
 def test_exists(settings):
-    settings.set("BOOK", "TAOCP")
-    assert settings.exists("BOOK") is True
+    settings.set('BOOK', 'TAOCP')
+    assert settings.exists('BOOK') is True
+
+
+def test_dotted_traversal_access(settings):
+    settings.set(
+        'PARAMS',
+        {
+            'PASSWORD': 'secret',
+            'SSL': {'CONTEXT': 'SECURE'},
+            'DOTTED.KEY': True
+        }
+    )
+    assert settings.get('PARAMS') == {
+        'PASSWORD': 'secret',
+        'SSL': {
+            'CONTEXT': 'SECURE'
+        },
+        'DOTTED.KEY': True
+    }
+
+    assert settings('PARAMS.PASSWORD') == 'secret'
+    assert settings('PARAMS.SSL.CONTEXT') == 'SECURE'
+    assert settings('PARAMS.TOKEN.IMAGINARY', 1234) == 1234
+    assert settings('IMAGINARY_KEY.FOO') is None
+    assert settings('IMAGINARY_KEY') is None
+
+    assert settings['PARAMS.PASSWORD'] == 'secret'
+    assert settings['PARAMS.SSL.CONTEXT'] == 'SECURE'
+    assert settings.PARAMS.SSL.CONTEXT == 'SECURE'
+
+    # Dotted traversal should not work for dictionary-like key access.
+    with pytest.raises(KeyError):
+        settings['PARAMS.DOESNOTEXIST']
+
+    # Disable dot-traversal on a per-call basis.
+    assert settings('PARAMS.PASSWORD', dotted_lookup=False) is None
+
+    assert settings('PARAMS.DOTTED.KEY') is None
+    assert settings('PARAMS').get('DOTTED.KEY') is True
+
+    settings.set('DOTTED.KEY', True)
+    assert settings('DOTTED.KEY', dotted_lookup=False) is True
+
+    settings.set(
+        'NESTED_1',
+        {
+            "nested_2": {
+                "nested_3": {
+                    "nested_4": True
+                }
+            }
+        }
+    )
+
+    assert settings.NESTED_1.nested_2.nested_3.nested_4 is True
+    assert settings['NESTED_1.nested_2.nested_3.nested_4'] is True
+    assert settings('NESTED_1.nested_2.nested_3.nested_4') is True
+    # First key is always transformed to upper()
+    assert settings('nested_1.nested_2.nested_3.nested_4') is True

@@ -155,6 +155,7 @@ class Settings(object):
         self.environ = os.environ
         self.SETTINGS_MODULE = None
         self._not_installed_warnings = []
+        self._memoized = None
 
         compat_kwargs(kwargs)
         if settings_module:
@@ -210,7 +211,26 @@ class Settings(object):
         """Redirects to store object"""
         return self.store.values()
 
-    def get(self, key, default=None, cast=None, fresh=False):
+    def _dotted_get(self, dotted_key, default=None, **kwargs):
+        """
+        Perform dotted key lookups and keep track of where we are.
+        """
+        split_key = dotted_key.split('.')
+        name, keys = split_key[0], split_key[1:]
+        result = self.get(name, default=default, **kwargs)
+        self._memoized = result
+
+        # If we've reached the end, then return result and clear the
+        # memoized data.
+        if not keys or result is default:
+            self._memoized = None
+            return result
+
+        # If we've still got key elements to traverse, let's do that.
+        return self._dotted_get(".".join(keys), default=default, **kwargs)
+
+    def get(self, key, default=None, cast=None, fresh=False,
+            dotted_lookup=True):
         """
         Get a value from settings store, this is the prefered way to access::
 
@@ -221,9 +241,15 @@ class Settings(object):
         :param default: In case of not found it will be returned
         :param cast: Should cast in to @int, @float, @bool or @json ?
         :param fresh: Should reload from loaders store before access?
+        :param dotted_lookup: Should perform dotted-path lookup?
         :return: The value if found, default or None
         """
         key = key.upper()
+
+        if '.' in key and dotted_lookup:
+            return self._dotted_get(dotted_key=key, default=default, cast=cast,
+                                    fresh=fresh)
+
         if key in self._deleted:
             return default
 
@@ -233,7 +259,9 @@ class Settings(object):
         ):
             self.unset(key)
             self.execute_loaders(key=key)
-        data = self.store.get(key, default)
+
+        store = self._memoized or self.store
+        data = store.get(key, default)
         if cast:
             data = converters.get(cast)(data)
         return data
