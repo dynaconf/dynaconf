@@ -58,3 +58,6 @@ print("\nDotted path lookup value :")
 print(settings('ADICT.KEY'))
 
 print(settings.WORKS)
+
+print("\nDotted path set value :")
+print(settings.set('ONE.TWO', 'value'))

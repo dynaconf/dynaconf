@@ -514,7 +514,22 @@ class Settings(object):
         for key in keys:
             self.unset(key)
 
-    def set(self, key, value, loader_identifier=None, tomlfy=False):
+    def _dotted_set(self, dotted_key, value, tomlfy=False, **kwargs):
+
+        data = DynaBox(default_box=True)
+        tree = data
+        split_keys = dotted_key.split('.')
+
+        for k in split_keys[:-1]:
+            tree = tree.setdefault(k, {})
+
+        value = parse_conf_data(value, tomlfy=tomlfy)
+        tree[split_keys[-1]] = value
+
+        self.update(data=data, **kwargs)
+
+    def set(self, key, value, loader_identifier=None, tomlfy=False,
+            dotted_lookup=True):
         """Set a value storing references for the loader
 
         :param key: The key to store
@@ -522,6 +537,14 @@ class Settings(object):
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         """
+
+        if '.' in key and dotted_lookup is True:
+            return self._dotted_set(
+                key,
+                value,
+                loader_identifier=loader_identifier,
+                tomlfy=tomlfy)
+
         value = parse_conf_data(value, tomlfy=tomlfy)
         key = key.strip().upper()
 

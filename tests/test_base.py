@@ -201,7 +201,8 @@ def test_dotted_traversal_access(settings):
             'PASSWORD': 'secret',
             'SSL': {'CONTEXT': 'SECURE'},
             'DOTTED.KEY': True
-        }
+        },
+        dotted_lookup=False
     )
     assert settings.get('PARAMS') == {
         'PASSWORD': 'secret',
@@ -237,7 +238,7 @@ def test_dotted_traversal_access(settings):
     assert settings('PARAMS.DOTTED.KEY') is None
     assert settings('PARAMS').get('DOTTED.KEY') is True
 
-    settings.set('DOTTED.KEY', True)
+    settings.set('DOTTED.KEY', True, dotted_lookup=False)
     assert settings('DOTTED.KEY', dotted_lookup=False) is True
 
     settings.set(
@@ -256,3 +257,47 @@ def test_dotted_traversal_access(settings):
     assert settings('NESTED_1.nested_2.nested_3.nested_4') is True
     # First key is always transformed to upper()
     assert settings('nested_1.nested_2.nested_3.nested_4') is True
+
+
+def test_dotted_set(settings):
+
+    settings.set('nested_1.nested_2.nested_3.nested_4', 'secret')
+
+    assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == 'secret'
+    assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {'nested_4': 'secret'}
+    assert settings.NESTED_1.NESTED_2.to_dict() == {
+        'nested_3': {
+            'nested_4': 'secret'
+        }
+    }
+
+    assert settings.get('nested_1').to_dict() == {
+        'nested_2': {
+            'nested_3': {
+                'nested_4': 'secret'
+            }
+        }
+    }
+
+    with pytest.raises(KeyError):
+        settings.NESTED_1.NESTED_5
+
+
+def test_dotted_set_with_merge(settings):
+    settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
+
+    settings.set("MERGE.KEY", {
+        "items": [{"name": "item 1"}, {"name": "item 2"}]
+    })
+    settings.set("MERGE.KEY", {
+        "items": [{"name": "item 3"}, {"name": "item 4"}]
+    })
+
+    assert settings.MERGE.KEY == {
+        'items': [
+            {'name': 'item 1'},
+            {'name': 'item 2'},
+            {'name': 'item 3'},
+            {'name': 'item 4'},
+        ]
+    }
