@@ -14,3 +14,13 @@ PROJECT = 'hello_world'
 SALARY = 2000
 
 WORKS = 'validator'
+
+A_DICT = {
+    'NESTED_1': {
+        'NESTED_2': {
+            'NESTED_3': {
+                'NESTED_4': 1
+            }
+        }
+    }
+}

@@ -14,7 +14,13 @@ from dynaconf.loaders import (
 )
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data, true_values
-from dynaconf.utils import BANNER, compat_kwargs, raw_logger, object_merge
+from dynaconf.utils import (
+    BANNER,
+    compat_kwargs,
+    raw_logger,
+    object_merge,
+    missing
+)
 from dynaconf.validator import ValidatorList
 from dynaconf.utils.boxing import DynaBox
 
@@ -276,12 +282,7 @@ class Settings(object):
         key = key.upper()
         if key in self._deleted:
             return False
-        if (
-            (fresh or self._fresh or key in self.FRESH_VARS_FOR_DYNACONF) and
-            key not in dir(default_settings)
-        ):
-            self.execute_loaders(key=key)
-        return key in self.store
+        return self.get(key, fresh=fresh, default=missing) is not missing
 
     def get_fresh(self, key, default=None, cast=None):
         """This is a shortcut to `get(key, fresh=True)`. always reload from

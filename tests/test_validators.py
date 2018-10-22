@@ -135,6 +135,30 @@ def test_validators(tmpdir):
         Validator('A', when=1)
 
 
+def test_dotted_validators(settings):
+
+    settings.set(
+        'PARAMS',
+        {
+            'PASSWORD': 'secret',
+            'SSL': {
+                'CONTEXT': 'SECURE',
+                'ENABLED': True
+            },
+        }
+    )
+
+    settings.validators.register(
+        Validator('PARAMS', must_exist=True,  is_type_of=dict),
+        Validator('PARAMS.PASSWORD', must_exist=True, is_type_of=str),
+        Validator('PARAMS.SSL', must_exist=True, is_type_of=dict),
+        Validator('PARAMS.SSL.ENABLED', must_exist=True, is_type_of=bool),
+        Validator('PARAMS.NONEXISTENT', must_exist=False, is_type_of=str)
+    )
+
+    assert settings.validators.validate() is None
+
+
 @pytest.mark.parametrize(
     'validator_instance',
     [

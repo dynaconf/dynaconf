@@ -221,6 +221,12 @@ def test_dotted_traversal_access(settings):
     assert settings['PARAMS.SSL.CONTEXT'] == 'SECURE'
     assert settings.PARAMS.SSL.CONTEXT == 'SECURE'
 
+    assert settings.exists("PARAMS") is True
+    assert settings.exists("PARAMS.PASSWORD") is True
+    assert settings.exists("PARAMS.SSL") is True
+    assert settings.exists("PARAMS.SSL.FAKE") is False
+    assert settings.exists("PARAMS.SSL.CONTEXT") is True
+
     # Dotted traversal should not work for dictionary-like key access.
     with pytest.raises(KeyError):
         settings['PARAMS.DOESNOTEXIST']
