@@ -76,6 +76,9 @@ version = {must_exist=true}
 name = {must_exist=true}
 password = {must_exist=false}
 
+# dot notation is also supported
+'a_big_dict.nested_1.nested_2.nested_3.nested_4' = {must_exist=true, eq=1}
+
   [default.age]
   must_exist = true
   lte = 30

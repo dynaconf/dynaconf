@@ -107,3 +107,5 @@ def test_missing_sentinel():
 
     # But the explict typecasting of missing to a bool should evaluate to False
     assert bool(missing) is False
+
+    assert str(missing) == '<dynaconf.missing>'
