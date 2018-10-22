@@ -3,6 +3,9 @@ version = "1.0.0"
 name = "Dynaconf"
 age = 15
 
+  [default.a_big_dict.nested_1.nested_2.nested_3]
+  nested_4 = 1
+
 [production]
 project = "hello_world"
 password = 'exists only in prod'

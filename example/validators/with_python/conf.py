@@ -55,7 +55,12 @@ settings.validators.register(
         )
     ),
     Validator('PORT', must_exist=True, ne=8000, when=Validator('MYSQL_HOST',
-                                                               eq='localhost'))
+                                                               eq='localhost')),
+    Validator(
+        'A_DICT.NESTED_1.NESTED_2.NESTED_3.NESTED_4',
+        must_exist=True, eq=1
+    )
+
 )
 
 settings.validators.validate()
