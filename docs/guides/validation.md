@@ -43,6 +43,24 @@ settings.validators.validate()
 
 The above will raise `dynaconf.validators.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")` and `dynaconf.validators.ValidationError("PROJECT must be eq='hello_world' but it is 'This is not hello_world' in env PRODUCTION")`
 
+You can also use dot-delimited paths for registering validators on nested structures:
+
+```python
+from dynaconf import settings, Validator
+
+# Register validators
+settings.validators.register(
+
+    # Ensure the database.host field exists.
+    Validator('DATABASE.HOST', must_exist=True),
+
+    # Make the database.password field optional.
+    Validator('DATABASE.PASSWORD', must_exist=True),
+
+# Fire the validator
+settings.validators.validate()
+```
+
 ## CLI and dynaconf_validators.toml
 
 > **NEW in 1.0.1**

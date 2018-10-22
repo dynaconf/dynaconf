@@ -82,3 +82,27 @@ def compat_kwargs(kwargs):
                 old, new
             )
             kwargs[new] = kwargs[old]
+
+
+class Missing(object):
+    """
+    Sentinel value object/singleton used to differentiate between ambiguous
+    situations where `None` is a valid value.
+    """
+
+    def __bool__(self):
+        """Respond to boolean duck-typing."""
+        return False
+
+    # Ensure compatibility with Python 2.x
+    __nonzero__ = __bool__
+
+    def __repr__(self):
+        """
+        Unambiguously identify this string-based representation of Missing,
+        used as a singleton.
+        """
+        return '<dynaconf.missing>'
+
+
+missing = Missing()
