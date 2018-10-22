@@ -94,6 +94,11 @@ class Missing(object):
         """Respond to boolean duck-typing."""
         return False
 
+    def __eq__(self, other):
+        """Equality check for a singleton."""
+
+        return isinstance(other, self.__class__)
+
     # Ensure compatibility with Python 2.x
     __nonzero__ = __bool__
 

@@ -4,6 +4,7 @@ import os
 import pytest
 import tempfile
 from dynaconf import default_settings
+from dynaconf.utils import missing, Missing
 from dynaconf.utils.parse_conf import unparse_conf_data, parse_conf_data
 from dynaconf.utils.files import find_file
 
@@ -88,3 +89,21 @@ def test_tomlfy():
     assert parse_conf_data("[true, false]", tomlfy=True) == [True, False]
     assert parse_conf_data("{key='value', v=1}", tomlfy=True
                            ) == {'key': 'value', 'v': 1}
+
+
+def test_missing_sentinel():
+
+    # The missing singleton should always compare truthfully to itself
+    assert missing == missing
+
+    # new instances of Missing should be equal to each other due to
+    # explicit __eq__ implmentation check for isinstance.
+    assert missing == Missing()
+
+    # The sentinel should not be equal to None, True, or False
+    assert missing is not None
+    assert missing is not True
+    assert missing is not False
+
+    # But the explict typecasting of missing to a bool should evaluate to False
+    assert bool(missing) is False
