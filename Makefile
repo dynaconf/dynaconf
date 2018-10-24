@@ -45,7 +45,11 @@ install:
 	python setup.py develop
 
 pep8:
-	@flake8 dynaconf --ignore=F403
+	# Flake8 ignores 
+	#   F841 (local variable assigned but never used, useful for debugging on exception)
+	#   W504 (line break after binary operator, I prefer to put `and|or` at the end)
+	#   F403 (star import `from foo import *` often used in __init__ files)
+	@flake8 dynaconf --ignore=F403,W504,F841
 
 release: clean test_examples test
 	@python setup.py sdist bdist_wheel
