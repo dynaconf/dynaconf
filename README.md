@@ -110,7 +110,7 @@ ENV_FOR_DYNACONF=staging python yourapp.py
 
 ## The settings files
 
-> **NOTE:** [Read the full documentaion](http://dynaconf.readthedocs.io/en/latest/index.html) about dynaconf CLI to learn how to automatically create the settings files for your project.
+> **NOTE:** [Read the full documentation](http://dynaconf.readthedocs.io/en/latest/index.html) about dynaconf CLI to learn how to automatically create the settings files for your project.
 
 An optional `settings.{toml|py|json|ini|yaml}` file can be used to specify the configuration parameters for each environment. If it is not present, only the values from **environment variables** are used (**.env** file is also supported). Dynaconf searches for the file starting at the current working directory. If it is not found there, Dynaconf checks the parent directory. Dynaconf continues checking parent directories until the root is reached.
 
@@ -174,7 +174,7 @@ pip3 install dynaconf[yaml|ini|redis|vault]
 pip3 install dynaconf[all]
 ```
 
-Once the support is installed no extra configuration is needed to load data from those files, dynaconf will search for settings files in
+Once the support is installed, no extra configuration is needed to load data from those files. Dynaconf will search for settings files in
 the root directory of your application looking for the following files in the exact order below:
 
 ```python
