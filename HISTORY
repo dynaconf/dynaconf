@@ -3,8 +3,19 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
-1.0.7 - Unreleased
+1.1.1 
 -----
+
+- Unreleased
+
+1.1.0
+-----
+
+- Added `MERGE_ENABLED_FOR_DYNACONF` with ability to merge nested dictionaries instead of replacing PR #88
+- Support for dot notation to access nested dictionaries like `settings['KEY.OTHER.NESTED.DEEPER']` PR #93
+- Support dotted notation for validators PR #98
+- Fixed a bug in SETTINGS_MODULE cleanup when `.setenv` method was called PR #97
+- Added Python 3.7 to test matrix PR #99 
 
 1.0.6
 -----
