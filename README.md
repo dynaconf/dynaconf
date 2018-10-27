@@ -1,3 +1,4 @@
+
 [![Dynaconf](https://raw.githubusercontent.com/rochacbruno/dynaconf/master/docs/_static/logo_big.svg?sanitize=true)](http://dynaconf.readthedocs.io)
 
 > **dynaconf** - The **dyna**mic **conf**igurator for your Python Project
@@ -147,7 +148,7 @@ value = "this value is set for custom [awesomeenv]"
 message = "This value overrides message of default and other envs"
 ```
 
-The **[global]** pseudo-environment can be used to set and/or override configuration parameters globally. A parameter defined in a **[global]** section sets, or overrides if already present, that parameter in every environment. For example, given the following `settings.toml` file, the value of address will be **"1.2.3.4"** in every environment:
+The `[global]` pseudo-environment can be used to set and/or override configuration parameters globally. A parameter defined in a `[global]` section sets, or overrides if already present, that parameter in every environment. For example, given the following `settings.toml` file, the value of address will be **"1.2.3.4"** in every environment:
 
 ```ini
 [global]
@@ -160,7 +161,7 @@ address = "localhost"
 address = "0.0.0.0"
 ```
 
-> **NOTE**: The **[env]** name and first level variables are case insensitive as internally dynaconf will always use upper case, that means **[development]** and **[DEVELOPMENT]** are equivalent and **address** and **ADDRESS** are also equivalent. This rule does not apply for inner data structures as dictionaries and arrays.
+> **NOTE**: The **[env]** name and first level variables are case insensitive as internally dynaconf will always use upper case, that means `[development]` and `[DEVELOPMENT]` are equivalent and `address` and `ADDRESS` are also equivalent. This rule does not apply for inner data structures as dictionaries and arrays.
 
 ## Supported file formats
 
