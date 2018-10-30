@@ -646,14 +646,14 @@ class Settings(object):
 
             for include in includes:
                 # Handle absolute and relative paths in the configuration.
-                if os.path.isabs(include):
+                if os.path.isabs(include):  # pragma: no cover
                     included_filename = include
                 else:
                     included_filename = os.path.join(basepath, include)
 
                 # Handle possible globs
                 for path in glob.glob(included_filename):
-                    if path in already_loaded:
+                    if path in already_loaded:  # pragma: no cover
                         continue
 
                     settings_loader(obj=self,
@@ -663,8 +663,6 @@ class Settings(object):
                                     filename=path)
 
                     already_loaded.add(path)
-
-
 
     def load_extra_yaml(self, env, silent, key):
         """This is deprecated, kept for compat
