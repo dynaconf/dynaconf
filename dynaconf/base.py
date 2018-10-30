@@ -641,8 +641,6 @@ class Settings(object):
 
                     already_loaded.add(path)
 
-
-
     def load_extra_yaml(self, env, silent, key):
         """This is deprecated, kept for compat
 
