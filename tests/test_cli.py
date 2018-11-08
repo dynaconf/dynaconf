@@ -160,7 +160,7 @@ def test_list_with_instance():
     assert "OPTION_FOR_TESTS: True" in result
 
 
-def test_list_with_instance_from_env(mocker):
+def test_list_with_instance_from_env():
     result = run(
         [
             'list',
@@ -172,7 +172,7 @@ def test_list_with_instance_from_env(mocker):
     assert "OPTION_FOR_TESTS: True" in result
 
 
-def test_instance_attribute_error(mocker):
+def test_instance_attribute_error():
     result = run(
         [
             '-i', 'tests.test_cli.idontexist',
@@ -182,7 +182,7 @@ def test_instance_attribute_error(mocker):
     assert "module 'tests.test_cli' has no attribute 'idontexist'" in result
 
 
-def test_instance_import_error(mocker):
+def test_instance_import_error():
     result = run(
         [
             '-i', 'idontexist.settings',
@@ -192,7 +192,7 @@ def test_instance_import_error(mocker):
     assert "Error: No module named 'idontexist'" in result
 
 
-def test_instance_pypath_error(mocker):
+def test_instance_pypath_error():
     result = run(
         [
             '-i', 'idontexist',
