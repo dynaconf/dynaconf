@@ -83,8 +83,6 @@ class LazySettings(LazyObject):
         """
         compat_kwargs(kwargs)
         self._kwargs = kwargs
-        for k, v in kwargs.items():
-            setattr(default_settings, k.upper(), v)
         super(LazySettings, self).__init__()
 
     def __getattr__(self, name):
@@ -113,7 +111,8 @@ class LazySettings(LazyObject):
 
     def _setup(self):
         """Initial setup, run once."""
-        environment_variable = default_settings.ENVVAR_FOR_DYNACONF
+        environment_variable = self._kwargs.get(
+            'ENVVAR_FOR_DYNACONF', default_settings.ENVVAR_FOR_DYNACONF)
         settings_module = os.environ.get(environment_variable)
         self._wrapped = Settings(
             settings_module=settings_module, **self._kwargs

@@ -3,10 +3,14 @@ Changelog
 
 These are all the changes in Dynaconf since the first public release.
 
-1.1.1 
+1.1.1
 -----
 
 - Unreleased
+- Added `INSTANCE_FOR_DYNACONF` and `--instance` parameters. These parameters can tell cli tools to use custom LazySettings instance. Fixes #108.
+- Fixed `dynaconf validate` bug, when `--path` value does not end with `.toml` exception was rised.
+- Fixed `dynaconf validate` validation error handling, now instead of raising ValidationError an error message is printed and if there are errors "Validateion success!" is not printed.
+
 
 1.1.0
 -----
@@ -15,7 +19,7 @@ These are all the changes in Dynaconf since the first public release.
 - Support for dot notation to access nested dictionaries like `settings['KEY.OTHER.NESTED.DEEPER']` PR #93
 - Support dotted notation for validators PR #98
 - Fixed a bug in SETTINGS_MODULE cleanup when `.setenv` method was called PR #97
-- Added Python 3.7 to test matrix PR #99 
+- Added Python 3.7 to test matrix PR #99
 
 1.0.6
 -----
@@ -31,20 +35,20 @@ These are all the changes in Dynaconf since the first public release.
 1.0.4
 -----
 
-- Fix Django definition of GLOBAL_ENV 
+- Fix Django definition of GLOBAL_ENV
 - Fix in __getitem__ method
 
 1.0.3
 -----
 
-- Excluded example and tests from realease dist 
+- Excluded example and tests from realease dist
 - removed root logger configuration
 
 1.0.2
 -----
 - Improved docs
 - Fix error when some loader is not installed
-- Fix loader import error 
+- Fix loader import error
 - Improved logs
 
 1.0.1
@@ -55,9 +59,9 @@ These are all the changes in Dynaconf since the first public release.
 
 1.0.0
 -----
-- Breaking changes 
+- Breaking changes
 - `namespace` renamed to `env`
-- added concept of DEFAULT and GLOBAL envs 
+- added concept of DEFAULT and GLOBAL envs
 - `env` will default to DEVELOPMENT until changed by envvar `ENV_FOR_DYNACONF`
 
 0.7.6
@@ -98,13 +102,13 @@ These are all the changes in Dynaconf since the first public release.
 
 0.6.0
 -----
-- Drop Python 2.x from Travis CI (must work but will not be tested) 
+- Drop Python 2.x from Travis CI (must work but will not be tested)
 - Fix Flask requirement #41
 
 0.5.6
 -----
-- Added support for .ini and .json files 
-- parse conf is now recursive to parse dict inner data 
+- Added support for .ini and .json files
+- parse conf is now recursive to parse dict inner data
 - Cloned find_file function from dotenv
 
 0.5.5
