@@ -179,7 +179,7 @@ def test_instance_attribute_error():
             'list',
         ]
     )
-    assert "module 'tests.test_cli' has no attribute 'idontexist'" in result
+    assert "has no attribute 'idontexist'" in result
 
 
 def test_instance_import_error():
