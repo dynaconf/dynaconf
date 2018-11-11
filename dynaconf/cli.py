@@ -9,37 +9,11 @@ import webbrowser
 from pathlib import Path
 from dynaconf import default_settings
 from dynaconf import constants
-from dynaconf.validator import Validator
+from dynaconf import LazySettings
+from dynaconf.validator import Validator, ValidationError
 from dynaconf.utils.parse_conf import parse_conf_data
 from dotenv import cli as dotenv_cli
 from contextlib import suppress
-
-
-flask_app = None
-django_app = None
-
-if 'FLASK_APP' in os.environ:  # pragma: no cover
-    with suppress(ImportError, click.UsageError):
-        from flask.cli import ScriptInfo
-        flask_app = ScriptInfo().load_app()
-        settings = flask_app.config
-        click.echo(click.style('Flask app detected', fg='white', bg='black'))
-
-
-if 'DJANGO_SETTINGS_MODULE' in os.environ:  # pragma: no cover
-    sys.path.insert(0, os.path.abspath('.'))
-    with suppress(Exception):
-        import dynaconf.contrib.django_dynaconf  # noqa
-        from django.conf import settings as django_settings
-        django_settings.configure()
-        settings = django_settings
-        django_app = True
-        click.echo(click.style('Django app detected', fg='white', bg='black'))
-
-
-if not django_app and not flask_app:
-    from dynaconf import settings
-
 
 CWD = Path.cwd()
 ENVS = ['default', 'development', 'staging', 'testing', 'production', 'global']
@@ -47,6 +21,63 @@ EXTS = ['ini', 'toml', 'yaml', 'json', 'py', 'env']
 WRITERS = ['ini', 'toml', 'yaml', 'json', 'py', 'redis', 'vault', 'env']
 
 ENC = default_settings.ENCODING_FOR_DYNACONF
+
+
+def set_settings(instance=None):
+    """Pick correct settings instance and set it to a global variable."""
+
+    global settings
+
+    settings = None
+
+    if instance:
+        settings = import_settings(instance)
+
+    elif 'INSTANCE_FOR_DYNACONF' in os.environ:
+        settings = import_settings(os.environ['INSTANCE_FOR_DYNACONF'])
+
+    elif 'FLASK_APP' in os.environ:  # pragma: no cover
+        with suppress(ImportError, click.UsageError):
+            from flask.cli import ScriptInfo
+            flask_app = ScriptInfo().load_app()
+            settings = flask_app.config
+            click.echo(click.style(
+                'Flask app detected', fg='white', bg='black'))
+
+    elif 'DJANGO_SETTINGS_MODULE' in os.environ:  # pragma: no cover
+        sys.path.insert(0, os.path.abspath('.'))
+        with suppress(Exception):
+            import dynaconf.contrib.django_dynaconf  # noqa
+            from django.conf import settings as django_settings
+            django_settings.configure()
+            settings = django_settings
+            click.echo(click.style(
+                'Django app detected', fg='white', bg='black'))
+
+    if settings is None:
+        settings = LazySettings()
+
+
+def import_settings(dotted_path):
+    """Import settings instance from python dotted path.
+
+    Last item in dotted path must be settings instace.
+
+    Example: import_settings('path.to.settings')
+    """
+    if '.' in dotted_path:
+        module, name = dotted_path.rsplit('.', 1)
+    else:
+        raise click.UsageError(
+            "invalid path to settings instance: {}".format(dotted_path))
+    try:
+        module = importlib.import_module(module)
+    except ImportError as e:
+        raise click.UsageError(e)
+    try:
+        return getattr(module, name)
+    except AttributeError as e:
+        raise click.UsageError(e)
 
 
 def split_vars(_vars):
@@ -86,6 +117,7 @@ def show_banner(ctx, param, value):
     """Shows dynaconf awesome banner"""
     if not value or ctx.resilient_parsing:
         return
+    set_settings()
     click.echo(settings.dynaconf_banner)
     click.echo('Learn more at: http://github.com/rochacbruno/dynaconf')
     ctx.exit()
@@ -98,10 +130,13 @@ def show_banner(ctx, param, value):
               is_eager=True, help="Open documentation in browser")
 @click.option('--banner', is_flag=True, callback=show_banner,
               expose_value=False, is_eager=True, help="Show awesome banner")
-def main():
+@click.option('--instance', '-i', default=None,
+              help="Custom instance of LazySettings")
+def main(instance):
     """Dynaconf - Command Line Interface\n
     Documentation: http://dynaconf.readthedocs.io/
     """
+    set_settings(instance)
 
 
 @main.command()
@@ -161,7 +196,7 @@ def init(fileformat, path, env, _vars, _secrets, wg, y):
 
     path = Path(path)
 
-    if str(path).endswith(constants.ALL_EXTENSIONS + ('py',)):
+    if str(path).endswith(constants.ALL_EXTENSIONS + ('py',)):  # pragma: no cover  # noqa
         settings_path = path
         secrets_path = path.parent / '.secrets.{}'.format(fileformat)
         dotenv_path = path.parent / '.env'
@@ -170,7 +205,7 @@ def init(fileformat, path, env, _vars, _secrets, wg, y):
         if fileformat == 'env':
             if str(path) in ('.env', './.env'):  # pragma: no cover
                 settings_path = path
-            elif str(path).endswith('/.env'):
+            elif str(path).endswith('/.env'):  # pragma: no cover
                 settings_path = path
             elif str(path).endswith('.env'):  # pragma: no cover
                 settings_path = path.parent / '.env'
@@ -401,10 +436,12 @@ def validate(path):  # pragma: no cover
     # for each section register the validator for specific env
     # call validate
 
+    path = Path(path)
+
     if not str(path).endswith('.toml'):
         path = path / "dynaconf_validators.toml"
 
-    if not Path(path).exists():  # pragma: no cover  # noqa
+    if not path.exists():  # pragma: no cover  # noqa
         click.echo(click.style(
             "{} not found".format(path), fg="white", bg="red"
         ))
@@ -412,6 +449,7 @@ def validate(path):  # pragma: no cover
 
     validation_data = toml.load(open(str(path)))
 
+    success = True
     for env, name_data in validation_data.items():
         for name, data in name_data.items():
             if not isinstance(data, dict):  # pragma: no cover
@@ -419,15 +457,21 @@ def validate(path):  # pragma: no cover
                     "Invalid rule for parameter '{}'".format(name),
                     fg="white", bg="yellow"
                 ))
-            else:  # pragma: no cover
+            else:
                 data.setdefault('env', env)
                 click.echo(click.style(
                     "Validating '{}' with '{}'".format(name, data),
                     fg="white", bg="blue"
                 ))
-                Validator(name, **data).validate(settings)
+                try:
+                    Validator(name, **data).validate(settings)
+                except ValidationError as e:
+                    click.echo(click.style(
+                        "Error: {}".format(e), fg="white", bg="red"
+                    ))
+                    success = False
 
-    # pragma: no cover
-    click.echo(click.style(
-        "Validation success!", fg="white", bg="green"
-    ))
+    if success:
+        click.echo(click.style(
+            "Validation success!", fg="white", bg="green"
+        ))

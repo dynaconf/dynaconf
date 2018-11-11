@@ -3,7 +3,7 @@ import os
 import pytest
 from pathlib import Path
 from click.testing import CliRunner
-from dynaconf import default_settings
+from dynaconf import LazySettings, default_settings
 from dynaconf.cli import main, EXTS, WRITERS, ENVS, read_file_in_root_directory
 from dotenv import cli as dotenv_cli
 
@@ -11,8 +11,8 @@ from dotenv import cli as dotenv_cli
 runner = CliRunner()
 
 
-def run(cmd):
-    result = runner.invoke(main, cmd)
+def run(cmd, env=None):
+    result = runner.invoke(main, cmd, env=env, catch_exceptions=False)
     # assert result.exit_code == 0
     return result.output
 
@@ -87,9 +87,9 @@ def test_init_with_path(fileformat, tmpdir):
             [
                 'init',
                 '--format={}'.format(fileformat),
-                '--path={}'.format(str(path)),
+                '--path={}'.format(str(tmpdir)),
                 '-y'
-            ]
+            ],
         )
 
     sets = Path(str(path))
@@ -145,6 +145,61 @@ def test_list_with_env(env):
         ]
     )
     assert "Working in {} environment".format(env) in result
+
+
+settings = LazySettings(OPTION_FOR_TESTS=True)
+
+
+def test_list_with_instance():
+    result = run(
+        [
+            '-i', 'tests.test_cli.settings',
+            'list',
+        ]
+    )
+    assert "OPTION_FOR_TESTS: True" in result
+
+
+def test_list_with_instance_from_env():
+    result = run(
+        [
+            'list',
+        ],
+        {
+            'INSTANCE_FOR_DYNACONF': 'tests.test_cli.settings',
+        }
+    )
+    assert "OPTION_FOR_TESTS: True" in result
+
+
+def test_instance_attribute_error():
+    result = run(
+        [
+            '-i', 'tests.test_cli.idontexist',
+            'list',
+        ]
+    )
+    assert "has no attribute 'idontexist'" in result
+
+
+def test_instance_import_error():
+    result = run(
+        [
+            '-i', 'idontexist.settings',
+            'list',
+        ]
+    )
+    assert "Error: No module named 'idontexist'" in result
+
+
+def test_instance_pypath_error():
+    result = run(
+        [
+            '-i', 'idontexist',
+            'list',
+        ]
+    )
+    assert "Error: invalid path to settings instance: idontexist" in result
 
 
 def test_list_with_key():
@@ -292,21 +347,31 @@ def test_validate(tmpdir):
     toml_invalid = tmpdir.mkdir('invalid').join('settings.toml')
     toml_invalid.write(TOML_INVALID)
 
-    os.chdir(str(Path(str(toml_valid)).parent))
     result = run(
         [
             'validate',
             '-p',
             str(validation_file)
-        ]
+        ],
+        {
+            'SETTINGS_MODULE_FOR_DYNACONF': str(toml_valid),
+        }
     )
+    assert "Validation success!" in result
 
-    os.chdir(str(Path(str(toml_invalid)).parent))
     result = run(
         [
             'validate',
             '-p',
             str(Path(str(validation_file)).parent)
-        ]
+        ],
+        {
+            'SETTINGS_MODULE_FOR_DYNACONF': str(toml_invalid),
+        }
     )
-    print(result)
+    assert "age must lte 30 but it is 35 in env default" in result
+    assert "project must eq hello_world but it is This is not hello_world " \
+           "in env production" in result
+    assert "host must is_not_in ['test.com'] but it is test.com in env " \
+           "production" in result
+    assert "Validation success!" not in result

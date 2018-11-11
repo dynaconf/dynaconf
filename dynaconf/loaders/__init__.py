@@ -50,19 +50,19 @@ def settings_loader(obj, settings_module=None, env=None,
     :param key: Load a single key if provided
     :param filename: optional filename to override the settings_module
     """
-    settings_module = settings_module or obj.settings_module
-    if not settings_module:  # pragma: no cover
-        return
+    if filename is None:
+        settings_module = settings_module or obj.settings_module
+        if not settings_module:  # pragma: no cover
+            return
 
-    if not isinstance(settings_module, (list, tuple)):
-        files = settings_module.split(',')
+        if not isinstance(settings_module, (list, tuple)):
+            files = settings_module.split(',')
+        else:
+            files = [settings_module]
     else:
-        files = [settings_module]
+        files = [filename]
 
     obj.logger.debug("Looking for %s", files)
-
-    if filename is not None:
-        files.append(filename)
 
     found_files = []
     modules_names = []
