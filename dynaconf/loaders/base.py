@@ -85,7 +85,12 @@ class BaseLoader(object):
                 try:
                     source_data = self.file_reader(
                         io.open(
-                            find_file(source_file),
+                            find_file(
+                                source_file,
+                                project_root=self.obj.get(
+                                    'PROJECT_ROOT_FOR_DYNACONF'
+                                )
+                            ),
                             encoding=self.obj.get(
                                 'ENCODING_FOR_DYNACONF', 'utf-8'
                             )

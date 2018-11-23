@@ -20,18 +20,21 @@ def _walk_to_root(path):
         last_dir, current_dir = current_dir, parent_dir
 
 
-def find_file(filename='.env', raise_error_if_not_found=False, usecwd=True):
-    """
-    Search in increasingly higher folders for the given file
+def find_file(filename='.env', raise_error_if_not_found=False,
+              usecwd=True, project_root=None):
+    """Search in increasingly higher folders for the given file
     Returns path to the file if found, or an empty string otherwise
     """
-    if usecwd or '__file__' not in globals():
-        # should work without __file__, e.g. in REPL or IPython notebook
-        path = os.getcwd()
-    else:  # pragma: no cover
-        # will work for .py files
-        frame_filename = sys._getframe().f_back.f_code.co_filename
-        path = os.path.dirname(os.path.abspath(frame_filename))
+    if project_root not in ['.', None]:
+        path = project_root
+    else:
+        if usecwd or '__file__' not in globals():
+            # should work without __file__, e.g. in REPL or IPython notebook
+            path = os.getcwd()
+        else:  # pragma: no cover
+            # will work for .py files
+            frame_filename = sys._getframe().f_back.f_code.co_filename
+            path = os.path.dirname(os.path.abspath(frame_filename))
 
     for dirname in _walk_to_root(path):
         check_path = os.path.join(dirname, filename)

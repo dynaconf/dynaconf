@@ -68,7 +68,10 @@ def settings_loader(obj, settings_module=None, env=None,
     modules_names = []
     for item in files:
         if item.endswith(ct.ALL_EXTENSIONS + ('.py',)):
-            found = find_file(item)
+            found = find_file(
+                item,
+                project_root=obj.get('PROJECT_ROOT_FOR_DYNACONF')
+            )
             if found:
                 found_files.append(found)
         else:

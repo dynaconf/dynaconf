@@ -14,7 +14,7 @@ def load(obj, settings_module, identifier='py', silent=False, key=None):
         mod = importlib.import_module(settings_module)
         loaded_from = 'module'
     except (ImportError, TypeError):
-        mod = import_from_filename(settings_module, silent=silent)
+        mod = import_from_filename(obj, settings_module, silent=silent)
         if mod and mod._is_error:
             loaded_from = None
         else:
@@ -49,7 +49,7 @@ def load(obj, settings_module, identifier='py', silent=False, key=None):
                 root, loader_identifier=identifier)
 
 
-def import_from_filename(filename, silent=False):  # pragma: no cover
+def import_from_filename(obj, filename, silent=False):  # pragma: no cover
     """If settings_module is a filename path import it."""
     if not filename.endswith('.py'):
         filename = '{0}.py'.format(filename)
@@ -61,7 +61,10 @@ def import_from_filename(filename, silent=False):  # pragma: no cover
     mod._is_error = False
     try:
         with io.open(
-            find_file(filename),
+            find_file(
+                filename,
+                project_root=obj.get('PROJECT_ROOT_FOR_DYNACONF')
+            ),
             encoding=default_settings.ENCODING_FOR_DYNACONF
         ) as config_file:
             exec(
