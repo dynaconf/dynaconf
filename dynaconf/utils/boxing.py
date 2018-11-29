@@ -21,7 +21,7 @@ class DynaBox(Box):
             n_item = item.lower() if item.isupper() else item.upper()
             return super(DynaBox, self).__getitem__(n_item, *args, **kwargs)
 
-    def __copy__():
+    def __copy__(self):
         return self.__class__(super(Box, self).copy())
 
     def copy():
