@@ -74,3 +74,7 @@ def test_get():
     assert box.get('server').get('params').token.value == 2
     assert box.get('server').get('blabla') is None
     assert box.get('server').get('blabla', 'foo') == 'foo'
+
+def test_copy_no_cause_inf_recursion():
+    box.__copy__()
+    box.copy()
