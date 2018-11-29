@@ -24,7 +24,7 @@ class DynaBox(Box):
     def __copy__(self):
         return self.__class__(super(Box, self).copy())
 
-    def copy():
+    def copy(self):
         return self.__class__(super(Box, self).copy())
 
     def get(self, item, default=None, *args, **kwargs):
