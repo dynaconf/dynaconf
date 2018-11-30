@@ -1,4 +1,4 @@
-.PHONY: test install pep8 release clean docs test_examples test_vault test_redis
+.PHONY: test install pep8 publish dist clean docs test_examples test_vault test_redis
 
 test_examples:
 	@cd example/common;pwd;python program.py
@@ -52,8 +52,10 @@ pep8:
 	#   F403 (star import `from foo import *` often used in __init__ files)
 	@flake8 dynaconf --ignore=F403,W504,F841
 
-release: clean test_examples test
+dist: clean
 	@python setup.py sdist bdist_wheel
+
+publish: test_examples test
 	@twine upload dist/*
 
 clean:
@@ -67,7 +69,6 @@ clean:
 	rm -rf htmlcov
 	rm -rf .tox/
 	rm -rf docs/_build
-	python setup.py develop
 
 docs:
 	rm -rf docs/_build
