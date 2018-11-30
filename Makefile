@@ -55,7 +55,8 @@ pep8:
 dist: clean
 	@python setup.py sdist bdist_wheel
 
-publish: test_examples test
+publish:
+	@tox
 	@twine upload dist/*
 
 clean:
