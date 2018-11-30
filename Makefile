@@ -43,7 +43,9 @@ test: pep8
 	py.test --boxed -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
 
 install:
+	pip install --upgrade pip
 	python setup.py develop
+	pip install -r requirements_dev.txt
 
 pep8:
 	# Flake8 ignores 
