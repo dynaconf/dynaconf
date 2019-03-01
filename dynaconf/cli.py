@@ -422,7 +422,9 @@ def write(to, _vars, _secrets, path, env, y):
 
     else:  # pragma: no cover
         # lets write to external source
-        loader.write(settings, _vars, **_secrets)
+        with settings.using_env(env):
+            # make sure we're in the correct environment
+            loader.write(settings, _vars, **_secrets)
         click.echo('Data successful written to {}'.format(to))
 
 
