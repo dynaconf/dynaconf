@@ -188,6 +188,11 @@ def test_set_merge(settings):
         ]
     }
 
+def test_merge_shortcut(settings):
+    settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
+    settings.set("MERGE_KEY", ["item1"])
+    settings.set("MERGE_KEY", ["item1"])
+    assert settings.MERGE_KEY == ["item1"]
 
 def test_exists(settings):
     settings.set('BOOK', 'TAOCP')

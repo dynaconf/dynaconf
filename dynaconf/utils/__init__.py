@@ -17,6 +17,8 @@ def object_merge(old, new):
     Recursively merge two data structures
     """
     if isinstance(old, list) and isinstance(new, list):
+        if old == new:
+            return
         for item in old[::-1]:
             new.insert(0, item)
     if isinstance(old, dict) and isinstance(new, dict):
