@@ -2,6 +2,103 @@ Changelog
 =========
 
 
+1.2.1 (2019-03-11)
+------------------
+- Release version 1.2.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (9):
+            Merge branch 'jperras-merge-multiple-settings-files'
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
+            Update dynaconf/utils/boxing.py
+            Update dynaconf/utils/boxing.py
+            Add release script and CHANGELOG in place of history.
+            Release version 1.2.0
+            Tox is now part of pre-publish command
+            Drop Python 3.4
+
+      Byungjin Park (1):
+            Fix typo
+
+      Jaepil Koh (1):
+            Update django.md
+
+      Joel Perras (3):
+            Allow dotted-path based setting of configuration key/value pairs.
+            Handle nested includes in settings files.
+            Remove extraneous lines.
+
+      Mantas (3):
+            Add INSTANCE_FOR_DYNACONF and --instance
+            Remove mocker fixture
+            Python 3.4 has different error message
+
+      Matthias (1):
+            Fix small typo in README.md
+
+      Pete Savage (1):
+            Fix exponential slow down when loader is run multiple times
+
+      Raoul Snyman (1):
+            Add environments into the path in Vault so that the same Vault server can be used for multiple environments
+
+      mspinelli (2):
+            fixed infinite recursion caused by copy()
+            add tests for dynabox fix
+- Fix exponential slow down when loader is run multiple times. [Pete
+  Savage]
+
+  * When using context managers, the loader is invoked each time.
+    This was slowing down in an exponential manner each time the it was run.
+    The eventual cause of this was down to an attribute being used as a list.
+    The object merge dutifully tried to expand this item out again and again
+    even in the case that the list was a single item, resulting in [item],
+    becoming [item, item]. The next time the merge was run, this process was
+    run again, but for each item in the list. In this particular instance
+    the list was identical, it meant that the list grew exponentially.
+  * This fix is a short optimization that checks to see if the old list
+    is identical to the new list. In which case, there is no merge to complete
+    so we simply return.
+- Add environments into the path in Vault so that the same Vault server
+  can be used for multiple environments. [Raoul Snyman]
+- Fix typo. [Byungjin Park]
+- Drop Python 3.4. [Bruno Rocha]
+- Tox is now part of pre-publish command. [Bruno Rocha]
+- Release version 1.2.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (6):
+            Merge branch 'jperras-merge-multiple-settings-files'
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
+            Update dynaconf/utils/boxing.py
+            Update dynaconf/utils/boxing.py
+            Add release script and CHANGELOG in place of history.
+
+      Jaepil Koh (1):
+            Update django.md
+
+      Joel Perras (3):
+            Allow dotted-path based setting of configuration key/value pairs.
+            Handle nested includes in settings files.
+            Remove extraneous lines.
+
+      Mantas (3):
+            Add INSTANCE_FOR_DYNACONF and --instance
+            Remove mocker fixture
+            Python 3.4 has different error message
+
+      Matthias (1):
+            Fix small typo in README.md
+
+      mspinelli (2):
+            fixed infinite recursion caused by copy()
+            add tests for dynabox fix
+
+
 1.2.0 (2018-11-30)
 ------------------
 - Release version 1.2.0. [Bruno Rocha]
