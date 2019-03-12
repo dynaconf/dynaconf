@@ -10,6 +10,7 @@ from pathlib import Path
 from dynaconf import default_settings
 from dynaconf import constants
 from dynaconf import LazySettings
+from dynaconf.loaders.py_loader import get_module
 from dynaconf.validator import Validator, ValidationError
 from dynaconf.utils.parse_conf import parse_conf_data
 from dotenv import cli as dotenv_cli
@@ -158,7 +159,8 @@ def main(instance):
               ))
 @click.option('--wg/--no-wg', default=True)
 @click.option('-y', default=False, is_flag=True)
-def init(fileformat, path, env, _vars, _secrets, wg, y):
+@click.option('--django', default=os.environ.get('DJANGO_SETTINGS_MODULE'))
+def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     """Inits a dynaconf project
     By default it creates a settings.toml and a .secrets.toml
     for [default|development|staging|testing|production|global] envs.
@@ -269,6 +271,11 @@ def init(fileformat, path, env, _vars, _secrets, wg, y):
                     f.writelines(
                         [comment, ignore_line, '\n']
                     )
+
+    if django:
+        dj_module, loaded_from = get_module({}, django)
+        with open(dj_module.__file__, "a") as dj_file:
+            dj_file.write(constants.DJANGO_PATCH)
 
 
 @main.command(name='list')

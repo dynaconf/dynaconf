@@ -10,15 +10,7 @@ from dynaconf.utils import DynaconfDict, object_merge, raw_logger
 
 def load(obj, settings_module, identifier='py', silent=False, key=None):
     """Tries to import a python module"""
-    try:
-        mod = importlib.import_module(settings_module)
-        loaded_from = 'module'
-    except (ImportError, TypeError):
-        mod = import_from_filename(obj, settings_module, silent=silent)
-        if mod and mod._is_error:
-            loaded_from = None
-        else:
-            loaded_from = 'filename'
+    mod, loaded_from = get_module(obj, settings_module, silent)
 
     if mod and loaded_from:
         obj.logger.debug(
@@ -47,6 +39,19 @@ def load(obj, settings_module, identifier='py', silent=False, key=None):
         ) if loaded_from == 'module' else os.getcwd()
         obj.set('PROJECT_ROOT_FOR_DYNACONF',
                 root, loader_identifier=identifier)
+
+
+def get_module(obj, filename, silent=False):
+    try:
+        mod = importlib.import_module(filename)
+        loaded_from = 'module'
+    except (ImportError, TypeError):
+        mod = import_from_filename(obj, filename, silent=silent)
+        if mod and mod._is_error:
+            loaded_from = None
+        else:
+            loaded_from = 'filename'
+    return mod, loaded_from
 
 
 def import_from_filename(obj, filename, silent=False):  # pragma: no cover

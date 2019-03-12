@@ -4,6 +4,7 @@ username = 'default user'
 password = false  #  in prod this value must come from .secrets.toml or vault server
 STATIC_URL = '/changed/in/settings.toml/by/dynaconf/'
 foo = 'bar'
+SECRET_KEY = 1234
 
 [development]
 username = 'dev user'
