@@ -10,6 +10,11 @@ and extensions for **Flask** and **Django**.
 
 **Read the Full Documentation at**: http://dynaconf.readthedocs.io/
 
+
+# Top Contributors
+
+[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/0)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/0)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/1)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/1)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/2)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/2)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/3)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/3)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/4)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/4)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/5)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/5)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/6)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/6)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/7)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/7)
+
 # Features
 
 - Strict separation of settings from code (following [12-factor applications](https://12factor.net/config) Guide).
