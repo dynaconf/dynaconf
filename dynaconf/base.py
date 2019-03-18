@@ -261,7 +261,8 @@ class Settings(object):
             return default
 
         if (
-            (fresh or self._fresh or key in self.FRESH_VARS_FOR_DYNACONF) and
+            (fresh or self._fresh or
+                key in getattr(self, 'FRESH_VARS_FOR_DYNACONF', ())) and
             key not in dir(default_settings)
         ):
             self.unset(key)
