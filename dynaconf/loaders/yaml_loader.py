@@ -1,6 +1,5 @@
 # coding: utf-8
 import io
-import os
 from pathlib import Path
 from warnings import warn
 from dynaconf import default_settings
@@ -10,7 +9,7 @@ from dynaconf.utils import object_merge
 
 try:
     import yaml
-except ImportError as e:  # pragma: no cover
+except ImportError:  # pragma: no cover
     yaml = None
 
 
@@ -32,8 +31,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     # Resolve the loaders
     # https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
     # Possible values are `safe_load, full_load, unsafe_load, load`
-    yaml_loader_name = os.environ.get('YAML_LOADER_FOR_DYNACONF', 'full_load')
-    yaml_reader = getattr(yaml, yaml_loader_name, yaml.load)
+    yaml_reader = getattr(yaml, obj.get('YAML_LOADER_FOR_DYNACONF'), yaml.load)
     if yaml_reader.__name__ == 'unsafe_load':  # pragma: no cover
         warn(
             "yaml.unsafe_load is deprecated."

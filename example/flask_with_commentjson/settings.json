@@ -1,0 +1,21 @@
+# comments
+// are allowed
+{
+  "default": {
+    "DEBUG": true,
+    // comments ignored
+    "SERVER": "flaskdynaconf.com",
+    "PORT": 6666,
+    "MESSAGE": "Dynaconf works like a charm with Flask and JSON",
+    "TEST_RULE": "/flask_with_commentjson"
+  },
+  # This is for dev only
+  "development": {
+    "DEBUG": true,
+    "SERVER": "dev.flaskdynaconf.com"
+  },
+  "production": {
+    "DEBUG": false,
+    "SERVER": "prod.flaskdynaconf.com"
+  }
+}

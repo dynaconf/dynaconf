@@ -81,6 +81,8 @@ def settings_loader(obj, settings_module=None, env=None,
 
     obj.logger.debug("Found files %s", found_files)
 
+    enabled_core_loaders = obj.get('CORE_LOADERS_FOR_DYNACONF')
+
     for mod_file in (modules_names + found_files):
         # can be set to multiple files settings.py,settings.yaml,...
 
@@ -93,6 +95,9 @@ def settings_loader(obj, settings_module=None, env=None,
         ]
 
         for loader in loaders:
+            if loader['name'] not in enabled_core_loaders:
+                continue
+
             if mod_file.endswith(loader['ext']):
                 loader['loader'].load(
                     obj,
@@ -104,6 +109,10 @@ def settings_loader(obj, settings_module=None, env=None,
                 continue
 
         if mod_file.endswith(ct.ALL_EXTENSIONS):
+            continue
+
+        if 'PY' not in enabled_core_loaders:
+            # pyloader is disabled
             continue
 
         # must be Python file or module

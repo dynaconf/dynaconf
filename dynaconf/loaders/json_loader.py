@@ -7,6 +7,11 @@ from dynaconf.constants import JSON_EXTENSIONS
 from dynaconf.utils import object_merge
 import json
 
+try:  # pragma: no cover
+    import commentjson
+except ImportError:  # pragma: no cover
+    commentjson = None
+
 
 def load(obj, env=None, silent=True, key=None, filename=None):
     """
@@ -19,13 +24,20 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :param filename: Optional custom filename to load
     :return: None
     """
+    if obj.get('COMMENTJSON_ENABLED_FOR_DYNACONF') and commentjson:  # pragma: no cover  # noqa
+        file_reader = commentjson.load
+        string_reader = commentjson.loads
+    else:
+        file_reader = json.load
+        string_reader = json.loads
+
     loader = BaseLoader(
         obj=obj,
         env=env,
         identifier='json',
         extensions=JSON_EXTENSIONS,
-        file_reader=json.load,
-        string_reader=json.loads
+        file_reader=file_reader,
+        string_reader=string_reader
     )
     loader.load(filename=filename, key=key, silent=silent)
 

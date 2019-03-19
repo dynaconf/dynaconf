@@ -20,6 +20,7 @@ pytest
 pytest-cov
 pytest-xdist
 logzero
+commentjson
 
 # style check
 flake8
