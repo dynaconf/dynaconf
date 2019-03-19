@@ -123,7 +123,11 @@ VAULT_ENABLED_FOR_DYNACONF = get('VAULT_ENABLED_FOR_DYNACONF', False)
 VAULT_PATH_FOR_DYNACONF = get('VAULT_PATH_FOR_DYNACONF',
                               '/secret/data/')  # /DYNACONF will be added
 
-# Loaders to read env based vars from different data stores
+# Only core loaders defined on this list will be invoked
+core_loaders = ['YAML', 'TOML', 'INI', 'JSON', 'PY']
+CORE_LOADERS_FOR_DYNACONF = get('CORE_LOADERS_FOR_DYNACONF', core_loaders)
+
+# External Loaders to read vars from different data stores
 default_loaders = [
     'dynaconf.loaders.env_loader',
     # 'dynaconf.loaders.redis_loader'
@@ -153,3 +157,11 @@ DOTENV_OVERRIDE_FOR_DYNACONF = get('DOTENV_OVERRIDE_FOR_DYNACONF', False)
 # dotted path to custom LazySettings instance. Last dotted path item should be
 # instance of LazySettings.
 INSTANCE_FOR_DYNACONF = get('INSTANCE_FOR_DYNACONF', None)
+
+# https://msg.pyyaml.org/load
+YAML_LOADER_FOR_DYNACONF = get('YAML_LOADER_FOR_DYNACONF', 'full_load')
+
+# Use commentjson? https://commentjson.readthedocs.io/en/latest/
+COMMENTJSON_ENABLED_FOR_DYNACONF = get(
+    'COMMENTJSON_ENABLED_FOR_DYNACONF', False
+)

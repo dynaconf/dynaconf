@@ -1,0 +1,17 @@
+<html>
+<head><title>Dynaconf and Flask</title></head>
+<body>
+<h1>This is a Flask website using FlaskDynaconf</h1>
+
+<p>You can see all Flask default config + all the variables defined in settings.yml and .secrets.yml listed below:</p>
+
+<table>
+{%for k, v in config.items() %}
+   <tr>
+     <td>{{k}}</td><td>{{v}}</td>
+   <tr>
+{% endfor %}
+</table>
+
+</body>
+</html>

@@ -37,3 +37,11 @@ In case you need to disable all external loaders and rely only the `settings.*` 
 ```bash
 LOADERS_FOR_DYNACONF=false
 ```
+
+In case you need to disable all core loaders and rely only on external loaders:
+
+```bash
+CORE_LOADERS_FOR_DYNACONF='[]'  # a toml empty list
+```
+
+See [example/custom_loader](https://github.com/rochacbruno/dynaconf/tree/master/example/custom_loader)

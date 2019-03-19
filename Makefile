@@ -17,11 +17,13 @@ test_examples:
 	@cd example/flask_with_toml;pwd;flask routes | grep -c flask_with_toml
 	@cd example/flask_with_yaml;pwd;flask routes | grep -c flask_with_yaml
 	@cd example/flask_with_json;pwd;flask routes | grep -c flask_with_json
+	@cd example/flask_with_commentjson;pwd;flask routes | grep -c flask_with_commentjson
 	@cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini
 	@cd example/validators/with_python/;pwd;python app.py | grep -c validator
 	@cd example/validators/with_toml/;pwd;dynaconf validate
 	@cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et
 	@cd example/envs;pwd;python app.py
+	@cd example/custom_loader;pwd;python app.py
 	@cd example/get_fresh;pwd;python app.py
 	@cd example/django_example/;pwd;python manage.py test
 	@cd example/project_root/;pwd;rm -rf /tmp/dynaconf_project_root_test/settings.py;mkdir -p /tmp/dynaconf_project_root_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/dynaconf_project_root_test/settings.py;python app.py;rm -rf /tmp/dynaconf_project_root_test/
