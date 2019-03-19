@@ -111,14 +111,23 @@ def test_no_key_error_on_invalid_env():
 def test_load_single_key():
     """Test loading a single key"""
     toml = """
+    a = "a,b"
     [foo]
     bar = "blaz"
-    zaz = "naz"
+    ZAZ = "naz"
+    lowerkey = 'hello'
+    UPPERKEY = 'world'
     """
     load(settings, filename=toml, env='FOO', key='bar')
     assert settings.BAR == 'blaz'
     assert settings.exists('BAR') is True
     assert settings.exists('ZAZ') is False
+    load(settings, filename=toml, env='FOO', key='ZAZ')
+    assert settings.ZAZ == 'naz'
+    load(settings, filename=toml, env='FOO', key='LOWERKEY')
+    assert settings.LOWERKEY == 'hello'
+    load(settings, filename=toml, env='FOO', key='upperkey')
+    assert settings.UPPERKEY == 'world'
 
 
 def test_empty_value():

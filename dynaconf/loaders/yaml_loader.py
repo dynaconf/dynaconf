@@ -1,5 +1,6 @@
 # coding: utf-8
 import io
+from pathlib import Path
 from dynaconf import default_settings
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.constants import YAML_EXTENSIONS
@@ -43,6 +44,7 @@ def write(settings_path, settings_data, merge=True):
     :param settings_data: a dictionary with data
     :param merge: boolean if existing file should be merged with new data
     """
+    settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover
         object_merge(
             yaml.load(

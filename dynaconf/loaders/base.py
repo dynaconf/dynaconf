@@ -111,6 +111,7 @@ class BaseLoader(object):
             if not source_data:
                 continue
 
+            # env name is checked in lower
             source_data = {
                 k.lower(): value
                 for k, value
@@ -137,6 +138,11 @@ class BaseLoader(object):
                     identifier = "{0}_{1}".format(self.identifier, env.lower())
                 else:
                     identifier = self.identifier
+
+                # data 1st level keys should be transformed to upper case.
+                data = {k.upper(): v for k, v in data.items()}
+                if key:
+                    key = key.upper()
 
                 if not key:
                     self.obj.update(data, loader_identifier=identifier)

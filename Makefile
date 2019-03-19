@@ -22,6 +22,7 @@ test_examples:
 	@cd example/validators/with_toml/;pwd;dynaconf validate
 	@cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et
 	@cd example/envs;pwd;python app.py
+	@cd example/get_fresh;pwd;python app.py
 	@cd example/django_example/;pwd;python manage.py test
 	@cd example/project_root/;pwd;rm -rf /tmp/dynaconf_project_root_test/settings.py;mkdir -p /tmp/dynaconf_project_root_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/dynaconf_project_root_test/settings.py;python app.py;rm -rf /tmp/dynaconf_project_root_test/
 
