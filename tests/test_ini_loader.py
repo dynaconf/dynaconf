@@ -111,12 +111,20 @@ def test_load_single_key():
     a = "a,b"
     [foo]
     bar = "blaz"
-    zaz = "naz"
+    ZAZ = "naz"
+    lowerkey = 'hello'
+    UPPERKEY = 'world'
     """
     load(settings, filename=ini, env='FOO', key='bar')
     assert settings.BAR == 'blaz'
     assert settings.exists('BAR') is True
     assert settings.exists('ZAZ') is False
+    load(settings, filename=ini, env='FOO', key='ZAZ')
+    assert settings.ZAZ == 'naz'
+    load(settings, filename=ini, env='FOO', key='LOWERKEY')
+    assert settings.LOWERKEY == 'hello'
+    load(settings, filename=ini, env='FOO', key='upperkey')
+    assert settings.UPPERKEY == 'world'
 
 
 def test_empty_value():
