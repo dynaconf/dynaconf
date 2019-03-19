@@ -1,10 +1,13 @@
 # coding: utf-8
 import io
+import os
 from pathlib import Path
+from warnings import warn
 from dynaconf import default_settings
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.constants import YAML_EXTENSIONS
 from dynaconf.utils import object_merge
+
 try:
     import yaml
 except ImportError as e:  # pragma: no cover
@@ -26,13 +29,25 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         BaseLoader.warn_not_installed(obj, 'yaml')
         return
 
+    # Resolve the loaders
+    # https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
+    # Possible values are `safe_load, full_load, unsafe_load, load`
+    yaml_loader_name = os.environ.get('YAML_LOADER_FOR_DYNACONF', 'full_load')
+    yaml_reader = getattr(yaml, yaml_loader_name, yaml.load)
+    if yaml_reader.__name__ == 'unsafe_load':  # pragma: no cover
+        warn(
+            "yaml.unsafe_load is deprecated."
+            " Please read https://msg.pyyaml.org/load for full details."
+            " Try to use full_load or safe_load."
+        )
+
     loader = BaseLoader(
         obj=obj,
         env=env,
         identifier='yaml',
         extensions=YAML_EXTENSIONS,
-        file_reader=yaml.load,
-        string_reader=yaml.load
+        file_reader=yaml_reader,
+        string_reader=yaml_reader
     )
     loader.load(filename=filename, key=key, silent=silent)
 
