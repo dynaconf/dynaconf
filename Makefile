@@ -25,6 +25,8 @@ test_examples:
 	@cd example/get_fresh;pwd;python app.py
 	@cd example/django_example/;pwd;python manage.py test
 	@cd example/project_root/;pwd;rm -rf /tmp/dynaconf_project_root_test/settings.py;mkdir -p /tmp/dynaconf_project_root_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/dynaconf_project_root_test/settings.py;python app.py;rm -rf /tmp/dynaconf_project_root_test/
+	@cd example/settings_module/;pwd;rm -rf /tmp/settings_module_test/settings.py;mkdir -p /tmp/settings_module_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/settings_module_test/settings.py;python app.py;rm -rf /tmp/settings_module_test/
+	@cd example/configure/;pwd;rm -rf /tmp/configure_test/settings.py;mkdir -p /tmp/configure_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/configure_test/settings.py;python app.py;rm -rf /tmp/configure_test/
 
 test_vault:
 	# @cd example/vault;pwd;python write.py

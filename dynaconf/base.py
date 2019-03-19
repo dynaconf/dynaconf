@@ -166,7 +166,7 @@ class Settings(object):
 
         compat_kwargs(kwargs)
         if settings_module:
-            self.set('SETTINGS_MODULE', settings_module)
+            self.set('SETTINGS_MODULE_FOR_DYNACONF', settings_module)
         for key, value in kwargs.items():
             self.set(key, value)
         # execute loaders only after setting defaults got from kwargs
