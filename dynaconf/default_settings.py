@@ -165,3 +165,9 @@ YAML_LOADER_FOR_DYNACONF = get('YAML_LOADER_FOR_DYNACONF', 'full_load')
 COMMENTJSON_ENABLED_FOR_DYNACONF = get(
     'COMMENTJSON_ENABLED_FOR_DYNACONF', False
 )
+
+# Extra file, or list of files where to look for secrets
+# useful for CI environment like jenkins
+# where you can export this variable pointing to a local
+# absolute path of the secrets file.
+SECRETS_FOR_DYNACONF = get('SECRETS_FOR_DYNACONF', None)

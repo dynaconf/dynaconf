@@ -25,6 +25,8 @@ test_examples:
 	@cd example/envs;pwd;python app.py
 	@cd example/custom_loader;pwd;python app.py
 	@cd example/get_fresh;pwd;python app.py
+	@cd example/jenkins_secrets_file;pwd;python app.py
+	@cd example/specific_settings_modules;pwd;python app.py
 	@cd example/django_example/;pwd;python manage.py test
 	@cd example/project_root/;pwd;rm -rf /tmp/dynaconf_project_root_test/settings.py;mkdir -p /tmp/dynaconf_project_root_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/dynaconf_project_root_test/settings.py;python app.py;rm -rf /tmp/dynaconf_project_root_test/
 	@cd example/settings_module/;pwd;rm -rf /tmp/settings_module_test/settings.py;mkdir -p /tmp/settings_module_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/settings_module_test/settings.py;python app.py;rm -rf /tmp/settings_module_test/
