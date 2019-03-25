@@ -59,6 +59,8 @@ Dynaconf can be configured through variables suffixed with `_FOR_DYNACONF` those
 +---------------------+---------+--------------------------------------------------+----------------------------------------+--------------------------------------------------------------+
 | COMMENTJSON_ENABLED | bool    | Enable comments in json files                    | false  (req:`pip install commentjson`) | COMMENTJSON_ENABLED_FOR_DYNACONF=true                        |
 +---------------------+---------+--------------------------------------------------+----------------------------------------+--------------------------------------------------------------+
+| SECRETS             | str     | Path to aditional secrets file to be loaded      | None                                   | SECRETS_FOR_DYNACONF=/var/jenkins/settings_ci.toml           |
++---------------------+---------+--------------------------------------------------+----------------------------------------+--------------------------------------------------------------+
 ```
 
 ```eval_rst

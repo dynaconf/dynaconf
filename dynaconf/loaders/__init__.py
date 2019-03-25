@@ -15,7 +15,7 @@ def default_loader(obj, defaults=None):
     default_settings_values = {
         key: value
         for key, value
-        in default_settings.__dict__.items()
+        in default_settings.__dict__.items()  # noqa
         if key.isupper()
     }
 
@@ -56,12 +56,19 @@ def settings_loader(obj, settings_module=None, env=None,
         if not settings_module:  # pragma: no cover
             return
 
-        if not isinstance(settings_module, (list, tuple)):
-            files = settings_module.split(',')
+        if isinstance(settings_module, (list, tuple)):
+            files = list(settings_module)
         else:
-            files = [settings_module]
+            files = settings_module.split(',')
     else:
         files = [filename]
+
+    secrets_file = obj.get('SECRETS_FOR_DYNACONF', None)
+    if secrets_file is not None:
+        if isinstance(secrets_file, (list, tuple)):
+            files.extend(secrets_file)
+        else:
+            files.extend(secrets_file.split(','))
 
     obj.logger.debug("Looking for %s", files)
 
