@@ -37,12 +37,14 @@ def load(obj, env=None, silent=True, key=None):
                     holder
                 )
             if value:
-                parsed_value = parse_conf_data(value, tomlfy=True)
+                parsed_value = parse_conf_data(
+                    value, tomlfy=True, obj=obj, key=key
+                )
                 if parsed_value:
                     obj.set(key, parsed_value)
         else:
             data = {
-                key: parse_conf_data(value, tomlfy=True)
+                key: parse_conf_data(value, tomlfy=True, obj=obj, key=key)
                 for key, value in redis.hgetall(holder.upper()).items()
             }
             if data:

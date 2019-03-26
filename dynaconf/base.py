@@ -312,7 +312,7 @@ class Settings(object):
             if cast in converters:
                 data = converters.get(cast)(data)
             if cast is True:
-                data = parse_conf_data(data, tomlfy=True)
+                data = parse_conf_data(data, tomlfy=True, obj=self, key=key)
         return data
 
     def exists_in_environ(self, key):
@@ -525,7 +525,7 @@ class Settings(object):
         for k in split_keys[:-1]:
             tree = tree.setdefault(k, {})
 
-        value = parse_conf_data(value, tomlfy=tomlfy)
+        value = parse_conf_data(value, tomlfy=tomlfy, obj=self, key=dotted_key)
         tree[split_keys[-1]] = value
 
         self.update(data=data, **kwargs)
@@ -547,8 +547,8 @@ class Settings(object):
                 loader_identifier=loader_identifier,
                 tomlfy=tomlfy)
 
-        value = parse_conf_data(value, tomlfy=tomlfy)
         key = key.strip().upper()
+        value = parse_conf_data(value, tomlfy=tomlfy, obj=self, key=key)
 
         if getattr(self, 'MERGE_ENABLED_FOR_DYNACONF', False):
             attr = getattr(self, key, None)

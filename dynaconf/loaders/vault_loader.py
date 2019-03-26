@@ -72,7 +72,9 @@ def load(obj, env=None, silent=None, key=None):
             data = data.get('data', {}).get('data', {})
         try:
             if data and key:
-                value = parse_conf_data(data.get(key), tomlfy=True)
+                value = parse_conf_data(
+                    data.get(key), tomlfy=True, obj=obj, key=key
+                )
                 if value:
                     obj.logger.debug(
                         "vault_loader: loading by key: %s:%s (%s:%s)",

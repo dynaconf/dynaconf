@@ -109,3 +109,41 @@ def test_missing_sentinel():
     assert bool(missing) is False
 
     assert str(missing) == '<dynaconf.missing>'
+
+
+def test_merge_existing_data():
+    obj = {'names': ['bruno', 'karla'], 'data': {'a': 'b'}}
+
+    # merge_unique on list, keep existing items
+    merged_unique_names = parse_conf_data(
+        data='@merge_unique ["erik", "bruno"]',
+        tomlfy=True,
+        obj=obj,
+        key='names'
+    )
+    assert merged_unique_names == ['karla', 'erik', 'bruno']
+
+    # merge not unique, duplicate items
+    merged_names = parse_conf_data(
+        data='@merge ["erik", "bruno"]',
+        tomlfy=True,
+        obj=obj,
+        key='names'
+    )
+    assert merged_names == ['bruno', 'karla', 'erik', 'bruno']
+
+    merged_data = parse_conf_data(
+        data='@merge {b="b1"}',
+        tomlfy=True,
+        obj=obj,
+        key='data'
+    )
+    assert merged_data == {'b': 'b1', 'a': 'b'}
+
+    with pytest.raises(RuntimeError):
+        parse_conf_data(
+            data='@merge 123',
+            tomlfy=True,
+            obj=obj,
+            key='data'
+        )

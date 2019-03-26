@@ -29,7 +29,8 @@ def get(key, default=None):
                         'DYNACONF_SETTINGS')
 
     return parse_conf_data(
-        value, tomlfy=True) if value is not None else default
+        value, tomlfy=True, obj=locals(), key=key
+    ) if value is not None else default
 
 
 def start_dotenv(obj=None):

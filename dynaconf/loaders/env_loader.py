@@ -50,7 +50,9 @@ def load_from_env(identifier, key, env, obj, silent):
                 obj.set(key, value, loader_identifier=identifier, tomlfy=True)
         else:
             data = {
-                key.partition(env_)[-1]: parse_conf_data(data, tomlfy=True)
+                key.partition(env_)[-1]: parse_conf_data(
+                    data, tomlfy=True, obj=obj, key=key.partition(env_)[-1]
+                )
                 for key, data
                 in os.environ.items()
                 if key.startswith(env_)

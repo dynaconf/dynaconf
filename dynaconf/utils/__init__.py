@@ -12,14 +12,18 @@ BANNER = """
 """
 
 
-def object_merge(old, new):
+def object_merge(old, new, unique=False):
     """
     Recursively merge two data structures
+
+    :param unique: When set to True existing list items are not set.
     """
     if isinstance(old, list) and isinstance(new, list):
         if old == new:
             return
         for item in old[::-1]:
+            if unique and item in new:
+                continue
             new.insert(0, item)
     if isinstance(old, dict) and isinstance(new, dict):
         for key, value in old.items():

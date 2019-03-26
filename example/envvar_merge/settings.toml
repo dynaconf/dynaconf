@@ -1,0 +1,9 @@
+[default]
+colors = ['green', 'yellow', 'blue', 'red']
+fruits = ['apple', 'orange', 'banana']
+database = {host="server.com", user="admin"}
+
+[development]
+colors = "@merge ['pink']"
+fruits = "@merge_unique ['apple']"
+database = "@merge {port=666}"

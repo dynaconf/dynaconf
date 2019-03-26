@@ -80,10 +80,15 @@ def import_settings(dotted_path):
         raise click.UsageError(e)
 
 
-def split_vars(_vars):
+def split_vars(_vars, obj=None):
     """Splits values like foo=bar=zaz in {'foo': 'bar=zaz'}"""
     return {
-        k.upper().strip(): parse_conf_data(v.strip(), tomlfy=True)
+        k.upper().strip(): parse_conf_data(
+            v.strip(),
+            tomlfy=True,
+            obj=obj,
+            key=k.upper().strip()
+        )
         for k, _, v
         in [item.partition('=') for item in _vars]
     } if _vars else {}
@@ -181,8 +186,8 @@ def init(fileformat, path, env, _vars, _secrets, wg, y):
         "dynaconf.loaders.{}_loader".format(fileformat)
     )
     # Turn foo=bar=zaz in {'foo': 'bar=zaz'}
-    env_data = split_vars(_vars)
-    _secrets = split_vars(_secrets)
+    env_data = split_vars(_vars, obj=settings)
+    _secrets = split_vars(_secrets, obj=settings)
 
     # create placeholder data for every env
     settings_data = {k: {'value': 'value for {}'.format(k)} for k in ENVS}
