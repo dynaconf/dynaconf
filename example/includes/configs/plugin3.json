@@ -1,0 +1,9 @@
+{
+    "default": {
+        "plugin3_var": true,
+        "lastfile": "configs/plugin3.json",
+        "mergeable": {
+            "plugin3": true
+        }
+    }
+}
