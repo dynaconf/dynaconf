@@ -153,6 +153,86 @@ DYNACONF_LOADING_ORDER = [
 ]
 ```
 
+## Additional secrets file (for CI, jenkins etc.)
+
+It is common to have an extra `secrets` file that is available only when running on specific CI environment like `Jenkins`, usually there will be an environment variable pointing to the file.
+
+On Jenkins it is done on job settings by exporting the `secrets` information.
+
+Dynaconf can handle this via `SECRETS_FOR_DYNACONF` environment variable.
+
+ex:
+
+```bash
+export SECRETS_FOR_DYNACONF=/path/to/settings.toml{json|py|ini|yaml}
+```
+
+If that variable exists in your environment then Dynaconf will also load it.
+
 > **NOTE**: Dynaconf works in an **layered override** mode based on the above order, so if you have multiple file formats with conflicting keys defined, the precedence will be based on the loading order.
+
+## Including files inside files
+
+Sometimes you have multiple fragments of settings in different files, dynaconf allow easy merging of those files via `dynaconf_include`.
+
+Example:
+
+`plugin1.toml`
+```toml
+[development]
+plugin_specific_variable = 'value for development'
+```
+
+and even mixing different formats:  
+`plugin2.yaml`
+```yaml
+production:
+  plugin_specific_variable: 'value for production'
+```
+
+Then it can be merged on main `settings.toml` file via `dynaconf_include`
+
+`settings.toml`
+```toml
+[default]
+dynaconf_include = ["plugin1.toml", "plugin2.yaml"]
+DEBUG = false
+SERVER = "base.example.com"
+PORT = 6666
+```
+
+A settings file can include a `dynaconf_include` stanza, whose exact
+  syntax will depend on the type of settings file (json, yaml, toml, etc)
+  being used:
+
+  ```toml
+  [default]
+  dynaconf_include = ["/absolute/path/to/plugin1.toml", "relative/path/to/plugin2.toml"]
+  DEBUG = false
+  SERVER = "www.example.com"
+  ```
+
+  When loaded, the files located at the (relative or absolute) paths in
+  the `dynaconf_include` key will be parsed, in order, and override any
+  base settings that may exist in your current configuration.
+
+  The paths can be relative to the base `settings.(toml|yaml|json|ini|py)`
+  file, or can be absolute paths.
+
+  The idea here is that plugins or extensions for whatever framework or
+  architecture you are using can provide their own configuration values
+  when necessary.
+
+  It is also possible to specify glob-based patterns:
+
+  ```toml
+  [default]
+  dynaconf_include = ["configurations/*.toml"]
+  DEBUG = false
+  SERVER = "www.example.com"
+  ```
+
+  Currently, only a single level of includes is permitted to keep things
+  simple and straightforward.
 
 Take a look at the [example](https://github.com/rochacbruno/dynaconf/tree/master/example) folder to see some examples of use with different file formats.
