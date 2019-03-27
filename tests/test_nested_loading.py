@@ -168,6 +168,23 @@ PLUGIN_TEXT = {
 }
 
 
+def test_invalid_include_path(tmpdir):
+    """Ensure non existing paths are not loaded."""
+
+    settings_file = tmpdir.join("settings.toml")
+    settings_file.write(TOML)
+
+    settings = LazySettings(
+        ENV_FOR_DYNACONF="DEFAULT",
+        silent=False,
+        LOADERS_FOR_DYNACONF=False,
+        SETTINGS_MODULE_FOR_DYNACONF=str(settings_file))
+
+    # Ensure overrides not happened
+    assert settings.SERVER == "base.example.com"
+    assert settings.DEBUG is False
+
+
 def test_load_nested_toml(tmpdir):
     """Load a TOML file that includes other TOML files."""
 
@@ -184,6 +201,7 @@ def test_load_nested_toml(tmpdir):
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
+        PROJECT_ROOT_FOR_DYNACONF=str(tmpdir),
         SETTINGS_MODULE_FOR_DYNACONF=str(settings_file))
 
     # Ensure overrides that happen via TOML plugin config load.
@@ -213,7 +231,9 @@ def test_load_nested_different_types(ext, tmpdir):
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
-        SETTINGS_MODULE_FOR_DYNACONF=str(settings_file))
+        PROJECT_ROOT_FOR_DYNACONF=str(tmpdir),
+        SETTINGS_MODULE_FOR_DYNACONF=str(settings_file)
+    )
 
     assert settings.DEBUG is False
     assert settings.DATABASE_URI == "{0}.example.com".format(ext)
@@ -239,6 +259,7 @@ def test_load_nested_different_types_with_merge(tmpdir):
         ENV_FOR_DYNACONF="custom",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
+        PROJECT_ROOT_FOR_DYNACONF=str(tmpdir),
         SETTINGS_MODULE_FOR_DYNACONF=str(settings_file),
         MERGE_ENABLED_FOR_DYNACONF=True)
 

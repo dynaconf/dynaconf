@@ -1,0 +1,5 @@
+[default]
+dynaconf_include = ['configs/*']
+settings_var = true
+lastfile = 'settings.toml'
+mergeable = {settings=true}

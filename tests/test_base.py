@@ -306,3 +306,7 @@ def test_dotted_set_with_merge(settings):
             {'name': 'item 4'},
         ]
     }
+
+
+def test_abs_project_root(settings):
+    assert settings.abs_project_root in os.path.abspath(__file__)

@@ -3,7 +3,6 @@ import os
 import glob
 import importlib
 from contextlib import contextmanager
-from collections import OrderedDict
 
 from six import string_types
 
@@ -634,35 +633,38 @@ class Settings(object):
         for loader in self.loaders:
             self.logger.debug('Dynaconf executing: %s', loader.__name__)
             loader.load(self, env, silent=silent, key=key)
+        self.load_includes(env, silent=silent, key=key)
 
-        # Do we have any nested includes we need to process? If so,
-        # Remove any duplicate paths (while preserving definition order)
-        # by converting to an ordered dict, and then converting back
-        # to a list.
-        includes = list(OrderedDict.fromkeys(self.get('DYNACONF_INCLUDE', [])))
+    def load_includes(self, env, silent, key):
+        """Do we have any nested includes we need to process?"""
+        includes = self.get('DYNACONF_INCLUDE', [])
         if includes:
+            self.logger.debug('Found %s includes to process', includes)
             already_loaded = set()
-            basepath = os.path.split(self.settings_module)[0]
-
             for include in includes:
-                # Handle absolute and relative paths in the configuration.
-                if os.path.isabs(include):  # pragma: no cover
-                    included_filename = include
-                else:
-                    included_filename = os.path.join(basepath, include)
-
-                # Handle possible globs
-                for path in glob.glob(included_filename):
+                self.logger.debug('Processing include %s', include)
+                included_filename = os.path.join(
+                    self.PROJECT_ROOT_FOR_DYNACONF, include
+                )
+                self.logger.debug('Include path is %s', included_filename)
+                # Handle possible *.globs sorted alphanumeric
+                for path in sorted(glob.glob(included_filename)):
+                    self.logger.debug('Loading %s', path)
                     if path in already_loaded:  # pragma: no cover
+                        self.logger.debug('Skipping %s, already loaded', path)
                         continue
-
-                    settings_loader(obj=self,
-                                    env=env,
-                                    silent=silent,
-                                    key=key,
-                                    filename=path)
-
+                    settings_loader(
+                        obj=self,
+                        env=env,
+                        silent=silent,
+                        key=key,
+                        filename=path
+                    )
                     already_loaded.add(path)
+            if not already_loaded:
+                self.logger.error(
+                    'Not able to locate the files %s to include', includes
+                )
 
     def load_extra_yaml(self, env, silent, key):
         """This is deprecated, kept for compat
@@ -689,6 +691,11 @@ class Settings(object):
         if args and args[0].startswith('/'):
             return os.path.join(*args)
         return os.path.join(self.PROJECT_ROOT_FOR_DYNACONF, *args)
+
+    @property
+    def abs_project_root(self):
+        """Absolute path for PROJECT_ROOT_FOR_DYNACONF"""
+        return os.path.abspath(self.PROJECT_ROOT_FOR_DYNACONF)
 
     @property
     def validators(self):

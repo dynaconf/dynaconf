@@ -25,6 +25,7 @@ test_examples:
 	@cd example/envs;pwd;python app.py
 	@cd example/custom_loader;pwd;python app.py
 	@cd example/get_fresh;pwd;python app.py
+	@cd example/includes;pwd;python app.py
 	@cd example/jenkins_secrets_file;pwd;python app.py
 	@cd example/specific_settings_modules;pwd;python app.py
 	@cd example/django_example/;pwd;python manage.py test

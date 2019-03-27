@@ -1,0 +1,7 @@
+[default]
+plugin1_var = true
+lastfile = 'configs/plugin1.toml'
+mergeable = {plugin1=true}
+
+# includes works only for the main file, will not work inside an included file
+dynaconf_include = ['this_is_not_loaded.toml']
