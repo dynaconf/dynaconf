@@ -4,7 +4,7 @@ import os
 import pytest
 import tempfile
 from dynaconf import default_settings
-from dynaconf.utils import missing, Missing
+from dynaconf.utils import missing, Missing, object_merge
 from dynaconf.utils.parse_conf import unparse_conf_data, parse_conf_data
 from dynaconf.utils.files import find_file
 
@@ -109,3 +109,33 @@ def test_missing_sentinel():
     assert bool(missing) is False
 
     assert str(missing) == '<dynaconf.missing>'
+
+
+def test_merge_existing_list():
+    existing = ['bruno', 'karla']
+    object_merge(existing, existing)
+    # calling twice the same object does not duplicate
+    assert existing == ['bruno', 'karla']
+
+    new = ['erik', 'bruno']
+    object_merge(existing, new)
+    assert new == ['bruno', 'karla', 'erik', 'bruno']
+
+
+def test_merge_existing_list_unique():
+    existing = ['bruno', 'karla']
+    new = ['erik', 'bruno']
+    object_merge(existing, new, unique=True)
+    assert new == ['karla', 'erik', 'bruno']
+
+
+def test_merge_existing_dict():
+    existing = {'host': 'localhost', 'port': 666}
+    new = {'user': 'admin'}
+
+    # calling with same data has no effect
+    object_merge(existing, existing)
+    assert existing == {'host': 'localhost', 'port': 666}
+
+    object_merge(existing, new)
+    assert new == {'host': 'localhost', 'port': 666, 'user': 'admin'}

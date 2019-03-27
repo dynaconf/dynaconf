@@ -530,13 +530,14 @@ class Settings(object):
         self.update(data=data, **kwargs)
 
     def set(self, key, value, loader_identifier=None, tomlfy=False,
-            dotted_lookup=True):
+            dotted_lookup=True, is_secret=False):
         """Set a value storing references for the loader
 
         :param key: The key to store
         :param value: The value to store
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
+        :param is_secret: Bool define if secret values is hidden on logs.
         """
 
         if '.' in key and dotted_lookup is True:
@@ -548,10 +549,9 @@ class Settings(object):
 
         value = parse_conf_data(value, tomlfy=tomlfy)
         key = key.strip().upper()
-
-        if getattr(self, 'MERGE_ENABLED_FOR_DYNACONF', False):
-            attr = getattr(self, key, None)
-            object_merge(attr, value)
+        existing = getattr(self, key, None)
+        if existing is not None and existing != value:
+            value = self._merge_before_set(key, existing, value, is_secret)
 
         if isinstance(value, dict):
             value = DynaBox(value, box_it_up=True)
@@ -571,7 +571,7 @@ class Settings(object):
             self._defaults[key] = value
 
     def update(self, data=None, loader_identifier=None,
-               tomlfy=False, **kwargs):
+               tomlfy=False, is_secret=False, **kwargs):
         """
         Update values in the current settings object without saving in stores::
 
@@ -594,7 +594,72 @@ class Settings(object):
         data.update(kwargs)
         for key, value in data.items():
             self.set(key, value, loader_identifier=loader_identifier,
-                     tomlfy=tomlfy)
+                     tomlfy=tomlfy, is_secret=is_secret)
+
+    def _merge_before_set(self, key, existing, value, is_secret):
+        """Merge the new value being set with the existing value before set"""
+
+        def _log_before_merging(_value):
+            self.logger.debug(
+                'Merging existing %s: %s with new: %s',
+                key,
+                existing,
+                _value
+            )
+
+        def _log_after_merge(_value):
+            self.logger.debug(
+                '%s merged to %s',
+                key,
+                _value
+            )
+
+        global_merge = getattr(self, 'MERGE_ENABLED_FOR_DYNACONF', False)
+
+        if isinstance(value, dict):
+            local_merge = value.pop(
+                'dynaconf_merge',
+                value.pop('dynaconf_merge_unique', None)
+            )
+            if global_merge or local_merge:
+                safe_value = {k: '***' for k in value} if is_secret else value
+                _log_before_merging(safe_value)
+                object_merge(existing, value)
+                safe_value = {
+                    k: ('***' if k in safe_value else v)
+                    for k, v
+                    in value.items()
+                } if is_secret else value
+                _log_after_merge(safe_value)
+
+        if isinstance(value, (list, tuple)):
+            local_merge = (
+                'dynaconf_merge' in value or 'dynaconf_merge_unique' in value
+            )
+            if global_merge or local_merge:
+                value = list(value)
+                unique = False
+
+                if local_merge:
+                    try:
+                        value.remove('dynaconf_merge')
+                    except ValueError:  # EAFP
+                        value.remove('dynaconf_merge_unique')
+                        unique = True
+
+                original = set(value)
+                _log_before_merging(
+                    ['***' for item in value] if is_secret else value
+                )
+                object_merge(existing, value, unique=unique)
+                safe_value = [
+                    '***' if item in original else item
+                    for item
+                    in value
+                ] if is_secret else value
+                _log_after_merge(safe_value)
+
+        return value
 
     @property
     def loaders(self):  # pragma: no cover

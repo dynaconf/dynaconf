@@ -1,0 +1,12 @@
+[default]
+database = {host='server.com', port=666}
+plugins = ['core']
+scripts = ['install.sh', 'deploy.sh']
+
+[development]
+database = {host='dev.server.com', user='dev', dynaconf_merge=true}
+plugins = ['debug_toolbar', 'dynaconf_merge']
+scripts = ['dev.sh', 'test.sh', 'deploy.sh', 'dynaconf_merge_unique']
+
+[production]
+database = {user='prod', dynaconf_merge=true}

@@ -8,6 +8,7 @@ test_examples:
 	@cd example/app;pwd;python app.py | grep -c app
 	@cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv
 	@cd example/merge_configs;pwd;python app.py | grep -c merge_configs
+	@cd example/dynaconf_merge;pwd;python app.py
 	@cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources
 	@cd example/multiple_folders;pwd;python app.py | grep -c var2_prod
 	@cd example/toml_example/;pwd;python app.py | grep -c toml_example

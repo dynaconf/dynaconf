@@ -1,5 +1,6 @@
 # coding: utf-8
 import io
+import os
 from dynaconf.utils.files import find_file
 from dynaconf.utils import raw_logger
 
@@ -144,16 +145,25 @@ class BaseLoader(object):
                 if key:
                     key = key.upper()
 
-                if not key:
-                    self.obj.update(data, loader_identifier=identifier)
-                elif key in data:
-                    self.obj.set(key, data.get(key),
-                                 loader_identifier=identifier)
+                is_secret = 'secret' in source_file
 
                 self.obj.logger.debug(
-                    '{}_loader: {}: {}'.format(
+                    '{}_loader: {}[{}]{}'.format(
                         self.identifier,
+                        os.path.split(source_file)[-1],
                         env.lower(),
-                        list(data.keys()) if 'secret' in source_file else data
+                        list(data.keys()) if is_secret else data
                     )
                 )
+
+                if not key:
+                    self.obj.update(
+                        data, loader_identifier=identifier, is_secret=is_secret
+                    )
+                elif key in data:
+                    self.obj.set(
+                        key,
+                        data.get(key),
+                        loader_identifier=identifier,
+                        is_secret=is_secret
+                    )
