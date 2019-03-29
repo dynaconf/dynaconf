@@ -72,8 +72,6 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   strategy:
     matrix:
-      Python35:
-        python.version: '3.5'
       Python36:
         python.version: '3.6'
       Python37:
@@ -91,6 +89,36 @@ jobs:
 
   - script: make test_examples
     displayName: 'Functional tests for examples and frameworks'
+
+- job: 'Redis'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 4
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      docker pull redis
+      docker run -d -p 6379:6379 redis
+      docker ps -a
+
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
+
+  - script: make test_redis
+    displayName: 'Functional test for redis'
 
 - job: 'Publish'
   dependsOn: 'Test'
