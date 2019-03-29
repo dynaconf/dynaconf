@@ -56,6 +56,39 @@ DYNACONF_ARRAY='@json [42, 3.14, "hello", true, ["otherarray"], {"foo": "bar"}]'
 
 > **NOTE**: Older versions of Dynaconf used the `@casting` prefixes for env vars like `export DYNACONF_INTEGER='@int 123'` still works but this casting is deprecated in favor of using TOML syntax described above. To disable the `@casting` do `export AUTO_CAST_FOR_DYNACONF=false`
 
+### Merging exported variables with existing data
+
+To merge exported variables there is the **dynaconf_merge** tokens, example:
+
+Your main settings file (e.g `settings.toml`) has an existing `DATABASE` dict setting on `[default]` env.
+
+Now you want to contribute to the same `DATABASE` key by addind new keys, so you can use `dynaconf_merge` at the end of your dict:
+
+In specific `[envs]`
+
+```toml
+[default]
+database = {host="server.com", user="default"}
+
+[development]
+database = {user="dev_user", dynaconf_merge=true}
+```
+
+In an environment variable:
+
+```bash
+# Toml formatted envvar
+export DYNACONF_DATABASE='{password=1234, dynaconf_merge=true}'
+```
+
+The end result will be on `[development]` env:
+
+```python
+settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234}
+```
+
+Read more in [Getting Started Guide](usage.html)
+
 ### The global prefix
 
 The **DYNACONF_{param}** prefix is set by **GLOBAL_ENV_FOR_DYNACONF** and serves only to be used in environment variables to override config values.

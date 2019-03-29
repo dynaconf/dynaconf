@@ -235,4 +235,107 @@ A settings file can include a `dynaconf_include` stanza, whose exact
   Currently, only a single level of includes is permitted to keep things
   simple and straightforward.
 
-Take a look at the [example](https://github.com/rochacbruno/dynaconf/tree/master/example) folder to see some examples of use with different file formats.
+## Merging existing values
+
+If your settings has existing variables of types `list` ot `dict` and you want to `merge` instead of `override` then 
+the `dynaconf_merge` and `dynaconf_merge_unique` stanzas can mark that variable as a candidate for merging.
+
+For **dict** value:
+
+Your main settings file (e.g `settings.toml`) has an existing `DATABASE` dict setting on `[default]` env.
+
+Now you want to contribute to the same `DATABASE` key by addind new keys, so you can use `dynaconf_merge` at the end of your dict:
+
+In specific `[envs]`
+
+```toml
+[default]
+database = {host="server.com", user="default"}
+
+[development]
+database = {user="dev_user", dynaconf_merge=true}
+
+[production]
+database = {user="prod_user", dynaconf_merge=true}
+```
+
+In an environment variable:
+
+```bash
+# Toml formatted envvar
+export DYNACONF_DATABASE='{password=1234, dynaconf_merge=true}'
+```
+
+Or in an additional file (e.g `settings.yaml, .secrets.yaml, etc`):
+
+```yaml
+default:
+  database:
+    password: 1234
+    dynaconf_merge: true
+```
+
+The `dynaconf_merge` token will mark that object to be merged with existing values (of course `dynaconf_merge` key will not be added to the final settings it is jsut a mark)
+
+The end result will be on `[development]` env:
+
+```python
+settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234}
+```
+
+The same can be applied to **lists**:
+
+`settings.toml`
+```toml
+[default]
+plugins = ["core"]
+
+[development]
+plugins = ["debug_toolbar", "dynaconf_merge"]
+```
+
+And in environment variable
+
+```bash
+export DYNACONF_PLUGINS='["ci_plugin", "dynaconf_merge"]'
+```
+
+Then the end result on `[development]` is:
+
+```python
+settings.PLUGINS == ["ci_plugin", "debug_toolbar", "core"]
+```
+
+### Avoiding duplications on lists
+
+The `dynaconf_merge_unique` is the token for when you want to avoid duplications in a list.
+
+Example:
+
+```toml
+[default]
+scripts = ['install.sh', 'deploy.sh']
+
+[development]
+scripts = ['dev.sh', 'test.sh', 'deploy.sh', 'dynaconf_merge_unique']
+```
+
+```bash
+export DYNACONF_SCRIPTS='["deploy.sh", "run.sh", "dynaconf_merge_unique"]'
+```
+
+The end result for `[development]` will be:
+
+```python
+settings.SCRIPTS == ['install.sh', 'dev.sh', 'test.sh', 'deploy.sh', 'run.sh']
+```
+
+> Note that `deploy.sh` is set 3 times but it is not repeated in the final settings.
+
+### Known caveats
+
+The **dynaconf_merge** functionality works only for the first level keys, it will not merge subdicts or nested lists (yet).
+
+## More examples
+
+Take a look at the [example](https://github.com/rochacbruno/dynaconf/tree/master/example) folder to see some examples of use with different file formats and features.

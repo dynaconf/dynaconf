@@ -19,7 +19,7 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
-    maxParallel: 15
+    maxParallel: 4
 
   steps:
   - task: UsePythonVersion@0
@@ -49,7 +49,7 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
-    maxParallel: 15
+    maxParallel: 4
 
   steps:
   - task: UsePythonVersion@0
@@ -70,7 +70,7 @@ jobs:
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: '**/test-results.xml'
-      testRunTitle: 'Python $(python.version)'
+      testRunTitle: 'LinuxUnit Python $(python.version)'
     condition: succeededOrFailed()
 
 - job: 'LinuxFunctional'
@@ -82,7 +82,7 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
-    maxParallel: 15
+    maxParallel: 4
 
   steps:
   - task: UsePythonVersion@0
@@ -103,11 +103,9 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
       Python37:
         python.version: '3.7'
-    maxParallel: 15
+    maxParallel: 4
 
   steps:
   - task: UsePythonVersion@0
@@ -135,11 +133,9 @@ jobs:
     vmImage: 'Ubuntu-16.04'
   strategy:
     matrix:
-      Python36:
-        python.version: '3.6'
       Python37:
         python.version: '3.7'
-    maxParallel: 15
+    maxParallel: 4
 
   steps:
   - task: UsePythonVersion@0
@@ -181,7 +177,7 @@ jobs:
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: '**/test-results.xml'
-      testRunTitle: 'Python $(python.version)'
+      testRunTitle: 'WindowsUnit Python $(python.version)'
     condition: succeededOrFailed()
 
 - job: 'WindowsInstall'
@@ -233,6 +229,7 @@ jobs:
       pushd example\app & cd & python app.py  & popd
       pushd example\app_with_dotenv & cd & python app.py & popd
       pushd example\merge_configs & cd & python app.py & popd
+      pushd example\dynaconf_merge & cd & python app.py & popd
       pushd example\multiple_sources & cd & python app.py & popd
       pushd example\multiple_folders & cd & python app.py & popd
       pushd example\toml_example\ & cd & python app.py & popd
@@ -250,6 +247,7 @@ jobs:
       pushd example\envs & cd & python app.py & popd
       pushd example\custom_loader & cd & python app.py & popd
       pushd example\get_fresh & cd & python app.py & popd
+      pushd example\includes & cd & python app.py & popd
       pushd example\jenkins_secrets_file & cd & python app.py & popd
       pushd example\specific_settings_modules & cd & python app.py & popd
       pushd example\django_example\ & cd & python manage.py test & popd

@@ -177,7 +177,7 @@ def test_set(settings):
     assert settings.get("BAZ") == "bar"
 
 
-def test_set_merge(settings):
+def test_global_set_merge(settings):
     settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
     settings.set("MERGE_KEY", {
         "items": [{"name": "item 1"}, {"name": "item 2"}]
@@ -192,11 +192,49 @@ def test_set_merge(settings):
         ]
     }
 
-def test_merge_shortcut(settings):
+
+def test_global_merge_shortcut(settings):
     settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
     settings.set("MERGE_KEY", ["item1"])
     settings.set("MERGE_KEY", ["item1"])
     assert settings.MERGE_KEY == ["item1"]
+
+
+def test_local_set_merge_dict(settings):
+    settings.set("DATABASE", {"host": "localhost", "port": 666})
+    # calling twice  does not change anything
+    settings.set("DATABASE", {"host": "localhost", "port": 666})
+    assert settings.DATABASE == {"host": "localhost", "port": 666}
+
+    settings.set(
+        "DATABASE",
+        {"host": "new", "user": "admin", "dynaconf_merge": True}
+    )
+    assert settings.DATABASE == {'host': 'new', 'port': 666, 'user': 'admin'}
+    assert settings.DATABASE.HOST == 'new'
+    assert settings.DATABASE.user == 'admin'
+
+
+def test_local_set_merge_list(settings):
+    settings.set("PLUGINS", ["core"])
+    settings.set("PLUGINS", ["core"])
+    assert settings.PLUGINS == ["core"]
+
+    settings.set("PLUGINS", ["debug_toolbar", "dynaconf_merge"])
+    assert settings.PLUGINS == ["core", "debug_toolbar"]
+
+
+def test_local_set_merge_list_unique(settings):
+    settings.set("SCRIPTS", ['install.sh', 'deploy.sh'])
+    settings.set("SCRIPTS", ['install.sh', 'deploy.sh'])
+    assert settings.SCRIPTS == ['install.sh', 'deploy.sh']
+
+    settings.set(
+        "SCRIPTS",
+        ['dev.sh', 'test.sh', 'deploy.sh', 'dynaconf_merge_unique']
+    )
+    assert settings.SCRIPTS == ['install.sh', 'dev.sh', 'test.sh', 'deploy.sh']
+
 
 def test_exists(settings):
     settings.set('BOOK', 'TAOCP')
