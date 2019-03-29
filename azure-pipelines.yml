@@ -8,207 +8,203 @@ trigger:
 
 jobs:
 
-# - job: 'InstallAndTestClient'
-#   pool:
-#     vmImage: 'Ubuntu-16.04'
-#   strategy:
-#     matrix:
-#       Python35:
-#         python.version: '3.5'
-#       Python36:
-#         python.version: '3.6'
-#       Python37:
-#         python.version: '3.7'
-#     maxParallel: 15
+- job: 'LinuxInstall'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
 
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '$(python.version)'
-#       architecture: 'x64'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
 
-#   - script: |
-#       python setup.py install
-#       dynaconf init -v FOO=running_on_travis -y
-#       dynaconf write toml -v OTHERVALUE=Hello_Travis -y
-#       dynaconf list | grep -c running_on_travis
-#       dynaconf list | grep -c Hello_Travis
-#       dynaconf --version
-#     displayName: 'Install and test cli'
+  - script: |
+      python setup.py install
+      dynaconf init -v FOO=running_on_travis -y
+      dynaconf write toml -v OTHERVALUE=Hello_Travis -y
+      dynaconf list | grep -c running_on_travis
+      dynaconf list | grep -c Hello_Travis
+      dynaconf --version
+    displayName: 'Install and test cli'
 
-# - job: 'Test'    
-#   variables:
-#     - group: codecov
-#   pool:
-#     vmImage: 'Ubuntu-16.04'
-#   strategy:
-#     matrix:
-#       Python35:
-#         python.version: '3.5'
-#       Python36:
-#         python.version: '3.6'
-#       Python37:
-#         python.version: '3.7'
-#     maxParallel: 15
+- job: 'LinuxUnit'    
+  variables:
+    - group: codecov
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
 
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '$(python.version)'
-#       architecture: 'x64'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
 
-#   - script: source .ci/install_dev.sh
-#     displayName: 'Install dependencies'
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
 
-#   - script: source .ci/test.sh
-#     displayName: 'tests'
+  - script: source .ci/test.sh
+    displayName: 'tests'
 
-#   - script: codecov --token $(SECRET_CODECOV_TOKEN)
-#     displayName: 'Publish Coverage'
-#     condition: eq(variables['python.version'], '3.7')
+  - script: codecov --token $(SECRET_CODECOV_TOKEN)
+    displayName: 'Publish Coverage'
+    condition: eq(variables['python.version'], '3.7')
 
-#   - task: PublishTestResults@2
-#     inputs:
-#       testResultsFiles: '**/test-results.xml'
-#       testRunTitle: 'Python $(python.version)'
-#     condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Python $(python.version)'
+    condition: succeededOrFailed()
 
-# - job: 'Examples'
-#   pool:
-#     vmImage: 'Ubuntu-16.04'
-#   strategy:
-#     matrix:
-#       Python36:
-#         python.version: '3.6'
-#       Python37:
-#         python.version: '3.7'
-#     maxParallel: 15
+- job: 'LinuxFunctional'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
 
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '$(python.version)'
-#       architecture: 'x64'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
 
-#   - script: source .ci/install_dev.sh
-#     displayName: 'Install dependencies'
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
 
-#   - script: make test_examples
-#     displayName: 'Functional tests for examples and frameworks'
+  - script: make test_examples
+    displayName: 'Functional tests for examples and frameworks'
 
-# - job: 'Redis'
-#   variables:
-#     REDIS_ENABLED_FOR_DYNACONF: true
-#   pool:
-#     vmImage: 'Ubuntu-16.04'
-#   strategy:
-#     matrix:
-#       Python35:
-#         python.version: '3.5'
-#       Python36:
-#         python.version: '3.6'
-#       Python37:
-#         python.version: '3.7'
-#     maxParallel: 15
+- job: 'Redis'
+  variables:
+    REDIS_ENABLED_FOR_DYNACONF: true
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
 
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '$(python.version)'
-#       architecture: 'x64'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
 
-#   - script: |
-#       docker pull redis
-#       docker run -d -p 6379:6379 redis
-#       docker ps -a
-#     displayName:  'Run Redis Container'
+  - script: |
+      docker pull redis
+      docker run -d -p 6379:6379 redis
+      docker ps -a
+    displayName:  'Run Redis Container'
 
-#   - script: source .ci/install_dev.sh
-#     displayName: 'Install dependencies'
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
 
-#   - script: make test_redis
-#     displayName: 'Functional test for redis'
+  - script: make test_redis
+    displayName: 'Functional test for redis'
 
-# - job: 'Vault'
-#   variables:
-#     VAULT_ENABLED_FOR_DYNACONF: true
-#     VAULT_TOKEN_FOR_DYNACONF: myroot
-#   pool:
-#     vmImage: 'Ubuntu-16.04'
-#   strategy:
-#     matrix:
-#       Python35:
-#         python.version: '3.5'
-#       Python36:
-#         python.version: '3.6'
-#       Python37:
-#         python.version: '3.7'
-#     maxParallel: 15
+- job: 'Vault'
+  variables:
+    VAULT_ENABLED_FOR_DYNACONF: true
+    VAULT_TOKEN_FOR_DYNACONF: myroot
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
 
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '$(python.version)'
-#       architecture: 'x64'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
 
-#   - script: |
-#       docker pull vault
-#       docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
-#       docker ps -a
-#     displayName:  'Run Vault Container'
+  - script: |
+      docker pull vault
+      docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+      docker ps -a
+    displayName:  'Run Vault Container'
 
-#   - script: source .ci/install_dev.sh
-#     displayName: 'Install dependencies'
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
 
-#   - script: make test_vault
-#     displayName: 'Functional test for vault'
+  - script: make test_vault
+    displayName: 'Functional test for vault'
 
-# - job: 'WindowsTest'
-#   pool:
-#     vmImage: vs2017-win2016
-#   strategy:
-#     matrix:
-#       python37:
-#         python.version: 3.7
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '$(python.version)'
-#       architecture: 'x64'
+- job: 'WindowsUnit'
+  pool:
+    vmImage: vs2017-win2016
+  strategy:
+    matrix:
+      python37:
+        python.version: '3.7'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
       
-#   - script: |
-#       python -m pip install --upgrade pip
-#       python -m pip install -r requirements_dev.txt
-#       py.test -v -l tests --junitxml=junit/test-results.xml
-#     displayName: Test
+  - script: |
+      python -m pip install --upgrade pip
+      python -m pip install -r requirements_dev.txt
+      py.test -v -l tests --junitxml=junit/test-results.xml
+    displayName: Test
 
-#   - task: PublishTestResults@2
-#     inputs:
-#       testResultsFiles: '**/test-results.xml'
-#       testRunTitle: 'Python $(python.version)'
-#     condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Python $(python.version)'
+    condition: succeededOrFailed()
 
-# - job: 'WindowsCli'
-#   pool:
-#     vmImage: vs2017-win2016
-#   strategy:
-#     matrix:
-#       python37:
-#         python.version: 3.7
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '$(python.version)'
-#       architecture: 'x64'
+- job: 'WindowsInstall'
+  pool:
+    vmImage: vs2017-win2016
+  strategy:
+    matrix:
+      python37:
+        python.version: '3.7'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
 
-#   - script: |
-#       python setup.py install
-#       dynaconf init -v FOO=running_on_travis -y
-#       dynaconf write toml -v OTHERVALUE=Hello_Travis -y
-#       dynaconf list | grep -c running_on_travis
-#       dynaconf list | grep -c Hello_Travis
-#       dynaconf --version
-#     displayName: 'Install and test cli'
+  - script: |
+      python setup.py install
+      dynaconf init -v FOO=running_on_travis -y
+      dynaconf write toml -v OTHERVALUE=Hello_Travis -y
+      dynaconf list | grep -c running_on_travis
+      dynaconf list | grep -c Hello_Travis
+      dynaconf --version
+    displayName: 'Install and test cli'
 
 - job: 'WindowsFunctional'
   variables:
@@ -218,7 +214,7 @@ jobs:
   strategy:
     matrix:
       python37:
-        python.version: 3.7
+        python.version: '3.7'
   steps:
   - task: UsePythonVersion@0
     inputs:
@@ -257,26 +253,5 @@ jobs:
       pushd example\jenkins_secrets_file & cd & python app.py & popd
       pushd example\specific_settings_modules & cd & python app.py & popd
       pushd example\django_example\ & cd & python manage.py test & popd
-      @echo off
-      echo "PROJECT_ROOT_FOR_DYNACONF=${TEMP}\dynaconf_project_root_test\" > example\project_root\.env
-      pushd example\project_root\ & cd & mkdir -p %TEMP%\dynaconf_project_root_test\ & echo "MESSAGE = 'Hello from tmp'" > %TEMP%\dynaconf_project_root_test\settings.py & python app.py & rd /s /q %TEMP%\dynaconf_project_root_test\ & popd
-      echo "PROJECT_ROOT_FOR_DYNACONF=${TEMP}\settings_module\" > example\settings_module\.env
-      pushd example\settings_module\ & cd & mkdir -p %TEMP%\settings_module_test\ & echo "MESSAGE = 'Hello from tmp'" > %TEMP%\settings_module_test\settings.py & python app.py & rd /s /q %TEMP%\settings_module_test\ & popd
-      echo "PROJECT_ROOT_FOR_DYNACONF=${TEMP}\configure\" > example\configure\.env
-      pushd example\configure\ & cd & mkdir -p %TEMP%\configure_test\ & echo "MESSAGE = 'Hello from tmp'" > %TEMP%\configure_test\settings.py & python app.py & rd /s /q %TEMP%\configure_test\ & popd
 
     displayName: 'Run functional examples'
-
-# - job: 'Publish'
-#   dependsOn: 'Test'
-#   pool:
-#     vmImage: 'Ubuntu-16.04'
-
-#   steps:
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '3.x'
-#       architecture: 'x64'
-
-#   - script: python setup.py sdist
-#     displayName: 'Build sdist'
