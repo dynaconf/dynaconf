@@ -8,6 +8,34 @@ trigger:
 
 jobs:
 
+- job: 'InstallAndTestClient'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 4
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      python setup.py install
+      dynaconf init -v FOO=running_on_travis -y
+      dynaconf write toml -v OTHERVALUE=Hello_Travis -y
+      dynaconf list | grep -c running_on_travis
+      dynaconf list | grep -c Hello_Travis
+      dynaconf --version
+    displayName: 'Install and test cli'
+
 - job: 'Test'
   pool:
     vmImage: 'Ubuntu-16.04'
@@ -27,19 +55,42 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
-  - script: python -m pip install --upgrade pip && pip install -r requirements_dev.txt
+  - script: source .ci/install_dev.sh
     displayName: 'Install dependencies'
 
-  - script: |
-      pip install pytest
-      py.test --boxed -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/ --junitxml=junit/test-results.xml
-    displayName: 'pytest'
+  - script: source .ci/test.sh
+    displayName: 'tests'
 
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: '**/test-results.xml'
       testRunTitle: 'Python $(python.version)'
     condition: succeededOrFailed()
+
+- job: 'Examples'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 4
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
+
+  - script: make test_examples
+    displayName: 'Functional tests for examples and frameworks'
 
 - job: 'Publish'
   dependsOn: 'Test'
