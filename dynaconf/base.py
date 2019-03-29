@@ -686,7 +686,7 @@ class Settings(object):
 
     def path_for(self, *args):
         """Path containing PROJECT_ROOT_FOR_DYNACONF"""
-        if args and args[0].startswith('/'):
+        if args and args[0].startswith(os.path.sep):
             return os.path.join(*args)
         return os.path.join(self.PROJECT_ROOT_FOR_DYNACONF, *args)
 

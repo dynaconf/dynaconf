@@ -19,7 +19,7 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
-    maxParallel: 4
+    maxParallel: 15
 
   steps:
   - task: UsePythonVersion@0
@@ -82,7 +82,7 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
-    maxParallel: 4
+    maxParallel: 15
 
   steps:
   - task: UsePythonVersion@0
@@ -109,7 +109,7 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
-    maxParallel: 4
+    maxParallel: 15
 
   steps:
   - task: UsePythonVersion@0
@@ -143,7 +143,7 @@ jobs:
         python.version: '3.6'
       Python37:
         python.version: '3.7'
-    maxParallel: 4
+    maxParallel: 15
 
   steps:
   - task: UsePythonVersion@0
@@ -162,6 +162,53 @@ jobs:
 
   - script: make test_vault
     displayName: 'Functional test for vault'
+
+- job: 'WindowsTest'
+  pool:
+    vmImage: vs2017-win2016
+  strategy:
+    matrix:
+      python37:
+        python.version: 3.7
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+      
+  - script: |
+      python -m pip install --upgrade pip
+      python -m pip install -r requirements_dev.txt
+      py.test -v -l tests --junitxml=junit/test-results.xml
+    displayName: Test
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Python $(python.version)'
+    condition: succeededOrFailed()
+
+- job: 'WindowsCli'
+  pool:
+    vmImage: vs2017-win2016
+  strategy:
+    matrix:
+      python37:
+        python.version: 3.7
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      python setup.py install
+      dynaconf init -v FOO=running_on_travis -y
+      dynaconf write toml -v OTHERVALUE=Hello_Travis -y
+      dynaconf list | grep -c running_on_travis
+      dynaconf list | grep -c Hello_Travis
+      dynaconf --version
+    displayName: 'Install and test cli'
 
 - job: 'Publish'
   dependsOn: 'Test'
