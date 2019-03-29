@@ -210,6 +210,26 @@ jobs:
       dynaconf --version
     displayName: 'Install and test cli'
 
+- job: 'WindowsFunctional'
+  variables:
+      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
+  pool:
+    vmImage: vs2017-win2016
+  strategy:
+    matrix:
+      python37:
+        python.version: 3.7
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      python setup.py install
+      cd example\common & python program.py & cd ..
+    displayName: 'Run functional examples'
+
 - job: 'Publish'
   dependsOn: 'Test'
   pool:
