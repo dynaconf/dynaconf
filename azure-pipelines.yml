@@ -8,89 +8,91 @@ trigger:
 
 jobs:
 
-- job: 'InstallAndTestClient'
-  pool:
-    vmImage: 'Ubuntu-16.04'
-  strategy:
-    matrix:
-      Python35:
-        python.version: '3.5'
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-    maxParallel: 4
+# - job: 'InstallAndTestClient'
+#   pool:
+#     vmImage: 'Ubuntu-16.04'
+#   strategy:
+#     matrix:
+#       Python35:
+#         python.version: '3.5'
+#       Python36:
+#         python.version: '3.6'
+#       Python37:
+#         python.version: '3.7'
+#     maxParallel: 4
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      architecture: 'x64'
+#   steps:
+#   - task: UsePythonVersion@0
+#     inputs:
+#       versionSpec: '$(python.version)'
+#       architecture: 'x64'
 
-  - script: |
-      python setup.py install
-      dynaconf init -v FOO=running_on_travis -y
-      dynaconf write toml -v OTHERVALUE=Hello_Travis -y
-      dynaconf list | grep -c running_on_travis
-      dynaconf list | grep -c Hello_Travis
-      dynaconf --version
-    displayName: 'Install and test cli'
+#   - script: |
+#       python setup.py install
+#       dynaconf init -v FOO=running_on_travis -y
+#       dynaconf write toml -v OTHERVALUE=Hello_Travis -y
+#       dynaconf list | grep -c running_on_travis
+#       dynaconf list | grep -c Hello_Travis
+#       dynaconf --version
+#     displayName: 'Install and test cli'
 
-- job: 'Test'
-  pool:
-    vmImage: 'Ubuntu-16.04'
-  strategy:
-    matrix:
-      Python35:
-        python.version: '3.5'
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-    maxParallel: 4
+# - job: 'Test'
+#   pool:
+#     vmImage: 'Ubuntu-16.04'
+#   strategy:
+#     matrix:
+#       Python35:
+#         python.version: '3.5'
+#       Python36:
+#         python.version: '3.6'
+#       Python37:
+#         python.version: '3.7'
+#     maxParallel: 4
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      architecture: 'x64'
+#   steps:
+#   - task: UsePythonVersion@0
+#     inputs:
+#       versionSpec: '$(python.version)'
+#       architecture: 'x64'
 
-  - script: source .ci/install_dev.sh
-    displayName: 'Install dependencies'
+#   - script: source .ci/install_dev.sh
+#     displayName: 'Install dependencies'
 
-  - script: source .ci/test.sh
-    displayName: 'tests'
+#   - script: source .ci/test.sh
+#     displayName: 'tests'
 
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFiles: '**/test-results.xml'
-      testRunTitle: 'Python $(python.version)'
-    condition: succeededOrFailed()
+#   - task: PublishTestResults@2
+#     inputs:
+#       testResultsFiles: '**/test-results.xml'
+#       testRunTitle: 'Python $(python.version)'
+#     condition: succeededOrFailed()
 
-- job: 'Examples'
-  pool:
-    vmImage: 'Ubuntu-16.04'
-  strategy:
-    matrix:
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-    maxParallel: 4
+# - job: 'Examples'
+#   pool:
+#     vmImage: 'Ubuntu-16.04'
+#   strategy:
+#     matrix:
+#       Python36:
+#         python.version: '3.6'
+#       Python37:
+#         python.version: '3.7'
+#     maxParallel: 4
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '$(python.version)'
-      architecture: 'x64'
+#   steps:
+#   - task: UsePythonVersion@0
+#     inputs:
+#       versionSpec: '$(python.version)'
+#       architecture: 'x64'
 
-  - script: source .ci/install_dev.sh
-    displayName: 'Install dependencies'
+#   - script: source .ci/install_dev.sh
+#     displayName: 'Install dependencies'
 
-  - script: make test_examples
-    displayName: 'Functional tests for examples and frameworks'
+#   - script: make test_examples
+#     displayName: 'Functional tests for examples and frameworks'
 
 - job: 'Redis'
+  variables:
+    REDIS_ENABLED_FOR_DYNACONF: true
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -113,6 +115,7 @@ jobs:
       docker pull redis
       docker run -d -p 6379:6379 redis
       docker ps -a
+    displayName:  'Run Redis Container'
 
   - script: source .ci/install_dev.sh
     displayName: 'Install dependencies'
@@ -120,16 +123,16 @@ jobs:
   - script: make test_redis
     displayName: 'Functional test for redis'
 
-- job: 'Publish'
-  dependsOn: 'Test'
-  pool:
-    vmImage: 'Ubuntu-16.04'
+# - job: 'Publish'
+#   dependsOn: 'Test'
+#   pool:
+#     vmImage: 'Ubuntu-16.04'
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.x'
-      architecture: 'x64'
+#   steps:
+#   - task: UsePythonVersion@0
+#     inputs:
+#       versionSpec: '3.x'
+#       architecture: 'x64'
 
-  - script: python setup.py sdist
-    displayName: 'Build sdist'
+#   - script: python setup.py sdist
+#     displayName: 'Build sdist'
