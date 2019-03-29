@@ -109,7 +109,7 @@ html_theme_options = {
     'github_type': 'star',
     'github_banner': True,
     'description': 'Layered configuration system for Python applications',
-    'travis_button': True,
+    # 'travis_button': True,
     'codecov_button': True,
     'show_related': True,
     'fixed_sidebar': False,

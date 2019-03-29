@@ -11,6 +11,10 @@ BANNER = """
 ╚═════╝    ╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝
 """
 
+if os.name == 'nt':  # pragma: no cover
+    # windows can't handle the above charmap
+    BANNER = "DYNACONF"
+
 
 def object_merge(old, new):
     """

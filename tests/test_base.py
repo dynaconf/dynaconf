@@ -144,8 +144,12 @@ def test_env_should_not_have_underline(settings):
 
 
 def test_path_for(settings):
-    assert settings.path_for("/tmp", "bla") == "/tmp/bla"
-    assert settings.path_for("foo", "bar", "blaz") == "./foo/bar/blaz"
+    assert settings.path_for(
+        os.path.sep, "tmp", "bla"
+    ) == os.path.join(os.path.sep, "tmp", "bla")
+    assert settings.path_for(
+        "foo", "bar", "blaz"
+    ) == os.path.join(os.path.curdir, 'foo', 'bar', 'blaz')
 
 
 def test_get_item(settings):

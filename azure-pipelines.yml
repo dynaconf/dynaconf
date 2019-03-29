@@ -1,0 +1,257 @@
+# Python package
+# Create and test a Python package on multiple Python versions.
+# Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/python
+
+trigger:
+- master
+
+jobs:
+
+- job: 'LinuxInstall'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      python setup.py install
+      dynaconf init -v FOO=running_on_travis -y
+      dynaconf write toml -v OTHERVALUE=Hello_Travis -y
+      dynaconf list | grep -c running_on_travis
+      dynaconf list | grep -c Hello_Travis
+      dynaconf --version
+    displayName: 'Install and test cli'
+
+- job: 'LinuxUnit'    
+  variables:
+    - group: codecov
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
+
+  - script: source .ci/test.sh
+    displayName: 'tests'
+
+  - script: codecov --token $(SECRET_CODECOV_TOKEN)
+    displayName: 'Publish Coverage'
+    condition: eq(variables['python.version'], '3.7')
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Python $(python.version)'
+    condition: succeededOrFailed()
+
+- job: 'LinuxFunctional'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
+
+  - script: make test_examples
+    displayName: 'Functional tests for examples and frameworks'
+
+- job: 'Redis'
+  variables:
+    REDIS_ENABLED_FOR_DYNACONF: true
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      docker pull redis
+      docker run -d -p 6379:6379 redis
+      docker ps -a
+    displayName:  'Run Redis Container'
+
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
+
+  - script: make test_redis
+    displayName: 'Functional test for redis'
+
+- job: 'Vault'
+  variables:
+    VAULT_ENABLED_FOR_DYNACONF: true
+    VAULT_TOKEN_FOR_DYNACONF: myroot
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+    maxParallel: 15
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      docker pull vault
+      docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+      docker ps -a
+    displayName:  'Run Vault Container'
+
+  - script: source .ci/install_dev.sh
+    displayName: 'Install dependencies'
+
+  - script: make test_vault
+    displayName: 'Functional test for vault'
+
+- job: 'WindowsUnit'
+  pool:
+    vmImage: vs2017-win2016
+  strategy:
+    matrix:
+      python37:
+        python.version: '3.7'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+      
+  - script: |
+      python -m pip install --upgrade pip
+      python -m pip install -r requirements_dev.txt
+      py.test -v -l tests --junitxml=junit/test-results.xml
+    displayName: Test
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: '**/test-results.xml'
+      testRunTitle: 'Python $(python.version)'
+    condition: succeededOrFailed()
+
+- job: 'WindowsInstall'
+  pool:
+    vmImage: vs2017-win2016
+  strategy:
+    matrix:
+      python37:
+        python.version: '3.7'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      python setup.py install
+      dynaconf init -v FOO=running_on_travis -y
+      dynaconf write toml -v OTHERVALUE=Hello_Travis -y
+      dynaconf list | grep -c running_on_travis
+      dynaconf list | grep -c Hello_Travis
+      dynaconf --version
+    displayName: 'Install and test cli'
+
+- job: 'WindowsFunctional'
+  variables:
+      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
+  pool:
+    vmImage: vs2017-win2016
+  strategy:
+    matrix:
+      python37:
+        python.version: '3.7'
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - script: |
+      python -m pip install -r requirements_dev.txt
+      python setup.py install
+      setlocal enableextensions enabledelayedexpansion
+      @echo on
+      pushd example\common & cd & python program.py & popd
+      pushd example\common-encoding & cd & python program.py & popd
+      pushd example\ & cd & python full_example.py & popd
+      pushd example\ & cd & python compat.py & popd
+      pushd example\app & cd & python app.py  & popd
+      pushd example\app_with_dotenv & cd & python app.py & popd
+      pushd example\merge_configs & cd & python app.py & popd
+      pushd example\multiple_sources & cd & python app.py & popd
+      pushd example\multiple_folders & cd & python app.py & popd
+      pushd example\toml_example\ & cd & python app.py & popd
+      pushd example\yaml_example\settings_module\ & cd & python app.py & popd
+      pushd example\yaml_example\yaml_as_extra_config\ & cd & python app.py & popd
+      pushd example\flask_with_dotenv & cd & flask routes & popd
+      pushd example\flask_with_toml & cd & flask routes & popd
+      pushd example\flask_with_yaml & cd & flask routes & popd
+      pushd example\flask_with_json & cd & flask routes & popd
+      pushd example\flask_with_commentjson & cd & flask routes & popd
+      pushd example\flask_with_ini & cd & flask routes & popd
+      pushd example\validators\with_python\ & cd & python app.py & popd
+      pushd example\validators\with_toml\ & cd & dynaconf validate & popd
+      pushd example\toml_with_secrets\ & cd & python program.py & popd
+      pushd example\envs & cd & python app.py & popd
+      pushd example\custom_loader & cd & python app.py & popd
+      pushd example\get_fresh & cd & python app.py & popd
+      pushd example\jenkins_secrets_file & cd & python app.py & popd
+      pushd example\specific_settings_modules & cd & python app.py & popd
+      pushd example\django_example\ & cd & python manage.py test & popd
+
+    displayName: 'Run functional examples'

@@ -27,7 +27,12 @@ setup(
     long_description=read("README.md"),
     long_description_content_type='text/markdown',
     packages=find_packages(
-        exclude=['tests', 'tests.*', 'example', 'example.*']
+        exclude=[
+            'tests', 'tests.*',
+            'example', 'example.*',
+            'docs', 'docs.*',
+            'build', 'build.*'
+        ]
     ),
     include_package_data=True,
     zip_safe=False,
