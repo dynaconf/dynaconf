@@ -1,3 +1,3 @@
 # Stupid File Format
-KEYS:name;email
-VALUES:Bruno Rocha;bruno@rocha.com
+KEYS:name;email;message
+VALUES:Bruno Rocha;bruno@rocha.com;Dont use this sff format!

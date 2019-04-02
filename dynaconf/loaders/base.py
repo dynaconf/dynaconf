@@ -1,7 +1,6 @@
 # coding: utf-8
 import io
 import os
-from dynaconf.utils.files import find_file
 from dynaconf.utils import raw_logger
 
 
@@ -61,6 +60,8 @@ class BaseLoader(object):
         else:  # it is already a list/tuple
             files = filename
 
+        self.obj._loaded_files.extend(files)
+
         # add the [default] env
         env_list = [self.obj.get('DEFAULT_ENV_FOR_DYNACONF')]
 
@@ -86,12 +87,7 @@ class BaseLoader(object):
                 try:
                     source_data = self.file_reader(
                         io.open(
-                            find_file(
-                                source_file,
-                                project_root=self.obj.get(
-                                    'PROJECT_ROOT_FOR_DYNACONF'
-                                )
-                            ),
+                            source_file,
                             encoding=self.obj.get(
                                 'ENCODING_FOR_DYNACONF', 'utf-8'
                             )

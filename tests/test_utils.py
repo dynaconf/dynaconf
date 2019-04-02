@@ -1,8 +1,6 @@
 # coding: utf-8
 import io
 import os
-import pytest
-import tempfile
 from dynaconf import default_settings
 from dynaconf.utils import missing, Missing, object_merge
 from dynaconf.utils.parse_conf import unparse_conf_data, parse_conf_data
@@ -27,46 +25,41 @@ def test_cast_bool(settings):
     assert settings.get('SIMPLE_BOOL', cast='@bool') is False
 
 
-def test_find_file():
+def test_find_file(tmpdir):
     """
     Create a temporary folder structure like the following:
         tmpXiWxa5/
         └── child1
-            ├── child2
-            │   └── child3
-            │       └── child4
-            └── .env
-    Then try to automatically `find_dotenv` starting in `child4`
+            └── child2
+                └── child3
+                    └── child4
+                       └── .env
+                       └── app.py
+
+    1) Then try to automatically `find_dotenv` starting in `child4`
     """
-    tmpdir = os.path.realpath(tempfile.mkdtemp())
 
     curr_dir = tmpdir
     dirs = []
     for f in ['child1', 'child2', 'child3', 'child4']:
-        curr_dir = os.path.join(curr_dir, f)
+        curr_dir = os.path.join(str(curr_dir), f)
         dirs.append(curr_dir)
         os.mkdir(curr_dir)
 
-    child1, child4 = dirs[0], dirs[-1]
-
-    # change the working directory for testing
-    os.chdir(child4)
-
-    # try without a .env file and force error
-    with pytest.raises(IOError):
-        find_file(raise_error_if_not_found=True, usecwd=True)
+    child4 = dirs[-1]
 
     # try without a .env file and fail silently
-    assert find_file(usecwd=True) == ''
+    assert find_file() == ''
 
     # now place a .env file a few levels up and make sure it's found
-    filename = os.path.join(child1, '.env')
+    filename = os.path.join(child4, '.env')
     with io.open(
         filename, 'w',
         encoding=default_settings.ENCODING_FOR_DYNACONF
     ) as f:
         f.write("TEST=test\n")
-    assert find_file(usecwd=True) == filename
+
+    assert find_file(project_root=child4) == filename
 
 
 def test_disable_cast(monkeypatch):

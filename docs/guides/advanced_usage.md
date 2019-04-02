@@ -20,7 +20,7 @@ from dynaconf import LazySettings
 config = LazySettings(GLOBAL_ENV_FOR_DYNACONF="MYPROGRAM")
 ```
 
-Now you can use `export MYPROGRAM_FOO=bar` instead of ~~DYNACONF_FOO=bar~~
+Now you can use `export MYPROGRAM_FOO=bar` instead of `DYNACONF_FOO=bar`
 
 ## Switching working environments
 

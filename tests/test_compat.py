@@ -14,7 +14,7 @@ def test_compatibility_checks(tmpdir):
 
     assert settings.ENV_FOR_DYNACONF == 'FOO'
     assert settings.SETTINGS_MODULE_FOR_DYNACONF == 'foo.py'
-    assert settings.PROJECT_ROOT_FOR_DYNACONF == str(tmpdir)
+    assert settings.ROOT_PATH_FOR_DYNACONF == str(tmpdir)
     assert settings.SILENT_ERRORS_FOR_DYNACONF is True
     assert settings.FRESH_VARS_FOR_DYNACONF == ['BAR']
 
@@ -29,6 +29,6 @@ def test_compatibility_checks(tmpdir):
 
     assert settings.ENV_FOR_DYNACONF == 'FOO'
     assert settings.SETTINGS_MODULE_FOR_DYNACONF == 'foo.py'
-    assert settings.PROJECT_ROOT_FOR_DYNACONF == str(tmpdir)
+    assert settings.ROOT_PATH_FOR_DYNACONF == str(tmpdir)
     assert settings.SILENT_ERRORS_FOR_DYNACONF is True
     assert settings.FRESH_VARS_FOR_DYNACONF == ['BAR']

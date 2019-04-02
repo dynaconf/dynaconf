@@ -201,7 +201,7 @@ def test_load_nested_toml(tmpdir):
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
-        PROJECT_ROOT_FOR_DYNACONF=str(tmpdir),
+        ROOT_PATH_FOR_DYNACONF=str(tmpdir),
         SETTINGS_MODULE_FOR_DYNACONF=str(settings_file))
 
     # Ensure overrides that happen via TOML plugin config load.
@@ -231,7 +231,7 @@ def test_load_nested_different_types(ext, tmpdir):
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
-        PROJECT_ROOT_FOR_DYNACONF=str(tmpdir),
+        ROOT_PATH_FOR_DYNACONF=str(tmpdir),
         SETTINGS_MODULE_FOR_DYNACONF=str(settings_file)
     )
 
@@ -259,7 +259,7 @@ def test_load_nested_different_types_with_merge(tmpdir):
         ENV_FOR_DYNACONF="custom",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
-        PROJECT_ROOT_FOR_DYNACONF=str(tmpdir),
+        ROOT_PATH_FOR_DYNACONF=str(tmpdir),
         SETTINGS_MODULE_FOR_DYNACONF=str(settings_file),
         MERGE_ENABLED_FOR_DYNACONF=True)
 

@@ -53,3 +53,19 @@ You can also use the Dynaconf writer via console
 ```bash
 $ dynaconf write vault -s password=123456
 ```
+
+## Additional secrets file (for CI, jenkins etc.)
+
+It is common to have an extra `secrets` file that is available only when running on specific CI environment like `Jenkins`, usually there will be an environment variable pointing to the file.
+
+On Jenkins it is done on job settings by exporting the `secrets` information.
+
+Dynaconf can handle this via `SECRETS_FOR_DYNACONF` environment variable.
+
+ex:
+
+```bash
+export SECRETS_FOR_DYNACONF=/path/to/settings.toml{json|py|ini|yaml}
+```
+
+If that variable exists in your environment then Dynaconf will also load it.

@@ -32,7 +32,7 @@ conn = Client(
 )
 ```
 
-### Where the settings values are stored
+### Understanding the settings
 
 Dynaconf aims to have a flexible and usable configuration system. Your applications can be configured via a **configuration files**, through **environment variables**, or both. Configurations are separated into environments: **[development], [staging], [testing] and [production]**. The working environment is selected via an environment variable.
 
@@ -67,15 +67,129 @@ ENV_FOR_DYNACONF=staging python yourapp.py
 
 ## The settings files
 
-> IMPORTANT: Dynaconf by default reads settings files using `utf-8` encoding, if you have settings files written in other encoding please set `ENCODING_FOR_DYNACONF` environment variable see more in [configuration](configuration.html)
+> NOTE: The settings files are optional. If it is not present, only the values from **environment variables** are used (**.env** file is also supported).
 
-An optional `settings.{toml|py|json|ini|yaml}` file can be used to specify the configuration parameters for each environment. If it is not present, only the values from **environment variables** are used (**.env** file is also supported). Dynaconf searches for the file starting at the current working directory. If it is not found there, Dynaconf checks the parent directory. Dynaconf continues checking parent directories until the root is reached.
+Dynaconf will search for the settings files defined in `SETTINGS_MODULE_FOR_DYNACONF` which by default is a list containing combinations of **settings.{py|toml|json|ini|yaml}** and **.secrets.{py|toml|json|ini|yaml}**
+and dynaconf will try to find each one of those combinations, optionally it is possible to configure it to a different set of files e.g: `export SETTINGS_MODULE_FOR_DYNACONF='["myfilename.toml", "another.json"]'`, this value contains a list of relative or absolute paths, can be a toml-like list or a comma separated string and can be exported to `envvars`, write to `.env` file or passed directly to Dynaconf instance.
 
-The recommended file format is **TOML** but you can choose to use any of **.{toml|py|json|ini|yaml}**.
+> IMPORTANT: Dynaconf by default reads settings files using `utf-8` encoding, if you have settings files written in other encoding please set `ENCODING_FOR_DYNACONF` environment variable.
+
+See more details in [configuration](configuration.html)
+
+## Settings files location
+
+To find the files defined in `SETTINGS_MODULE_FOR_DYNACONF` the search will start at the path defined in `ROOT_PATH_FOR_DYNACONF` (if defined) and then will try the **folder where the called program is located** and then it will recursivelly try its parent directories **until the root parent is reached which can be File System `/` or the current working dir** then finally will try the **current working directory** as the last option.
+
+Some people prefer to put settings in a subfolder so for each of the paths it will also search in a relative folder called `config/`.
+
+Dynaconf will stop searching on the first match and if no file is found it will **fail silently** unless `SILENT_ERRORS_FOR_DYNACONF=false` is exported.
+
+### Illustrative Example
+
+If your program has the following structure:
+
+```text
+|_ myprogram/
+   |_ src/
+      |_ app.py
+         # from dynaconf import settings
+         # print(settings.NAME)
+         # print(settings.PASSWORD)
+         # print(settings.FOO)
+   |_ config
+      |_ settings.toml
+         # [default]
+         # name = "Oscar Wilde"
+   |_ .env
+         # DYNACONF_FOO='BAR'
+   |_ .secrets.toml
+         # [default]
+         # password = "Utopi@"
+```
+
+And you call it from `myprogram` working dir.
+
+```bash
+cd myprogram
+python src/app.py
+```
+
+What happens is:
+
+> NOTE: The behavior explained here is valid only for the above file structure, other arrangements are possible and depending on how folders are organized dynaconf can behave differently.
+
+1. app.py:1 does `from dynaconf import settings`
+
+    -  Only the `.env` file will be searched, other settings are lazy evaluated.
+    -  `.env` will be searched starting on `myprogram/src/.env`
+    -  if not found then `myprogram/src/config/.env` 
+    -  if not found then `myprogram/.env`  **actually found here so stops searching**
+    -  if not found then `myprogram/config/.env`
+    -  It will load all values from `.env` to the environment variables and create the instance of `settings`
+
+2. app.py:2 does the first access to a settings on `print(settings.NAME)`
+
+    - Dynaconf will execute the loaders defined in `CORE_LOADERS` and `LOADERS`, it will initialize the `settings` object and start the file search.
+    - `settings.{py|toml|json|ini|yaml}` will be searched on `myprogram/src/`
+    - if not found then `myprogram/src/config`
+    - if not found then `myprogram/`
+    - if not found then `myprogram/config` **settings.toml actually found here so stops searching for toml**
+    - It will load all the values defined in the `settings.toml`
+    - It will continue to look all the other files e.g: settings.json, settings.ini, settings.yaml etc.
+    - Then
+    - It will search for **.secrets.{py|toml|json|ini|yaml}** on `myprogram/src/`
+    - if not found then `myprogram/src/config`
+    - if not found then `myprogram/`  **.secrets.toml actually found here so stops searching for toml**
+    - if not found then `myprogram/config` 
+    - It will load all the values defined in `.secrets.toml` (if filename is `*.secret.*` values are hidden on logs)
+    - It will continue to look all the other files e.g: .secrets.json, .secrets.ini, .secrets.yaml etc.
+    - Then
+    - It will execute **external loaders** like `Redis` or `Vault` if configured.
+    - It will execute **custom loaders** if configured.
+    - Then finally
+    - It will read all **environment variables** prefixed with `DYNACONF_` and load its values, in our example it loads `FOO='BAR'` from `.env` file.
+
+3. app.py:3 does second access to a settings on `print(settings.PASSWORD)` 
+
+    - All the loaders, loaded files, config options and vars are now **cached** no loading has been executed.
+    - Only if `settings.get_fresh('PASSWORD')` is used, dynaconf will force a re-load of everything to ensure the fresh value.
+    - Also if `settings.using_env` or `ENV_FOR_DYNACONF` switched, e.g: from `[development]` to `[staging]`, then re-load happens.
+    - It is also possible to explicitly force a `load` or `reload`.
+
+4. Complete program output is:
+
+```bash
+Oscar Wilde
+Utopi@
+BAR
+```
+
+> TIP: If you add `DEBUG_LEVEL_FOR_DYNACONF=DEBUG` on `.env` or export this variable then you can follow the dynaconf loading process.
+
+## Loading order
+
+Dynaconf loads file in a overriding cascade loading order using the predefined order:
+
+1. First the `.env` file to read for [configuration](configuration.html) options
+2. Then the files defined in `SETTINGS_MODULE_FOR_DYNACONF` using the loaders defined in `CORE_LOADERS_FOR_DYNACONF`
+3. Then the external loaders like **Redis** or **Vault** if defined
+4. Then the loaders defined in `LOADERS_FOR_DYNACONF` 
+    - Custom loaders
+    - Environment variables loader (envvars prefixed with `DYNACONF_`)
+5. Then contents of `SECRETS_FOR_DYNACONF` filename if defined (useful for jenkins and other CI)
+
+The order can be changed by overriding the `SETTINGS_MODULE_FOR_DYNACONF` the `CORE_LOADERS_FOR_DYNACONF` and `LOADERS_FOR_DYNACONF` variables.
+
+> **NOTE**: Dynaconf works in an **layered override** mode based on the above order, so if you have multiple file formats with conflicting keys defined, the precedence will be based on the loading order.
+> If you don want to have values like `lists` and `dicts` overwritten take a look on how to [merge existing values](usage.html#merging-existing-values)
+
+## Settings File Formats
+
+The recommended file format is **TOML** but you can choose to use any of **.{py|toml|json|ini|yaml}**.
 
 The file must be a series of sections, at least one for **[default]**, optionally one for each **[environment]**, and an optional **[global]** section. Each section contains **key-value** pairs corresponding to configuration parameters for that **[environment]**. If a configuration parameter is missing, the value from **[default]** is used. The following is a complete `settings.toml` file, where every standard configuration parameter is specified within the **[default]** section:
 
-> **NOTE**: if the file format choosen is `.py` as it does not support sections you can create multiple files like `settings.py` for [default], `development_settings.py`, `production_settings.py` and `global_settings.py`. **ATTENTION**: using `.py` is not recommended for configuration - use **TOML**!
+> **NOTE**: if the file format choosen is `.py` as it does not support sections you can create multiple files like `settings.py` for [default], `development_settings.py`, `production_settings.py` and `global_settings.py`. **ATTENTION**: using `.py` is not recommended for configuration - prefer to use static files like **TOML**!
 
 ```ini
 [default]
@@ -104,7 +218,11 @@ value = "this value is set for custom [awesomeenv]"
 message = "This value overrides message of default and other envs"
 ```
 
-The **[global]** pseudo-environment can be used to set and/or override configuration parameters globally. A parameter defined in a **[global]** section sets, or overrides if already present, that parameter in every environment. For example, given the following `settings.toml` file, the value of address will be **"1.2.3.4"** in every environment:
+The **[global]** pseudo-environment can be used to set and/or override configuration parameters globally. A parameter defined in a **[global]** section sets, or overrides if already present, that parameter in every environment. 
+
+> IMPORTANT: the environments and pseudo envs such as `[global], ['default']` affects only the current file, it means that a value in `[global]` will override values defined only on that file or previous loaded files, if in another file the value is reloaded then the global values is overwritten. Dynaconf supports multiple file formats but the recommendation is not to mix them, choose a format and stick with it.
+
+For example, given the following `settings.toml` file, the value of address will be **"1.2.3.4"** in every environment:
 
 ```ini
 [global]
@@ -131,27 +249,9 @@ pip3 install dynaconf[yaml|ini|redis|vault]
 pip3 install dynaconf[all]
 ```
 
-Once the support is installed no extra configuration is needed to load data from those files, dynaconf will search for settings files in
-the root directory of your application looking for the following files in the exact order below:
+Once the support is installed no extra configuration is needed to load data from those files.
 
-```python
-DYNACONF_LOADING_ORDER = [
- 'settings.py',
- '.secrets.py',
- 'settings.toml',
- '.secrets.toml',
- 'settings.yaml',
- '.secrets.yaml',
- 'settings.ini',
- '.secrets.ini',
- 'settings.json',
- '.secrets.json',
- # redis server if REDIS_ENABLED_FOR_DYNACONF=true
- # vault server if VAULT_ENABLED_FOR_DYNACONF=true
- # other sources if custom loaders are defined
- # All environment variables prefixed with DYNACONF_
-]
-```
+If you need a different file format take a look on how to extend dynaconf writing a [custom loader](extend.html)
 
 ## Additional secrets file (for CI, jenkins etc.)
 
@@ -168,8 +268,6 @@ export SECRETS_FOR_DYNACONF=/path/to/settings.toml{json|py|ini|yaml}
 ```
 
 If that variable exists in your environment then Dynaconf will also load it.
-
-> **NOTE**: Dynaconf works in an **layered override** mode based on the above order, so if you have multiple file formats with conflicting keys defined, the precedence will be based on the loading order.
 
 ## Including files inside files
 
@@ -234,6 +332,14 @@ A settings file can include a `dynaconf_include` stanza, whose exact
 
   Currently, only a single level of includes is permitted to keep things
   simple and straightforward.
+
+### Including via environment variable
+
+It is also possible to setup includes using environment variable.
+
+```bash
+export INCLUDES_FOR_DYNACONF='["/etc/myprogram/conf.d/*.toml"]'
+```
 
 ## Merging existing values
 

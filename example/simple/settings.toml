@@ -1,0 +1,17 @@
+[default]
+value = "value for default"
+
+[development]
+value = "value for development"
+
+[staging]
+value = "value for staging"
+
+[testing]
+value = "value for testing"
+
+[production]
+value = "value for production"
+
+[global]
+value = "value for global"

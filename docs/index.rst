@@ -28,6 +28,9 @@ Release v\ |version|. (`Installation`_)
 .. image:: https://dev.azure.com/rochacbruno/dynaconf/_apis/build/status/rochacbruno.dynaconf?branchName=master
     :target: https://dev.azure.com/rochacbruno/dynaconf/_build/latest?definitionId=1&branchName=master
 
+.. image:: https://codecov.io/gh/rochacbruno/dynaconf/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/rochacbruno/dynaconf
+
 .. image:: https://img.shields.io/badge/Say%20Thanks!-🦉-1EAEDB.svg
     :target: https://saythanks.io/to/rochacbruno
 

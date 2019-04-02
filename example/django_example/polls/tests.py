@@ -12,6 +12,7 @@ class SettingsTest(TestCase):
             settings.STATIC_URL, '/changed/in/settings.toml/by/dynaconf/')
         self.assertEqual(settings.USERNAME, 'admin_user_from_env')
         self.assertEqual(settings.PASSWORD, 'My5up3r53c4et')
+        self.assertEqual(settings.get('PASSWORD'), 'My5up3r53c4et')
         self.assertEqual(settings.FOO, 'It overrides every other env')
 
         with settings.using_env('development'):

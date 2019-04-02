@@ -31,14 +31,14 @@ print('\n* The settings are defined in .toml files\n')
 print('$ cat settings.toml')
 print(
     io.open(
-        'settings.toml',
+        settings.find_file('settings.toml'),
         encoding=os.environ.get('ENCODING_FOR_DYNACONF')
     ).read()
 )
 print('$ cat .secrets.toml')
 print(
     io.open(
-        '.secrets.toml',
+        settings.find_file('.secrets.toml'),
         encoding=os.environ.get('ENCODING_FOR_DYNACONF')
     ).read()
 )

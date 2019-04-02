@@ -149,7 +149,7 @@ def test_path_for(settings):
     ) == os.path.join(os.path.sep, "tmp", "bla")
     assert settings.path_for(
         "foo", "bar", "blaz"
-    ) == os.path.join(os.path.curdir, 'foo', 'bar', 'blaz')
+    ) == os.path.join(settings._root_path, 'foo', 'bar', 'blaz')
 
 
 def test_get_item(settings):
@@ -348,7 +348,3 @@ def test_dotted_set_with_merge(settings):
             {'name': 'item 4'},
         ]
     }
-
-
-def test_abs_project_root(settings):
-    assert settings.abs_project_root in os.path.abspath(__file__)

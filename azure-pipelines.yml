@@ -9,6 +9,8 @@ trigger:
 jobs:
 
 - job: 'LinuxInstall'
+  variables:
+      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -36,7 +38,7 @@ jobs:
       dynaconf --version
     displayName: 'Install and test cli'
 
-- job: 'LinuxUnit'    
+- job: 'LinuxUnit'      
   variables:
     - group: codecov
   pool:
@@ -74,6 +76,8 @@ jobs:
     condition: succeededOrFailed()
 
 - job: 'LinuxFunctional'
+  variables:
+      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -99,6 +103,7 @@ jobs:
 - job: 'Redis'
   variables:
     REDIS_ENABLED_FOR_DYNACONF: true
+    DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -129,6 +134,7 @@ jobs:
   variables:
     VAULT_ENABLED_FOR_DYNACONF: true
     VAULT_TOKEN_FOR_DYNACONF: myroot
+    DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -156,6 +162,8 @@ jobs:
     displayName: 'Functional test for vault'
 
 - job: 'WindowsUnit'
+  variables:
+      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: vs2017-win2016
   strategy:
@@ -181,6 +189,8 @@ jobs:
     condition: succeededOrFailed()
 
 - job: 'WindowsInstall'
+  variables:
+      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: vs2017-win2016
   strategy:
@@ -205,6 +215,8 @@ jobs:
 - job: 'WindowsFunctional'
   variables:
       DEBUG_LEVEL_FOR_DYNACONF: DEBUG
+      DJANGO_SETTINGS_MODULE: foo.settings
+      PYTHONPATH: '.'
   pool:
     vmImage: vs2017-win2016
   strategy:
@@ -250,6 +262,7 @@ jobs:
       pushd example\includes & cd & python app.py & popd
       pushd example\jenkins_secrets_file & cd & python app.py & popd
       pushd example\specific_settings_modules & cd & python app.py & popd
-      pushd example\django_example\ & cd & python manage.py test & popd
+      pushd example\django_example\ & cd & python manage.py test polls -v 2 & popd
+      pushd example\django_example\ & cd & django-admin test polls -v 2 & popd
 
     displayName: 'Run functional examples'

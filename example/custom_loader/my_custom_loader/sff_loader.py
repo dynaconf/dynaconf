@@ -17,7 +17,12 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     # This loader reads the .sff file // Stupid File Format
     keys = []
     values = []
-    for line in open('settings.sff').readlines():
+    found_file = obj.find_file('settings.sff')
+    if not found_file:
+        obj.logger.debug('Cannot find settings.sff')
+        return
+
+    for line in open(found_file).readlines():
         if line.startswith('#'):
             continue
         if line.startswith('KEYS:'):
@@ -26,6 +31,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
             values = line.strip('VALUES:').strip('\n').split(';')
     # // PLEASE DON'T USE THIS SFF file format :)
 
+    obj._loaded_files.append(found_file)
     data = dict(zip(keys, values))
     obj.logger.debug('Sff loader: loading: {0}'.format(data))
     obj.update(data)

@@ -1,5 +1,4 @@
 import io
-import os
 import errno
 import types
 import importlib
@@ -11,15 +10,7 @@ from dynaconf.utils import DynaconfDict, object_merge, raw_logger
 
 def load(obj, settings_module, identifier='py', silent=False, key=None):
     """Tries to import a python module"""
-    try:
-        mod = importlib.import_module(settings_module)
-        loaded_from = 'module'
-    except (ImportError, TypeError):
-        mod = import_from_filename(obj, settings_module, silent=silent)
-        if mod and mod._is_error:
-            loaded_from = None
-        else:
-            loaded_from = 'filename'
+    mod, loaded_from = get_module(obj, settings_module, silent)
 
     if mod and loaded_from:
         obj.logger.debug(
@@ -42,16 +33,28 @@ def load(obj, settings_module, identifier='py', silent=False, key=None):
                 )
                 obj.set(setting, setting_value, loader_identifier=identifier)
 
-    if not hasattr(obj, 'PROJECT_ROOT_FOR_DYNACONF'):
-        root = os.path.realpath(
-            os.path.dirname(os.path.abspath(settings_module))
-        ) if loaded_from == 'module' else os.getcwd()
-        obj.set('PROJECT_ROOT_FOR_DYNACONF',
-                root, loader_identifier=identifier)
+    obj._loaded_files.append(mod.__file__)
+
+
+def get_module(obj, filename, silent=False):
+    logger = raw_logger()
+    try:
+        logger.debug('Trying to import %s', filename)
+        mod = importlib.import_module(filename)
+        loaded_from = 'module'
+    except (ImportError, TypeError):
+        logger.debug('Cant import %s trying to load file', filename)
+        mod = import_from_filename(obj, filename, silent=silent)
+        if mod and mod._is_error:
+            loaded_from = None
+        else:
+            loaded_from = 'filename'
+    return mod, loaded_from
 
 
 def import_from_filename(obj, filename, silent=False):  # pragma: no cover
     """If settings_module is a filename path import it."""
+    _find_file = getattr(obj, 'find_file', find_file)
     if not filename.endswith('.py'):
         filename = '{0}.py'.format(filename)
 
@@ -62,10 +65,7 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
     mod._is_error = False
     try:
         with io.open(
-            find_file(
-                filename,
-                project_root=obj.get('PROJECT_ROOT_FOR_DYNACONF')
-            ),
+            _find_file(filename),
             encoding=default_settings.ENCODING_FOR_DYNACONF
         ) as config_file:
             exec(
