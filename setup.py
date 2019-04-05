@@ -1,6 +1,7 @@
 
 import io
 import os
+import sys
 
 try:
     from setuptools import setup, find_packages
@@ -67,7 +68,9 @@ setup(
             'dynaconf=dynaconf.cli:main'
         ]
     },
-    setup_requires=['setuptools>=38.6.0'],
+    setup_requires=[
+        'setuptools>=38.6.0'
+    ] if sys.version_info >= (3, 6, 0) else [],
     classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Framework :: Django',
@@ -79,12 +82,11 @@ setup(
           'Programming Language :: Python',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3 :: Only',
-          'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
           'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: 3.7',
           'Topic :: Utilities',
           'Topic :: Software Development :: Libraries',
           'Topic :: Software Development :: Libraries :: Python Modules',
-          'Operating System :: OS Independent',
       ],
 )

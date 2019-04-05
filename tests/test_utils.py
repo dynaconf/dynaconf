@@ -48,8 +48,7 @@ def test_find_file(tmpdir):
 
     child4 = dirs[-1]
 
-    # try without a .env file and fail silently
-    assert find_file() == ''
+    assert find_file('file-does-not-exist') == ''
 
     # now place a .env file a few levels up and make sure it's found
     filename = os.path.join(child4, '.env')

@@ -734,7 +734,7 @@ class Settings(object):
                     )
                     already_loaded.add(path)
             if not already_loaded:
-                self.logger.error(
+                self.logger.warning(
                     'Not able to locate the files %s to include', includes
                 )
 

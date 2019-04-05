@@ -119,12 +119,19 @@ dynaconf.default_settings.start_dotenv(root_path=_ROOT_PATH)
 # https://dynaconf.readthedocs.io/en/latest/guides/configuration.html
 # Those keys can also be set as environment variables.
 lazy_settings = dynaconf.LazySettings(
+
     # Configure this instance of Dynaconf
     GLOBAL_ENV_FOR_DYNACONF='DJANGO',
     ENV_FOR_DYNACONF=os.environ.get('DJANGO_ENV', 'DEVELOPMENT'),
     ROOT_PATH_FOR_DYNACONF=_ROOT_PATH,
+
+    # Extra useful options
+    # SETTINGS_MODULE_FOR_DYNACONF='/etc/myprogram/settings.toml'
+    # INCLUDES_FOR_DYNACONF=['/etc/myprogram/plugins/*'],
+
     # Then rebind all settings defined above on this settings.py file.
     **{k: v for k, v in locals().items() if k.isupper()}
+
 )
 
 # This makes django check happy because all settings is provided

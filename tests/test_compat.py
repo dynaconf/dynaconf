@@ -1,4 +1,3 @@
-import os
 from dynaconf import LazySettings
 
 
@@ -22,7 +21,7 @@ def test_compatibility_checks(tmpdir):
         NAMESPACE_FOR_DYNACONF='FOO',
         DYNACONF_SETTINGS_MODULE='foo.py',
         SETTINGS_MODULE='foo.py',
-        PROJECT_ROOT=str(tmpdir),
+        PROJECT_ROOT_FOR_DYNACONF=str(tmpdir),
         DYNACONF_SILENT_ERRORS=True,
         DYNACONF_ALWAYS_FRESH_VARS=['BAR']
     )
