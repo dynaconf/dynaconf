@@ -17,7 +17,7 @@ DJANGO_PATCH = '''
 # Important! Keep it at the very bottom of your Django's settings.py file
 # Read more at https://dynaconf.readthedocs.io/en/latest/guides/django.html
 # Tip: All the variables defined above can now be moved to
-# `../settings.toml` under `[default]` section.
+# `../settings.{toml,yaml,json,ini}` under `[default]` section.
 import os, sys, dynaconf  # noqa
 dynaconf.default_settings.AUTO_LOAD_DOTENV = False  # noqa
 dynaconf.default_settings.start_dotenv(root_path=os.path.dirname(os.path.abspath(__file__)))  # noqa

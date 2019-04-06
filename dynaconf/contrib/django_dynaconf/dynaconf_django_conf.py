@@ -1,3 +1,6 @@
+# WARNING: THIS EXTENSION IS DEPRECATED
+# Read more on how to integrate with django on
+# https://dynaconf.readthedocs.io/en/latest/guides/django.html
 import os
 from dynaconf import LazySettings
 from django.conf import settings as django_settings

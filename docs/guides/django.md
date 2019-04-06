@@ -2,7 +2,7 @@
 
 Dynaconf extensions for Django works by patching the `settings.py` file with dynaconf loading hooks, the change is done on a single file and then in your whole project every time you call `django.conf.settings` you will have access to `dynaconf` attributes and methods.
 
-Ensure dynaconf is installed on your env `pip install dynaconf`
+Ensure dynaconf is installed on your env `pip install dynaconf[yaml]`
 
 ## Initialize the extension
 
@@ -47,7 +47,9 @@ export DJANGO_HELLO="Hello"  # django.conf.settings.get('HELLO)
 
 ## Settings files
 
-You can also have settings files for your Django app, in the root directory (the same where `manage.py` is located) put your `settings.toml` and `.secrets.toml` files and then define your environments `[default]`, `[development]` and `[production]`.
+You can also have settings files for your Django app, in the root directory (the same where `manage.py` is located) put your `settings.{yaml, toml, ini, json, py}` and `.secrets.{yaml, toml, ini, json, py}` files and then define your environments `[default]`, `[development]` and `[production]`.
+
+> NOTE: **.yaml** is the recommended format for Django applications because it allows complex data structures in easy way, but feel free to choose any format you are familiar with.
 
 To switch the working environment the `DJANGO_ENV` variable can be used, so `DJANGO_ENV=development` to work
 in development mode or `DJANGO_ENV=production` to switch to production.

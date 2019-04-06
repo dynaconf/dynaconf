@@ -274,8 +274,16 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
 
     if django:  # pragma: no cover
         dj_module, loaded_from = get_module({}, django)
-        with open(dj_module.__file__, "a") as dj_file:
-            dj_file.write(constants.DJANGO_PATCH)
+        dj_filename = dj_module.__file__
+        if Path(dj_filename).exists():
+            click.confirm(
+                '{} is found do you want to add dynaconf?'.format(dj_filename),
+                abort=True
+            )
+            with open(dj_filename, "a") as dj_file:
+                dj_file.write(constants.DJANGO_PATCH)
+        else:
+            click.echo('Django settings file not written.')
 
 
 @main.command(name='list')

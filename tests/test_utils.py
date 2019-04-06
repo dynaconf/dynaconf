@@ -51,20 +51,20 @@ def test_find_file(tmpdir):
     assert find_file('file-does-not-exist') == ''
 
     # now place a .env file a few levels up and make sure it's found
-    filename = os.path.join(child4, '.env')
+    filename = os.path.join(str(child4), '.env')
     with io.open(
         filename, 'w',
         encoding=default_settings.ENCODING_FOR_DYNACONF
     ) as f:
         f.write("TEST=test\n")
 
-    assert find_file(project_root=child4) == filename
+    assert find_file(project_root=str(child4)) == filename
 
     # skip the inner child4/.env and force the find of /tmp.../.env
     assert find_file(
-        project_root=child4,
+        project_root=str(child4),
         skip_files=[filename]
-    ) == os.path.join(tmpdir, '.env')
+    ) == os.path.join(str(tmpdir), '.env')
 
 
 def test_disable_cast(monkeypatch):
