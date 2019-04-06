@@ -41,7 +41,10 @@ def start_dotenv(obj=None, root_path=None):
     root_path = root_path or getattr(
         obj, '_root_path', None
     ) or get('ROOT_PATH_FOR_DYNACONF')
-    raw_logger().debug('Starting Dynaconf Dotenv %s', root_path or '')
+    raw_logger().debug(
+        'Starting Dynaconf Dotenv %s',
+        'for {0}'.format(root_path) if root_path else 'Base'
+    )
 
     dotenv_path = obj.get(
         'DOTENV_PATH_FOR_DYNACONF'
@@ -198,3 +201,6 @@ SECRETS_FOR_DYNACONF = get('SECRETS_FOR_DYNACONF', None)
 
 # To include extra paths based on envvar
 INCLUDES_FOR_DYNACONF = get('INCLUDES_FOR_DYNACONF', [])
+
+# Files to skip if found on search tree
+SKIP_FILES_FOR_DYNACONF = get('SKIP_FILES_FOR_DYNACONF', [])

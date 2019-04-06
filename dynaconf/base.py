@@ -780,6 +780,10 @@ class Settings(object):
 
     def find_file(self, *args, **kwargs):
         kwargs.setdefault('project_root', self._root_path)
+        kwargs.setdefault(
+            'skip_files',
+            self.get('SKIP_FILES_FOR_DYNACONF', [])
+        )
         return find_file(*args, **kwargs)
 
     @property

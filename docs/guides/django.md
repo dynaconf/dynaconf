@@ -2,54 +2,38 @@
 
 Dynaconf extensions for Django works by patching the `settings.py` file with dynaconf loading hooks, the change is done on a single file and then in your whole project every time you call `django.conf.settings` you will have access to `dynaconf` attributes and methods.
 
+Ensure dynaconf is installed on your env `pip install dynaconf`
+
 ## Initialize the extension
 
-On the same directory where your `manage.py` is located run:
-
-```bash
-$ dynaconf init --django yourapp.settings
-or
-$ dynaconf init --django yourapp/settings.py
-```
-
-> NOTE: If you export the `DJANGO_SETTINGS_MODULE` then you can run only `dynaconf init` and it will find the file.
-
-Dynaconf will append a patch to the bottom of your settings file.
-
-Or you can manually append at the bottom of your django project's `settings.py` the following code:
+You can manually append at the bottom of your django project's `settings.py` the following code:
 
 ```python
-# HERE STARTS DYNACONF PATCHING
-import os  # noqa
-import sys  # noqa
-import dynaconf  # noqa
-_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# HERE STARTS DYNACONF EXTENSION LOAD
+# Important! Keep it at the very bottom of your Django's settings.py file
+import os, sys, dynaconf  # noqa
 dynaconf.default_settings.AUTO_LOAD_DOTENV = False  # noqa
-dynaconf.default_settings.start_dotenv(root_path=_ROOT_PATH)
-
-# For a list of config keys see:
-# https://dynaconf.readthedocs.io/en/latest/guides/configuration.html
-# Those keys can also be set as environment variables.
-lazy_settings = dynaconf.LazySettings(
-    # Configure this instance of Dynaconf
-    GLOBAL_ENV_FOR_DYNACONF='DJANGO',
-    ENV_FOR_DYNACONF=os.environ.get('DJANGO_ENV', 'DEVELOPMENT'),
-    ROOT_PATH_FOR_DYNACONF=_ROOT_PATH,
-    # Then rebind all settings defined above on this settings.py file.
-    **{k: v for k, v in locals().items() if k.isupper()}
-)
-
-# This makes django check happy because all settings is provided
-for setting_name, setting_value in lazy_settings._store.items():
-    setattr(sys.modules[__name__], setting_name.upper(), setting_value)
-
-# This import makes `django.conf.settings` to behave dynamically
-from dynaconf.contrib import django_dynaconf_v2  # noqa
-django_dynaconf_v2.load(lazy_settings)
-# HERE ENDS DYNACONF PATCHING
+dynaconf.default_settings.start_dotenv(root_path=os.path.dirname(os.path.abspath(__file__)))  # noqa
+settings = dynaconf.DjangoDynaconf(sys.modules[__name__])  # noqa
+# Important! No more code below this line
+# HERE ENDS DYNACONF EXTENSION LOAD
 ```
 
-## Use `DJANGO_` environment variables
+Or optionally you can, on the same directory where your `manage.py` is located run:
+
+```bash
+export DJANGO_SETTINGS_MODULE=yourapp.settings
+$ dynaconf init
+
+# or passing the location of the settings file
+
+$ dynaconf init --django yourapp/settings.py
+
+```
+
+Dynaconf will append its extension loading code to the bottom of your `yourapp/settings.py` file and will create `settings.toml` and `.secrets.toml` in the current folder (the same where `manage.py` is located).
+
+## Using `DJANGO_` environment variables
 
 Then **django.conf.settings** will work as a `dynaconf.settings` instance and `DJANGO_` will be the global prefix to export environment variables.
 
@@ -68,37 +52,52 @@ You can also have settings files for your Django app, in the root directory (the
 To switch the working environment the `DJANGO_ENV` variable can be used, so `DJANGO_ENV=development` to work
 in development mode or `DJANGO_ENV=production` to switch to production.
 
-> **IMPORTANT**: To use `$ dynaconf` CLI the `DJANGO_SETTINGS_MODULE` must be defined.
+> **IMPORTANT**: To use `$ dynaconf` CLI the `DJANGO_SETTINGS_MODULE` environment variable must be defined.
 
 IF you don't want to manually create your config files take a look at the [CLI](cli.html)
-
-> **NOTE**: It is recommended that all the **django's** internal config vars should be kept in the `settings.py` of your project, then application specific values you can  place in dynaconf's `settings.toml` in the root (same folder as manage.py). You can override settings.py values in the dynaconf settings file as well.
 
 ## Customizations
 
 It is possible to customize how your django project will load settings, example: You want your users to customize a settings file defined in `export PROJECTNAME_SETTINGS=/path/to/settings.toml` and you want environment variables to be loaded from `PROJECTNAME_VARNAME`
 
-Edit django `settings.py` and modify the dynaconf patch part:
+Edit django `settings.py` and modify the dynaconf extension part:
+
+from:
 
 ```python
+# HERE STARTS DYNACONF EXTENSION LOAD
 ...
-lazy_settings = LazySettings(
-    # Configure this instance of Dynaconf
-    GLOBAL_ENV_FOR_DYNACONF='PROJECTNAME',
-    ENV_FOR_DYNACONF=os.environ.get('PROJECTNAME_ENV', 'DEVELOPMENT'),
-    ENVVAR_FOR_DYNACONF='PROJECTNAME_SETTINGS',
-    ROOT_PATH_FOR_DYNACONF=_ROOT_PATH,   # important to keep
-    # Then rebind all settings defined above on this settings.py file.
-    **{k: v for k, v in locals().items() if k.isupper()}
-)
-...
+settings = dynaconf.DjangoDynaconf(sys.modules[__name__])
+# Important! No more code below this line
+# HERE ENDS DYNACONF EXTENSION LOAD
 ```
 
-Then the working environment can now be switched using `export PROJECTNAME_ENV=production`
+to:
 
-And you can have user to define custom config files on `export PROJECTNAME_SETTINGS=/other/path/to/settings.py{yaml,toml,json,ini}`
+```python
+# HERE STARTS DYNACONF EXTENSION LOAD
+...
+settings = dynaconf.DjangoDynaconf(
+    sys.modules[__name__]
+    GLOBAL_ENV_FOR_DYNACONF='PROJECTNAME',
+    ENV_FOR_DYNACONF=os.environ.get('PROJECTNAME_ENV', 'DEVELOPMENT'),
+    SETTINGS_MODULE_FOR_DYNACONF='/etc/projectname/settings.toml',
+    ENVVAR_FOR_DYNACONF='PROJECTNAME_SETTINGS',
+    INCLUDES_FOR_DYNACONF=['/etc/projectname/plugins/*'],
+)
+# Important! No more code below this line
+# HERE ENDS DYNACONF EXTENSION LOAD
+```
 
-And users can set variables on environment like `export PROJECTNAME_DEBUG=true`
+ Variables on environment can be set/override using `PROJECTNAME_` prefix e.g: `export PROJECTNAME_DEBUG=true`.
+
+Working environment can now be switched using `export PROJECTNAME_ENV=production` it defaults to `development`.
+
+Your settings are now read from `/etc/projectname/settings.toml` (dynaconf will not perform search for all the settings formats). This settings location can be changed via envvar using `export PROJECTNAME_SETTINGS=/other/path/to/settings.py{yaml,toml,json,ini}`
+
+You can have additional settings read from `/etc/projectname/plugins/*` any supoprted file from this folder will be loaded.
+
+You can set more options, take a look on [configuration](configuration.html)
 
 ## Deprecation note
 

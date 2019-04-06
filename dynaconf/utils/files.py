@@ -29,7 +29,7 @@ def _walk_to_root(path, break_at=None):
 SEARCHTREE = None
 
 
-def find_file(filename='.env', project_root=None, **kwargs):
+def find_file(filename='.env', project_root=None, skip_files=None, **kwargs):
     """Search in increasingly higher folders for the given file
     Returns path to the file if found, or an empty string otherwise.
 
@@ -44,18 +44,16 @@ def find_file(filename='.env', project_root=None, **kwargs):
     """
     logger = raw_logger()
     search_tree = []
+    work_dir = os.getcwd()
+    skip_files = skip_files or []
 
     if project_root is None:
         logger.debug('No root_path for %s', filename)
     else:
         logger.debug('Got root_path %s for %s', project_root, filename)
-        # add project_root/ and project_root/config as first items
-        search_tree.append(project_root)
-        if os.path.split(project_root)[-1] != 'config':
-            search_tree.append(os.path.join(project_root, 'config'))
+        search_tree.extend(_walk_to_root(project_root, break_at=work_dir))
 
     script_dir = os.path.dirname(os.path.abspath(inspect.stack()[-1].filename))
-    work_dir = os.getcwd()
 
     # Path to invoked script and recurivelly to root with its ./config dirs
     search_tree.extend(_walk_to_root(script_dir, break_at=work_dir))
@@ -75,6 +73,8 @@ def find_file(filename='.env', project_root=None, **kwargs):
 
     for dirname in search_tree:
         check_path = os.path.join(dirname, filename)
+        if check_path in skip_files:
+            continue
         if os.path.exists(check_path):
             logger.debug('Found: %s', os.path.abspath(check_path))
             return check_path  # First found will return

@@ -13,32 +13,15 @@ EXTERNAL_LOADERS = {
 }
 
 DJANGO_PATCH = '''
-# HERE STARTS DYNACONF PATCHING
-import os  # noqa
-import sys  # noqa
-import dynaconf  # noqa
-_ROOT_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# HERE STARTS DYNACONF EXTENSION LOAD
+# Important! Keep it at the very bottom of your Django's settings.py file
+# Read more at https://dynaconf.readthedocs.io/en/latest/guides/django.html
+# Tip: All the variables defined above can now be moved to
+# `../settings.toml` under `[default]` section.
+import os, sys, dynaconf  # noqa
 dynaconf.default_settings.AUTO_LOAD_DOTENV = False  # noqa
-dynaconf.default_settings.start_dotenv(root_path=_ROOT_PATH)
-
-# For a list of config keys see:
-# https://dynaconf.readthedocs.io/en/latest/guides/configuration.html
-# Those keys can also be set as environment variables.
-lazy_settings = dynaconf.LazySettings(
-    # Configure this instance of Dynaconf
-    GLOBAL_ENV_FOR_DYNACONF='DJANGO',
-    ENV_FOR_DYNACONF=os.environ.get('DJANGO_ENV', 'DEVELOPMENT'),
-    ROOT_PATH_FOR_DYNACONF=_ROOT_PATH,
-    # Then rebind all settings defined above on this settings.py file.
-    **{k: v for k, v in locals().items() if k.isupper()}
-)
-
-# This makes django check happy because all settings is provided
-for setting_name, setting_value in lazy_settings._store.items():
-    setattr(sys.modules[__name__], setting_name.upper(), setting_value)
-
-# This import makes `django.conf.settings` to behave dynamically
-from dynaconf.contrib import django_dynaconf_v2  # noqa
-django_dynaconf_v2.load(lazy_settings)
-# HERE ENDS DYNACONF PATCHING
+dynaconf.default_settings.start_dotenv(root_path=os.path.dirname(os.path.abspath(__file__)))  # noqa
+settings = dynaconf.DjangoDynaconf(sys.modules[__name__])  # noqa
+# Important! No more code below this line
+# HERE ENDS DYNACONF EXTENSION LOAD
  '''

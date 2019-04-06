@@ -46,6 +46,8 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 |                     |         |                                                  | | This var name can be replaced by:              ||                                                             |
 |                     |         |                                                  | | `ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS`       || MYPROGRAM_SETTINGS="conf.toml,settings.yaml"                |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
+| SKIP_FILES          | list    | Files to skip/ignore if found on search tree     | []                                               | SKIP_FILES_FOR_DYNACONF="['/do/not/load/this/file.ext']"     |
++---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENV                 | str     | Working environment                              | "development"                                    | ENV_FOR_DYNACONF=production                                  |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | GLOBAL_ENV          | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       | GLOBAL_ENV_FOR_DYNACONF=MYPROGRAM                            |
