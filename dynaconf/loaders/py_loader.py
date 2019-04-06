@@ -2,6 +2,7 @@ import io
 import errno
 import types
 import importlib
+import inspect
 from pathlib import Path
 from dynaconf import default_settings
 from dynaconf.utils.files import find_file
@@ -43,17 +44,28 @@ def get_module(obj, filename, silent=False):
         mod = importlib.import_module(filename)
         loaded_from = 'module'
     except (ImportError, TypeError):
-        logger.debug('Cant import %s trying to load file', filename)
+        logger.debug('Cant import %s trying to load from file', filename)
         mod = import_from_filename(obj, filename, silent=silent)
-        if mod and mod._is_error:
-            loaded_from = None
-        else:
+        if mod and not mod._is_error:
             loaded_from = 'filename'
+        else:
+            loaded_from = None
     return mod, loaded_from
 
 
 def import_from_filename(obj, filename, silent=False):  # pragma: no cover
     """If settings_module is a filename path import it."""
+    if filename in [item.filename for item in inspect.stack()]:
+        raise ImportError(
+            'Looks like you are loading dynaconf '
+            'from inside the {} file and then it is trying '
+            'to load itself entering in a circular reference '
+            'problem. To solve it you have to '
+            'invoke your program from another root folder '
+            'or rename your program file.'
+            .format(filename)
+        )
+
     _find_file = getattr(obj, 'find_file', find_file)
     if not filename.endswith('.py'):
         filename = '{0}.py'.format(filename)
