@@ -78,7 +78,7 @@ See more details in [configuration](configuration.html)
 
 ## Settings files location
 
-To find the files defined in `SETTINGS_MODULE_FOR_DYNACONF` the search will start at the path defined in `ROOT_PATH_FOR_DYNACONF` (if defined) and then will try the **folder where the called program is located** and then it will recursivelly try its parent directories **until the root parent is reached which can be File System `/` or the current working dir** then finally will try the **current working directory** as the last option.
+To find the files defined in `SETTINGS_MODULE_FOR_DYNACONF` the search will start at the path defined in `ROOT_PATH_FOR_DYNACONF` (if defined), then will recursively walk to its root and then will try the **folder where the called program is located** and then it will recursivelly try its parent directories **until the root parent is reached which can be File System `/` or the current working dir** then finally will try the **current working directory** as the last option.
 
 Some people prefer to put settings in a subfolder so for each of the paths it will also search in a relative folder called `config/`.
 

@@ -2,9 +2,17 @@
 
 In the `django_project/settings.py` put at the very botton of the file:
 
-# HERE STARTS DYNACONF PATCHING
-
-# HERE ENDS DYNACONF PATCHING
+# HERE STARTS DYNACONF EXTENSION LOAD
+# Important! Keep it at the very bottom of your Django's settings.py file
+# Read more at https://dynaconf.readthedocs.io/en/latest/guides/django.html
+# Tip: All the variables defined above can now be moved to
+# `../settings.toml` under `[default]` section.
+import os, sys, dynaconf  # noqa
+dynaconf.default_settings.AUTO_LOAD_DOTENV = False  # noqa
+dynaconf.default_settings.start_dotenv(root_path=os.path.dirname(os.path.abspath(__file__)))  # noqa
+settings = dynaconf.DjangoDynaconf(sys.modules[__name__])  # noqa
+# Important! No more code below this line
+# HERE ENDS DYNACONF EXTENSION LOAD
 
 Now in the root of your Django project
 (the same folder where manage.py is located)
@@ -14,24 +22,24 @@ and or `.secrets.{py|yaml|toml|ini|json}`
 
 On your projects root folder now you can start as::
 
-    DJANGO_DEBUG='@bool false' \
-    DJANGO_ALLOWED_HOSTS='@json ["localhost"]' \
+    DJANGO_DEBUG='false' \
+    DJANGO_ALLOWED_HOSTS='["localhost"]' \
     python manage.py runserver
 """
 import os
-import sys  # pragma: no cover
+import sys
 import dynaconf
 
-try:
-    from django import conf  # pragma: no cover
-    from django.conf import settings as django_settings  # pragma: no cover
+try:  # pragma: no cover
+    from django import conf
+    from django.conf import settings as django_settings
     django_installed = True
-except ImportError:
+except ImportError:  # pragma: no cover
     django_installed = False
 
 
-def load(django_settings_module, **kwargs):
-    if not django_installed:  # pragma: no cover
+def load(django_settings_module, **kwargs):  # pragma: no cover
+    if not django_installed:
         raise RuntimeError(
             "To use this extension django must be installed "
             "install it with: pip install django"

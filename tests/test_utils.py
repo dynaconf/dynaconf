@@ -60,6 +60,12 @@ def test_find_file(tmpdir):
 
     assert find_file(project_root=child4) == filename
 
+    # skip the inner child4/.env and force the find of /tmp.../.env
+    assert find_file(
+        project_root=child4,
+        skip_files=[filename]
+    ) == os.path.join(tmpdir, '.env')
+
 
 def test_disable_cast(monkeypatch):
     # this casts for int

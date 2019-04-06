@@ -14,13 +14,13 @@ Or when using your own Dynaconf instance you can pass as parameters directly:
 ```py
 from dynaconf import LazySettings
 settings = LazySettings(
-    DEBUG_LEVEL_FOR_DYNACONF='DEBUG', 
+    DEBUG_LEVEL_FOR_DYNACONF='DEBUG',
     GLOBAL_ENV_FOR_DYNACONF='MYPROGRAM',
     ENVVAR_FOR_DYNACONF='MYPROGRAM_SETTINGS',
 )
 ```
 
-It can also be passed as parameters to extensions like `FlaskDynaconf` or set in the `django's` settings.py file.
+It can also be passed as parameters to extensions like `FlaskDynaconf` or set in the `DjangoDynaconf` on settings.py file.
 
 ## Configuration options
 
@@ -28,7 +28,7 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | Variable            | Type    | Usage                                            | default                                          | envvar example                                               |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| ROOT_PATH           | str     | | Directory to look for settings files           | | `None`                                         | ROOT_PATH_FOR_DYNACONF="/my/custom/path/"                    |
+| ROOT_PATH           | str     | | Directory to look for settings files           | | `None`                                         | ROOT_PATH_FOR_DYNACONF="/my/custom/absolute/path/"           |
 |                     |         | |                                                |                                                  |                                                              |
 |                     |         | | This path is the base to search for            | | If set Dynaconf will look this path first      |                                                              |
 |                     |         | | files defined in `SETTINGS_MODULE`             | | before it starts to search for file in the     |                                                              |
@@ -46,7 +46,7 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 |                     |         |                                                  | | This var name can be replaced by:              ||                                                             |
 |                     |         |                                                  | | `ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS`       || MYPROGRAM_SETTINGS="conf.toml,settings.yaml"                |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| SKIP_FILES          | list    | Files to skip/ignore if found on search tree     | []                                               | SKIP_FILES_FOR_DYNACONF="['/do/not/load/this/file.ext']"     |
+| SKIP_FILES          | list    | Files to skip/ignore if found on search tree     | []                                               | SKIP_FILES_FOR_DYNACONF="['/absolute/path/to/file.ext']"     |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENV                 | str     | Working environment                              | "development"                                    | ENV_FOR_DYNACONF=production                                  |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
