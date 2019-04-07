@@ -2,17 +2,11 @@
 
 In the `django_project/settings.py` put at the very botton of the file:
 
-# HERE STARTS DYNACONF EXTENSION LOAD
-# Important! Keep it at the very bottom of your Django's settings.py file
+# HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 # Read more at https://dynaconf.readthedocs.io/en/latest/guides/django.html
-# Tip: All the variables defined above can now be moved to
-# `../settings.toml` under `[default]` section.
-import os, dynaconf  # noqa
-dynaconf.default_settings.AUTO_LOAD_DOTENV = False  # noqa
-dynaconf.default_settings.start_dotenv(root_path=os.path.dirname(os.path.abspath(__file__)))  # noqa
+import dynaconf  # noqa
 settings = dynaconf.DjangoDynaconf(__name__)  # noqa
-# Important! No more code below this line
-# HERE ENDS DYNACONF EXTENSION LOAD
+# HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
 
 Now in the root of your Django project
 (the same folder where manage.py is located)
@@ -52,22 +46,18 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
             os.environ['DJANGO_SETTINGS_MODULE']
         ]
 
+    settings_file = os.path.abspath(django_settings_module.__file__)
+    _root_path = os.path.dirname(settings_file)
+
     # 1) Create the lazy settings object reusing settings_module consts
     options = {
         k: v for k, v in django_settings_module.__dict__.items() if k.isupper()
     }
     options.update(kwargs)
-    settings_file = os.path.abspath(django_settings_module.__file__)
     options.setdefault('SKIP_FILES_FOR_DYNACONF', [settings_file])
-    _root_path = os.path.dirname(settings_file)
     options.setdefault('ROOT_PATH_FOR_DYNACONF', _root_path)
     options.setdefault('GLOBAL_ENV_FOR_DYNACONF', 'DJANGO')
-    options.setdefault(
-        'ENV_FOR_DYNACONF',
-        os.environ.get('DJANGO_ENV', 'DEVELOPMENT')
-    )
-    dynaconf.default_settings.start_dotenv(root_path=_root_path)
-
+    options.setdefault('ENV_SWITCHER_FOR_DYNACONF', 'DJANGO_ENV')
     lazy_settings = dynaconf.LazySettings(**options)
 
     # 2) Set all settings back to django_settings_module for 'django check'
@@ -80,7 +70,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         if key.isupper() and key != 'SETTINGS_MODULE':
             dj[key] = getattr(django_settings, key, None)
         dj['ORIGINAL_SETTINGS_MODULE'] = django_settings.SETTINGS_MODULE
-    dj.setdefault('GLOBAL_ENV_FOR_DYNACONF', 'DJANGO')
+
     lazy_settings.update(dj)
 
     # 4) Patch django.conf.settings

@@ -4,6 +4,7 @@ from dynaconf import default_settings
 from dynaconf.loaders import (
     yaml_loader, toml_loader, json_loader, ini_loader, py_loader
 )
+from dynaconf.utils import deduplicate
 from dynaconf.utils.parse_conf import false_values
 
 
@@ -18,7 +19,9 @@ def default_loader(obj, defaults=None):
         if key.isupper()
     }
 
-    all_keys = list(default_settings_values.keys()) + list(defaults.keys())
+    all_keys = deduplicate(
+        list(defaults.keys()) + list(default_settings_values.keys())
+    )
 
     for key in all_keys:
         if not obj.exists(key):
@@ -29,8 +32,22 @@ def default_loader(obj, defaults=None):
     # start dotenv to get default env vars from there
     # check overrides in env vars
     default_settings.start_dotenv(obj)
+
+    # Deal with cases where a custom ENV_SWITCHER_IS_PROVIDED
+    # Example: Flask and Django Extensions
+    env_switcher = defaults.get(
+        'ENV_SWITCHER_FOR_DYNACONF', 'ENV_FOR_DYNACONF'
+    )
+
     for key in all_keys:
-        env_value = obj.get_environ(key, '_not_found')
+        if key not in default_settings_values.keys():
+            continue
+
+        env_value = obj.get_environ(
+            env_switcher if key == 'ENV_FOR_DYNACONF' else key,
+            default='_not_found'
+        )
+
         if env_value != '_not_found':
             obj.logger.debug(
                 "default_loader: overriding from envvar: %s:%s",

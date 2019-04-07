@@ -13,15 +13,9 @@ EXTERNAL_LOADERS = {
 }
 
 DJANGO_PATCH = '''
-# HERE STARTS DYNACONF EXTENSION LOAD
-# Important! Keep it at the very bottom of your Django's settings.py file
+# HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 # Read more at https://dynaconf.readthedocs.io/en/latest/guides/django.html
-# Tip: All the variables defined above can now be moved to
-# `../settings.{toml,yaml,json,ini}` under `[default]` section.
-import os, dynaconf  # noqa
-dynaconf.default_settings.AUTO_LOAD_DOTENV = False  # noqa
-dynaconf.default_settings.start_dotenv(root_path=os.path.dirname(os.path.abspath(__file__)))  # noqa
+import dynaconf  # noqa
 settings = dynaconf.DjangoDynaconf(__name__)  # noqa
-# Important! No more code below this line
-# HERE ENDS DYNACONF EXTENSION LOAD
+# HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
  '''

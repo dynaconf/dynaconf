@@ -1,5 +1,4 @@
 # coding: utf-8
-import os
 try:
     from flask.config import Config
     flask_installed = True
@@ -18,8 +17,9 @@ class FlaskDynaconf(object):
 
     All other values are stored as config vars specially::
 
-        ENV_FOR_DYNACONF = env prefix for your envvars to become settings
+        GLOBAL_ENV_FOR_DYNACONF = env prefix for your envvars to be loaded
                             example:
+                                if you set to `MYSITE` then
                                 export MYSITE_SQL_PORT='@int 5445'
 
                             with that exported to env you access using:
@@ -86,10 +86,7 @@ class FlaskDynaconf(object):
             kwargs['GLOBAL_ENV_FOR_DYNACONF']
         )  # FLASK_ENV
 
-        kwargs.setdefault(
-            'ENV_FOR_DYNACONF',
-            os.environ.get(env_prefix, 'DEVELOPMENT').upper()
-        )
+        kwargs.setdefault('ENV_SWITCHER_FOR_DYNACONF', env_prefix)
 
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config

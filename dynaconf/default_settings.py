@@ -61,13 +61,7 @@ def start_dotenv(obj=None, root_path=None):
     warn_deprecations(os.environ)
 
 
-AUTO_LOAD_DOTENV = get('AUTO_LOAD_DOTENV', True)
-
-if AUTO_LOAD_DOTENV:
-    # This call can be disabled for testing and extensions by
-    # import dynaconf; dynaconf.default_settings.AUTO_LOAD_DOTENV = False
-    # or exporting AUTO_LOAD_DOTENV=false
-    start_dotenv()
+start_dotenv()
 
 
 # default proj root
@@ -93,11 +87,16 @@ SETTINGS_MODULE_FOR_DYNACONF = get('SETTINGS_MODULE_FOR_DYNACONF',
 # # ENV SETTINGS
 # # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`
 
+# The environment variable to switch current env
+ENV_SWITCHER_FOR_DYNACONF = get(
+    'ENV_SWITCHER_FOR_DYNACONF', 'ENV_FOR_DYNACONF'
+)
+
 # The current env by default is DEVELOPMENT
 # to switch is needed to `export ENV_FOR_DYNACONF=PRODUCTION`
 # or put that value in .env file
 # this value is used only when reading files like .toml|yaml|ini|json
-ENV_FOR_DYNACONF = get('ENV_FOR_DYNACONF', 'DEVELOPMENT')
+ENV_FOR_DYNACONF = get(ENV_SWITCHER_FOR_DYNACONF, 'DEVELOPMENT')
 
 # Default values is taken from DEFAULT pseudo env
 # this value is used only when reading files like .toml|yaml|ini|json
