@@ -7,10 +7,10 @@ In the `django_project/settings.py` put at the very botton of the file:
 # Read more at https://dynaconf.readthedocs.io/en/latest/guides/django.html
 # Tip: All the variables defined above can now be moved to
 # `../settings.toml` under `[default]` section.
-import os, sys, dynaconf  # noqa
+import os, dynaconf  # noqa
 dynaconf.default_settings.AUTO_LOAD_DOTENV = False  # noqa
 dynaconf.default_settings.start_dotenv(root_path=os.path.dirname(os.path.abspath(__file__)))  # noqa
-settings = dynaconf.DjangoDynaconf(sys.modules[__name__])  # noqa
+settings = dynaconf.DjangoDynaconf(__name__)  # noqa
 # Important! No more code below this line
 # HERE ENDS DYNACONF EXTENSION LOAD
 
@@ -38,12 +38,19 @@ except ImportError:  # pragma: no cover
     django_installed = False
 
 
-def load(django_settings_module, **kwargs):  # pragma: no cover
+def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     if not django_installed:
         raise RuntimeError(
             "To use this extension django must be installed "
             "install it with: pip install django"
         )
+
+    try:
+        django_settings_module = sys.modules[django_settings_module_name]
+    except KeyError:
+        django_settings_module = sys.modules[
+            os.environ['DJANGO_SETTINGS_MODULE']
+        ]
 
     # 1) Create the lazy settings object reusing settings_module consts
     options = {

@@ -11,10 +11,10 @@ You can manually append at the bottom of your django project's `settings.py` the
 ```python
 # HERE STARTS DYNACONF EXTENSION LOAD
 # Important! Keep it at the very bottom of your Django's settings.py file
-import os, sys, dynaconf  # noqa
+import os, dynaconf  # noqa
 dynaconf.default_settings.AUTO_LOAD_DOTENV = False  # noqa
 dynaconf.default_settings.start_dotenv(root_path=os.path.dirname(os.path.abspath(__file__)))  # noqa
-settings = dynaconf.DjangoDynaconf(sys.modules[__name__])  # noqa
+settings = dynaconf.DjangoDynaconf(__name__)  # noqa
 # Important! No more code below this line
 # HERE ENDS DYNACONF EXTENSION LOAD
 ```
@@ -69,7 +69,7 @@ from:
 ```python
 # HERE STARTS DYNACONF EXTENSION LOAD
 ...
-settings = dynaconf.DjangoDynaconf(sys.modules[__name__])
+settings = dynaconf.DjangoDynaconf(__name__)
 # Important! No more code below this line
 # HERE ENDS DYNACONF EXTENSION LOAD
 ```
@@ -80,7 +80,7 @@ to:
 # HERE STARTS DYNACONF EXTENSION LOAD
 ...
 settings = dynaconf.DjangoDynaconf(
-    sys.modules[__name__]
+    __name__,
     GLOBAL_ENV_FOR_DYNACONF='PROJECTNAME',
     ENV_FOR_DYNACONF=os.environ.get('PROJECTNAME_ENV', 'DEVELOPMENT'),
     SETTINGS_MODULE_FOR_DYNACONF='/etc/projectname/settings.toml',
