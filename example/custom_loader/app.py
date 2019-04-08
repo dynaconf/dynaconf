@@ -10,3 +10,5 @@ assert settings.EMAIL == 'bruno@rocha.com.from_env'
 
 print("Name is:", settings.NAME)
 print("Email is:", settings.EMAIL)
+
+print(settings.get_fresh('NAME'))

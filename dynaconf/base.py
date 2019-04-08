@@ -704,6 +704,7 @@ class Settings(object):
         """
         if key is None:
             default_loader(self, self._defaults)
+        env = (env or self.current_env).upper()
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
         settings_loader(self, env=env, silent=silent, key=key,
                         filename=filename)

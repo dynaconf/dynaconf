@@ -5,15 +5,20 @@
 
 def load(obj, env=None, silent=True, key=None, filename=None):
     """
-    Reads and loads in to "obj" a single key or all keys from source file.
-
+    Reads and loads in to "obj" a single key or all keys from source
     :param obj: the settings instance
-    :param env: settings current env default='development'
+    :param env: settings current env (upper case) default='DEVELOPMENT'
     :param silent: if errors should raise
-    :param key: if defined load a single key, else load all in env
-    :param filename: Optional custom filename to load
+    :param key: if defined load a single key, else load all from `env`
+    :param filename: Custom filename to load (useful for tests)
     :return: None
     """
+    # Load data from your custom data source (file, database, memory etc)
+    # use `obj.set(key, value)` or `obj.update(dict)` to load data
+    # use `obj.logger.debug` to log your loader activities
+    # use `obj.find_file('filename.ext')` to find the file in search tree
+    # Return nothing
+
     # This loader reads the .sff file // Stupid File Format
     keys = []
     values = []
@@ -31,7 +36,15 @@ def load(obj, env=None, silent=True, key=None, filename=None):
             values = line.strip('VALUES:').strip('\n').split(';')
     # // PLEASE DON'T USE THIS SFF file format :)
 
-    obj._loaded_files.append(found_file)
     data = dict(zip(keys, values))
-    obj.logger.debug('Sff loader: loading: {0}'.format(data))
-    obj.update(data)
+
+    if key:
+        value = data.get(key.lower())  # sff format have lower case keys
+        obj.logger.debug('Sff loader: %s:%s', key, value)
+        obj.set(key, value)
+    else:
+        obj.logger.debug('Sff loader: loading: {0}'.format(data))
+        obj.update(data)
+
+    obj._loaded_files.append(found_file)
+
