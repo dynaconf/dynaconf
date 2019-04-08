@@ -78,8 +78,10 @@ test_redis:
 	@sleep 5
 	@cd example/redis_example;pwd;python redis_example.py | grep -c redis_works
 
-test: pep8
+test_only:
 	py.test --boxed -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
+
+test: pep8 test_only
 
 install:
 	pip install --upgrade pip
@@ -91,7 +93,7 @@ pep8:
 	#   F841 (local variable assigned but never used, useful for debugging on exception)
 	#   W504 (line break after binary operator, I prefer to put `and|or` at the end)
 	#   F403 (star import `from foo import *` often used in __init__ files)
-	@flake8 dynaconf --ignore=F403,W504,F841
+	flake8 dynaconf --ignore=F403,W504,F841
 
 dist: clean
 	@python setup.py sdist bdist_wheel

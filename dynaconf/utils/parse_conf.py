@@ -2,7 +2,6 @@ import os
 import json
 import toml
 
-from six import string_types
 from dynaconf.utils.boxing import DynaBox
 
 
@@ -53,7 +52,7 @@ def _parse_conf_data(data, tomlfy=False):
     castenabled = cast_toggler not in false_values
 
     if castenabled and data and isinstance(
-        data, string_types
+        data, str
     ) and data.startswith(tuple(converters.keys())):
         parts = data.partition(' ')
         converter_key = parts[0]

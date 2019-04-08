@@ -4,8 +4,6 @@ import glob
 import importlib
 from contextlib import contextmanager
 
-from six import string_types
-
 from dynaconf import default_settings
 from dynaconf.loaders import (
     default_loader,
@@ -484,7 +482,7 @@ class Settings(object):
         """
         env = env or self.ENV_FOR_DYNACONF
 
-        if not isinstance(env, string_types):
+        if not isinstance(env, str):
             raise AttributeError('env should be a string')
         if "_" in env:
             raise AttributeError('env should not contains _')
