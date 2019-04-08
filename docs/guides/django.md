@@ -159,6 +159,28 @@ settings = importlib.import_module(os.environ['DJANGO_SETTINGS_MODULE'])
 print(settings.get('DATABASES'))
 ```
 
+## Testing on Django
+
+Django testing must work out of the box!
+
+But in some cases when you `mock` stuff and need to add `environment variables` to `os.environ` on demand for test cases it may be needed to `reload` the `dynaconf`.
+
+To do that write up on your test case setup part:
+
+```py
+import os
+import importlib
+from myapp import settings # NOTE: this uses your app module not django.conf
+
+class TestCase(...):
+    def setUp(self):
+        os.environ['DJANGO_FOO'] = 'BAR'  # dynaconf should read it and set `settings.FOO`
+        importlib.reload(settings)
+
+    def test_foo(self):
+        self.assertEqual(settings.FOO, 'BAR')
+```
+
 ## Knowm Caveats
 
 - If `settings.configure()` is called directly it disables Dynaconf, use `settings.DYNACONF.configure()`

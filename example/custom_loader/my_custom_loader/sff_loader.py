@@ -47,4 +47,3 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         obj.update(data)
 
     obj._loaded_files.append(found_file)
-
