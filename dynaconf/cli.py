@@ -47,10 +47,19 @@ def set_settings(instance=None):
                 'Flask app detected', fg='white', bg='bright_black'))
 
     elif 'DJANGO_SETTINGS_MODULE' in os.environ:  # pragma: no cover
-        with suppress(ImportError):
-            sys.path.insert(0, os.path.abspath(os.getcwd()))
+        sys.path.insert(0, os.path.abspath(os.getcwd()))
+        try:
+            # Django extension v2
             from django.conf import settings
             settings.DYNACONF.configure()
+        except (ImportError, AttributeError):
+            # Backwards compatible with old django extension (pre 2.0.0)
+            import dynaconf.contrib.django_dynaconf  # noqa
+            from django.conf import settings as django_settings
+            django_settings.configure()
+            settings = django_settings
+
+        if settings is not None:
             click.echo(click.style(
                 'Django app detected', fg='white', bg='bright_black'))
 
