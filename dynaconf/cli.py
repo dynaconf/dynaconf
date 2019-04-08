@@ -16,6 +16,7 @@ from dynaconf.utils.parse_conf import parse_conf_data
 from dotenv import cli as dotenv_cli
 from contextlib import suppress
 
+
 CWD = Path.cwd()
 ENVS = ['default', 'development', 'staging', 'testing', 'production', 'global']
 EXTS = ['ini', 'toml', 'yaml', 'json', 'py', 'env']
@@ -43,17 +44,15 @@ def set_settings(instance=None):
             flask_app = ScriptInfo().load_app()
             settings = flask_app.config
             click.echo(click.style(
-                'Flask app detected', fg='white', bg='black'))
+                'Flask app detected', fg='white', bg='bright_black'))
 
     elif 'DJANGO_SETTINGS_MODULE' in os.environ:  # pragma: no cover
-        sys.path.insert(0, os.path.abspath('.'))
-        with suppress(Exception):
-            import dynaconf.contrib.django_dynaconf  # noqa
-            from django.conf import settings as django_settings
-            django_settings.configure()
-            settings = django_settings
+        with suppress(ImportError):
+            sys.path.insert(0, os.path.abspath(os.getcwd()))
+            from django.conf import settings
+            settings.DYNACONF.configure()
             click.echo(click.style(
-                'Django app detected', fg='white', bg='black'))
+                'Django app detected', fg='white', bg='bright_black'))
 
     if settings is None:
         settings = LazySettings()
@@ -311,7 +310,7 @@ def _list(env, key, more, loader):
     click.echo(
         click.style(
             'Working in %s environment ' % cur_env,
-            bold=True, bg='blue', fg='white'
+            bold=True, bg='blue', fg='bright_black'
         )
     )
 

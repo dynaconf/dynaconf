@@ -49,6 +49,43 @@ settings.setenv()
 # now working env are back to previous
 ```
 
+## Populating objects
+
+You can use dynaconf values to populate Python objects (intances).
+
+example:
+```py
+class Obj:
+   ...
+```
+
+then you can do:
+
+```py
+from dynaconf import settings  # assume it has DEBUG=True and VALUE=42.1
+obj = Obj()
+
+settings.populate_obj(obj)
+
+assert obj.DEBUG is True
+assert obj.VALUE == 42.1
+
+```
+
+Also you can specify only some keys:
+
+```py
+from dynaconf import settings  # assume it has DEBUG=True and VALUE=42.1
+obj = Obj()
+
+settings.populate_obj(obj, keys=['DEBUG'])
+
+assert obj.DEBUG is True  # ok
+
+assert obj.VALUE == 42.1  # AttributeError
+
+```
+
 ## Customizations
 
 It is possible to customize how your project will load settings, example: You want your users to customize a settings file defined in `export PROJECTNAME_SETTINGS=/path/to/settings.toml` and you want environment variables to be loaded from `PROJECTNAME_VARNAME`
@@ -59,6 +96,11 @@ GLOBAL_ENV_FOR_DYNACONF = "PROJECTNAME"
 """This defines which environment variable global prefix dynaconf will load
 That means that `export PROJECTNAME_FOO=1` will be loaded to `duanconf.settings.FOO
 On command line it is possible to check it with `dynaconf list -k foo`"""
+
+ENV_SWITCHER_FOR_DYNACONF='PROJECTNAME_ENV'
+"""By default it is DYNACONF_ENV, this is the envvar used to switch from development to production
+but with this settings your users can do `export PROJECT_ENV=production`"""
+
 
 ENVVAR_FOR_DYNACONF = "PROJECTNAME_SETTINGS"
 """This defines which path dynaconf will look to load config files
@@ -98,7 +140,8 @@ The environment variables wins precedence over all!
 # load dynaconf
 settings = LazySettings(
     GLOBAL_ENV_FOR_DYNACONF=GLOBAL_ENV_FOR_DYNACONF,
-    ENVVAR_FOR_DYNACONF=ENVVAR_FOR_DYNACONF
+    ENVVAR_FOR_DYNACONF=ENVVAR_FOR_DYNACONF.
+    ENV_SWITCHER_FOR_DYNACONF=ENV_SWITCHER_FOR_DYNACONF
 )
 ```
 

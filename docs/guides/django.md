@@ -16,7 +16,7 @@ settings = dynaconf.DjangoDynaconf(__name__)  # noqa
 # HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
 ```
 
-Or optionally you can, on the same directory where your `manage.py` is located run:
+Or **optionally** you can, on the same directory where your `manage.py` is located run:
 
 ```bash
 export DJANGO_SETTINGS_MODULE=yourapp.settings
@@ -29,6 +29,8 @@ $ dynaconf init --django yourapp/settings.py
 ```
 
 Dynaconf will append its extension loading code to the bottom of your `yourapp/settings.py` file and will create `settings.toml` and `.secrets.toml` in the current folder (the same where `manage.py` is located).
+
+> **TIP** Take a look at [example/django_example](https://github.com/rochacbruno/dynaconf/tree/master/example/django_example)
 
 ## Using `DJANGO_` environment variables
 
@@ -95,6 +97,71 @@ Your settings are now read from `/etc/projectname/settings.toml` (dynaconf will 
 You can have additional settings read from `/etc/projectname/plugins/*` any supoprted file from this folder will be loaded.
 
 You can set more options, take a look on [configuration](configuration.html)
+
+## Reading Settings on Standalone Scripts
+
+Sometimes you need to have a standalone script accessing Django's settings, the recommended way
+of doing it is by creating `management commands` inside your Django application.
+
+But when you need that script to be out of your Django Application Scope, you can use `settings.DYNACONF.configure()` instead of the common `settings.configure()` provided by Django.
+
+### Examples:
+
+**All exemples below assumes you have `DJANGO_SETTINGS_MODULE` environment variable set, either by `exporting` it to your env or by explicitly adding it to `os.environ` dictionary.
+
+**IMPORTANT**: If you call `settings.configure()` directly dynaconf will be disabled, as you have `DJANGO_SETTINGS_MODULE` exported you have no need to call it, but if you need please use: `settings.DYNACONF.configure()`.
+
+#### Common case
+
+/etc/my_script.py
+```python
+from django.conf import settings
+print(settings.DATABASES)
+```
+
+#### Explicitly adding the setting module
+
+/etc/my_script.py
+```python
+import os
+os.environ['DJANGO_SETTINGS_MODULE'] = 'foo.settings'
+
+from django.conf import settings
+print(settings.DATABASES)
+```
+
+#### When you need the `configure`
+
+> Calling `DYNACONF.configure()` is needed when you want to access dynaconf special methods like `using_env`, `get`, `get_fresh` etc...
+
+/etc/my_script.py
+```python
+from django.conf import settings
+settings.DYNACONF.configure()
+print(settings.get('DATABASES'))
+```
+
+#### Importing settings directly (recommended for the above case)
+
+/etc/my_script.py
+```python
+from foo.settings import settings
+print(settings.get('DATABASES'))
+```
+
+#### Importing settings via importlib
+
+/etc/my_script.py
+```python
+import os
+import importlib
+settings = importlib.import_module(os.environ['DJANGO_SETTINGS_MODULE'])
+print(settings.get('DATABASES'))
+```
+
+## Knowm Caveats
+
+- If `settings.configure()` is called directly it disables Dynaconf, use `settings.DYNACONF.configure()`
 
 ## Deprecation note
 

@@ -114,12 +114,14 @@ class LazySettings(LazyObject):
 
     def _setup(self):
         """Initial setup, run once."""
+        default_settings.reload()
         environment_variable = self._kwargs.get(
             'ENVVAR_FOR_DYNACONF', default_settings.ENVVAR_FOR_DYNACONF)
         settings_module = os.environ.get(environment_variable)
         self._wrapped = Settings(
             settings_module=settings_module, **self._kwargs
         )
+        self.logger.debug('Lazy Settings _setup ...')
 
     def configure(self, settings_module=None, **kwargs):
         """
@@ -129,9 +131,14 @@ class LazySettings(LazyObject):
         :param settings_module: defines the setttings file
         :param kwargs:  override default settings
         """
+        default_settings.reload()
+        environment_var = self._kwargs.get(
+            'ENVVAR_FOR_DYNACONF', default_settings.ENVVAR_FOR_DYNACONF)
+        settings_module = settings_module or os.environ.get(environment_var)
         compat_kwargs(kwargs)
         kwargs.update(self._kwargs)
         self._wrapped = Settings(settings_module=settings_module, **kwargs)
+        self.logger.debug('Lazy Settings configured ...')
 
     @property
     def configured(self):
@@ -817,3 +824,12 @@ class Settings(object):
         with self.using_env(env):
             value = self.get_fresh(key)
             return value is True or value in true_values
+
+    def populate_obj(self, obj, keys=None):
+        """Given the `obj` populate it using self.store items."""
+        keys = keys or self.keys()
+        for key in keys:
+            key = key.upper()
+            value = self.get(key, empty)
+            if value is not empty:
+                setattr(obj, key, value)

@@ -1,5 +1,8 @@
 import os
+import sys
+import importlib
 import warnings
+
 from dynaconf.utils import raw_logger, warn_deprecations, RENAMED_VARS
 from dynaconf.utils.files import find_file
 from dynaconf.utils.parse_conf import parse_conf_data
@@ -61,7 +64,9 @@ def start_dotenv(obj=None, root_path=None):
     warn_deprecations(os.environ)
 
 
-start_dotenv()
+def reload(*args, **kwargs):
+    start_dotenv(*args, **kwargs)
+    importlib.reload(sys.modules[__name__])
 
 
 # default proj root

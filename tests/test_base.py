@@ -26,6 +26,32 @@ def test_accepts_only_upper(settings):
         assert settings.debug is True
 
 
+def test_populate_obj(settings):
+    class Obj:
+        pass
+
+    obj = Obj()
+
+    settings.populate_obj(obj)
+
+    assert obj.DEBUG is True
+    assert obj.VALUE == 42.1
+
+
+def test_populate_obj_with_keys(settings):
+    class Obj:
+        pass
+
+    obj = Obj()
+
+    settings.populate_obj(obj, ['VALUE'])
+
+    assert obj.VALUE == 42.1
+
+    with pytest.raises(AttributeError):
+        assert obj.DEBUG is True
+
+
 def test_call_works_as_get(settings):
     """settings.get('name') is the same as settings('name')"""
 

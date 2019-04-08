@@ -22,6 +22,7 @@ On your projects root folder now you can start as::
 """
 import os
 import sys
+import inspect
 import dynaconf
 
 try:  # pragma: no cover
@@ -61,10 +62,13 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     lazy_settings = dynaconf.LazySettings(**options)
 
     # 2) Set all settings back to django_settings_module for 'django check'
-    for setting_name, setting_value in lazy_settings._store.items():
-        setattr(django_settings_module, setting_name.upper(), setting_value)
+    lazy_settings.populate_obj(django_settings_module)
 
-    # 3) keep django original settings
+    # 3) Bind `settings` and `DYNACONF`
+    setattr(django_settings_module, 'settings', lazy_settings)
+    setattr(django_settings_module, 'DYNACONF', lazy_settings)
+
+    # 4) keep django original settings
     dj = {}
     for key in dir(django_settings):
         if key.isupper() and key != 'SETTINGS_MODULE':
@@ -73,7 +77,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
 
     lazy_settings.update(dj)
 
-    # 4) Patch django.conf.settings
+    # 5) Patch django.conf.settings
     class Wrapper(object):
 
         # lazy_settings = conf.settings.lazy_settings
@@ -87,6 +91,16 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     # This implementation is recommended by Guido Van Rossum
     # https://mail.python.org/pipermail/python-ideas/2012-May/014969.html
     sys.modules['django.conf'] = Wrapper()
+
+    # 6) Enable standalone scripts to use Dynaconf
+    # This is for when `django.conf.settings` is imported directly
+    # on external `scripts` (out of Django's lifetime)
+    for stack_item in reversed(inspect.stack()):
+        if isinstance(
+            stack_item.frame.f_globals.get('settings'), conf.LazySettings
+        ):
+            stack_item.frame.f_globals['settings'] = lazy_settings
+
     return lazy_settings
 
 
