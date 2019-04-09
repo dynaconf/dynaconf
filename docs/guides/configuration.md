@@ -50,6 +50,8 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENV                 | str     | Working environment                              | "development"                                    | ENV_FOR_DYNACONF=production                                  |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
+| ENV_SWITCHER        | str     | Variable used to change working env              | ENV_FOR_DYNACONF                                 | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV                      |
++---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | GLOBAL_ENV          | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       | GLOBAL_ENV_FOR_DYNACONF=MYPROGRAM                            |
 |                     |         | |                                                |                                                  |                                                              |
 |                     |         | | Example:                                       |                                                  |                                                              |
