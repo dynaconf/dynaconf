@@ -102,16 +102,15 @@ You can set more options, take a look on [configuration](configuration.html)
 
 ## Reading Settings on Standalone Scripts
 
-Sometimes you need to have a standalone script accessing Django's settings, the recommended way
-of doing it is by creating `management commands` inside your Django application.
+> **NOTE**: The recommended way to create standalone scripts is by creating `management commands` inside your Django applications or pugins.
 
-But when you need that script to be out of your Django Application Scope, you can use `settings.DYNACONF.configure()` instead of the common `settings.configure()` provided by Django.
+> **IMPORTANT** If you need that script to be out of your Django Application Scope, it is also possible and **if needed** you can use `settings.DYNACONF.configure()` instead of the common `settings.configure()` provided by Django.
 
 ### Examples:
 
-**All exemples below assumes you have `DJANGO_SETTINGS_MODULE` environment variable set, either by `exporting` it to your env or by explicitly adding it to `os.environ` dictionary.
+Examples below assumes you have `DJANGO_SETTINGS_MODULE` environment variable set, either by `exporting` it to your env or by explicitly adding it to `os.environ` dictionary.
 
-**IMPORTANT**: If you call `settings.configure()` directly dynaconf will be disabled, as you have `DJANGO_SETTINGS_MODULE` exported you have no need to call it, but if you need please use: `settings.DYNACONF.configure()`.
+> **IMPORTANT**: If you call `settings.configure()` directly dynaconf will be disabled. As you have `DJANGO_SETTINGS_MODULE` exported you don't need to call it, but if you need please use: `settings.DYNACONF.configure()`.
 
 #### Common case
 
@@ -182,6 +181,30 @@ class TestCase(...):
     def test_foo(self):
         self.assertEqual(settings.FOO, 'BAR')
 ```
+
+## Explicit mode
+
+Some users have the preference to explicitly load each setting variable inside the `settings.py` and then let django manage it in the common way, it is possible.
+
+> **NOTE** Doing this way misses the ability to use dynacong methods like `using_env`, `get` etc on your django applications code.
+
+Dynaconf will be available only on `settings.py` scope, on the rest of your application settings is managed by Django normally.
+
+`settings.py`
+```py
+from dynaconf import LazySettings
+settings = LazySettings(**YOUR_OPTIONS_HERE)
+
+DEBUG = settings.get('DEBUG', False)
+DATABASES = settings.get('DATABASES', {
+    'default': {
+        'ENGINE': '...',
+        'NAME': '...
+    }
+})
+```
+
+You can still change env with `export DJANGO_ENV=production` and also can export variables lile `export DJANGO_DEBUG=true`
 
 ## Knowm Caveats
 
