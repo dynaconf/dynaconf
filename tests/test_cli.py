@@ -30,49 +30,6 @@ def test_banner():
 
 
 @pytest.mark.parametrize("fileformat", EXTS)
-def test_init(fileformat):
-    if fileformat == 'env':
-        path = '.env'
-        secs_path = None
-    else:
-        path = 'settings.{}'.format(fileformat)
-        secs_path = '.secrets.{}'.format(fileformat)
-
-    run(
-        [
-            'init',
-            '--no-wg',
-            '--format={}'.format(fileformat),
-            '-v', 'name=bruno',
-            '-s', 'token=secret',
-            '-y'
-        ]
-    )
-
-    sets = Path(path)
-    assert sets.exists() is True
-
-    assert 'bruno' in io.open(
-        str(sets),
-        encoding=default_settings.ENCODING_FOR_DYNACONF
-    ).read()
-
-    if fileformat != 'env':
-        os.remove(str(sets))
-    else:
-        dotenv_cli.unset_key(path, 'NAME')
-
-    if secs_path:
-        secs = Path('.secrets.{}'.format(fileformat))
-        assert secs.exists() is True
-        assert 'TOKEN' in io.open(
-            str(secs),
-            encoding=default_settings.ENCODING_FOR_DYNACONF
-        ).read()
-        os.remove(str(secs))
-
-
-@pytest.mark.parametrize("fileformat", EXTS)
 def test_init_with_path(fileformat, tmpdir):
     # run twice to force load of existing files
     if fileformat == 'env':
@@ -87,14 +44,16 @@ def test_init_with_path(fileformat, tmpdir):
             [
                 'init',
                 '--format={}'.format(fileformat),
+                '-v', 'name=bruno',
+                '-s', 'token=secret for',
                 '--path={}'.format(str(tmpdir)),
                 '-y'
-            ],
+            ]
         )
 
     sets = Path(str(path))
     assert sets.exists() is True
-    assert 'value for development' in io.open(
+    assert 'bruno' in io.open(
         str(sets),
         encoding=default_settings.ENCODING_FOR_DYNACONF
     ).read()
@@ -116,11 +75,13 @@ def test_init_with_path(fileformat, tmpdir):
         ).read()
 
 
-def test_list():
+def test_list(testdir):
+
     result = run(
         [
             'list'
-        ]
+        ],
+        env={'ROOT_PATH_FOR_DYNACONF': testdir}
     )
     assert "DOTENV_STR: 'hello'" in result
 

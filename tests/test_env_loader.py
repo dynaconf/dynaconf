@@ -16,7 +16,10 @@ os.environ['DYNACONF_VALUE'] = '@float 42.1'
 
 # os.environ['FRESH_VARS_FOR_DYNACONF'] = '@json ["MUSTBEALWAYSFRESH"]'
 # settings.configure()
-settings.configure(FRESH_VARS_FOR_DYNACONF=["MUSTBEALWAYSFRESH"])
+settings.configure(
+    FRESH_VARS_FOR_DYNACONF=["MUSTBEALWAYSFRESH"],
+    ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__))
+)
 
 
 def test_env_loader():

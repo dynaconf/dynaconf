@@ -21,12 +21,12 @@ import os
 import sys
 import datetime
 sys.path.insert(0, os.path.abspath('.'))
-from dynaconf.cli import read_file_in_root_directory as read
-from django.conf import settings
+from dynaconf.cli import read_file_in_root_directory as read  # noqa
+from django.conf import settings  # noqa
 settings.configure()
 
-import recommonmark
-from recommonmark.transform import AutoStructify
+import recommonmark  # noqa
+from recommonmark.transform import AutoStructify  # noqa
 
 
 # -- General configuration ------------------------------------------------
@@ -110,7 +110,7 @@ html_theme_options = {
     'github_banner': True,
     'description': 'Layered configuration system for Python applications',
     # 'travis_button': True,
-    'codecov_button': True,
+    # 'codecov_button': True,
     'show_related': True,
     'fixed_sidebar': False,
 

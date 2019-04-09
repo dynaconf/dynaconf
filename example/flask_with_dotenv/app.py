@@ -21,3 +21,7 @@ def test():
 
 
 app.add_url_rule(app.config.TEST_RULE, view_func=lambda: 'test')
+
+
+if __name__ == '__main__':
+    app.run()

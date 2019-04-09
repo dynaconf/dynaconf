@@ -28,6 +28,9 @@ Release v\ |version|. (`Installation`_)
 .. image:: https://dev.azure.com/rochacbruno/dynaconf/_apis/build/status/rochacbruno.dynaconf?branchName=master
     :target: https://dev.azure.com/rochacbruno/dynaconf/_build/latest?definitionId=1&branchName=master
 
+.. image:: https://codecov.io/gh/rochacbruno/dynaconf/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/rochacbruno/dynaconf
+
 .. image:: https://img.shields.io/badge/Say%20Thanks!-🦉-1EAEDB.svg
     :target: https://saythanks.io/to/rochacbruno
 
@@ -50,6 +53,18 @@ Features
 - Powerful **$ dynaconf** `CLI`_ to help you manage your settings via console.
 - Customizable `Validation`_ System to ensure correct config parameters.
 - Allow the change of **dynamic** parameters on the fly without the need to redeploy your application.
+
+
+Who is using Dynaconf?
+^^^^^^^^^^^^^^^^^^^^^^
+
+- Pulp Project - Django - (Red Hat)
+- Ansible Galaxy - Django - (Red Hat)
+- Insights QE (Red Hat)
+- Seek AI & Catho Job boards - Flask - (on AI APIs)
+- Quokka CMS - Flask
+
+Are you using? add your project to this list, send a Pull Request.
 
 
 .. aafig::

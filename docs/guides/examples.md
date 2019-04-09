@@ -4,7 +4,7 @@
 
 ### TOML
 
-```
+```toml
 [default]
 DEBUG = true
 SERVER = "flaskdynaconf.com"
@@ -23,7 +23,7 @@ SERVER = "prod.flaskdynaconf.com"
 
 ### YAML
 
-```
+```yaml
 default:
   DEBUG: true
   SERVER: flaskdynaconf.com
@@ -40,7 +40,7 @@ production:
 
 ### INI
 
-```
+```ini
 [default]
 DEBUG = true
 SERVER = "flaskdynaconf.com"
@@ -59,7 +59,7 @@ SERVER = "prod.flaskdynaconf.com"
 
 ### JSON
 
-```
+```json
 {
   "default": {
     "DEBUG": true,
@@ -111,7 +111,7 @@ SERVER = "prod.flaskdynaconf.com"
 
 `.env` allows only the `global` environment (overrides everything)
 
-```
+```bash
 DEBUG=true
 SERVER="flaskdynaconf.com"
 PORT=6666

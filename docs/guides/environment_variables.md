@@ -12,9 +12,9 @@ DYNACONF_HOST='otherhost.com' python yourapp.py
 
 ## .env files
 
-If you don't want to declare the variables on every program call you can run `export DYNACONF_{PARAM}` in your shell or put the values in a `.env` file located in the same directory as your settings files (the root directory of your application), variables in `.env` does not overrride existing environment variables.
+If you don't want to declare the variables on every program call you can run `export DYNACONF_{PARAM}` in your shell or put the values in a `.env` file located in the same directory as your settings files (the root directory of your application or the same folder where your program script is located), variables in `.env` does not overrride existing environment variables.
 
-> **IMPORTANT**: Dynaconf will search for a `.env` located in the root directory of your application, if not found it will continue searching in parent directories until it reaches the root. To avoid conflicts we recommend to have a `.env` even if it is empty.
+> **IMPORTANT**: Dynaconf will search for a `.env` on the order explained [here](usage.html). So to avoid conflicts with existing `.env` in parent directories it is recommended to have a `.env` inside your project even if it is empty.
 
 ## Precedence and type casting
 
@@ -57,6 +57,8 @@ DYNACONF_ARRAY='@json [42, 3.14, "hello", true, ["otherarray"], {"foo": "bar"}]'
 > **NOTE**: Older versions of Dynaconf used the `@casting` prefixes for env vars like `export DYNACONF_INTEGER='@int 123'` still works but this casting is deprecated in favor of using TOML syntax described above. To disable the `@casting` do `export AUTO_CAST_FOR_DYNACONF=false`
 
 ### Merging exported variables with existing data
+
+> **New in 2.0.0**
 
 To merge exported variables there is the **dynaconf_merge** tokens, example:
 

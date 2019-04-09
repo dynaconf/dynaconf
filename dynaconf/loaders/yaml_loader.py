@@ -60,7 +60,7 @@ def write(settings_path, settings_data, merge=True):
     settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover
         object_merge(
-            yaml.load(
+            yaml.full_load(
                 io.open(
                     str(settings_path),
                     encoding=default_settings.ENCODING_FOR_DYNACONF

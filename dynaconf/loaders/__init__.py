@@ -4,8 +4,8 @@ from dynaconf import default_settings
 from dynaconf.loaders import (
     yaml_loader, toml_loader, json_loader, ini_loader, py_loader
 )
+from dynaconf.utils import deduplicate
 from dynaconf.utils.parse_conf import false_values
-from dynaconf.utils.files import find_file
 
 
 def default_loader(obj, defaults=None):
@@ -19,7 +19,9 @@ def default_loader(obj, defaults=None):
         if key.isupper()
     }
 
-    all_keys = list(default_settings_values.keys()) + list(defaults.keys())
+    all_keys = deduplicate(
+        list(defaults.keys()) + list(default_settings_values.keys())
+    )
 
     for key in all_keys:
         if not obj.exists(key):
@@ -30,8 +32,22 @@ def default_loader(obj, defaults=None):
     # start dotenv to get default env vars from there
     # check overrides in env vars
     default_settings.start_dotenv(obj)
+
+    # Deal with cases where a custom ENV_SWITCHER_IS_PROVIDED
+    # Example: Flask and Django Extensions
+    env_switcher = defaults.get(
+        'ENV_SWITCHER_FOR_DYNACONF', 'ENV_FOR_DYNACONF'
+    )
+
     for key in all_keys:
-        env_value = obj.get_environ(key, '_not_found')
+        if key not in default_settings_values.keys():
+            continue
+
+        env_value = obj.get_environ(
+            env_switcher if key == 'ENV_FOR_DYNACONF' else key,
+            default='_not_found'
+        )
+
         if env_value != '_not_found':
             obj.logger.debug(
                 "default_loader: overriding from envvar: %s:%s",
@@ -70,23 +86,19 @@ def settings_loader(obj, settings_module=None, env=None,
         else:
             files.extend(secrets_file.split(','))
 
-    obj.logger.debug("Looking for %s", files)
-
     found_files = []
     modules_names = []
     for item in files:
         if item.endswith(ct.ALL_EXTENSIONS + ('.py',)):
-            found = find_file(
-                item,
-                project_root=obj.get('PROJECT_ROOT_FOR_DYNACONF')
+            p_root = obj._root_path or (
+                os.path.dirname(found_files[0]) if found_files else None
             )
+            found = obj.find_file(item, project_root=p_root)
             if found:
                 found_files.append(found)
         else:
             # a bare python module name w/o extension
             modules_names.append(item)
-
-    obj.logger.debug("Found files %s", found_files)
 
     enabled_core_loaders = obj.get('CORE_LOADERS_FOR_DYNACONF')
 

@@ -4,8 +4,6 @@ import glob
 import importlib
 from contextlib import contextmanager
 
-from six import string_types
-
 from dynaconf import default_settings
 from dynaconf.loaders import (
     default_loader,
@@ -13,11 +11,13 @@ from dynaconf.loaders import (
     yaml_loader,
     enable_external_loaders
 )
+from dynaconf.utils.files import find_file
 from dynaconf.utils.functional import LazyObject, empty
 from dynaconf.utils.parse_conf import converters, parse_conf_data, true_values
 from dynaconf.utils import (
     BANNER,
     compat_kwargs,
+    deduplicate,
     raw_logger,
     object_merge,
     missing
@@ -112,12 +112,14 @@ class LazySettings(LazyObject):
 
     def _setup(self):
         """Initial setup, run once."""
+        default_settings.reload()
         environment_variable = self._kwargs.get(
             'ENVVAR_FOR_DYNACONF', default_settings.ENVVAR_FOR_DYNACONF)
         settings_module = os.environ.get(environment_variable)
         self._wrapped = Settings(
             settings_module=settings_module, **self._kwargs
         )
+        self.logger.debug('Lazy Settings _setup ...')
 
     def configure(self, settings_module=None, **kwargs):
         """
@@ -127,9 +129,14 @@ class LazySettings(LazyObject):
         :param settings_module: defines the setttings file
         :param kwargs:  override default settings
         """
+        default_settings.reload()
+        environment_var = self._kwargs.get(
+            'ENVVAR_FOR_DYNACONF', default_settings.ENVVAR_FOR_DYNACONF)
+        settings_module = settings_module or os.environ.get(environment_var)
         compat_kwargs(kwargs)
         kwargs.update(self._kwargs)
         self._wrapped = Settings(settings_module=settings_module, **kwargs)
+        self.logger.debug('Lazy Settings configured ...')
 
     @property
     def configured(self):
@@ -153,6 +160,7 @@ class Settings(object):
         self._logger = None
         self._fresh = False
         self._loaded_envs = []
+        self._loaded_files = []
         self._deleted = set()
         self._store = {}
         self._loaded_by_loaders = {}
@@ -170,6 +178,7 @@ class Settings(object):
             self.set(key, value)
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
+        self.logger.debug('Initializing Dynaconf (%s)', self._store)
         self.execute_loaders()
 
     def __call__(self, *args, **kwargs):
@@ -436,9 +445,12 @@ class Settings(object):
     @property
     def settings_module(self):
         """Gets SETTINGS_MODULE variable"""
-        settings_module = os.environ.get(
-            self.ENVVAR_FOR_DYNACONF,
-            self.SETTINGS_MODULE_FOR_DYNACONF
+        settings_module = parse_conf_data(
+            os.environ.get(
+                self.ENVVAR_FOR_DYNACONF,
+                self.SETTINGS_MODULE_FOR_DYNACONF
+            ),
+            tomlfy=True
         )
         if settings_module != getattr(self, 'SETTINGS_MODULE', None):
             self.set('SETTINGS_MODULE', settings_module)
@@ -470,7 +482,7 @@ class Settings(object):
         """
         env = env or self.ENV_FOR_DYNACONF
 
-        if not isinstance(env, string_types):
+        if not isinstance(env, str):
             raise AttributeError('env should be a string')
         if "_" in env:
             raise AttributeError('env should not contains _')
@@ -690,6 +702,7 @@ class Settings(object):
         """
         if key is None:
             default_loader(self, self._defaults)
+        env = (env or self.current_env).upper()
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
         settings_loader(self, env=env, silent=silent, key=key,
                         filename=filename)
@@ -699,18 +712,18 @@ class Settings(object):
             self.logger.debug('Dynaconf executing: %s', loader.__name__)
             loader.load(self, env, silent=silent, key=key)
         self.load_includes(env, silent=silent, key=key)
+        self.logger.debug('Loaded Files: %s', deduplicate(self._loaded_files))
 
     def load_includes(self, env, silent, key):
         """Do we have any nested includes we need to process?"""
         includes = self.get('DYNACONF_INCLUDE', [])
+        includes.extend(self.get('INCLUDES_FOR_DYNACONF', []))
         if includes:
             self.logger.debug('Found %s includes to process', includes)
             already_loaded = set()
             for include in includes:
                 self.logger.debug('Processing include %s', include)
-                included_filename = os.path.join(
-                    self.PROJECT_ROOT_FOR_DYNACONF, include
-                )
+                included_filename = os.path.join(self._root_path, include)
                 self.logger.debug('Include path is %s', included_filename)
                 # Handle possible *.globs sorted alphanumeric
                 for path in sorted(glob.glob(included_filename)):
@@ -727,40 +740,57 @@ class Settings(object):
                     )
                     already_loaded.add(path)
             if not already_loaded:
-                self.logger.error(
+                self.logger.warning(
                     'Not able to locate the files %s to include', includes
                 )
+
+    @property
+    def _root_path(self):
+        """ROOT_PATH_FOR_DYNACONF or the path of first loaded file or '.'"""
+        if self.ROOT_PATH_FOR_DYNACONF is not None:
+            return self.ROOT_PATH_FOR_DYNACONF
+        elif self._loaded_files:  # called once
+            root_path = os.path.dirname(self._loaded_files[0])
+            self.set('ROOT_PATH_FOR_DYNACONF', root_path)
+            return root_path
 
     def load_extra_yaml(self, env, silent, key):
         """This is deprecated, kept for compat
 
         .. deprecated:: 1.0.0
-            Use multiple settings files instead.
+            Use multiple settings or INCLUDES_FOR_DYNACONF files instead.
         """
         if self.get('YAML') is not None:
             self.logger.warning(
                 "The use of YAML var is deprecated, please define multiple "
                 "filepaths instead: "
                 "e.g: SETTINGS_MODULE_FOR_DYNACONF = "
-                "'settings.py,settings.yaml,settings.toml'"
+                "'settings.py,settings.yaml,settings.toml' or "
+                "INCLUDES_FOR_DYNACONF=['path.toml', 'folder/*']"
             )
             yaml_loader.load(
                 self, env=env,
-                filename=self.get('YAML'),
+                filename=self.find_file(self.get('YAML')),
                 silent=silent,
                 key=key
             )
 
     def path_for(self, *args):
-        """Path containing PROJECT_ROOT_FOR_DYNACONF"""
+        """Path containing _root_path"""
         if args and args[0].startswith(os.path.sep):
             return os.path.join(*args)
-        return os.path.join(self.PROJECT_ROOT_FOR_DYNACONF, *args)
+        return os.path.join(
+            self._root_path or os.getcwd(),
+            *args
+        )
 
-    @property
-    def abs_project_root(self):
-        """Absolute path for PROJECT_ROOT_FOR_DYNACONF"""
-        return os.path.abspath(self.PROJECT_ROOT_FOR_DYNACONF)
+    def find_file(self, *args, **kwargs):
+        kwargs.setdefault('project_root', self._root_path)
+        kwargs.setdefault(
+            'skip_files',
+            self.get('SKIP_FILES_FOR_DYNACONF', [])
+        )
+        return find_file(*args, **kwargs)
 
     @property
     def validators(self):
@@ -793,3 +823,12 @@ class Settings(object):
         with self.using_env(env):
             value = self.get_fresh(key)
             return value is True or value in true_values
+
+    def populate_obj(self, obj, keys=None):
+        """Given the `obj` populate it using self.store items."""
+        keys = keys or self.keys()
+        for key in keys:
+            key = key.upper()
+            value = self.get(key, empty)
+            if value is not empty:
+                setattr(obj, key, value)

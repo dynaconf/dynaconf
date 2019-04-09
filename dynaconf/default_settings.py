@@ -1,17 +1,28 @@
 import os
+import sys
+import importlib
+import warnings
+
+from dynaconf.utils import raw_logger, warn_deprecations, RENAMED_VARS
+from dynaconf.utils.files import find_file
 from dynaconf.utils.parse_conf import parse_conf_data
 
 try:
-    from dotenv import load_dotenv, find_dotenv
+    from dotenv import load_dotenv
 except ImportError:  # pragma: no cover
     load_dotenv = lambda *args, **kwargs: None  # noqa
-    find_dotenv = lambda: None  # noqa
 
 
-def try_renamed(key, value, current_key, older_key):
+def try_renamed(key, value, older_key, current_key):
     if value is None:
         if key == current_key:
-            value = os.environ.get(older_key)
+            if older_key in os.environ:
+                warnings.warn(
+                    "{0} is deprecated please use {1}"
+                    .format(older_key, current_key),
+                    DeprecationWarning
+                )
+                value = os.environ[older_key]
     return value
 
 
@@ -19,37 +30,52 @@ def get(key, default=None):
     value = os.environ.get(key.upper())
 
     # compatibility renames before 1.x version
-    value = try_renamed(key, value, 'ENV_FOR_DYNACONF',
-                        'NAMESPACE_FOR_DYNACONF')
-    value = try_renamed(key, value, 'ENV_FOR_DYNACONF',
-                        'DYNACONF_NAMESPACE')
-    value = try_renamed(key, value, 'DEFAULT_ENV_FOR_DYNACONF',
-                        'BASE_NAMESPACE_FOR_DYNACONF')
-    value = try_renamed(key, value, 'SETTINGS_MODULE_FOR_DYNACONF',
-                        'DYNACONF_SETTINGS')
+    for old, new in RENAMED_VARS.items():
+        value = try_renamed(key, value, old, new)
 
     return parse_conf_data(
         value, tomlfy=True) if value is not None else default
 
 
-def start_dotenv(obj=None):
+def start_dotenv(obj=None, root_path=None):
     # load_from_dotenv_if_installed
     obj = obj or {}
-    dotenv_path = obj.get('DOTENV_PATH_FOR_DYNACONF') or os.environ.get(
-        'DOTENV_PATH_FOR_DYNACONF') or find_dotenv(usecwd=True)
+    _find_file = getattr(obj, 'find_file', find_file)
+    root_path = root_path or getattr(
+        obj, '_root_path', None
+    ) or get('ROOT_PATH_FOR_DYNACONF')
+    raw_logger().debug(
+        'Starting Dynaconf Dotenv %s',
+        'for {0}'.format(root_path) if root_path else 'Base'
+    )
+
+    dotenv_path = obj.get(
+        'DOTENV_PATH_FOR_DYNACONF'
+    ) or get(
+        'DOTENV_PATH_FOR_DYNACONF'
+    ) or _find_file('.env', project_root=root_path)
+
     load_dotenv(
         dotenv_path,
         verbose=obj.get('DOTENV_VERBOSE_FOR_DYNACONF', False),
         override=obj.get('DOTENV_OVERRIDE_FOR_DYNACONF', False)
     )
 
+    warn_deprecations(os.environ)
 
-start_dotenv()
+
+def reload(*args, **kwargs):
+    start_dotenv(*args, **kwargs)
+    importlib.reload(sys.modules[__name__])
 
 
 # default proj root
 # pragma: no cover
-PROJECT_ROOT_FOR_DYNACONF = get('PROJECT_ROOT_FOR_DYNACONF', ".")
+ROOT_PATH_FOR_DYNACONF = get('ROOT_PATH_FOR_DYNACONF', None)
+
+# Backwards compatibility PROJECT_ROOT is deprecated
+PROJECT_ROOT_FOR_DYNACONF = ROOT_PATH_FOR_DYNACONF
+
 
 # Default settings file
 default_paths = (
@@ -66,11 +92,16 @@ SETTINGS_MODULE_FOR_DYNACONF = get('SETTINGS_MODULE_FOR_DYNACONF',
 # # ENV SETTINGS
 # # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`
 
+# The environment variable to switch current env
+ENV_SWITCHER_FOR_DYNACONF = get(
+    'ENV_SWITCHER_FOR_DYNACONF', 'ENV_FOR_DYNACONF'
+)
+
 # The current env by default is DEVELOPMENT
 # to switch is needed to `export ENV_FOR_DYNACONF=PRODUCTION`
 # or put that value in .env file
 # this value is used only when reading files like .toml|yaml|ini|json
-ENV_FOR_DYNACONF = get('ENV_FOR_DYNACONF', 'DEVELOPMENT')
+ENV_FOR_DYNACONF = get(ENV_SWITCHER_FOR_DYNACONF, 'DEVELOPMENT')
 
 # Default values is taken from DEFAULT pseudo env
 # this value is used only when reading files like .toml|yaml|ini|json
@@ -171,3 +202,9 @@ COMMENTJSON_ENABLED_FOR_DYNACONF = get(
 # where you can export this variable pointing to a local
 # absolute path of the secrets file.
 SECRETS_FOR_DYNACONF = get('SECRETS_FOR_DYNACONF', None)
+
+# To include extra paths based on envvar
+INCLUDES_FOR_DYNACONF = get('INCLUDES_FOR_DYNACONF', [])
+
+# Files to skip if found on search tree
+SKIP_FILES_FOR_DYNACONF = get('SKIP_FILES_FOR_DYNACONF', [])

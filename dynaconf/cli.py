@@ -10,10 +10,12 @@ from pathlib import Path
 from dynaconf import default_settings
 from dynaconf import constants
 from dynaconf import LazySettings
+from dynaconf.loaders.py_loader import get_module
 from dynaconf.validator import Validator, ValidationError
 from dynaconf.utils.parse_conf import parse_conf_data
 from dotenv import cli as dotenv_cli
 from contextlib import suppress
+
 
 CWD = Path.cwd()
 ENVS = ['default', 'development', 'staging', 'testing', 'production', 'global']
@@ -42,17 +44,24 @@ def set_settings(instance=None):
             flask_app = ScriptInfo().load_app()
             settings = flask_app.config
             click.echo(click.style(
-                'Flask app detected', fg='white', bg='black'))
+                'Flask app detected', fg='white', bg='bright_black'))
 
     elif 'DJANGO_SETTINGS_MODULE' in os.environ:  # pragma: no cover
-        sys.path.insert(0, os.path.abspath('.'))
-        with suppress(Exception):
+        sys.path.insert(0, os.path.abspath(os.getcwd()))
+        try:
+            # Django extension v2
+            from django.conf import settings
+            settings.DYNACONF.configure()
+        except (ImportError, AttributeError):
+            # Backwards compatible with old django extension (pre 2.0.0)
             import dynaconf.contrib.django_dynaconf  # noqa
             from django.conf import settings as django_settings
             django_settings.configure()
             settings = django_settings
+
+        if settings is not None:
             click.echo(click.style(
-                'Django app detected', fg='white', bg='black'))
+                'Django app detected', fg='white', bg='bright_black'))
 
     if settings is None:
         settings = LazySettings()
@@ -158,7 +167,8 @@ def main(instance):
               ))
 @click.option('--wg/--no-wg', default=True)
 @click.option('-y', default=False, is_flag=True)
-def init(fileformat, path, env, _vars, _secrets, wg, y):
+@click.option('--django', default=os.environ.get('DJANGO_SETTINGS_MODULE'))
+def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     """Inits a dynaconf project
     By default it creates a settings.toml and a .secrets.toml
     for [default|development|staging|testing|production|global] envs.
@@ -270,6 +280,19 @@ def init(fileformat, path, env, _vars, _secrets, wg, y):
                         [comment, ignore_line, '\n']
                     )
 
+    if django:  # pragma: no cover
+        dj_module, loaded_from = get_module({}, django)
+        dj_filename = dj_module.__file__
+        if Path(dj_filename).exists():
+            click.confirm(
+                '{} is found do you want to add dynaconf?'.format(dj_filename),
+                abort=True
+            )
+            with open(dj_filename, "a") as dj_file:
+                dj_file.write(constants.DJANGO_PATCH)
+        else:
+            click.echo('Django settings file not written.')
+
 
 @main.command(name='list')
 @click.option('--env', '-e', default=None,
@@ -296,7 +319,7 @@ def _list(env, key, more, loader):
     click.echo(
         click.style(
             'Working in %s environment ' % cur_env,
-            bold=True, bg='blue', fg='white'
+            bold=True, bg='blue', fg='bright_black'
         )
     )
 

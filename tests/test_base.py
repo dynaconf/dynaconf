@@ -26,6 +26,32 @@ def test_accepts_only_upper(settings):
         assert settings.debug is True
 
 
+def test_populate_obj(settings):
+    class Obj:
+        pass
+
+    obj = Obj()
+
+    settings.populate_obj(obj)
+
+    assert obj.DEBUG is True
+    assert obj.VALUE == 42.1
+
+
+def test_populate_obj_with_keys(settings):
+    class Obj:
+        pass
+
+    obj = Obj()
+
+    settings.populate_obj(obj, ['VALUE'])
+
+    assert obj.VALUE == 42.1
+
+    with pytest.raises(AttributeError):
+        assert obj.DEBUG is True
+
+
 def test_call_works_as_get(settings):
     """settings.get('name') is the same as settings('name')"""
 
@@ -149,7 +175,7 @@ def test_path_for(settings):
     ) == os.path.join(os.path.sep, "tmp", "bla")
     assert settings.path_for(
         "foo", "bar", "blaz"
-    ) == os.path.join(os.path.curdir, 'foo', 'bar', 'blaz')
+    ) == os.path.join(settings._root_path, 'foo', 'bar', 'blaz')
 
 
 def test_get_item(settings):
@@ -348,7 +374,3 @@ def test_dotted_set_with_merge(settings):
             {'name': 'item 4'},
         ]
     }
-
-
-def test_abs_project_root(settings):
-    assert settings.abs_project_root in os.path.abspath(__file__)

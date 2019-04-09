@@ -1,3 +1,6 @@
+# WARNING: THIS EXTENSION IS DEPRECATED
+# Read more on how to integrate with django on
+# https://dynaconf.readthedocs.io/en/latest/guides/django.html
 """Dynaconf django extension
 
 In the `django_project/settings.py` put as 1st app::
@@ -23,10 +26,19 @@ On your projects root folder now you can start as::
 """
 
 import sys
+import warnings
 
 
 from django import conf
 from .dynaconf_django_conf import settings
+
+
+warnings.warn(
+    'Django Integration for Dynaconf has been updated '
+    'you are still using the old style which is deprecated '
+    'please upgrade the django integration '
+    'read more in https://dynaconf.readthedocs.io/en/latest/guides/django.html'
+)
 
 
 class Wrapper(object):
