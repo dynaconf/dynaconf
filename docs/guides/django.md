@@ -42,8 +42,8 @@ Example:
 
 ```bash
 export DJANGO_DEBUG=true     # django.conf.settings.DEBUG
-export DJANGO_INTVALUE=1     # django.conf.settings['INTVALUE]
-export DJANGO_HELLO="Hello"  # django.conf.settings.get('HELLO)
+export DJANGO_INTVALUE=1     # django.conf.settings['INTVALUE']
+export DJANGO_HELLO="Hello"  # django.conf.settings.get('HELLO')
 ```
 
 ## Settings files
