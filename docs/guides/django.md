@@ -186,13 +186,15 @@ class TestCase(...):
 
 Some users have the preference to explicitly load each setting variable inside the `settings.py` and then let django manage it in the common way, it is possible.
 
-> **NOTE** Doing this way misses the ability to use dynacong methods like `using_env`, `get` etc on your django applications code.
+> **NOTE** Doing this way misses the ability to use dynaconf methods like `using_env`, `get` etc on your django applications code, you can use it only inside settings.py
 
 Dynaconf will be available only on `settings.py` scope, on the rest of your application settings is managed by Django normally.
 
 `settings.py`
 ```py
+import sys
 from dynaconf import LazySettings
+
 settings = LazySettings(**YOUR_OPTIONS_HERE)
 
 DEBUG = settings.get('DEBUG', False)
@@ -202,6 +204,10 @@ DATABASES = settings.get('DATABASES', {
         'NAME': '...
     }
 })
+...
+
+# At the end of your settings.py
+settings.populate_obj(sys.modules[__name__])
 ```
 
 You can still change env with `export DJANGO_ENV=production` and also can export variables lile `export DJANGO_DEBUG=true`
