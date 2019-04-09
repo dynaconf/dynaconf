@@ -2,6 +2,269 @@ Changelog
 =========
 
 
+2.0.0 (2019-04-09)
+------------------
+- Release version 2.0.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Aaron DeVore (1):
+            GH-111: Fix MERGE_ENABLED merging settings with themselves
+
+      Bruno Rocha (21):
+            Merge branch 'jperras-merge-multiple-settings-files'
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
+            Update dynaconf/utils/boxing.py
+            Update dynaconf/utils/boxing.py
+            Add release script and CHANGELOG in place of history.
+            Release version 1.2.0
+            Tox is now part of pre-publish command
+            Drop Python 3.4
+            Release version 1.2.1
+            add top contributors
+            Fix #129 on settings file, single keys should be case insensitive.
+            Fix #125 settings_module not being set on .configure()
+            Fix #127 add configurable yaml loader method, default to full_load
+            Fix #122 allow disable of core loaders, added examples.
+            Fix #117 add support for extra secrets file (like for jenkins CI)
+            Fix #110 add docs for dynaconf_include
+            Add dynaconf_include examples
+            Set up CI with Azure Pipelines (#142)
+            Add dynaconf_merge fucntionality for dict and list settings. (#139)
+            Preparing for 2.0.0
+
+      Byungjin Park (1):
+            Fix typo
+
+      Jaepil Koh (1):
+            Update django.md
+
+      Joel Perras (3):
+            Allow dotted-path based setting of configuration key/value pairs.
+            Handle nested includes in settings files.
+            Remove extraneous lines.
+
+      Mantas (3):
+            Add INSTANCE_FOR_DYNACONF and --instance
+            Remove mocker fixture
+            Python 3.4 has different error message
+
+      Matthias (1):
+            Fix small typo in README.md
+
+      Pete Savage (1):
+            Fix exponential slow down when loader is run multiple times
+
+      Raoul Snyman (1):
+            Add environments into the path in Vault so that the same Vault server can be used for multiple environments
+
+      mspinelli (2):
+            fixed infinite recursion caused by copy()
+            add tests for dynabox fix
+- Preparing for 2.0.0. [Bruno Rocha]
+
+  Dynaconf 2.0.0
+
+  - Fix #129 get_fresh should be case insensitive
+  - Fix #125 .configure was not loading `settings_module` passed as argument
+  - Fix #127 fix YAML warnings and default to full_load
+  - Allow disable of core loaders #122
+  - Added support for Jenkins secrets file #117
+  - Added more examples for includes #110
+  - Moved to Azure Pipelines CI #142
+  - Added 100% test coverage on windows (Unit & Functional tests)
+  - Deprecated MERGE_ENABLED in favor of local dynaconf_merge
+  - Fix #74 - Better File Searching (now building a reasonable Search Tree)
+  - Now it finds settings when invoking from out of Script folder
+  - Fixed test environment (each test now run in a separate tmpdir)
+  - Added a check to avoid Circular references when starting settings inside settings
+  - Added Django Extension v2 with better syntax and a lot od `inspect` instrospetion
+  - Updated documentation about new features
+  - Added a not that YAML is the recommended format for Django
+  - Added support for Django Standalone Script
+  - Added support for Django unit testing
+  - Fix #148 `env` was not being passed to custom loaders
+  - Fix #144 removed `six` as it is a Py3.4+ only project
+  - Added Backwards compatibility for users using old django Extension
+  - start_dotenv is now Lazy (only when settings._setup is called)
+  - Added new _FOR_DYNACONF config options ENV_SWITCHER, SKIP_FILES, INCLUDES & SECRETS
+  - Renamed config PROJECT_ROOT -> ROOT_PATH
+- Add dynaconf_merge fucntionality for dict and list settings. (#139)
+  [Bruno Rocha]
+
+  If your settings has existing variables of types `list` ot `dict` and you want to `merge` instead of `override` then
+  the `dynaconf_merge` and `dynaconf_merge_unique` stanzas can mark that variable as a candidate for merging.
+
+  For **dict** value:
+
+  Your main settings file (e.g `settings.toml`) has an existing `DATABASE` dict setting on `[default]` env.
+
+  Now you want to contribute to the same `DATABASE` key by addind new keys, so you can use `dynaconf_merge` at the end of your dict:
+
+  In specific `[envs]`
+
+  ```toml
+  [default]
+  database = {host="server.com", user="default"}
+
+  [development]
+  database = {user="dev_user", dynaconf_merge=true}
+
+  [production]
+  database = {user="prod_user", dynaconf_merge=true}
+  ```
+
+  In an environment variable:
+
+  ```bash
+  export DYNACONF_DATABASE='{password=1234, dynaconf_merge=true}'
+  ```
+
+  Or in an additional file (e.g `settings.yaml, .secrets.yaml, etc`):
+
+  ```yaml
+  default:
+    database:
+      password: 1234
+      dynaconf_merge: true
+  ```
+
+  The `dynaconf_merge` token will mark that object to be merged with existing values (of course `dynaconf_merge` key will not be added to the final settings it is jsut a mark)
+
+  The end result will be on `[development]` env:
+
+  ```python
+  settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234}
+  ```
+
+  The same can be applied to **lists**:
+
+  `settings.toml`
+  ```toml
+  [default]
+  plugins = ["core"]
+
+  [development]
+  plugins = ["debug_toolbar", "dynaconf_merge"]
+  ```
+
+  And in environment variable
+
+  ```bash
+  export DYNACONF_PLUGINS='["ci_plugin", "dynaconf_merge"]'
+  ```
+
+  Then the end result on `[development]` is:
+
+  ```python
+  settings.PLUGINS == ["ci_plugin", "debug_toolbar", "core"]
+  ```
+
+  The `dynaconf_merge_unique` is the token for when you want to avoid duplications in a list.
+
+  Example:
+
+  ```toml
+  [default]
+  scripts = ['install.sh', 'deploy.sh']
+
+  [development]
+  scripts = ['dev.sh', 'test.sh', 'deploy.sh', 'dynaconf_merge_unique']
+  ```
+
+  ```bash
+  export DYNACONF_SCRIPTS='["deploy.sh", "run.sh", "dynaconf_merge_unique"]'
+  ```
+
+  The end result for `[development]` will be:
+
+  ```python
+  settings.SCRIPTS == ['install.sh', 'dev.sh', 'test.sh', 'deploy.sh', 'run.sh']
+  ```
+
+  > Note that `deploy.sh` is set 3 times but it is not repeated in the final settings.
+
+  The **dynaconf_merge** functionality works only for the first level keys, it will not merge subdicts or nested lists (yet).
+- Set up CI with Azure Pipelines (#142) [Bruno Rocha]
+
+  - setup azure pipelines ci
+  - remove travis
+  - fix windows support
+- Add dynaconf_include examples. [Bruno Rocha]
+- Fix #110 add docs for dynaconf_include. [Bruno Rocha]
+
+  fix #110
+- Fix #117 add support for extra secrets file (like for jenkins CI)
+  [Bruno Rocha]
+
+  Now it is possible to export SECRETS_FOR_DYNACONF and have this
+  extra point loaded, like in a Jenkins CI you can specify on job.
+
+  ```yaml
+  secret_file:
+    variable: SECRETS_FOR_DYNACONF
+    credentials:
+      type: specific_credentials
+      value: /path/to/secrets_file.toml{json,ini,yaml,py}
+
+  ```
+
+  That variable can also be a list of paths.
+- Fix #122 allow disable of core loaders, added examples. [Bruno Rocha]
+- Fix #127 add configurable yaml loader method, default to full_load.
+  [Bruno Rocha]
+- Fix #125 settings_module not being set on .configure() [Bruno Rocha]
+- Fix #129 on settings file, single keys should be case insensitive.
+  [Bruno Rocha]
+- GH-111: Fix MERGE_ENABLED merging settings with themselves. [Aaron
+  DeVore]
+- Add top contributors. [Bruno Rocha]
+- Release version 1.2.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (9):
+            Merge branch 'jperras-merge-multiple-settings-files'
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
+            Update dynaconf/utils/boxing.py
+            Update dynaconf/utils/boxing.py
+            Add release script and CHANGELOG in place of history.
+            Release version 1.2.0
+            Tox is now part of pre-publish command
+            Drop Python 3.4
+
+      Byungjin Park (1):
+            Fix typo
+
+      Jaepil Koh (1):
+            Update django.md
+
+      Joel Perras (3):
+            Allow dotted-path based setting of configuration key/value pairs.
+            Handle nested includes in settings files.
+            Remove extraneous lines.
+
+      Mantas (3):
+            Add INSTANCE_FOR_DYNACONF and --instance
+            Remove mocker fixture
+            Python 3.4 has different error message
+
+      Matthias (1):
+            Fix small typo in README.md
+
+      Pete Savage (1):
+            Fix exponential slow down when loader is run multiple times
+
+      Raoul Snyman (1):
+            Add environments into the path in Vault so that the same Vault server can be used for multiple environments
+
+      mspinelli (2):
+            fixed infinite recursion caused by copy()
+            add tests for dynabox fix
+
+
 1.2.1 (2019-03-11)
 ------------------
 - Release version 1.2.1. [Bruno Rocha]
