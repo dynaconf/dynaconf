@@ -55,6 +55,18 @@ Features
 - Allow the change of **dynamic** parameters on the fly without the need to redeploy your application.
 
 
+Who is using Dynaconf?
+^^^^^^^^^^^^^^^^^^^^^^
+
+- Pulp Project - Django - (Red Hat)
+- Ansible Galaxy - Django - (Red Hat)
+- Insights QE (Red Hat)
+- Seek AI & Catho Job boards - Flask - (on AI APIs)
+- Quokka CMS - Flask
+
+Are you using? add your project to this list, send a Pull Request.
+
+
 .. aafig::
     :aspect: 60
     :scale: 100

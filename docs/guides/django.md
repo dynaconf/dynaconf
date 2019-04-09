@@ -1,5 +1,7 @@
 # Django Extension
 
+> **New in 2.0.0**
+
 Dynaconf extensions for Django works by patching the `settings.py` file with dynaconf loading hooks, the change is done on a single file and then in your whole project every time you call `django.conf.settings` you will have access to `dynaconf` attributes and methods.
 
 Ensure dynaconf is installed on your env `pip install dynaconf[yaml]`

@@ -58,6 +58,8 @@ DYNACONF_ARRAY='@json [42, 3.14, "hello", true, ["otherarray"], {"foo": "bar"}]'
 
 ### Merging exported variables with existing data
 
+> **New in 2.0.0**
+
 To merge exported variables there is the **dynaconf_merge** tokens, example:
 
 Your main settings file (e.g `settings.toml`) has an existing `DATABASE` dict setting on `[default]` env.

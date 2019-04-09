@@ -86,6 +86,8 @@ Dynaconf will stop searching on the first match and if no file is found it will 
 
 ### Illustrative Example
 
+> **New in 2.0.0**
+
 If your program has the following structure:
 
 ```text

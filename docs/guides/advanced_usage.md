@@ -51,6 +51,8 @@ settings.setenv()
 
 ## Populating objects
 
+> **New in 2.0.0**
+
 You can use dynaconf values to populate Python objects (intances).
 
 example:
@@ -99,7 +101,7 @@ On command line it is possible to check it with `dynaconf list -k foo`"""
 
 ENV_SWITCHER_FOR_DYNACONF='PROJECTNAME_ENV'
 """By default it is DYNACONF_ENV, this is the envvar used to switch from development to production
-but with this settings your users can do `export PROJECT_ENV=production`"""
+but with this settings your users can do `export PROJECT_ENV=production` (new in 2.0.0)"""
 
 
 ENVVAR_FOR_DYNACONF = "PROJECTNAME_SETTINGS"
