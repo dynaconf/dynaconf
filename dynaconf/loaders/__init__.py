@@ -26,7 +26,7 @@ def default_loader(obj, defaults=None):
     for key in all_keys:
         if not obj.exists(key):
             value = defaults.get(key, default_settings_values.get(key))
-            obj.logger.debug("default_loader: loading: %s:%s", key, value)
+            obj.logger.debug("loading: %s:%s", key, value)
             obj.set(key, value)
 
     # start dotenv to get default env vars from there
@@ -50,7 +50,7 @@ def default_loader(obj, defaults=None):
 
         if env_value != '_not_found':
             obj.logger.debug(
-                "default_loader: overriding from envvar: %s:%s",
+                "overriding from envvar: %s:%s",
                 key, env_value
             )
             obj.set(key, env_value, tomlfy=True)

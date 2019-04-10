@@ -13,10 +13,11 @@ Release v\ |version|. (`Installation`_)
 .. image:: https://img.shields.io/pypi/l/dynaconf.svg
     :target: https://pypi.org/project/dynaconf/
 
-.. image:: https://img.shields.io/pypi/wheel/dynaconf.svg
+.. image:: https://img.shields.io/pypi/pyversions/dynaconf.svg
     :target: https://pypi.org/project/dynaconf/
 
-.. image:: https://img.shields.io/pypi/pyversions/dynaconf.svg
+.. image:: https://img.shields.io/pypi/dm/dynaconf.svg?label=pip%20installs   
+    :alt: PyPI - Downloads
     :target: https://pypi.org/project/dynaconf/
 
 .. image:: https://img.shields.io/pypi/v/dynaconf.svg
@@ -28,14 +29,39 @@ Release v\ |version|. (`Installation`_)
 .. image:: https://dev.azure.com/rochacbruno/dynaconf/_apis/build/status/rochacbruno.dynaconf?branchName=master
     :target: https://dev.azure.com/rochacbruno/dynaconf/_build/latest?definitionId=1&branchName=master
 
+.. image:: https://img.shields.io/azure-devops/build/rochacbruno/3e08a9d6-ea7f-43d7-9584-96152e542071/1/master.svg?label=windows%20build&logo=windows   
+    :alt: Windows Build
+    :target: https://dev.azure.com/rochacbruno/dynaconf/_build/latest?definitionId=1&branchName=master
+
+.. image:: https://img.shields.io/azure-devops/build/rochacbruno/3e08a9d6-ea7f-43d7-9584-96152e542071/1/master.svg?label=linux%20build&logo=linux   
+    :alt: Linux Build
+    :target: https://dev.azure.com/rochacbruno/dynaconf/_build/latest?definitionId=1&branchName=master
+
 .. image:: https://codecov.io/gh/rochacbruno/dynaconf/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/rochacbruno/dynaconf
 
-.. image:: https://img.shields.io/badge/Say%20Thanks!-🦉-1EAEDB.svg
-    :target: https://saythanks.io/to/rochacbruno
+.. image:: https://img.shields.io/github/issues/rochacbruno/dynaconf.svg   
+    :alt: GitHub issues
+    :target: https://github.com/rochacbruno/dynaconf/issues
 
-Features
---------
+.. image:: https://img.shields.io/github/stars/rochacbruno/dynaconf.svg   
+    :alt: GitHub stars
+    :target: https://github.com/rochacbruno/dynaconf/stargazers
+
+.. image:: https://img.shields.io/github/release-date/rochacbruno/dynaconf.svg   
+    :alt: GitHub Release Date
+    :target: https://github.com/rochacbruno/dynaconf/releases
+
+.. image:: https://img.shields.io/github/commits-since/rochacbruno/dynaconf/latest.svg   
+    :alt: GitHub commits since latest release
+    :target: https://github.com/rochacbruno/dynaconf/commits/master
+
+.. image:: https://img.shields.io/github/last-commit/rochacbruno/dynaconf.svg   
+    :alt: GitHub last commit
+    :target: https://github.com/rochacbruno/dynaconf/commits/master
+
+Dynaconf - Easy and Powerful Settings Configuration for Python
+--------------------------------------------------------------
 
 - Strict separation of settings from code (following `12-factor applications`_ Guide).
 - Define comprehensive default values.
@@ -64,7 +90,7 @@ Who is using Dynaconf?
 - Seek AI & Catho Job boards - Flask - (on AI APIs)
 - Quokka CMS - Flask
 
-Are you using? add your project to this list, send a Pull Request.
+Are you using Dynaconf? Please `give feedback`_
 
 
 .. aafig::
@@ -123,3 +149,4 @@ Indices and tables
 .. _cli: guides/cli.html 
 .. _validation: guides/validation.html
 .. _Installation: guides/usage.html
+.. _give feedback: https://github.com/rochacbruno/dynaconf/issues/155
