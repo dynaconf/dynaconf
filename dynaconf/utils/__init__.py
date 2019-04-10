@@ -1,7 +1,8 @@
 # coding: utf-8
 import os
-import logging
 import warnings
+import functools
+
 
 BANNER = """
 ██████╗ ██╗   ██╗███╗   ██╗ █████╗  ██████╗ ██████╗ ███╗   ██╗███████╗
@@ -60,19 +61,25 @@ class DynaconfDict(dict):
         return self.get(key, missing) is not missing
 
 
-def raw_logger():
+@functools.lru_cache()
+def _logger(level):
+    import logging
+    logging.basicConfig(
+        format=(
+            '%(asctime)s,%(msecs)d %(levelname)-8s '
+            '[%(filename)s:%(lineno)d - %(funcName)s] %(message)s'
+        ),
+        datefmt='%Y-%m-%d:%H:%M:%S',
+        level=getattr(logging, level)
+    )
+    logger = logging.getLogger("dynaconf")
+    return logger
+
+
+def raw_logger(level=None):
     """Get or create inner logger"""
-    level = os.environ.get('DEBUG_LEVEL_FOR_DYNACONF', 'ERROR')
-    try:  # pragma: no cover
-        from logzero import setup_logger
-        return setup_logger(
-            "dynaconf",
-            level=getattr(logging, level)
-        )
-    except ImportError:  # pragma: no cover
-        logger = logging.getLogger("dynaconf")
-        logger.setLevel(getattr(logging, level))
-        return logger
+    level = level or os.environ.get('DEBUG_LEVEL_FOR_DYNACONF', 'ERROR')
+    return _logger(level)
 
 
 RENAMED_VARS = {
