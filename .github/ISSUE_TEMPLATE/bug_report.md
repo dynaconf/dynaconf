@@ -22,8 +22,8 @@ Steps to reproduce the behavior:
 
 ```bash
 
-/path/
-...../folder/...
+# /path/
+# ...../folder/...
 # please provide your folder structure here
 
 ```
@@ -31,7 +31,7 @@ Steps to reproduce the behavior:
 
 2. Having the following config files:
 
-<!-- Please replace if you are using different files and formats! -->
+<!-- Please adjust if you are using different files and formats! -->
 
 <details>
 <summary> Config files </summary>
@@ -43,9 +43,36 @@ Your .env content here
 
 and
 
-/path/settings.toml
+**/path/settings.toml**
 ```toml
 [default]
+```
+
+</details>
+
+3. Having the following app code:
+
+<details>
+<summary> Code </summary>
+
+**/path/src/app.py**
+```python
+from dynaconf import settings
+...
+```
+
+</details>
+
+4. Executing under the following environment
+
+<details>
+<summary> Execution </summary>
+
+```bash
+# other commands and details?
+# virtualenv activation?
+
+$ python /path/src/app.py
 ```
 
 </details>
@@ -67,8 +94,9 @@ export `DEBUG_LEVEL_FOR_DYNACONF=true` reproduce your problem and paste the outp
 </details>
 
 **Environment (please complete the following information):**
- - OS: [e.g. iOS]
+ - OS: [e.g. Linux/Fedora29, Windows/x.x.x, Linux/Ubuntu16.x]
  - Dynaconf Version [e.g. 2.0.0/source]
+ - Frameworks in use (Flask, Django? versions..)
 
 **Additional context**
 Add any other context about the problem here.
