@@ -97,7 +97,7 @@ jobs:
   - script: source .ci/install_dev.sh
     displayName: 'Install dependencies'
 
-  - script: make test_examples
+  - bash: make test_examples
     displayName: 'Functional tests for examples and frameworks'
 
 - job: 'Redis'
@@ -127,7 +127,7 @@ jobs:
   - script: source .ci/install_dev.sh
     displayName: 'Install dependencies'
 
-  - script: make test_redis
+  - bash: make test_redis
     displayName: 'Functional test for redis'
 
 - job: 'Vault'
@@ -158,7 +158,7 @@ jobs:
   - script: source .ci/install_dev.sh
     displayName: 'Install dependencies'
 
-  - script: make test_vault
+  - bash: make test_vault
     displayName: 'Functional test for vault'
 
 - job: 'WindowsUnit'

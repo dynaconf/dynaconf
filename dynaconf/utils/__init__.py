@@ -70,7 +70,7 @@ def _logger(level):
             '[%(filename)s:%(lineno)d - %(funcName)s] %(message)s'
         ),
         datefmt='%Y-%m-%d:%H:%M:%S',
-        level=getattr(logging, level)
+        level=getattr(logging, level, 'DEBUG')
     )
     logger = logging.getLogger("dynaconf")
     return logger

@@ -1,29 +1,30 @@
+SHELL := /bin/bash
 .PHONY: test install pep8 publish dist clean docs test_examples test_vault test_redis
 
 test_examples:
 	@echo '###############  Chdir to example directory  ###############'
 	cd example/common;pwd;python program.py
 	cd example/common-encoding;pwd;python program.py
-	cd example/;pwd;python full_example.py | grep -c full_example
+	cd example/;pwd;python full_example.py | grep -c full_example || exit 1
 	cd example/;pwd;python compat.py
-	cd example/app;pwd;python app.py | grep -c app
-	cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv
-	cd example/merge_configs;pwd;python app.py | grep -c merge_configs
+	cd example/app;pwd;python app.py | grep -c app || exit 1
+	cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv || exit 1
+	cd example/merge_configs;pwd;python app.py | grep -c merge_configs || exit 1
 	cd example/dynaconf_merge;pwd;python app.py
-	cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources
-	cd example/multiple_folders;pwd;python app.py | grep -c var2_prod
-	cd example/toml_example/;pwd;python app.py | grep -c toml_example
-	cd example/yaml_example/settings_module/;pwd;python app.py | grep -c yaml_example
-	cd example/yaml_example/yaml_as_extra_config/;pwd;python app.py | grep -c yaml_as_extra_config
-	cd example/flask_with_dotenv;pwd;flask routes | grep -c flask_with_dotenv
-	cd example/flask_with_toml;pwd;flask routes | grep -c flask_with_toml
-	cd example/flask_with_yaml;pwd;flask routes | grep -c flask_with_yaml
-	cd example/flask_with_json;pwd;flask routes | grep -c flask_with_json
-	cd example/flask_with_commentjson;pwd;flask routes | grep -c flask_with_commentjson
-	cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini
-	cd example/validators/with_python/;pwd;python app.py | grep -c validator
+	cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources || exit 1
+	cd example/multiple_folders;pwd;python app.py | grep -c var2_prod || exit 1
+	cd example/toml_example/;pwd;python app.py | grep -c toml_example || exit 1
+	cd example/yaml_example/settings_module/;pwd;python app.py | grep -c yaml_example || exit 1
+	cd example/yaml_example/yaml_as_extra_config/;pwd;python app.py | grep -c yaml_as_extra_config || exit 1
+	cd example/flask_with_dotenv;pwd;flask routes | grep -c flask_with_dotenv || exit 1
+	cd example/flask_with_toml;pwd;flask routes | grep -c flask_with_toml || exit 1
+	cd example/flask_with_yaml;pwd;flask routes | grep -c flask_with_yaml || exit 1
+	cd example/flask_with_json;pwd;flask routes | grep -c flask_with_json || exit 1
+	cd example/flask_with_commentjson;pwd;flask routes | grep -c flask_with_commentjson || exit 1
+	cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini || exit 1
+	cd example/validators/with_python/;pwd;python app.py | grep -c validator || exit 1
 	cd example/validators/with_toml/;pwd;dynaconf validate
-	cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et
+	cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et || exit 1
 	cd example/envs;pwd;python app.py
 	cd example/custom_loader;pwd;python app.py
 	cd example/get_fresh;pwd;python app.py
@@ -39,19 +40,19 @@ test_examples:
 	@echo '###############  Calling from outer folder  ###############'
 	python example/common/program.py
 	python example/common-encoding/program.py
-	python example/full_example.py | grep -c full_example
+	python example/full_example.py | grep -c full_example || exit 1
 	python example/compat.py
-	python example/app/app.py | grep -c app
-	python example/app_with_dotenv/app.py | grep -c app_with_dotenv
-	python example/merge_configs/app.py | grep -c merge_configs
+	python example/app/app.py | grep -c app || exit 1
+	python example/app_with_dotenv/app.py | grep -c app_with_dotenv || exit 1
+	python example/merge_configs/app.py | grep -c merge_configs || exit 1
 	python example/dynaconf_merge/app.py
-	python example/multiple_sources/app.py | grep -c multiple_sources
-	python example/multiple_folders/app.py | grep -c var2_prod
-	python example/toml_example/app.py | grep -c toml_example
-	python example/yaml_example/settings_module/app.py | grep -c yaml_example
-	python example/yaml_example/yaml_as_extra_config/app.py | grep -c yaml_as_extra_config
-	python example/validators/with_python/app.py | grep -c validator
-	python example/toml_with_secrets/program.py | grep -c My5up3r53c4et
+	python example/multiple_sources/app.py | grep -c multiple_sources || exit 1
+	python example/multiple_folders/app.py | grep -c var2_prod || exit 1
+	python example/toml_example/app.py | grep -c toml_example || exit 1
+	python example/yaml_example/settings_module/app.py | grep -c yaml_example || exit 1
+	python example/yaml_example/yaml_as_extra_config/app.py | grep -c yaml_as_extra_config || exit 1
+	python example/validators/with_python/app.py | grep -c validator || exit 1
+	python example/toml_with_secrets/program.py | grep -c My5up3r53c4et || exit 1
 	python example/envs/app.py
 	python example/custom_loader/app.py
 	python example/get_fresh/app.py
@@ -63,6 +64,9 @@ test_examples:
 
 	@echo '###############  Django Admin From root folder  ###############'
 	PYTHONPATH=./example/django_example/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
+
+	@echo '############ Issues  ##################'
+	cd example/issues/160;pwd;./test.sh
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
