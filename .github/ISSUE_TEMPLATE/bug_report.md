@@ -87,7 +87,7 @@ A clear and concise description of what you expected to happen.
 
 ```bash
 
-export `DEBUG_LEVEL_FOR_DYNACONF=true` reproduce your problem and paste the output here
+export `DEBUG_LEVEL_FOR_DYNACONF=DEBUG` reproduce your problem and paste the output here
 
 ```
 
