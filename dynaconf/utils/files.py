@@ -3,6 +3,9 @@ import inspect
 from dynaconf.utils import raw_logger, deduplicate
 
 
+logger = raw_logger()
+
+
 def _walk_to_root(path, break_at=None):
     """
     Directories starting from the given directory up to the root or break_at
@@ -19,7 +22,8 @@ def _walk_to_root(path, break_at=None):
     while last_dir != current_dir:
         paths.append(current_dir)
         paths.append(os.path.join(current_dir, 'config'))
-        if current_dir == os.path.abspath(break_at):  # pragma: no cover
+        if break_at and current_dir == os.path.abspath(break_at): # noqa
+            logger.debug('Reached the %s directory, breaking.', break_at)
             break
         parent_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
         last_dir, current_dir = current_dir, parent_dir
@@ -42,7 +46,6 @@ def find_file(filename='.env', project_root=None, skip_files=None, **kwargs):
     For each path in the `search_tree` it will also look for an
     aditional `./config` folder.
     """
-    logger = raw_logger()
     search_tree = []
     work_dir = os.getcwd()
     skip_files = skip_files or []
@@ -55,8 +58,8 @@ def find_file(filename='.env', project_root=None, skip_files=None, **kwargs):
 
     script_dir = os.path.dirname(os.path.abspath(inspect.stack()[-1].filename))
 
-    # Path to invoked script and recurivelly to root with its ./config dirs
-    search_tree.extend(_walk_to_root(script_dir, break_at=work_dir))
+    # Path to invoked script and recursivelly to root with its ./config dirs
+    search_tree.extend(_walk_to_root(script_dir))
 
     # Where Python interpreter was invoked from and its ./config
     search_tree.extend([work_dir, os.path.join(work_dir, 'config')])
