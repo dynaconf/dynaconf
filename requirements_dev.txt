@@ -18,6 +18,7 @@ codecov
 pytest
 pytest-cov
 pytest-xdist
+pytest-mock
 commentjson
 
 # style check

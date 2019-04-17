@@ -99,53 +99,65 @@ class Validator(object):
                 # if when is invalid, return canceling validation flow
                 return
 
+        # If only using current_env, skip using_env decoration (reload)
+        if (
+            len(self.envs) == 1 and
+            self.envs[0].upper() == settings.current_env.upper()
+        ):
+            self._validate_items(settings, settings.current_env)
+            return
+
         for env in self.envs:
             with settings.using_env(env):
-                for name in self.names:
-                    exists = settings.exists(name)
+                self._validate_items(settings, env)
 
-                    # is name required but not exists?
-                    if self.must_exist is True and not exists:
-                        raise ValidationError(
-                            '{0} is required in env {1}'.format(
-                                name, env
-                            )
+    def _validate_items(self, settings, env):
+        for name in self.names:
+            exists = settings.exists(name)
+
+            # is name required but not exists?
+            if self.must_exist is True and not exists:
+                raise ValidationError(
+                    '{0} is required in env {1}'.format(
+                        name, env
+                    )
+                )
+            elif self.must_exist is False and exists:
+                raise ValidationError(
+                    '{0} cannot exists in env {1}'.format(
+                        name, env
+                    )
+                )
+
+            # if not exists and not required cancel validation flow
+            if not exists:
+                return
+
+            value = settings[name]
+
+            # is there a callable condition?
+            if self.condition is not None:
+                if not self.condition(value):
+                    raise ValidationError(
+                        '{0} invalid for {1}({2}) '
+                        'in env {3}'.format(
+                            name, self.condition.__name__,
+                            value, env
                         )
-                    elif self.must_exist is False and exists:
-                        raise ValidationError(
-                            '{0} cannot exists in env {1}'.format(
-                                name, env
-                            )
+                    )
+
+            # operations
+            for op_name, op_value in self.operations.items():
+                op_function = getattr(validator_conditions, op_name)
+                if not op_function(value, op_value):
+                    raise ValidationError(
+                        '{0} must {1} {2} but it is {3} '
+                        'in env {4}'.format(
+                            name, op_function.__name__,
+                            op_value, value, env
                         )
+                    )
 
-                    # if not exists and not required cancel validation flow
-                    if not exists:
-                        return
-
-                    value = settings[name]
-
-                    # is there a callable condition?
-                    if self.condition is not None:
-                        if not self.condition(value):
-                            raise ValidationError(
-                                '{0} invalid for {1}({2}) '
-                                'in env {3}'.format(
-                                    name, self.condition.__name__,
-                                    value, env
-                                )
-                            )
-
-                    # operations
-                    for op_name, op_value in self.operations.items():
-                        op_function = getattr(validator_conditions, op_name)
-                        if not op_function(value, op_value):
-                            raise ValidationError(
-                                '{0} must {1} {2} but it is {3} '
-                                'in env {4}'.format(
-                                    name, op_function.__name__,
-                                    op_value, value, env
-                                )
-                            )
 
 
 class ValidatorList(list):

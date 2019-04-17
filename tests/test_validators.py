@@ -180,3 +180,28 @@ def test_validation_error(validator_instance, tmpdir):
     settings.validators.register(validator_instance)
     with pytest.raises(ValidationError):
         settings.validators.validate()
+
+
+def test_no_reload_on_single_env(tmpdir, mocker):
+    tmpfile = tmpdir.join('settings.toml')
+    tmpfile.write(TOML)
+
+    same_env_validator = Validator(
+        'VERSION', is_type_of=int, env='development')
+    other_env_validator = Validator(
+        'NAME', must_exist=True, env='production')
+
+    settings = LazySettings(
+        ENV_FOR_DYNACONF='DEVELOPMENt',
+        SETTINGS_MODULE_FOR_DYNACONF=str(tmpfile),
+    )
+    using_env = mocker.patch.object(settings, "using_env")
+
+    settings.validators.register(same_env_validator)
+    settings.validators.validate()
+    using_env.assert_not_called()
+
+    settings.validators.register(other_env_validator)
+    settings.validators.validate()
+    using_env.assert_any_call('production')
+    assert using_env.call_count == 1
