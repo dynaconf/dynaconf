@@ -203,4 +203,5 @@ def test_no_reload_on_single_env(tmpdir, mocker):
 
     settings.validators.register(other_env_validator)
     settings.validators.validate()
-    using_env.assert_called_once()
+    using_env.assert_any_call('production')
+    assert using_env.call_count == 1
