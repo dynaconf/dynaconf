@@ -100,7 +100,10 @@ class Validator(object):
                 return
 
         # If only using current_env, skip using_env decoration (reload)
-        if len(self.envs) == 1 and self.envs[0] == settings.current_env:
+        if (
+            len(self.envs) == 1 and
+            self.envs[0].upper() == settings.current_env.upper()
+        ):
             self._validate_items(settings, settings.current_env)
             return
 
