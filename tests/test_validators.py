@@ -186,8 +186,10 @@ def test_no_reload_on_single_env(tmpdir, mocker):
     tmpfile = tmpdir.join('settings.toml')
     tmpfile.write(TOML)
 
-    same_env_validator = Validator('VERSION', is_type_of=int, env='development')
-    other_env_validator = Validator('NAME', must_exist=True, env='production')
+    same_env_validator = Validator(
+        'VERSION', is_type_of=int, env='development')
+    other_env_validator = Validator(
+        'NAME', must_exist=True, env='production')
 
     settings = LazySettings(
         ENV_FOR_DYNACONF='DEVELOPMENt',
