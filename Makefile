@@ -85,6 +85,7 @@ test_redis:
 
 test_only:
 	py.test --boxed -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
+	coverage xml
 
 test: pep8 test_only
 

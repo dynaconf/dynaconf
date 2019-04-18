@@ -159,7 +159,6 @@ class Validator(object):
                     )
 
 
-
 class ValidatorList(list):
 
     def __init__(self, settings, *args, **kwargs):
