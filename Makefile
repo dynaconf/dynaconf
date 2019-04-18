@@ -61,6 +61,7 @@ test_examples:
 	python example/specific_settings_modules/app.py
 	python example/django_example/manage.py test polls -v 2
 	PYTHONPATH=example/django_example DJANGO_SETTINGS_MODULE=foo.settings python example/django_example/standalone_script.py
+	python example/global_env_prefix/app.py
 
 	@echo '###############  Django Admin From root folder  ###############'
 	PYTHONPATH=./example/django_example/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2

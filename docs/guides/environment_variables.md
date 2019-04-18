@@ -95,6 +95,8 @@ Read more in [Getting Started Guide](usage.html)
 
 The **DYNACONF_{param}** prefix is set by **GLOBAL_ENV_FOR_DYNACONF** and serves only to be used in environment variables to override config values.
 
-This prefix itself can be changed to something more significant for your application, however we recommend kepping **DYNACONF_{param}** as your global env prefix.
+This prefix itself can be changed to something more significant for your application, however we recommend keeping **DYNACONF_{param}** as your global env prefix.
+
+Setting **GLOBAL_ENV_FOR_DYNACONF** to `'@none None'` will disable the prefix entirely and cause Dynaconf to load *all* environment variables.
 
 > **NOTE**: See the [Configuring dynaconf](configuration.html) section in documentation to learn more on how to use `.env` variables to configure dynaconf behavior.

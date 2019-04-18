@@ -1,0 +1,16 @@
+from dynaconf import settings
+
+print('EXAMPLE_ prefix')
+settings.configure(GLOBAL_ENV_FOR_DYNACONF="EXAMPLE")
+print(settings.VAR1)
+print(settings.VAR2)
+
+print('_ prefix')
+settings.configure(GLOBAL_ENV_FOR_DYNACONF="")
+print(settings.VAR1)
+print(settings.VAR2)
+
+print('no prefix at all')
+settings.configure(GLOBAL_ENV_FOR_DYNACONF=None)
+print(settings.VAR1)
+print(settings.VAR2)
