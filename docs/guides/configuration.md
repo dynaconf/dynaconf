@@ -53,7 +53,7 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 | ENV_SWITCHER        | str     | Variable used to change working env              | ENV_FOR_DYNACONF                                 | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV                      |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | GLOBAL_ENV          | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       || GLOBAL_ENV_FOR_DYNACONF=MYPROGRAM                           |
-|                     |         | |                                                |                                                  || GLOBAL_ENV_FOR_DYNACONF=false                        |
+|                     |         | |                                                |                                                  || GLOBAL_ENV_FOR_DYNACONF=false                               |
 |                     |         | | Example:                                       |                                                  |                                                              |
 |                     |         | | If your program is called `MYPROGRAM`          |                                                  |                                                              |
 |                     |         | | you may want users to use `MYPROGRAM_FOO=bar`  |                                                  |                                                              |

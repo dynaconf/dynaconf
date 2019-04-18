@@ -119,7 +119,7 @@ def test_no_prefix():
     load_from_env(
         identifier="env_global",
         key=None,
-        env=None,
+        env=False,
         obj=settings,
         silent=True
     )
