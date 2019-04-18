@@ -33,7 +33,7 @@ def load(obj, env=None, silent=True, key=None):
 
 def load_from_env(identifier, key, env, obj, silent):
     env_ = ""
-    if env:
+    if env is not None:
         env = env.upper()
         env_ = '{0}_'.format(env)
     try:
