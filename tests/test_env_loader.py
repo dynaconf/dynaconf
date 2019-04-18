@@ -1,6 +1,6 @@
 import os
 import pytest
-from dynaconf.loaders.env_loader import load
+from dynaconf.loaders.env_loader import load, load_from_env
 from dynaconf import settings  # noqa
 
 # GLOBAL ENV VARS
@@ -100,3 +100,39 @@ def test_cleaner():
     settings.clean()
     with pytest.raises(AttributeError):
         assert settings.HOSTNAME == 'host.com'
+
+
+def test_empty_string_prefix():
+    os.environ['_VALUE'] = 'underscored'
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="",
+        obj=settings,
+        silent=True
+    )
+    assert settings.VALUE == 'underscored'
+
+
+def test_no_prefix():
+    os.environ['VALUE'] = 'no_prefix'
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env=False,
+        obj=settings,
+        silent=True
+    )
+    assert settings.VALUE == 'no_prefix'
+
+
+def test_none_as_string_prefix():
+    os.environ['NONE_VALUE'] = 'none as prefix'
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="none",
+        obj=settings,
+        silent=True
+    )
+    assert settings.VALUE == 'none as prefix'
