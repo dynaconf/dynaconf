@@ -12,7 +12,7 @@ def load(obj, env=None, silent=True, key=None):
     `DYNACONF_` (default global) or `$(GLOBAL_ENV_FOR_DYNACONF)_`
     """
     global_env = obj.get('GLOBAL_ENV_FOR_DYNACONF')
-    if global_env.upper() != 'DYNACONF':
+    if global_env is False or global_env.upper() != 'DYNACONF':
         load_from_env(
             IDENTIFIER + '_global',
             key,
@@ -32,12 +32,14 @@ def load(obj, env=None, silent=True, key=None):
 
 
 def load_from_env(identifier, key, env, obj, silent):
-    env = env.upper()  # noqa
-    env_ = '{0}_'.format(env)  # noqa
+    env_ = ""
+    if env is not False:
+        env = env.upper()
+        env_ = '{0}_'.format(env)
     try:
         if key:
             value = os.environ.get(
-                '{0}_{1}'.format(env, key)
+                '{0}{1}'.format(env_, key)
             )
             if value:
                 obj.logger.debug(
@@ -49,8 +51,9 @@ def load_from_env(identifier, key, env, obj, silent):
                 )
                 obj.set(key, value, loader_identifier=identifier, tomlfy=True)
         else:
+            trim_len = len(env_)
             data = {
-                key.partition(env_)[-1]: parse_conf_data(data, tomlfy=True)
+                key[trim_len:]: parse_conf_data(data, tomlfy=True)
                 for key, data
                 in os.environ.items()
                 if key.startswith(env_)
