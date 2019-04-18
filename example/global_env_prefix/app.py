@@ -11,6 +11,6 @@ print(settings.VAR1)
 print(settings.VAR2)
 
 print('no prefix at all')
-settings.configure(GLOBAL_ENV_FOR_DYNACONF=None)
+settings.configure(GLOBAL_ENV_FOR_DYNACONF=False)
 print(settings.VAR1)
 print(settings.VAR2)

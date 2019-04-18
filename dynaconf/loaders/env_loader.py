@@ -12,7 +12,7 @@ def load(obj, env=None, silent=True, key=None):
     `DYNACONF_` (default global) or `$(GLOBAL_ENV_FOR_DYNACONF)_`
     """
     global_env = obj.get('GLOBAL_ENV_FOR_DYNACONF')
-    if global_env is None or global_env.upper() != 'DYNACONF':
+    if global_env is False or global_env.upper() != 'DYNACONF':
         load_from_env(
             IDENTIFIER + '_global',
             key,
@@ -33,7 +33,7 @@ def load(obj, env=None, silent=True, key=None):
 
 def load_from_env(identifier, key, env, obj, silent):
     env_ = ""
-    if env is not None:
+    if env is not False:
         env = env.upper()
         env_ = '{0}_'.format(env)
     try:
