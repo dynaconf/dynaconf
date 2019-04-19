@@ -226,7 +226,7 @@ The **[global]** pseudo-environment can be used to set and/or override configura
 
 For example, given the following `settings.toml` file, the value of address will be **"1.2.3.4"** in every environment:
 
-```ini
+```cfg
 [global]
 address = "1.2.3.4"
 
@@ -278,13 +278,15 @@ Sometimes you have multiple fragments of settings in different files, dynaconf a
 Example:
 
 `plugin1.toml`
-```toml
+
+```cfg
 [development]
 plugin_specific_variable = 'value for development'
 ```
 
 and even mixing different formats:  
 `plugin2.yaml`
+
 ```yaml
 production:
   plugin_specific_variable: 'value for production'
@@ -293,7 +295,8 @@ production:
 Then it can be merged on main `settings.toml` file via `dynaconf_include`
 
 `settings.toml`
-```toml
+
+```cfg
 [default]
 dynaconf_include = ["plugin1.toml", "plugin2.yaml"]
 DEBUG = false
@@ -305,7 +308,7 @@ A settings file can include a `dynaconf_include` stanza, whose exact
   syntax will depend on the type of settings file (json, yaml, toml, etc)
   being used:
 
-  ```toml
+  ```cfg
   [default]
   dynaconf_include = ["/absolute/path/to/plugin1.toml", "relative/path/to/plugin2.toml"]
   DEBUG = false
@@ -325,7 +328,7 @@ A settings file can include a `dynaconf_include` stanza, whose exact
 
   It is also possible to specify glob-based patterns:
 
-  ```toml
+  ```cfg
   [default]
   dynaconf_include = ["configurations/*.toml"]
   DEBUG = false
@@ -356,7 +359,7 @@ Now you want to contribute to the same `DATABASE` key by addind new keys, so you
 
 In specific `[envs]`
 
-```toml
+```cfg
 [default]
 database = {host="server.com", user="default"}
 
@@ -394,7 +397,7 @@ settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234
 The same can be applied to **lists**:
 
 `settings.toml`
-```toml
+```cfg
 [default]
 plugins = ["core"]
 
@@ -420,7 +423,7 @@ The `dynaconf_merge_unique` is the token for when you want to avoid duplications
 
 Example:
 
-```toml
+```cfg
 [default]
 scripts = ['install.sh', 'deploy.sh']
 

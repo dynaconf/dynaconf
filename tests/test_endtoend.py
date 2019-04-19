@@ -39,12 +39,12 @@ def test_end_to_end(settings):
         assert settings.get('ENV_PURE_INT', cast='@int') == 42
         assert isinstance(settings.ENV_DICT, dict)
 
-        os.environ['GLOBAL_ENV_FOR_DYNACONF'] = 'OTHER'
+        os.environ['ENVVAR_PREFIX_FOR_DYNACONF'] = 'OTHER'
         with settings.using_env('OTHER'):
             assert settings.TESTING is True
             assert settings.ENABLED is True
             assert settings.DISABLED is False
-        os.environ['GLOBAL_ENV_FOR_DYNACONF'] = 'DYNACONF'
+        os.environ['ENVVAR_PREFIX_FOR_DYNACONF'] = 'DYNACONF'
 
 
 def test_boxed_data(settings):

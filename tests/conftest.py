@@ -20,7 +20,7 @@ def settings():
     os.environ['DYNA%s_TODELETE' % mode] = '@bool true'
     sets = LazySettings(
         LOADERS_FOR_DYNACONF=loaders,
-        GLOBAL_ENV_FOR_DYNACONF="DYNA%s" % mode,
+        ENVVAR_PREFIX_FOR_DYNACONF="DYNA%s" % mode,
         ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
         boxed_data={
             'HOST': 'server.com',

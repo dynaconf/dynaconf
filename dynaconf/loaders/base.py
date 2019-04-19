@@ -67,7 +67,7 @@ class BaseLoader(object):
 
         # compatibility with older versions that still uses [dynaconf] as
         # [default] env
-        global_env = self.obj.get('GLOBAL_ENV_FOR_DYNACONF')
+        global_env = self.obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
         if global_env not in env_list:
             env_list.append(global_env)
 
@@ -121,7 +121,7 @@ class BaseLoader(object):
                 try:
                     data = source_data[env.lower()]
                 except KeyError:
-                    if env not in (self.obj.get('GLOBAL_ENV_FOR_DYNACONF'),
+                    if env not in (self.obj.get('ENVVAR_PREFIX_FOR_DYNACONF'),
                                    'GLOBAL'):
                         message = '%s_loader: %s env not defined in %s' % (
                             self.identifier, env, source_file)

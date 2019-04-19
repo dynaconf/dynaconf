@@ -17,7 +17,7 @@ Now you want to use Dynaconf, open that `conf.py` or `conf/__init__.py` and do:
 # coding: utf-8
 from dynaconf import LazySettings
 
-config = LazySettings(GLOBAL_ENV_FOR_DYNACONF="MYPROGRAM")
+config = LazySettings(ENVVAR_PREFIX_FOR_DYNACONF="MYPROGRAM")
 ```
 
 Now you can use `export MYPROGRAM_FOO=bar` instead of `DYNACONF_FOO=bar`
@@ -94,7 +94,7 @@ It is possible to customize how your project will load settings, example: You wa
 
 
 ```python
-GLOBAL_ENV_FOR_DYNACONF = "PROJECTNAME"
+ENVVAR_PREFIX_FOR_DYNACONF = "PROJECTNAME"
 """This defines which environment variable global prefix dynaconf will load
 That means that `export PROJECTNAME_FOO=1` will be loaded to `duanconf.settings.FOO
 On command line it is possible to check it with `dynaconf list -k foo`"""
@@ -141,7 +141,7 @@ The environment variables wins precedence over all!
 
 # load dynaconf
 settings = LazySettings(
-    GLOBAL_ENV_FOR_DYNACONF=GLOBAL_ENV_FOR_DYNACONF,
+    ENVVAR_PREFIX_FOR_DYNACONF=ENVVAR_PREFIX_FOR_DYNACONF,
     ENVVAR_FOR_DYNACONF=ENVVAR_FOR_DYNACONF.
     ENV_SWITCHER_FOR_DYNACONF=ENV_SWITCHER_FOR_DYNACONF
 )

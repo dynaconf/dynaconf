@@ -17,7 +17,7 @@ class FlaskDynaconf(object):
 
     All other values are stored as config vars specially::
 
-        GLOBAL_ENV_FOR_DYNACONF = env prefix for your envvars to be loaded
+        ENVVAR_PREFIX_FOR_DYNACONF = env prefix for your envvars to be loaded
                             example:
                                 if you set to `MYSITE` then
                                 export MYSITE_SQL_PORT='@int 5445'
@@ -80,10 +80,10 @@ class FlaskDynaconf(object):
             )
         self.kwargs = kwargs
 
-        kwargs.setdefault('GLOBAL_ENV_FOR_DYNACONF', 'FLASK')
+        kwargs.setdefault('ENVVAR_PREFIX_FOR_DYNACONF', 'FLASK')
 
         env_prefix = '{0}_ENV'.format(
-            kwargs['GLOBAL_ENV_FOR_DYNACONF']
+            kwargs['ENVVAR_PREFIX_FOR_DYNACONF']
         )  # FLASK_ENV
 
         kwargs.setdefault('ENV_SWITCHER_FOR_DYNACONF', env_prefix)

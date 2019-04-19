@@ -135,7 +135,7 @@ Options:
   -p, --path TEXT     defaults to current directory/settings.{ext}
   -e, --env TEXT      env to write to defaults to DEVELOPMENT for files for
                       external sources like Redis and Vault it will be
-                      DYNACONF or the value set in $GLOBAL_ENV_FOR_DYNACONF
+                      DYNACONF or the value set in $ENVVAR_PREFIX_FOR_DYNACONF
   -y
   --help              Show this message and exit.
 ```

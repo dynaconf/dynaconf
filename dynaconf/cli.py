@@ -382,7 +382,7 @@ def _list(env, key, more, loader):
         'env to write to defaults to DEVELOPMENT for files '
         'for external sources like Redis and Vault '
         'it will be DYNACONF or the value set in '
-        '$GLOBAL_ENV_FOR_DYNACONF'
+        '$ENVVAR_PREFIX_FOR_DYNACONF'
     )
 )
 @click.option('-y', default=False, is_flag=True)

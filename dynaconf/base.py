@@ -45,7 +45,7 @@ class LazySettings(LazyObject):
 
     You can define in your settings module a list of loaders to get values
     from different stores. By default it will try environment variables
-    starting with GLOBAL_ENV_FOR_DYNACONF (by defaulf `DYNACONF_`)
+    starting with ENVVAR_PREFIX_FOR_DYNACONF (by defaulf `DYNACONF_`)
 
     You can also import this directly and customize it.
     in a file `proj/conf.py`::
@@ -819,7 +819,7 @@ class Settings(object):
         :param key: The flag name
         :param env: The env to look for
         """
-        env = env or self.GLOBAL_ENV_FOR_DYNACONF
+        env = env or self.ENVVAR_PREFIX_FOR_DYNACONF
         with self.using_env(env):
             value = self.get_fresh(key)
             return value is True or value in true_values

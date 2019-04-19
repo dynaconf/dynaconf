@@ -4,7 +4,7 @@
 
 ### TOML
 
-```toml
+```cfg
 [default]
 DEBUG = true
 SERVER = "flaskdynaconf.com"
@@ -13,7 +13,7 @@ MESSAGE = "Dynaconf works like a charm with Flask and TOML"
 TEST_RULE = '/flask_with_toml'
 
 [development]
-DEBUG = true 
+DEBUG = true
 SERVER = "dev.flaskdynaconf.com"
 
 [production]
