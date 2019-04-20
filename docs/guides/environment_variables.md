@@ -68,7 +68,7 @@ Now you want to contribute to the same `DATABASE` key by addind new keys, so you
 
 In specific `[envs]`
 
-```toml
+```cfg
 [default]
 database = {host="server.com", user="default"}
 
@@ -93,15 +93,15 @@ Read more in [Getting Started Guide](usage.html)
 
 ### The global prefix
 
-The **DYNACONF_{param}** prefix is set by **GLOBAL_ENV_FOR_DYNACONF** and serves only to be used in environment variables to override config values.
+The **DYNACONF_{param}** prefix is set by **ENVVAR_PREFIX_FOR_DYNACONF** and serves only to be used in environment variables to override config values.
 
 This prefix itself can be changed to something more significant for your application, however we recommend keeping **DYNACONF_{param}** as your global env prefix.
 
-Setting **GLOBAL_ENV_FOR_DYNACONF** to `false` will disable the prefix entirely and cause Dynaconf to load *all* environment variables. When providing `GLOBAL_ENV_FOR_DYNACONF` as parameter to **LazySettings** or **settings.configure**, make sure to give it a Python-native `False`:
+Setting **ENVVAR_PREFIX_FOR_DYNACONF** to `false` will disable the prefix entirely and cause Dynaconf to load *all* environment variables. When providing `ENVVAR_PREFIX_FOR_DYNACONF` as parameter to **LazySettings** or **settings.configure**, make sure to give it a Python-native `False`:
 
 ```python
 from dynaconf import LazySettings
-settings = LazySettings(GLOBAL_ENV_FOR_DYNACONF=False)
+settings = LazySettings(ENVVAR_PREFIX_FOR_DYNACONF=False)
 ```
 
 > **NOTE**: See the [Configuring dynaconf](configuration.html) section in documentation to learn more on how to use `.env` variables to configure dynaconf behavior.

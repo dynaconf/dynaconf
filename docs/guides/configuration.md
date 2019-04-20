@@ -15,7 +15,7 @@ Or when using your own Dynaconf instance you can pass as parameters directly:
 from dynaconf import LazySettings
 settings = LazySettings(
     DEBUG_LEVEL_FOR_DYNACONF='DEBUG',
-    GLOBAL_ENV_FOR_DYNACONF='MYPROGRAM',
+    ENVVAR_PREFIX_FOR_DYNACONF='MYPROGRAM',
     ENVVAR_FOR_DYNACONF='MYPROGRAM_SETTINGS',
 )
 ```
@@ -52,8 +52,8 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENV_SWITCHER        | str     | Variable used to change working env              | ENV_FOR_DYNACONF                                 | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV                      |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| GLOBAL_ENV          | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       || GLOBAL_ENV_FOR_DYNACONF=MYPROGRAM                           |
-|                     |         | |                                                |                                                  || GLOBAL_ENV_FOR_DYNACONF=false                               |
+| GLOBAL_ENV          | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       || ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM                        |
+|                     |         | |                                                |                                                  || ENVVAR_PREFIX_FOR_DYNACONF=false                            |
 |                     |         | | Example:                                       |                                                  |                                                              |
 |                     |         | | If your program is called `MYPROGRAM`          |                                                  |                                                              |
 |                     |         | | you may want users to use `MYPROGRAM_FOO=bar`  |                                                  |                                                              |
@@ -67,7 +67,7 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | DOTENV_PATH         | str     | defines where to look for `.env` file            | PROJECT_ROOT                                     | DOTENV_PATH_FOR_DYNACONF="/tmp/.env")                        |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| DOTENV_OVERRIDE     | bool    | `.env` should override the exported envvars      | false`                                           | DOTENV_OVERRIDE_FOR_DYNACONF=true                            |
+| DOTENV_OVERRIDE     | bool    | `.env` should override the exported envvars      | false                                            | DOTENV_OVERRIDE_FOR_DYNACONF=true                            |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | AUTO_CAST           | bool    | `@casting` like `@int` is parsed                 | true                                             | DOTENV_OVERRIDE_FOR_DYNACONF=false                           |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
@@ -127,6 +127,7 @@ Some configuration options has been deprecated and replaced with a new name, we 
 - `SETTINGS_MODULE` replaced by `SETTINGS_MODULE_FOR_DYNACONF`
 - `DYNACONF_SILENT_ERRORS` replaced by `SILENT_ERRORS_FOR_DYNACONF`
 - `DYNACONF_ALWAYS_FRESH_VARS` replaced by `FRESH_VARS_FOR_DYNACONF`
+- `GLOBAL_ENV_FOR_DYNACONF` replaced by `ENVVAR_PREFIX_FOR_DYNACONF`
 
 ```eval_rst
 .. autoclass:: dynaconf.default_settings

@@ -110,8 +110,10 @@ DEFAULT_ENV_FOR_DYNACONF = get('DEFAULT_ENV_FOR_DYNACONF', 'DEFAULT')
 # Global values are taken from DYNACONF env used for exported envvars
 # Values here overwrites all other envs
 # This namespace is used for files and also envvars
-GLOBAL_ENV_FOR_DYNACONF = get('GLOBAL_ENV_FOR_DYNACONF', 'DYNACONF')
+ENVVAR_PREFIX_FOR_DYNACONF = get('ENVVAR_PREFIX_FOR_DYNACONF', 'DYNACONF')
 
+# Backwards compatibility see pr #166
+GLOBAL_ENV_FOR_DYNACONF = ENVVAR_PREFIX_FOR_DYNACONF
 
 # The default encoding to open settings files
 ENCODING_FOR_DYNACONF = get('ENCODING_FOR_DYNACONF', 'utf-8')

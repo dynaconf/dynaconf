@@ -48,7 +48,7 @@ It is possible to customize how your Flask project will load settings, example: 
 your flask `app.py` (or wherever you setup dynaconf)
 
 ```python
-GLOBAL_ENV_FOR_DYNACONF = "PROJECTNAME"
+ENVVAR_PREFIX_FOR_DYNACONF = "PROJECTNAME"
 """This defines which environment variable global prefix dynaconf will load
 That means that `export PROJECTNAME_FOO=1` will be loaded to `app.config.FOO
 On command line it is possible to check it with `dynaconf list -k foo`"""
@@ -92,7 +92,7 @@ The environment variables wins precedence over all!
 app = Flask(__name__)
 FlaskDynaconf(
     app,
-    GLOBAL_ENV_FOR_DYNACONF=GLOBAL_ENV_FOR_DYNACONF,
+    ENVVAR_PREFIX_FOR_DYNACONF=ENVVAR_PREFIX_FOR_DYNACONF,
     ENVVAR_FOR_DYNACONF=ENVVAR_FOR_DYNACONF
 )
 ```

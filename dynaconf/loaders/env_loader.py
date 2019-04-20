@@ -9,9 +9,9 @@ IDENTIFIER = 'env'
 def load(obj, env=None, silent=True, key=None):
     """Loads envvars with prefixes:
 
-    `DYNACONF_` (default global) or `$(GLOBAL_ENV_FOR_DYNACONF)_`
+    `DYNACONF_` (default global) or `$(ENVVAR_PREFIX_FOR_DYNACONF)_`
     """
-    global_env = obj.get('GLOBAL_ENV_FOR_DYNACONF')
+    global_env = obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
     if global_env is False or global_env.upper() != 'DYNACONF':
         load_from_env(
             IDENTIFIER + '_global',

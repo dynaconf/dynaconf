@@ -27,7 +27,7 @@ def _get_env_list(obj, env):
     env_list = [obj.get('DEFAULT_ENV_FOR_DYNACONF')]
     # compatibility with older versions that still uses [dynaconf] as
     # [default] env
-    global_env = obj.get('GLOBAL_ENV_FOR_DYNACONF')
+    global_env = obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
     if global_env not in env_list:
         env_list.append(global_env)
     # add the current env

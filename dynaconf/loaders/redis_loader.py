@@ -24,7 +24,7 @@ def load(obj, env=None, silent=True, key=None):
     :return: None
     """
     redis = StrictRedis(**obj.get('REDIS_FOR_DYNACONF'))
-    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
+    holder = obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
     try:
         if key:
             value = redis.hget(holder.upper(), key)
@@ -76,7 +76,7 @@ def write(obj, data=None, **kwargs):
             'and configure the REDIS_FOR_DYNACONF_* variables'
         )
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
+    holder = obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
     data = data or {}
     data.update(kwargs)
     if not data:
@@ -97,7 +97,7 @@ def delete(obj, key=None):
     :return: None
     """
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = obj.get('GLOBAL_ENV_FOR_DYNACONF')
+    holder = obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
     if key:
         client.hdel(holder.upper(), key.upper())
         obj.unset(key)

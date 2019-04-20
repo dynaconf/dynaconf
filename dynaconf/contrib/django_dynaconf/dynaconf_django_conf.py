@@ -13,10 +13,10 @@ for key in dir(django_settings):
     dj['ORIGINAL_SETTINGS_MODULE'] = django_settings.SETTINGS_MODULE
 
 
-dj.setdefault('GLOBAL_ENV_FOR_DYNACONF', 'DJANGO')
+dj.setdefault('ENVVAR_PREFIX_FOR_DYNACONF', 'DJANGO')
 
 env_prefix = '{0}_ENV'.format(
-    dj['GLOBAL_ENV_FOR_DYNACONF']
+    dj['ENVVAR_PREFIX_FOR_DYNACONF']
 )  # DJANGO_ENV
 
 dj.setdefault(
