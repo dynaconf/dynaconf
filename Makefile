@@ -32,6 +32,7 @@ test_examples:
 	cd example/jenkins_secrets_file;pwd;python app.py
 	cd example/specific_settings_modules;pwd;python app.py
 	cd example/django_example/;pwd;python manage.py test polls -v 2
+	cd example/django_example_compat/;pwd;python manage.py test polls -v 2
 	cd example/django_example/;pwd;PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
 	cd example/project_root/;pwd;rm -rf /tmp/dynaconf_project_root_test/settings.py;mkdir -p /tmp/dynaconf_project_root_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/dynaconf_project_root_test/settings.py;python app.py;rm -rf /tmp/dynaconf_project_root_test/
 	cd example/settings_module/;pwd;rm -rf /tmp/settings_module_test/settings.py;mkdir -p /tmp/settings_module_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/settings_module_test/settings.py;python app.py;rm -rf /tmp/settings_module_test/
@@ -61,10 +62,12 @@ test_examples:
 	python example/specific_settings_modules/app.py
 	python example/django_example/manage.py test polls -v 2
 	PYTHONPATH=example/django_example DJANGO_SETTINGS_MODULE=foo.settings python example/django_example/standalone_script.py
+	PYTHONPATH=example/django_example_compat DJANGO_SETTINGS_MODULE=foo.settings python example/django_example_compat/standalone_script.py
 	python example/envvar_prefix/app.py
 
 	@echo '###############  Django Admin From root folder  ###############'
 	PYTHONPATH=./example/django_example/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
+	PYTHONPATH=./example/django_example_compat/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
 
 	@echo '############ Issues  ##################'
 	cd example/issues/160_path_traversal_fixed;pwd;./test.sh

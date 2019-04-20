@@ -83,16 +83,13 @@ class BaseLoader(object):
 
     def _read(self, files, envs, silent=True, key=None):
         for source_file in files:
-            if source_file.endswith(self.extensions):  # pragma: no cover
+            if source_file.endswith(self.extensions):
                 try:
-                    source_data = self.file_reader(
-                        io.open(
-                            source_file,
-                            encoding=self.obj.get(
-                                'ENCODING_FOR_DYNACONF', 'utf-8'
-                            )
-                        )
-                    )
+                    with io.open(
+                        source_file,
+                        encoding=self.obj.get('ENCODING_FOR_DYNACONF', 'utf-8')
+                    ) as open_file:
+                        source_data = self.file_reader(open_file)
                     self.obj.logger.debug('{}_loader: {}'.format(
                         self.identifier, source_file))
                 except IOError:
