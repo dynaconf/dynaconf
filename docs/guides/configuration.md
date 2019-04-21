@@ -31,16 +31,16 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 | ROOT_PATH           | str     | | Directory to look for settings files           | | `None`                                         | ROOT_PATH_FOR_DYNACONF="/my/custom/absolute/path/"           |
 |                     |         | |                                                |                                                  |                                                              |
 |                     |         | | This path is the base to search for            | | If set Dynaconf will look this path first      |                                                              |
-|                     |         | | files defined in `SETTINGS_MODULE`             | | before it starts to search for file in the     |                                                              |
+|                     |         | | files defined in `SETTINGS_FILE`               | | before it starts to search for file in the     |                                                              |
 |                     |         | | Dynaconf will also search for files            | | other locations.                               |                                                              |
 |                     |         | | in a relative `config/` subfolder if exists.   | | see: `<usage.html#the-settings-files>`_        |                                                              |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENCODING            | str     | Encoding to read settings files                  | utf-8                                            | ENCODING_FOR_DYNACONF="cp1252"                               |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| ENVVAR              | str     | The envvar which holds the list of settings files| 'SETTINGS_MODULE_FOR_DYNACONF'                   | ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS                       |
+| ENVVAR              | str     | The envvar which holds the list of settings files| 'SETTINGS_FILE_FOR_DYNACONF'                     | ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS                       |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| SETTINGS_MODULE     | list    | List of files to load                            | | List of all supportes files:                   || SETTINGS_MODULE_FOR_DYNACONF="conf.toml,settings.yaml"      |
-|                     | str     |                                                  | | `settings.{py,toml,yaml,ini,conf,json}`        || SETTINGS_MODULE_FOR_DYNACONF="['conf.toml','settings.yaml']"|
+| SETTINGS_FILE       | list    | List of files to load                            | | List of all supportes files:                   || SETTINGS_FILE_FOR_DYNACONF="conf.toml,settings.yaml"        |
+|                     | str     |                                                  | | `settings.{py,toml,yaml,ini,conf,json}`        || SETTINGS_FILE_FOR_DYNACONF="['conf.toml','settings.yaml']"  |
 |                     |         |                                                  | | `.secrets.{py,toml,yaml,ini,conf,json}`        ||                                                             |
 |                     |         |                                                  | |                                                ||                                                             |
 |                     |         |                                                  | | This var name can be replaced by:              ||                                                             |
@@ -122,12 +122,13 @@ Some configuration options has been deprecated and replaced with a new name, we 
 - `DYNACONF_NAMESPACE` replaced by `ENV_FOR_DYNACONF`
 - `NAMESPACE_FOR_DYNACONF` replaced by `ENV_FOR_DYNACONF`
 - `BASE_NAMESPACE_FOR_DYNACONF` replaced by `DEFAULT_ENV_FOR_DYNACONF`
-- `DYNACONF_SETTINGS_MODULE` replaced by `SETTINGS_MODULE_FOR_DYNACONF`
-- `DYNACONF_SETTINGS` replaced by `SETTINGS_MODULE_FOR_DYNACONF`
-- `SETTINGS_MODULE` replaced by `SETTINGS_MODULE_FOR_DYNACONF`
+- `DYNACONF_SETTINGS_MODULE` replaced by `SETTINGS_FILE_FOR_DYNACONF`
+- `DYNACONF_SETTINGS` replaced by `SETTINGS_FILE_FOR_DYNACONF`
+- `SETTINGS_MODULE` replaced by `SETTINGS_FILE_FOR_DYNACONF`
 - `DYNACONF_SILENT_ERRORS` replaced by `SILENT_ERRORS_FOR_DYNACONF`
 - `DYNACONF_ALWAYS_FRESH_VARS` replaced by `FRESH_VARS_FOR_DYNACONF`
 - `GLOBAL_ENV_FOR_DYNACONF` replaced by `ENVVAR_PREFIX_FOR_DYNACONF`
+- `SETTINGS_MODULE_FOR_DYNACONF` replaced by `SETTINGS_FILE_FOR_DYNACONF`
 
 ```eval_rst
 .. autoclass:: dynaconf.default_settings

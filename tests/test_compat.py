@@ -13,7 +13,7 @@ def test_dynaconf_namespace_renamed(tmpdir):
     )
 
     assert settings.ENV_FOR_DYNACONF == 'FOO'
-    assert settings.SETTINGS_MODULE_FOR_DYNACONF == 'foo.py'
+    assert settings.SETTINGS_FILE_FOR_DYNACONF == 'foo.py'
     assert settings.ROOT_PATH_FOR_DYNACONF == str(tmpdir)
     assert settings.SILENT_ERRORS_FOR_DYNACONF is True
     assert settings.FRESH_VARS_FOR_DYNACONF == ['BAR']
@@ -30,7 +30,7 @@ def test_namespace_for_dynaconf_renamed(tmpdir):
     )
 
     assert settings.ENV_FOR_DYNACONF == 'FOO'
-    assert settings.SETTINGS_MODULE_FOR_DYNACONF == 'foo.py'
+    assert settings.SETTINGS_FILE_FOR_DYNACONF == 'foo.py'
     assert settings.ROOT_PATH_FOR_DYNACONF == str(tmpdir)
     assert settings.SILENT_ERRORS_FOR_DYNACONF is True
     assert settings.FRESH_VARS_FOR_DYNACONF == ['BAR']

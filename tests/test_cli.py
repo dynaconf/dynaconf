@@ -315,7 +315,7 @@ def test_validate(tmpdir):
             str(validation_file)
         ],
         {
-            'SETTINGS_MODULE_FOR_DYNACONF': str(toml_valid),
+            'SETTINGS_FILE_FOR_DYNACONF': str(toml_valid),
         }
     )
     assert "Validation success!" in result
@@ -327,7 +327,7 @@ def test_validate(tmpdir):
             str(Path(str(validation_file)).parent)
         ],
         {
-            'SETTINGS_MODULE_FOR_DYNACONF': str(toml_invalid),
+            'SETTINGS_FILE_FOR_DYNACONF': str(toml_invalid),
         }
     )
     assert "age must lte 30 but it is 35 in env default" in result

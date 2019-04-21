@@ -70,7 +70,7 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
     if not filename.endswith('.py'):
         filename = '{0}.py'.format(filename)
 
-    if filename in default_settings.SETTINGS_MODULE_FOR_DYNACONF:
+    if filename in default_settings.SETTINGS_FILE_FOR_DYNACONF:
         silent = True
     mod = types.ModuleType(filename.rstrip('.py'))
     mod.__file__ = filename

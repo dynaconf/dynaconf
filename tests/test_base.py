@@ -6,6 +6,7 @@ from dynaconf.utils.parse_conf import true_values
 
 def test_deleted_raise(settings):
     """asserts variable can be deleted"""
+    assert 'TODELETE' in settings
     assert settings.TODELETE is True
     del settings.TODELETE
     with pytest.raises(AttributeError):

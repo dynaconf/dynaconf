@@ -32,7 +32,7 @@ class FlaskDynaconf(object):
                             Dynaconf uses `@int, @bool, @float, @json` to cast
                             env vars
 
-        SETTINGS_MODULE_FOR_DYNACONF = The name of the module or file to use as
+        SETTINGS_FILE_FOR_DYNACONF = The name of the module or file to use as
                                     default to load settings. If nothing is
                                     passed it will be `settings.*` or value
                                     found in `ENVVAR_FOR_DYNACONF`
@@ -63,7 +63,7 @@ class FlaskDynaconf(object):
         FlaskDynaconf(
             app,
             ENV_FOR_DYNACONF='MYSITE',
-            SETTINGS_MODULE_FOR_DYNACONF='settings.yml',
+            SETTINGS_FILE_FOR_DYNACONF='settings.yml',
             EXTRA_VALUE='You can add aditional config vars here'
         )
 

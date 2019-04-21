@@ -178,7 +178,7 @@ def test_invalid_include_path(tmpdir):
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
-        SETTINGS_MODULE_FOR_DYNACONF=str(settings_file))
+        SETTINGS_FILE_FOR_DYNACONF=str(settings_file))
 
     # Ensure overrides not happened
     assert settings.SERVER == "base.example.com"
@@ -202,7 +202,7 @@ def test_load_nested_toml(tmpdir):
         silent=False,
         LOADERS_FOR_DYNACONF=False,
         ROOT_PATH_FOR_DYNACONF=str(tmpdir),
-        SETTINGS_MODULE_FOR_DYNACONF=str(settings_file))
+        SETTINGS_FILE_FOR_DYNACONF=str(settings_file))
 
     # Ensure overrides that happen via TOML plugin config load.
     assert settings.SERVER == "plugin2.example.com"
@@ -232,7 +232,7 @@ def test_load_nested_different_types(ext, tmpdir):
         silent=False,
         LOADERS_FOR_DYNACONF=False,
         ROOT_PATH_FOR_DYNACONF=str(tmpdir),
-        SETTINGS_MODULE_FOR_DYNACONF=str(settings_file)
+        SETTINGS_FILE_FOR_DYNACONF=str(settings_file)
     )
 
     assert settings.DEBUG is False
@@ -260,7 +260,7 @@ def test_load_nested_different_types_with_merge(tmpdir):
         silent=False,
         LOADERS_FOR_DYNACONF=False,
         ROOT_PATH_FOR_DYNACONF=str(tmpdir),
-        SETTINGS_MODULE_FOR_DYNACONF=str(settings_file),
+        SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
         MERGE_ENABLED_FOR_DYNACONF=True)
 
     assert settings.DEBUG is False

@@ -50,7 +50,7 @@ def test_validators(tmpdir):
 
     settings = LazySettings(
         ENV_FOR_DYNACONF='EXAMPLE',
-        SETTINGS_MODULE_FOR_DYNACONF=str(tmpfile),
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
         silent=True
     )
 
@@ -174,7 +174,7 @@ def test_validation_error(validator_instance, tmpdir):
 
     settings = LazySettings(
         ENV_FOR_DYNACONF='EXAMPLE',
-        SETTINGS_MODULE_FOR_DYNACONF=str(tmpfile),
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
         silent=True
     )
     settings.validators.register(validator_instance)
@@ -193,7 +193,7 @@ def test_no_reload_on_single_env(tmpdir, mocker):
 
     settings = LazySettings(
         ENV_FOR_DYNACONF='DEVELOPMENt',
-        SETTINGS_MODULE_FOR_DYNACONF=str(tmpfile),
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
     )
     using_env = mocker.patch.object(settings, "using_env")
 
