@@ -52,10 +52,10 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENV_SWITCHER        | str     | Variable used to change working env              | ENV_FOR_DYNACONF                                 | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV                      |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| GLOBAL_ENV          | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       || ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM                        |
-|                     |         | |                                                |                                                  || ENVVAR_PREFIX_FOR_DYNACONF=false                            |
-|                     |         | | Example:                                       |                                                  |                                                              |
-|                     |         | | If your program is called `MYPROGRAM`          |                                                  |                                                              |
+| ENVVAR_PREFIX       | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       || ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM  (loads MYPROGRAM_VAR) |
+|                     |         | |                                                |                                                  ||                                                             |
+|                     |         | | Example:                                       |                                                  || ENVVAR_PREFIX_FOR_DYNACONF=''         (loads _VAR)          |
+|                     |         | | If your program is called `MYPROGRAM`          |                                                  || ENVVAR_PREFIX_FOR_DYNACONF=false      (loads VAR)           |
 |                     |         | | you may want users to use `MYPROGRAM_FOO=bar`  |                                                  |                                                              |
 |                     |         | | instead of `DYNACONF_FOO=bar` on envvars.      |                                                  |                                                              |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
