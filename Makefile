@@ -14,7 +14,7 @@ test_examples:
 	cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources || exit 1
 	cd example/multiple_folders;pwd;python app.py | grep -c var2_prod || exit 1
 	cd example/toml_example/;pwd;python app.py | grep -c toml_example || exit 1
-	cd example/yaml_example/settings_module/;pwd;python app.py | grep -c yaml_example || exit 1
+	cd example/yaml_example/settings_file/;pwd;python app.py | grep -c yaml_example || exit 1
 	cd example/yaml_example/yaml_as_extra_config/;pwd;python app.py | grep -c yaml_as_extra_config || exit 1
 	cd example/flask_with_dotenv;pwd;flask routes | grep -c flask_with_dotenv || exit 1
 	cd example/flask_with_toml;pwd;flask routes | grep -c flask_with_toml || exit 1
@@ -30,12 +30,12 @@ test_examples:
 	cd example/get_fresh;pwd;python app.py
 	cd example/includes;pwd;python app.py
 	cd example/jenkins_secrets_file;pwd;python app.py
-	cd example/specific_settings_modules;pwd;python app.py
+	cd example/specific_settings_files;pwd;python app.py
 	cd example/django_example/;pwd;python manage.py test polls -v 2
 	cd example/django_example_compat/;pwd;python manage.py test polls -v 2
 	cd example/django_example/;pwd;PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
 	cd example/project_root/;pwd;rm -rf /tmp/dynaconf_project_root_test/settings.py;mkdir -p /tmp/dynaconf_project_root_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/dynaconf_project_root_test/settings.py;python app.py;rm -rf /tmp/dynaconf_project_root_test/
-	cd example/settings_module/;pwd;rm -rf /tmp/settings_module_test/settings.py;mkdir -p /tmp/settings_module_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/settings_module_test/settings.py;python app.py;rm -rf /tmp/settings_module_test/
+	cd example/settings_file/;pwd;rm -rf /tmp/settings_file_test/settings.py;mkdir -p /tmp/settings_file_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/settings_file_test/settings.py;python app.py;rm -rf /tmp/settings_file_test/
 	cd example/configure/;pwd;rm -rf /tmp/configure_test/settings.py;mkdir -p /tmp/configure_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/configure_test/settings.py;python app.py;rm -rf /tmp/configure_test/
 	
 	@echo '###############  Calling from outer folder  ###############'
@@ -50,7 +50,7 @@ test_examples:
 	python example/multiple_sources/app.py | grep -c multiple_sources || exit 1
 	python example/multiple_folders/app.py | grep -c var2_prod || exit 1
 	python example/toml_example/app.py | grep -c toml_example || exit 1
-	python example/yaml_example/settings_module/app.py | grep -c yaml_example || exit 1
+	python example/yaml_example/settings_file/app.py | grep -c yaml_example || exit 1
 	python example/yaml_example/yaml_as_extra_config/app.py | grep -c yaml_as_extra_config || exit 1
 	python example/validators/with_python/app.py | grep -c validator || exit 1
 	python example/toml_with_secrets/program.py | grep -c My5up3r53c4et || exit 1
@@ -59,7 +59,7 @@ test_examples:
 	python example/get_fresh/app.py
 	python example/includes/app.py
 	python example/jenkins_secrets_file/app.py
-	python example/specific_settings_modules/app.py
+	python example/specific_settings_files/app.py
 	python example/django_example/manage.py test polls -v 2
 	PYTHONPATH=example/django_example DJANGO_SETTINGS_MODULE=foo.settings python example/django_example/standalone_script.py
 	PYTHONPATH=example/django_example_compat DJANGO_SETTINGS_MODULE=foo.settings python example/django_example_compat/standalone_script.py
@@ -72,6 +72,7 @@ test_examples:
 	@echo '############ Issues  ##################'
 	cd example/issues/160_path_traversal_fixed;pwd;./test.sh
 	cd example/issues/166_renamed_global_env;pwd;python app.py
+	cd example/issues/169_renamed_settings_module;pwd;python app.py
 
 test_vault:
 	# @cd example/vault;pwd;python write.py

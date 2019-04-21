@@ -83,7 +83,7 @@ settings = dynaconf.DjangoDynaconf(
     __name__,
     ENVVAR_PREFIX_FOR_DYNACONF='PROJECTNAME',
     ENV_SWITCHER_FOR_DYNACONF='PROJECTNAME_ENV',
-    SETTINGS_MODULE_FOR_DYNACONF='/etc/projectname/settings.toml',
+    SETTINGS_FILE_FOR_DYNACONF='/etc/projectname/settings.toml',
     ENVVAR_FOR_DYNACONF='PROJECTNAME_SETTINGS',
     INCLUDES_FOR_DYNACONF=['/etc/projectname/plugins/*'],
 )

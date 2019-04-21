@@ -69,8 +69,8 @@ ENV_FOR_DYNACONF=staging python yourapp.py
 
 > NOTE: The settings files are optional. If it is not present, only the values from **environment variables** are used (**.env** file is also supported).
 
-Dynaconf will search for the settings files defined in `SETTINGS_MODULE_FOR_DYNACONF` which by default is a list containing combinations of **settings.{py|toml|json|ini|yaml}** and **.secrets.{py|toml|json|ini|yaml}**
-and dynaconf will try to find each one of those combinations, optionally it is possible to configure it to a different set of files e.g: `export SETTINGS_MODULE_FOR_DYNACONF='["myfilename.toml", "another.json"]'`, this value contains a list of relative or absolute paths, can be a toml-like list or a comma separated string and can be exported to `envvars`, write to `.env` file or passed directly to Dynaconf instance.
+Dynaconf will search for the settings files defined in `SETTINGS_FILE_FOR_DYNACONF` which by default is a list containing combinations of **settings.{py|toml|json|ini|yaml}** and **.secrets.{py|toml|json|ini|yaml}**
+and dynaconf will try to find each one of those combinations, optionally it is possible to configure it to a different set of files e.g: `export SETTINGS_FILE_FOR_DYNACONF='["myfilename.toml", "another.json"]'`, this value contains a list of relative or absolute paths, can be a toml-like list or a comma separated string and can be exported to `envvars`, write to `.env` file or passed directly to Dynaconf instance.
 
 > IMPORTANT: Dynaconf by default reads settings files using `utf-8` encoding, if you have settings files written in other encoding please set `ENCODING_FOR_DYNACONF` environment variable.
 
@@ -78,7 +78,7 @@ See more details in [configuration](configuration.html)
 
 ## Settings files location
 
-To find the files defined in `SETTINGS_MODULE_FOR_DYNACONF` the search will start at the path defined in `ROOT_PATH_FOR_DYNACONF` (if defined), then will recursively walk to its root and then will try the **folder where the called program is located** and then it will recursivelly try its parent directories **until the root parent is reached which can be File System `/` or the current working dir** then finally will try the **current working directory** as the last option.
+To find the files defined in `SETTINGS_FILE_FOR_DYNACONF` the search will start at the path defined in `ROOT_PATH_FOR_DYNACONF` (if defined), then will recursively walk to its root and then will try the **folder where the called program is located** and then it will recursivelly try its parent directories **until the root parent is reached which can be File System `/` or the current working dir** then finally will try the **current working directory** as the last option.
 
 Some people prefer to put settings in a subfolder so for each of the paths it will also search in a relative folder called `config/`.
 
@@ -173,14 +173,14 @@ BAR
 Dynaconf loads file in a overriding cascade loading order using the predefined order:
 
 1. First the `.env` file to read for [configuration](configuration.html) options
-2. Then the files defined in `SETTINGS_MODULE_FOR_DYNACONF` using the loaders defined in `CORE_LOADERS_FOR_DYNACONF`
+2. Then the files defined in `SETTINGS_FILE_FOR_DYNACONF` using the loaders defined in `CORE_LOADERS_FOR_DYNACONF`
 3. Then the external loaders like **Redis** or **Vault** if defined
 4. Then the loaders defined in `LOADERS_FOR_DYNACONF` 
     - Custom loaders
     - Environment variables loader (envvars prefixed with `DYNACONF_`)
 5. Then contents of `SECRETS_FOR_DYNACONF` filename if defined (useful for jenkins and other CI)
 
-The order can be changed by overriding the `SETTINGS_MODULE_FOR_DYNACONF` the `CORE_LOADERS_FOR_DYNACONF` and `LOADERS_FOR_DYNACONF` variables.
+The order can be changed by overriding the `SETTINGS_FILE_FOR_DYNACONF` the `CORE_LOADERS_FOR_DYNACONF` and `LOADERS_FOR_DYNACONF` variables.
 
 > **NOTE**: Dynaconf works in an **layered override** mode based on the above order, so if you have multiple file formats with conflicting keys defined, the precedence will be based on the loading order.
 > If you don want to have values like `lists` and `dicts` overwritten take a look on how to [merge existing values](usage.html#merging-existing-values)

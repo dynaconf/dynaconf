@@ -35,9 +35,9 @@ class LazySettings(LazyObject):
 
     Then when you first access a value, this will be set up and loaders will
     be executes looking for default config files or the file defined in
-    SETTINGS_MODULE_FOR_DYNACONF variable::
+    SETTINGS_FILE_FOR_DYNACONF variable::
 
-        >>> settings.SETTINGS_MODULE
+        >>> settings.SETTINGS_FILE_FOR_DYNACONF
 
     Or when you call::
 
@@ -173,7 +173,7 @@ class Settings(object):
 
         compat_kwargs(kwargs)
         if settings_module:
-            self.set('SETTINGS_MODULE_FOR_DYNACONF', settings_module)
+            self.set('SETTINGS_FILE_FOR_DYNACONF', settings_module)
         for key, value in kwargs.items():
             self.set(key, value)
         # execute loaders only after setting defaults got from kwargs
@@ -201,6 +201,10 @@ class Settings(object):
         self._deleted.add(name)
         if hasattr(self, name):
             super(Settings, self).__delattr__(name)
+
+    def __contains__(self, item):
+        "Respond to `item in settings`"
+        return item in self.store
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
@@ -448,13 +452,16 @@ class Settings(object):
         settings_module = parse_conf_data(
             os.environ.get(
                 self.ENVVAR_FOR_DYNACONF,
-                self.SETTINGS_MODULE_FOR_DYNACONF
+                self.SETTINGS_FILE_FOR_DYNACONF
             ),
             tomlfy=True
         )
         if settings_module != getattr(self, 'SETTINGS_MODULE', None):
             self.set('SETTINGS_MODULE', settings_module)
         return self.SETTINGS_MODULE
+
+    # Backwards compatibility see #169
+    settings_file = settings_module
 
     def setenv(self, env=None, clean=True, silent=True, filename=None):
         """Used to interactively change the env
@@ -764,7 +771,7 @@ class Settings(object):
             self.logger.warning(
                 "The use of YAML var is deprecated, please define multiple "
                 "filepaths instead: "
-                "e.g: SETTINGS_MODULE_FOR_DYNACONF = "
+                "e.g: SETTINGS_FILE_FOR_DYNACONF = "
                 "'settings.py,settings.yaml,settings.toml' or "
                 "INCLUDES_FOR_DYNACONF=['path.toml', 'folder/*']"
             )

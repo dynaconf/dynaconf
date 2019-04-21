@@ -245,7 +245,7 @@ jobs:
       pushd example\multiple_sources & cd & python app.py & popd
       pushd example\multiple_folders & cd & python app.py & popd
       pushd example\toml_example\ & cd & python app.py & popd
-      pushd example\yaml_example\settings_module\ & cd & python app.py & popd
+      pushd example\yaml_example\settings_file\ & cd & python app.py & popd
       pushd example\yaml_example\yaml_as_extra_config\ & cd & python app.py & popd
       pushd example\flask_with_dotenv & cd & flask routes & popd
       pushd example\flask_with_toml & cd & flask routes & popd
@@ -261,7 +261,7 @@ jobs:
       pushd example\get_fresh & cd & python app.py & popd
       pushd example\includes & cd & python app.py & popd
       pushd example\jenkins_secrets_file & cd & python app.py & popd
-      pushd example\specific_settings_modules & cd & python app.py & popd
+      pushd example\specific_settings_files & cd & python app.py & popd
       pushd example\django_example\ & cd & python manage.py test polls -v 2 & popd
       pushd example\django_example\ & cd & django-admin test polls -v 2 & popd
 

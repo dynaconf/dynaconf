@@ -29,7 +29,7 @@ def try_renamed(key, value, older_key, current_key):
 def get(key, default=None):
     value = os.environ.get(key.upper())
 
-    # compatibility renames before 1.x version
+    # compatibility with renamed variables
     for old, new in RENAMED_VARS.items():
         value = try_renamed(key, value, old, new)
 
@@ -73,10 +73,6 @@ def reload(*args, **kwargs):
 # pragma: no cover
 ROOT_PATH_FOR_DYNACONF = get('ROOT_PATH_FOR_DYNACONF', None)
 
-# Backwards compatibility PROJECT_ROOT is deprecated
-PROJECT_ROOT_FOR_DYNACONF = ROOT_PATH_FOR_DYNACONF
-
-
 # Default settings file
 default_paths = (
     'settings.py,.secrets.py,'
@@ -86,8 +82,7 @@ default_paths = (
     '.secrets.ini,.secrets.conf,.secrets.properties,'
     'settings.json,.secrets.json'
 )
-SETTINGS_MODULE_FOR_DYNACONF = get('SETTINGS_MODULE_FOR_DYNACONF',
-                                   default_paths)
+SETTINGS_FILE_FOR_DYNACONF = get('SETTINGS_FILE_FOR_DYNACONF', default_paths)
 
 # # ENV SETTINGS
 # # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`
@@ -112,9 +107,6 @@ DEFAULT_ENV_FOR_DYNACONF = get('DEFAULT_ENV_FOR_DYNACONF', 'DEFAULT')
 # This namespace is used for files and also envvars
 ENVVAR_PREFIX_FOR_DYNACONF = get('ENVVAR_PREFIX_FOR_DYNACONF', 'DYNACONF')
 
-# Backwards compatibility see pr #166
-GLOBAL_ENV_FOR_DYNACONF = ENVVAR_PREFIX_FOR_DYNACONF
-
 # The default encoding to open settings files
 ENCODING_FOR_DYNACONF = get('ENCODING_FOR_DYNACONF', 'utf-8')
 
@@ -123,7 +115,7 @@ MERGE_ENABLED_FOR_DYNACONF = get('MERGE_ENABLED_FOR_DYNACONF', False)
 
 # The env var specifying settings module
 ENVVAR_FOR_DYNACONF = get('ENVVAR_FOR_DYNACONF',
-                          'SETTINGS_MODULE_FOR_DYNACONF')
+                          'SETTINGS_FILE_FOR_DYNACONF')
 
 # Default values for redis configs
 default_redis = {
@@ -210,3 +202,8 @@ INCLUDES_FOR_DYNACONF = get('INCLUDES_FOR_DYNACONF', [])
 
 # Files to skip if found on search tree
 SKIP_FILES_FOR_DYNACONF = get('SKIP_FILES_FOR_DYNACONF', [])
+
+
+# Backwards compatibility with renamed variables
+for old, new in RENAMED_VARS.items():
+    setattr(sys.modules[__name__], old, locals()[new])
