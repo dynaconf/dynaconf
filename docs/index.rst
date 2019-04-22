@@ -60,6 +60,10 @@ Release v\ |version|. (`Installation`_)
     :alt: GitHub last commit
     :target: https://github.com/rochacbruno/dynaconf/commits/master
 
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :alt: Code Style Black
+    :target: https://github.com/ambv/black
+
 Dynaconf - Easy and Powerful Settings Configuration for Python
 --------------------------------------------------------------
 
