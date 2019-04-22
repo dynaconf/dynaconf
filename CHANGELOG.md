@@ -2,6 +2,170 @@ Changelog
 =========
 
 
+2.0.1 (2019-04-22)
+------------------
+- Release version 2.0.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (17):
+            Release version 2.0.0
+            Added Django explicit mode to docs (#149)
+            HOTIX: Django doc
+            Logger is now cached (removed logging import time overhead)
+            Update issue templates
+            Adjusts issue templates
+            Fix Typo in issue template
+            fix #160 - invoking directory should not be search breaking point.
+            Add explicit call to main() on cli.py (#165)
+            Generate coverage.xml file (#167)
+            Fix #166 renamed GLOBAL_ENV_ to ENVVAR_PREFIX_ (#168)
+            Fix #169 renamed SETTINGS_MODULE_ to SETTINGS_FILE_ (#170)
+            HOTFIX config.md on docs [skip ci] (#171)
+            Fix some open file descriptors on exampls and tests (#172)
+            Fix #151 setup pre-commit and black (#173)
+            Add CONTRIBUTING.md, conrtib isntructions and Black badge (#174)
+            Fix release script
+
+      David Moreau Simard (1):
+            Fix typos in bash export examples
+
+      Jan Willhaus (2):
+            Skip reloading envs for validators that only apply to current_env (#162)
+            Fix #163 Allow disabling env prefix (#164)
+- Fix release script. [Bruno Rocha]
+- Add CONTRIBUTING.md, conrtib isntructions and Black badge (#174)
+  [Bruno Rocha]
+- Fix #151 setup pre-commit and black (#173) [Bruno Rocha]
+
+  * Add pre-commit to makefile
+
+  * Fix #151 setup pre-commit and black
+- Fix some open file descriptors on exampls and tests (#172) [Bruno
+  Rocha]
+- HOTFIX config.md on docs [skip ci] (#171) [Bruno Rocha]
+- Fix #169 renamed SETTINGS_MODULE_ to SETTINGS_FILE_ (#170) [Bruno
+  Rocha]
+
+  Backwards compatibility maintained!
+- Fix #166 renamed GLOBAL_ENV_ to ENVVAR_PREFIX_ (#168) [Bruno Rocha]
+
+  * Fix #166 renamed GLOBAL_ENV_ to ENVVAR_PREFIX_
+
+  See #166
+
+  * Added django compat example
+- Generate coverage.xml file (#167) [Bruno Rocha]
+- Add explicit call to main() on cli.py (#165) [Bruno Rocha]
+
+  To use click-web tool the module should be able to be explicitly called. `python -m dynaconf.cli`
+- Fix #163 Allow disabling env prefix (#164) [Jan Willhaus, janw
+  <mail@janwillhaus.de>    * Update docs for use of False instead of
+  none]
+
+  * Allow setting GLOBAL_ENV to "" or NoneType to remove prefix
+
+  * Allow for underscore-only prefix with empty string GLOBAL_ENV
+
+  * Test cases for the different GLOBAL_ENV settings
+
+  * Update docs, add usage example
+
+  * Apply suggestions from code review
+- Skip reloading envs for validators that only apply to current_env
+  (#162) [Jan Willhaus]
+
+  * Simplify control flow for single-env use-cases
+
+  * Ensure uppercase env/current_env
+
+  * Add test not reloading env with validation in same env
+
+  * Pep8 compliance
+
+  * Change mock call assertions for support in Py3.5
+- Fix #160 - invoking directory should not be search breaking point.
+  [Bruno Rocha]
+
+  Search should stop at breaking point  only if ROOT_PATH is defined
+- Fix Typo in issue template. [Bruno Rocha]
+- Adjusts issue templates. [Bruno Rocha]
+- Update issue templates. [Bruno Rocha]
+- Logger is now cached (removed logging import time overhead) [Bruno
+  Rocha]
+
+  Debugged using:
+
+  `python3.7 -X importtime -c 'import app'` and `python3.7 -X importtime -c 'import dynaconf'`
+
+  Found that the tries to import `logzero` were consuming 0.1us (not so much, but we dont want it)
+
+  removed logzero, cached logger using lru_cache (that means that if loglevel changes, log changes)
+
+  - imporved docs and badges.
+- Fix typos in bash export examples. [David Moreau Simard]
+- HOTIX: Django doc. [Bruno Rocha]
+- Added Django explicit mode to docs (#149) [Bruno Rocha]
+- Release version 2.0.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Aaron DeVore (1):
+            GH-111: Fix MERGE_ENABLED merging settings with themselves
+
+      Bruno Rocha (21):
+            Merge branch 'jperras-merge-multiple-settings-files'
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
+            Update dynaconf/utils/boxing.py
+            Update dynaconf/utils/boxing.py
+            Add release script and CHANGELOG in place of history.
+            Release version 1.2.0
+            Tox is now part of pre-publish command
+            Drop Python 3.4
+            Release version 1.2.1
+            add top contributors
+            Fix #129 on settings file, single keys should be case insensitive.
+            Fix #125 settings_module not being set on .configure()
+            Fix #127 add configurable yaml loader method, default to full_load
+            Fix #122 allow disable of core loaders, added examples.
+            Fix #117 add support for extra secrets file (like for jenkins CI)
+            Fix #110 add docs for dynaconf_include
+            Add dynaconf_include examples
+            Set up CI with Azure Pipelines (#142)
+            Add dynaconf_merge fucntionality for dict and list settings. (#139)
+            Preparing for 2.0.0
+
+      Byungjin Park (1):
+            Fix typo
+
+      Jaepil Koh (1):
+            Update django.md
+
+      Joel Perras (3):
+            Allow dotted-path based setting of configuration key/value pairs.
+            Handle nested includes in settings files.
+            Remove extraneous lines.
+
+      Mantas (3):
+            Add INSTANCE_FOR_DYNACONF and --instance
+            Remove mocker fixture
+            Python 3.4 has different error message
+
+      Matthias (1):
+            Fix small typo in README.md
+
+      Pete Savage (1):
+            Fix exponential slow down when loader is run multiple times
+
+      Raoul Snyman (1):
+            Add environments into the path in Vault so that the same Vault server can be used for multiple environments
+
+      mspinelli (2):
+            fixed infinite recursion caused by copy()
+            add tests for dynabox fix
+
+
 2.0.0 (2019-04-09)
 ------------------
 - Release version 2.0.0. [Bruno Rocha]
