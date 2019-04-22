@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from dynaconf import settings
 
 print(settings.MYSQL_HOST)  # noqa

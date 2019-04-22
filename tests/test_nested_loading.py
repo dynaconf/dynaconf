@@ -1,4 +1,5 @@
 import pytest
+
 from dynaconf.base import LazySettings
 
 
@@ -36,7 +37,13 @@ SERVER = "prod.example.com"
 
 MIXED_MERGE = """
 [default]
-dynaconf_include = ["plugin1.toml", "plugin2.json", "plugin2.yaml", "plugin2.ini", "plugin2.py"]
+dynaconf_include = [
+    "plugin1.toml",
+    "plugin2.json",
+    "plugin2.yaml",
+    "plugin2.ini",
+    "plugin2.py"
+]
 DEBUG = false
 SERVER = "base.example.com"
 PORT = 6666
@@ -160,11 +167,11 @@ NESTED_1 = {
 """
 
 PLUGIN_TEXT = {
-    'toml': TOML_PLUGIN_TEXT,
-    'yaml': YAML_PLUGIN_TEXT,
-    'json': JSON_PLUGIN_TEXT,
-    'ini': INI_PLUGIN_TEXT,
-    'py':  PY_PLUGIN_TEXT
+    "toml": TOML_PLUGIN_TEXT,
+    "yaml": YAML_PLUGIN_TEXT,
+    "json": JSON_PLUGIN_TEXT,
+    "ini": INI_PLUGIN_TEXT,
+    "py": PY_PLUGIN_TEXT,
 }
 
 
@@ -178,7 +185,8 @@ def test_invalid_include_path(tmpdir):
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
-        SETTINGS_FILE_FOR_DYNACONF=str(settings_file))
+        SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
+    )
 
     # Ensure overrides not happened
     assert settings.SERVER == "base.example.com"
@@ -202,7 +210,8 @@ def test_load_nested_toml(tmpdir):
         silent=False,
         LOADERS_FOR_DYNACONF=False,
         ROOT_PATH_FOR_DYNACONF=str(tmpdir),
-        SETTINGS_FILE_FOR_DYNACONF=str(settings_file))
+        SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
+    )
 
     # Ensure overrides that happen via TOML plugin config load.
     assert settings.SERVER == "plugin2.example.com"
@@ -214,7 +223,7 @@ def test_load_nested_toml(tmpdir):
     assert settings.PLUGIN_2_SPECIAL is True
 
 
-@pytest.mark.parametrize('ext', ['toml', 'json', 'yaml', 'ini', 'py'])
+@pytest.mark.parametrize("ext", ["toml", "json", "yaml", "ini", "py"])
 def test_load_nested_different_types(ext, tmpdir):
     """Load a TOML file that includes other various settings file types."""
 
@@ -232,7 +241,7 @@ def test_load_nested_different_types(ext, tmpdir):
         silent=False,
         LOADERS_FOR_DYNACONF=False,
         ROOT_PATH_FOR_DYNACONF=str(tmpdir),
-        SETTINGS_FILE_FOR_DYNACONF=str(settings_file)
+        SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
     )
 
     assert settings.DEBUG is False
@@ -251,7 +260,7 @@ def test_load_nested_different_types_with_merge(tmpdir):
     toml_plugin_file = tmpdir.join("plugin1.toml")
     toml_plugin_file.write(TOML_PLUGIN)
 
-    for ext in ['toml', 'json', 'yaml', 'ini', 'py']:
+    for ext in ["toml", "json", "yaml", "ini", "py"]:
         json_plugin_file = tmpdir.join("plugin2.{0}".format(ext))
         json_plugin_file.write(PLUGIN_TEXT[ext])
 
@@ -261,7 +270,8 @@ def test_load_nested_different_types_with_merge(tmpdir):
         LOADERS_FOR_DYNACONF=False,
         ROOT_PATH_FOR_DYNACONF=str(tmpdir),
         SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
-        MERGE_ENABLED_FOR_DYNACONF=True)
+        MERGE_ENABLED_FOR_DYNACONF=True,
+    )
 
     assert settings.DEBUG is False
     assert settings.DATABASE_URI == "{0}.example.com".format(ext)
@@ -274,5 +284,5 @@ def test_load_nested_different_types_with_merge(tmpdir):
     assert settings.NESTED_1.nested_2.base == 2
     assert settings.NESTED_1.nested_2.nested_3.base == 3
     assert settings.NESTED_1.nested_2.nested_3.nested_4.base == 4
-    for ext in ['toml', 'json', 'yaml', 'ini', 'py']:
+    for ext in ["toml", "json", "yaml", "ini", "py"]:
         assert settings.NESTED_1.nested_2.nested_3.nested_4[ext] == 5

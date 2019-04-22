@@ -1,4 +1,5 @@
 import os
+
 from dynaconf import LazySettings
 
 
@@ -16,18 +17,18 @@ DASHBOARD=false
 
 def test_feature_flag(tmpdir):
 
-    tmpfile = tmpdir.join('settings.toml')
+    tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 
     settings = LazySettings(SETTINGS_FILE_FOR_DYNACONF=str(tmpfile))
 
-    assert settings.flag('dashboard', 'premiumuser') is True
-    assert settings.flag('dashboard', 'simpleuser') is False
-    assert settings.flag('dashboard') is False
+    assert settings.flag("dashboard", "premiumuser") is True
+    assert settings.flag("dashboard", "simpleuser") is False
+    assert settings.flag("dashboard") is False
 
     # ensure data is fresh
-    os.environ['DYNACONF_DASHBOARD'] = "@bool on"
-    assert settings.flag('dashboard') is True
+    os.environ["DYNACONF_DASHBOARD"] = "@bool on"
+    assert settings.flag("dashboard") is True
 
-    os.environ['DYNACONF_DASHBOARD'] = "False"
-    assert settings.flag('dashboard') is False
+    os.environ["DYNACONF_DASHBOARD"] = "False"
+    assert settings.flag("dashboard") is False

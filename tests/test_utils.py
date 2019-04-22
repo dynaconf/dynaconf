@@ -1,28 +1,31 @@
-# coding: utf-8
 import io
 import os
+
 from dynaconf import default_settings
-from dynaconf.utils import missing, Missing, object_merge
-from dynaconf.utils.parse_conf import unparse_conf_data, parse_conf_data
+from dynaconf.utils import Missing
+from dynaconf.utils import missing
+from dynaconf.utils import object_merge
 from dynaconf.utils.files import find_file
+from dynaconf.utils.parse_conf import parse_conf_data
+from dynaconf.utils.parse_conf import unparse_conf_data
 
 
 def test_unparse():
     """Assert bare types are reversed cast"""
-    assert unparse_conf_data('teste') == 'teste'
-    assert unparse_conf_data(123) == '@int 123'
-    assert unparse_conf_data(123.4) == '@float 123.4'
-    assert unparse_conf_data(False) == '@bool False'
-    assert unparse_conf_data(True) == '@bool True'
-    assert unparse_conf_data(['a', 'b']) == '@json ["a", "b"]'
-    assert unparse_conf_data({'name': 'Bruno'}) == '@json {"name": "Bruno"}'
+    assert unparse_conf_data("teste") == "teste"
+    assert unparse_conf_data(123) == "@int 123"
+    assert unparse_conf_data(123.4) == "@float 123.4"
+    assert unparse_conf_data(False) == "@bool False"
+    assert unparse_conf_data(True) == "@bool True"
+    assert unparse_conf_data(["a", "b"]) == '@json ["a", "b"]'
+    assert unparse_conf_data({"name": "Bruno"}) == '@json {"name": "Bruno"}'
     assert unparse_conf_data(None) == "@none "
 
 
 def test_cast_bool(settings):
     """Covers https://github.com/rochacbruno/dynaconf/issues/14"""
     assert parse_conf_data(False) is False
-    assert settings.get('SIMPLE_BOOL', cast='@bool') is False
+    assert settings.get("SIMPLE_BOOL", cast="@bool") is False
 
 
 def test_find_file(tmpdir):
@@ -41,20 +44,19 @@ def test_find_file(tmpdir):
 
     curr_dir = tmpdir
     dirs = []
-    for f in ['child1', 'child2', 'child3', 'child4']:
+    for f in ["child1", "child2", "child3", "child4"]:
         curr_dir = os.path.join(str(curr_dir), f)
         dirs.append(curr_dir)
         os.mkdir(curr_dir)
 
     child4 = dirs[-1]
 
-    assert find_file('file-does-not-exist') == ''
+    assert find_file("file-does-not-exist") == ""
 
     # now place a .env file a few levels up and make sure it's found
-    filename = os.path.join(str(child4), '.env')
+    filename = os.path.join(str(child4), ".env")
     with io.open(
-        filename, 'w',
-        encoding=default_settings.ENCODING_FOR_DYNACONF
+        filename, "w", encoding=default_settings.ENCODING_FOR_DYNACONF
     ) as f:
         f.write("TEST=test\n")
 
@@ -62,31 +64,32 @@ def test_find_file(tmpdir):
 
     # skip the inner child4/.env and force the find of /tmp.../.env
     assert find_file(
-        project_root=str(child4),
-        skip_files=[filename]
-    ) == os.path.join(str(tmpdir), '.env')
+        project_root=str(child4), skip_files=[filename]
+    ) == os.path.join(str(tmpdir), ".env")
 
 
 def test_disable_cast(monkeypatch):
     # this casts for int
-    assert parse_conf_data('@int 42') == 42
+    assert parse_conf_data("@int 42") == 42
     # now gives pure string
     with monkeypatch.context() as m:
-        m.setenv('AUTO_CAST_FOR_DYNACONF', 'off')
-        assert parse_conf_data('@int 42') == '@int 42'
+        m.setenv("AUTO_CAST_FOR_DYNACONF", "off")
+        assert parse_conf_data("@int 42") == "@int 42"
 
 
 def test_tomlfy():
     assert parse_conf_data("1", tomlfy=True) == 1
     assert parse_conf_data("true", tomlfy=True) is True
-    assert parse_conf_data("'true'", tomlfy=True) == 'true'
+    assert parse_conf_data("'true'", tomlfy=True) == "true"
     assert parse_conf_data('"42"', tomlfy=True) == "42"
     assert parse_conf_data("[1, 32, 3]", tomlfy=True) == [1, 32, 3]
     assert parse_conf_data("[1.1, 32.1, 3.3]", tomlfy=True) == [1.1, 32.1, 3.3]
-    assert parse_conf_data("['a', 'b', 'c']", tomlfy=True) == ['a', 'b', 'c']
+    assert parse_conf_data("['a', 'b', 'c']", tomlfy=True) == ["a", "b", "c"]
     assert parse_conf_data("[true, false]", tomlfy=True) == [True, False]
-    assert parse_conf_data("{key='value', v=1}", tomlfy=True
-                           ) == {'key': 'value', 'v': 1}
+    assert parse_conf_data("{key='value', v=1}", tomlfy=True) == {
+        "key": "value",
+        "v": 1,
+    }
 
 
 def test_missing_sentinel():
@@ -106,34 +109,34 @@ def test_missing_sentinel():
     # But the explict typecasting of missing to a bool should evaluate to False
     assert bool(missing) is False
 
-    assert str(missing) == '<dynaconf.missing>'
+    assert str(missing) == "<dynaconf.missing>"
 
 
 def test_merge_existing_list():
-    existing = ['bruno', 'karla']
+    existing = ["bruno", "karla"]
     object_merge(existing, existing)
     # calling twice the same object does not duplicate
-    assert existing == ['bruno', 'karla']
+    assert existing == ["bruno", "karla"]
 
-    new = ['erik', 'bruno']
+    new = ["erik", "bruno"]
     object_merge(existing, new)
-    assert new == ['bruno', 'karla', 'erik', 'bruno']
+    assert new == ["bruno", "karla", "erik", "bruno"]
 
 
 def test_merge_existing_list_unique():
-    existing = ['bruno', 'karla']
-    new = ['erik', 'bruno']
+    existing = ["bruno", "karla"]
+    new = ["erik", "bruno"]
     object_merge(existing, new, unique=True)
-    assert new == ['karla', 'erik', 'bruno']
+    assert new == ["karla", "erik", "bruno"]
 
 
 def test_merge_existing_dict():
-    existing = {'host': 'localhost', 'port': 666}
-    new = {'user': 'admin'}
+    existing = {"host": "localhost", "port": 666}
+    new = {"user": "admin"}
 
     # calling with same data has no effect
     object_merge(existing, existing)
-    assert existing == {'host': 'localhost', 'port': 666}
+    assert existing == {"host": "localhost", "port": 666}
 
     object_merge(existing, new)
-    assert new == {'host': 'localhost', 'port': 666, 'user': 'admin'}
+    assert new == {"host": "localhost", "port": 666, "user": "admin"}

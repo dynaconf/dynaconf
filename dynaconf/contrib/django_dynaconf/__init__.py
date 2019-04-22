@@ -24,27 +24,25 @@ On your projects root folder now you can start as::
     DJANGO_ALLOWED_HOSTS='@json ["localhost"]' \
     python manage.py runserver
 """
-
 import sys
 import warnings
 
-
 from django import conf
+
 from .dynaconf_django_conf import settings
 
 
 warnings.warn(
-    'Django Integration for Dynaconf has been updated '
-    'you are still using the old style which is deprecated '
-    'please upgrade the django integration '
-    'read more in https://dynaconf.readthedocs.io/en/latest/guides/django.html'
+    "Django Integration for Dynaconf has been updated "
+    "you are still using the old style which is deprecated "
+    "please upgrade the django integration "
+    "read more in https://dynaconf.readthedocs.io/en/latest/guides/django.html"
 )
 
 
 class Wrapper(object):
-
     def __getattribute__(self, name):
-        if name == 'settings':
+        if name == "settings":
             return settings
         else:
             return getattr(conf, name)
@@ -52,4 +50,4 @@ class Wrapper(object):
 
 # This implementation is recommended by Guido Van Rossum
 # https://mail.python.org/pipermail/python-ideas/2012-May/014969.html
-sys.modules['django.conf'] = Wrapper()
+sys.modules["django.conf"] = Wrapper()

@@ -20,14 +20,16 @@ On your projects root folder now you can start as::
     DJANGO_ALLOWED_HOSTS='["localhost"]' \
     python manage.py runserver
 """
+import inspect
 import os
 import sys
-import inspect
+
 import dynaconf
 
 try:  # pragma: no cover
     from django import conf
     from django.conf import settings as django_settings
+
     django_installed = True
 except ImportError:  # pragma: no cover
     django_installed = False
@@ -44,7 +46,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         django_settings_module = sys.modules[django_settings_module_name]
     except KeyError:
         django_settings_module = sys.modules[
-            os.environ['DJANGO_SETTINGS_MODULE']
+            os.environ["DJANGO_SETTINGS_MODULE"]
         ]
 
     settings_file = os.path.abspath(django_settings_module.__file__)
@@ -55,28 +57,30 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         k: v for k, v in django_settings_module.__dict__.items() if k.isupper()
     }
     options.update(kwargs)
-    options.setdefault('SKIP_FILES_FOR_DYNACONF', [settings_file])
-    options.setdefault('ROOT_PATH_FOR_DYNACONF', _root_path)
-    options.setdefault('ENVVAR_PREFIX_FOR_DYNACONF', 'DJANGO')
-    options.setdefault('ENV_SWITCHER_FOR_DYNACONF', 'DJANGO_ENV')
+    options.setdefault("SKIP_FILES_FOR_DYNACONF", [settings_file])
+    options.setdefault("ROOT_PATH_FOR_DYNACONF", _root_path)
+    options.setdefault("ENVVAR_PREFIX_FOR_DYNACONF", "DJANGO")
+    options.setdefault("ENV_SWITCHER_FOR_DYNACONF", "DJANGO_ENV")
     lazy_settings = dynaconf.LazySettings(**options)
 
     # 2) Set all settings back to django_settings_module for 'django check'
     lazy_settings.populate_obj(django_settings_module)
 
     # 3) Bind `settings` and `DYNACONF`
-    setattr(django_settings_module, 'settings', lazy_settings)
-    setattr(django_settings_module, 'DYNACONF', lazy_settings)
+    setattr(django_settings_module, "settings", lazy_settings)
+    setattr(django_settings_module, "DYNACONF", lazy_settings)
 
     # 4) keep django original settings
     dj = {}
     for key in dir(django_settings):
-        if key.isupper() and (
-            key != 'SETTINGS_MODULE'
-        ) and key not in lazy_settings.store:
-            lazy_settings.logger.debug('Django default setting: %s', key)
+        if (
+            key.isupper()
+            and (key != "SETTINGS_MODULE")
+            and key not in lazy_settings.store
+        ):
+            lazy_settings.logger.debug("Django default setting: %s", key)
             dj[key] = getattr(django_settings, key, None)
-        dj['ORIGINAL_SETTINGS_MODULE'] = django_settings.SETTINGS_MODULE
+        dj["ORIGINAL_SETTINGS_MODULE"] = django_settings.SETTINGS_MODULE
 
     lazy_settings.update(dj)
 
@@ -86,25 +90,25 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         # lazy_settings = conf.settings.lazy_settings
 
         def __getattribute__(self, name):
-            if name == 'settings':
+            if name == "settings":
                 return lazy_settings
             else:
                 return getattr(conf, name)
 
     # This implementation is recommended by Guido Van Rossum
     # https://mail.python.org/pipermail/python-ideas/2012-May/014969.html
-    sys.modules['django.conf'] = Wrapper()
+    sys.modules["django.conf"] = Wrapper()
 
     # 6) Enable standalone scripts to use Dynaconf
     # This is for when `django.conf.settings` is imported directly
     # on external `scripts` (out of Django's lifetime)
     for stack_item in reversed(inspect.stack()):
         if isinstance(
-            stack_item.frame.f_globals.get('settings'), conf.LazySettings
+            stack_item.frame.f_globals.get("settings"), conf.LazySettings
         ):
-            stack_item.frame.f_globals['settings'] = lazy_settings
+            stack_item.frame.f_globals["settings"] = lazy_settings
 
-    lazy_settings.logger.debug('Django Dynaconf: Finished loading')
+    lazy_settings.logger.debug("Django Dynaconf: Finished loading")
     return lazy_settings
 
 

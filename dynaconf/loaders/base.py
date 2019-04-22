@@ -1,6 +1,6 @@
-# coding: utf-8
 import io
 import os
+
 from dynaconf.utils import raw_logger
 
 
@@ -19,8 +19,9 @@ class BaseLoader(object):
     :param string_reader: {[callable]} -- [reads string return dict]
     """
 
-    def __init__(self, obj, env, identifier, extensions,
-                 file_reader, string_reader):
+    def __init__(
+        self, obj, env, identifier, extensions, file_reader, string_reader
+    ):
         """Instantiates a loader for different sources"""
         self.obj = obj
         self.env = env or obj.current_env
@@ -35,7 +36,7 @@ class BaseLoader(object):
             logger.warning(
                 "%(ident)s support is not installed in your environment. "
                 "`pip install dynaconf[%(ident)s]`",
-                {'ident': identifier}
+                {"ident": identifier},
             )
         obj._not_installed_warnings.append(identifier)
 
@@ -52,7 +53,7 @@ class BaseLoader(object):
             return
 
         if not isinstance(filename, (list, tuple)):
-            split_files = filename.split(',')
+            split_files = filename.split(",")
             if all([f.endswith(self.extensions) for f in split_files]):  # noqa
                 files = split_files  # it is a ['file.ini', ...]
             else:  # it is a single ini string
@@ -63,11 +64,11 @@ class BaseLoader(object):
         self.obj._loaded_files.extend(files)
 
         # add the [default] env
-        env_list = [self.obj.get('DEFAULT_ENV_FOR_DYNACONF')]
+        env_list = [self.obj.get("DEFAULT_ENV_FOR_DYNACONF")]
 
         # compatibility with older versions that still uses [dynaconf] as
         # [default] env
-        global_env = self.obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
+        global_env = self.obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
         if global_env not in env_list:
             env_list.append(global_env)
 
@@ -76,7 +77,7 @@ class BaseLoader(object):
             env_list.append(self.env)
 
         # add the [global] env
-        env_list.append('GLOBAL')
+        env_list.append("GLOBAL")
 
         # load all envs
         self._read(files, env_list, silent, key)
@@ -87,15 +88,19 @@ class BaseLoader(object):
                 try:
                     with io.open(
                         source_file,
-                        encoding=self.obj.get('ENCODING_FOR_DYNACONF', 'utf-8')
+                        encoding=self.obj.get(
+                            "ENCODING_FOR_DYNACONF", "utf-8"
+                        ),
                     ) as open_file:
                         source_data = self.file_reader(open_file)
-                    self.obj.logger.debug('{}_loader: {}'.format(
-                        self.identifier, source_file))
+                    self.obj.logger.debug(
+                        "{}_loader: {}".format(self.identifier, source_file)
+                    )
                 except IOError:
                     self.obj.logger.debug(
-                        '{}_loader: {} (Ignored, file not Found)'.format(
-                            self.identifier, source_file)
+                        "{}_loader: {} (Ignored, file not Found)".format(
+                            self.identifier, source_file
+                        )
                     )
                     source_data = None
             else:
@@ -107,9 +112,7 @@ class BaseLoader(object):
 
             # env name is checked in lower
             source_data = {
-                k.lower(): value
-                for k, value
-                in source_data.items()
+                k.lower(): value for k, value in source_data.items()
             }
 
             for env in envs:
@@ -118,17 +121,22 @@ class BaseLoader(object):
                 try:
                     data = source_data[env.lower()]
                 except KeyError:
-                    if env not in (self.obj.get('ENVVAR_PREFIX_FOR_DYNACONF'),
-                                   'GLOBAL'):
-                        message = '%s_loader: %s env not defined in %s' % (
-                            self.identifier, env, source_file)
+                    if env not in (
+                        self.obj.get("ENVVAR_PREFIX_FOR_DYNACONF"),
+                        "GLOBAL",
+                    ):
+                        message = "%s_loader: %s env not defined in %s" % (
+                            self.identifier,
+                            env,
+                            source_file,
+                        )
                         if silent:
                             self.obj.logger.warning(message)
                         else:
                             raise KeyError(message)
                     continue
 
-                if env != self.obj.get('DEFAULT_ENV_FOR_DYNACONF'):
+                if env != self.obj.get("DEFAULT_ENV_FOR_DYNACONF"):
                     identifier = "{0}_{1}".format(self.identifier, env.lower())
                 else:
                     identifier = self.identifier
@@ -138,14 +146,14 @@ class BaseLoader(object):
                 if key:
                     key = key.upper()
 
-                is_secret = 'secret' in source_file
+                is_secret = "secret" in source_file
 
                 self.obj.logger.debug(
-                    '{}_loader: {}[{}]{}'.format(
+                    "{}_loader: {}[{}]{}".format(
                         self.identifier,
                         os.path.split(source_file)[-1],
                         env.lower(),
-                        list(data.keys()) if is_secret else data
+                        list(data.keys()) if is_secret else data,
                     )
                 )
 
@@ -158,5 +166,5 @@ class BaseLoader(object):
                         key,
                         data.get(key),
                         loader_identifier=identifier,
-                        is_secret=is_secret
+                        is_secret=is_secret,
                     )

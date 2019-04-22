@@ -13,8 +13,8 @@ print(settings.DATABASES)
 
 # Dynaconf methods
 print(settings.current_env)
-print(settings.get('BASE_DIR'))
-print(settings.get('DATABASES.default.ENGINE'))
+print(settings.get("BASE_DIR"))
+print(settings.get("DATABASES.default.ENGINE"))
 print(settings.DATABASES.default.ENGINE)
 
 # App settings (defined in `settings.yaml`)
@@ -31,21 +31,21 @@ print(settings.ENVVAR)
 
 # test case
 expected = {
-    'DATABASES': {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': 'db.sqlite3'
+    "DATABASES": {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": "db.sqlite3",
         }
     },
-    'current_env': 'PRODUCTION',
-    'DATABASES.DEFAULT.ENGINE': 'django.db.backends.sqlite3',
-    'SERVER': 'prodserver.com',
-    'USERNAME': 'admin_user_from_env',
-    'ENVVAR': 'this value exists only in .env',
+    "current_env": "PRODUCTION",
+    "DATABASES.DEFAULT.ENGINE": "django.db.backends.sqlite3",
+    "SERVER": "prodserver.com",
+    "USERNAME": "admin_user_from_env",
+    "ENVVAR": "this value exists only in .env",
 }
 
 for k, v in expected.items():
-    print('Is', k, 'equals', v, '?')
+    print("Is", k, "equals", v, "?")
     if k.isupper():
         assert settings.get(k) == v
     else:

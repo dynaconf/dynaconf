@@ -113,11 +113,13 @@ set -u
 
 # Create a new commit and annotated tag.
 git add dynaconf/VERSION
+commit_message="$(git shortlog "${old_version}.." | sed 's/^./    &/')"
 git commit \
     --message "Release version ${new_version}" \
     --message "Shortlog of commits since last release:" \
-    --message "$(git shortlog "${old_version}.." | sed 's/^./    &/')"
-git tag --annotate --message "Dynaconf ${new_version}" "${new_version}"
+    --message "${commit_message}"
+git tag --annotate "${new_version}" --message "Dynaconf ${new_version}" \
+    --message "${commit_message}"
 
 # Update changelog file
 gitchangelog > CHANGELOG.md
@@ -127,7 +129,7 @@ git commit --amend --no-edit
 fmt <<EOF
 
 This script has made only local changes: it has updated the dynaconf/VERSION file,
-generated the CHANGELOG.md file and a new commit, tagged the new commit, and performed 
+generated the CHANGELOG.md file and a new commit, tagged the new commit, and performed
 a few checks along the way. If you are confident in these changes, you can publish them with
 commands like the following:
 EOF

@@ -1,11 +1,13 @@
 import os
+
 import pytest
+
 from dynaconf import LazySettings
 from dynaconf.loaders.yaml_loader import load
 
 settings = LazySettings(
-    ENV_FOR_DYNACONF='PRODUCTION',
-    ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__))
+    ENV_FOR_DYNACONF="PRODUCTION",
+    ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
 )
 
 
@@ -51,43 +53,43 @@ YAMLS = [YAML, YAML2]
 def test_load_from_yaml():
     """Assert loads from YAML string"""
     load(settings, filename=YAML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
     assert settings.PORT == 8080
-    assert settings.ALIST == ['item1', 'item2', 23]
-    assert settings.SERVICE['url'] == 'service.com'
-    assert settings.SERVICE.url == 'service.com'
+    assert settings.ALIST == ["item1", "item2", 23]
+    assert settings.SERVICE["url"] == "service.com"
+    assert settings.SERVICE.url == "service.com"
     assert settings.SERVICE.port == 80
-    assert settings.SERVICE.auth.password == 'qwerty'
+    assert settings.SERVICE.auth.password == "qwerty"
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=YAML, env='DEVELOPMENT')
-    assert settings.HOST == 'devserver.com'
+    load(settings, filename=YAML, env="DEVELOPMENT")
+    assert settings.HOST == "devserver.com"
     load(settings, filename=YAML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
 
 
 def test_load_from_multiple_yaml():
     """Assert loads from YAML string"""
     load(settings, filename=YAMLS)
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == "otheryaml.com"
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
     assert settings.PORT == 8080
-    assert settings.SERVICE['url'] == 'service.com'
-    assert settings.SERVICE.url == 'service.com'
+    assert settings.SERVICE["url"] == "service.com"
+    assert settings.SERVICE.url == "service.com"
     assert settings.SERVICE.port == 80
-    assert settings.SERVICE.auth.password == 'qwerty'
+    assert settings.SERVICE.auth.password == "qwerty"
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=YAMLS, env='DEVELOPMENT')
+    load(settings, filename=YAMLS, env="DEVELOPMENT")
     assert settings.PORT == 8080
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == "otheryaml.com"
     load(settings, filename=YAMLS)
-    assert settings.HOST == 'otheryaml.com'
+    assert settings.HOST == "otheryaml.com"
     assert settings.PASSWORD == 123456
-    load(settings, filename=YAML, env='DEVELOPMENT')
+    load(settings, filename=YAML, env="DEVELOPMENT")
     assert settings.PORT == 8080
-    assert settings.HOST == 'devserver.com'
+    assert settings.HOST == "devserver.com"
     load(settings, filename=YAML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
     assert settings.PASSWORD == 11111
 
 
@@ -99,12 +101,12 @@ def test_no_filename_is_none():
 def test_key_error_on_invalid_env():
     """Assert error raised if env is not found in YAML"""
     with pytest.raises(KeyError):
-        load(settings, filename=YAML, env='FOOBAR', silent=False)
+        load(settings, filename=YAML, env="FOOBAR", silent=False)
 
 
 def test_no_key_error_on_invalid_env():
     """Assert error raised if env is not found in YAML"""
-    load(settings, filename=YAML, env='FOOBAR', silent=True)
+    load(settings, filename=YAML, env="FOOBAR", silent=True)
 
 
 def test_load_single_key():
@@ -114,10 +116,10 @@ def test_load_single_key():
        bar: blaz
        zaz: naz
     """
-    load(settings, filename=yaml, env='FOO', key='bar')
-    assert settings.BAR == 'blaz'
-    assert settings.exists('BAR') is True
-    assert settings.exists('ZAZ') is False
+    load(settings, filename=yaml, env="FOO", key="bar")
+    assert settings.BAR == "blaz"
+    assert settings.exists("BAR") is True
+    assert settings.exists("ZAZ") is False
 
 
 def test_extra_yaml():
@@ -127,9 +129,9 @@ def test_extra_yaml():
     example:
        helloexample: world
     """
-    settings.set('YAML', yaml)
-    settings.execute_loaders(env='EXAMPLE')
-    assert settings.HELLOEXAMPLE == 'world'
+    settings.set("YAML", yaml)
+    settings.execute_loaders(env="EXAMPLE")
+    assert settings.HELLOEXAMPLE == "world"
 
 
 # def test_multi_extra_yaml():
@@ -159,30 +161,30 @@ def test_multiple_filenames():
 
 def test_cleaner():
     load(settings, filename=YAML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
     assert settings.PORT == 8080
-    assert settings.ALIST == ['item1', 'item2', 23]
-    assert settings.SERVICE['url'] == 'service.com'
-    assert settings.SERVICE.url == 'service.com'
+    assert settings.ALIST == ["item1", "item2", 23]
+    assert settings.SERVICE["url"] == "service.com"
+    assert settings.SERVICE.url == "service.com"
     assert settings.SERVICE.port == 80
-    assert settings.SERVICE.auth.password == 'qwerty'
+    assert settings.SERVICE.auth.password == "qwerty"
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=YAML, env='DEVELOPMENT')
-    assert settings.HOST == 'devserver.com'
+    load(settings, filename=YAML, env="DEVELOPMENT")
+    assert settings.HOST == "devserver.com"
     load(settings, filename=YAML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
 
     settings.clean()
     with pytest.raises(AttributeError):
-        assert settings.HOST == 'prodserver.com'
+        assert settings.HOST == "prodserver.com"
 
 
 def test_using_env(tmpdir):
     load(settings, filename=YAML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
 
     tmpfile = tmpdir.mkdir("sub").join("test_using_env.yaml")
     tmpfile.write(YAML)
-    with settings.using_env('DEVELOPMENT', filename=str(tmpfile)):
-        assert settings.HOST == 'devserver.com'
-    assert settings.HOST == 'prodserver.com'
+    with settings.using_env("DEVELOPMENT", filename=str(tmpfile)):
+        assert settings.HOST == "devserver.com"
+    assert settings.HOST == "prodserver.com"

@@ -1,10 +1,9 @@
 import pytest
+
 from dynaconf import LazySettings
 from dynaconf.loaders.toml_loader import load
 
-settings = LazySettings(
-    ENV_FOR_DYNACONF='PRODUCTION',
-)
+settings = LazySettings(ENV_FOR_DYNACONF="PRODUCTION")
 
 
 TOML = """
@@ -52,43 +51,43 @@ TOMLS = [TOML, TOML2]
 def test_load_from_toml():
     """Assert loads from TOML string"""
     load(settings, filename=TOML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
     assert settings.PORT == 8080
-    assert settings.ALIST == ['item1', 'item2', 23]
-    assert settings.SERVICE['url'] == 'service.com'
-    assert settings.SERVICE.url == 'service.com'
+    assert settings.ALIST == ["item1", "item2", 23]
+    assert settings.SERVICE["url"] == "service.com"
+    assert settings.SERVICE.url == "service.com"
     assert settings.SERVICE.port == 80
-    assert settings.SERVICE.auth.password == 'qwerty'
+    assert settings.SERVICE.auth.password == "qwerty"
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=TOML, env='DEVELOPMENT')
-    assert settings.HOST == 'devserver.com'
+    load(settings, filename=TOML, env="DEVELOPMENT")
+    assert settings.HOST == "devserver.com"
     load(settings, filename=TOML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
 
 
 def test_load_from_multiple_toml():
     """Assert loads from TOML string"""
     load(settings, filename=TOMLS)
-    assert settings.HOST == 'othertoml.com'
+    assert settings.HOST == "othertoml.com"
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
     assert settings.PORT == 8080
-    assert settings.SERVICE['url'] == 'service.com'
-    assert settings.SERVICE.url == 'service.com'
+    assert settings.SERVICE["url"] == "service.com"
+    assert settings.SERVICE.url == "service.com"
     assert settings.SERVICE.port == 80
-    assert settings.SERVICE.auth.password == 'qwerty'
+    assert settings.SERVICE.auth.password == "qwerty"
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=TOMLS, env='DEVELOPMENT')
+    load(settings, filename=TOMLS, env="DEVELOPMENT")
     assert settings.PORT == 8080
-    assert settings.HOST == 'othertoml.com'
+    assert settings.HOST == "othertoml.com"
     load(settings, filename=TOMLS)
-    assert settings.HOST == 'othertoml.com'
+    assert settings.HOST == "othertoml.com"
     assert settings.PASSWORD == 123456
-    load(settings, filename=TOML, env='DEVELOPMENT')
+    load(settings, filename=TOML, env="DEVELOPMENT")
     assert settings.PORT == 8080
-    assert settings.HOST == 'devserver.com'
+    assert settings.HOST == "devserver.com"
     load(settings, filename=TOML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
     assert settings.PASSWORD == 11111
 
 
@@ -100,12 +99,12 @@ def test_no_filename_is_none():
 def test_key_error_on_invalid_env():
     """Assert error raised if env is not found in TOML"""
     with pytest.raises(KeyError):
-        load(settings, filename=TOML, env='FOOBAR', silent=False)
+        load(settings, filename=TOML, env="FOOBAR", silent=False)
 
 
 def test_no_key_error_on_invalid_env():
     """Assert error raised if env is not found in TOML"""
-    load(settings, filename=TOML, env='FOOBAR', silent=True)
+    load(settings, filename=TOML, env="FOOBAR", silent=True)
 
 
 def test_load_single_key():
@@ -118,16 +117,16 @@ def test_load_single_key():
     lowerkey = 'hello'
     UPPERKEY = 'world'
     """
-    load(settings, filename=toml, env='FOO', key='bar')
-    assert settings.BAR == 'blaz'
-    assert settings.exists('BAR') is True
-    assert settings.exists('ZAZ') is False
-    load(settings, filename=toml, env='FOO', key='ZAZ')
-    assert settings.ZAZ == 'naz'
-    load(settings, filename=toml, env='FOO', key='LOWERKEY')
-    assert settings.LOWERKEY == 'hello'
-    load(settings, filename=toml, env='FOO', key='upperkey')
-    assert settings.UPPERKEY == 'world'
+    load(settings, filename=toml, env="FOO", key="bar")
+    assert settings.BAR == "blaz"
+    assert settings.exists("BAR") is True
+    assert settings.exists("ZAZ") is False
+    load(settings, filename=toml, env="FOO", key="ZAZ")
+    assert settings.ZAZ == "naz"
+    load(settings, filename=toml, env="FOO", key="LOWERKEY")
+    assert settings.LOWERKEY == "hello"
+    load(settings, filename=toml, env="FOO", key="upperkey")
+    assert settings.UPPERKEY == "world"
 
 
 def test_empty_value():
@@ -140,30 +139,30 @@ def test_multiple_filenames():
 
 def test_cleaner():
     load(settings, filename=TOML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
     assert settings.PORT == 8080
-    assert settings.ALIST == ['item1', 'item2', 23]
-    assert settings.SERVICE['url'] == 'service.com'
-    assert settings.SERVICE.url == 'service.com'
+    assert settings.ALIST == ["item1", "item2", 23]
+    assert settings.SERVICE["url"] == "service.com"
+    assert settings.SERVICE.url == "service.com"
     assert settings.SERVICE.port == 80
-    assert settings.SERVICE.auth.password == 'qwerty'
+    assert settings.SERVICE.auth.password == "qwerty"
     assert settings.SERVICE.auth.test == 1234
-    load(settings, filename=TOML, env='DEVELOPMENT')
-    assert settings.HOST == 'devserver.com'
+    load(settings, filename=TOML, env="DEVELOPMENT")
+    assert settings.HOST == "devserver.com"
     load(settings, filename=TOML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
 
     settings.clean()
     with pytest.raises(AttributeError):
-        assert settings.HOST == 'prodserver.com'
+        assert settings.HOST == "prodserver.com"
 
 
 def test_using_env(tmpdir):
     load(settings, filename=TOML)
-    assert settings.HOST == 'prodserver.com'
+    assert settings.HOST == "prodserver.com"
 
     tmpfile = tmpdir.mkdir("sub").join("test_using_env.toml")
     tmpfile.write(TOML)
-    with settings.using_env('DEVELOPMENT', filename=str(tmpfile)):
-        assert settings.HOST == 'devserver.com'
-    assert settings.HOST == 'prodserver.com'
+    with settings.using_env("DEVELOPMENT", filename=str(tmpfile)):
+        assert settings.HOST == "devserver.com"
+    assert settings.HOST == "prodserver.com"

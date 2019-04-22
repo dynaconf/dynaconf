@@ -1,29 +1,27 @@
-# coding: utf-8
-import os
 import glob
 import importlib
+import os
 from contextlib import contextmanager
 
 from dynaconf import default_settings
-from dynaconf.loaders import (
-    default_loader,
-    settings_loader,
-    yaml_loader,
-    enable_external_loaders
-)
-from dynaconf.utils.files import find_file
-from dynaconf.utils.functional import LazyObject, empty
-from dynaconf.utils.parse_conf import converters, parse_conf_data, true_values
-from dynaconf.utils import (
-    BANNER,
-    compat_kwargs,
-    deduplicate,
-    raw_logger,
-    object_merge,
-    missing
-)
-from dynaconf.validator import ValidatorList
+from dynaconf.loaders import default_loader
+from dynaconf.loaders import enable_external_loaders
+from dynaconf.loaders import settings_loader
+from dynaconf.loaders import yaml_loader
+from dynaconf.utils import BANNER
+from dynaconf.utils import compat_kwargs
+from dynaconf.utils import deduplicate
+from dynaconf.utils import missing
+from dynaconf.utils import object_merge
+from dynaconf.utils import raw_logger
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils.files import find_file
+from dynaconf.utils.functional import empty
+from dynaconf.utils.functional import LazyObject
+from dynaconf.utils.parse_conf import converters
+from dynaconf.utils.parse_conf import parse_conf_data
+from dynaconf.utils.parse_conf import true_values
+from dynaconf.validator import ValidatorList
 
 
 class LazySettings(LazyObject):
@@ -96,10 +94,12 @@ class LazySettings(LazyObject):
                 "or belongs to different env" % name
             )
         if (
-            name.isupper() and
-            (self._wrapped._fresh or
-             name in self._wrapped.FRESH_VARS_FOR_DYNACONF) and
-            name not in dir(default_settings)
+            name.isupper()
+            and (
+                self._wrapped._fresh
+                or name in self._wrapped.FRESH_VARS_FOR_DYNACONF
+            )
+            and name not in dir(default_settings)
         ):
             return self._wrapped.get_fresh(name)
         return getattr(self._wrapped, name)
@@ -114,12 +114,13 @@ class LazySettings(LazyObject):
         """Initial setup, run once."""
         default_settings.reload()
         environment_variable = self._kwargs.get(
-            'ENVVAR_FOR_DYNACONF', default_settings.ENVVAR_FOR_DYNACONF)
+            "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
+        )
         settings_module = os.environ.get(environment_variable)
         self._wrapped = Settings(
             settings_module=settings_module, **self._kwargs
         )
-        self.logger.debug('Lazy Settings _setup ...')
+        self.logger.debug("Lazy Settings _setup ...")
 
     def configure(self, settings_module=None, **kwargs):
         """
@@ -131,12 +132,13 @@ class LazySettings(LazyObject):
         """
         default_settings.reload()
         environment_var = self._kwargs.get(
-            'ENVVAR_FOR_DYNACONF', default_settings.ENVVAR_FOR_DYNACONF)
+            "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
+        )
         settings_module = settings_module or os.environ.get(environment_var)
         compat_kwargs(kwargs)
         kwargs.update(self._kwargs)
         self._wrapped = Settings(settings_module=settings_module, **kwargs)
-        self.logger.debug('Lazy Settings configured ...')
+        self.logger.debug("Lazy Settings configured ...")
 
     @property
     def configured(self):
@@ -173,12 +175,12 @@ class Settings(object):
 
         compat_kwargs(kwargs)
         if settings_module:
-            self.set('SETTINGS_FILE_FOR_DYNACONF', settings_module)
+            self.set("SETTINGS_FILE_FOR_DYNACONF", settings_module)
         for key, value in kwargs.items():
             self.set(key, value)
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
-        self.logger.debug('Initializing Dynaconf (%s)', self._store)
+        self.logger.debug("Initializing Dynaconf (%s)", self._store)
         self.execute_loaders()
 
     def __call__(self, *args, **kwargs):
@@ -210,7 +212,7 @@ class Settings(object):
         """Allow getting variables as dict keys `settings['KEY']`"""
         value = self.get(item)
         if value is None:
-            raise KeyError('{0} does not exists'.format(item))
+            raise KeyError("{0} does not exists".format(item))
         return value
 
     def __setitem__(self, key, value):
@@ -234,7 +236,7 @@ class Settings(object):
         """
         Perform dotted key lookups and keep track of where we are.
         """
-        split_key = dotted_key.split('.')
+        split_key = dotted_key.split(".")
         name, keys = split_key[0], split_key[1:]
         result = self.get(name, default=default, **kwargs)
         self._memoized = result
@@ -248,8 +250,9 @@ class Settings(object):
         # If we've still got key elements to traverse, let's do that.
         return self._dotted_get(".".join(keys), default=default, **kwargs)
 
-    def get(self, key, default=None, cast=None, fresh=False,
-            dotted_lookup=True):
+    def get(
+        self, key, default=None, cast=None, fresh=False, dotted_lookup=True
+    ):
         """
         Get a value from settings store, this is the prefered way to access::
 
@@ -265,18 +268,19 @@ class Settings(object):
         """
         key = key.upper()
 
-        if '.' in key and dotted_lookup:
-            return self._dotted_get(dotted_key=key, default=default, cast=cast,
-                                    fresh=fresh)
+        if "." in key and dotted_lookup:
+            return self._dotted_get(
+                dotted_key=key, default=default, cast=cast, fresh=fresh
+            )
 
         if key in self._deleted:
             return default
 
         if (
-            (fresh or self._fresh or
-                key in getattr(self, 'FRESH_VARS_FOR_DYNACONF', ())) and
-            key not in dir(default_settings)
-        ):
+            fresh
+            or self._fresh
+            or key in getattr(self, "FRESH_VARS_FOR_DYNACONF", ())
+        ) and key not in dir(default_settings):
             self.unset(key)
             self.execute_loaders(key=key)
 
@@ -333,19 +337,19 @@ class Settings(object):
 
     def as_bool(self, key):
         """Partial method for get with bool cast"""
-        return self.get(key, cast='@bool')
+        return self.get(key, cast="@bool")
 
     def as_int(self, key):
         """Partial method for get with int cast"""
-        return self.get(key, cast='@int')
+        return self.get(key, cast="@int")
 
     def as_float(self, key):
         """Partial method for get with float cast"""
-        return self.get(key, cast='@float')
+        return self.get(key, cast="@float")
 
     def as_json(self, key):
         """Partial method for get with json cast"""
-        return self.get(key, cast='@json')
+        return self.get(key, cast="@json")
 
     @property
     def logger(self):  # pragma: no cover
@@ -443,6 +447,7 @@ class Settings(object):
             return self.loaded_envs[-1]
         except IndexError:
             return self.ENV_FOR_DYNACONF
+
     # compat
     current_namespace = current_env
 
@@ -451,13 +456,12 @@ class Settings(object):
         """Gets SETTINGS_MODULE variable"""
         settings_module = parse_conf_data(
             os.environ.get(
-                self.ENVVAR_FOR_DYNACONF,
-                self.SETTINGS_FILE_FOR_DYNACONF
+                self.ENVVAR_FOR_DYNACONF, self.SETTINGS_FILE_FOR_DYNACONF
             ),
-            tomlfy=True
+            tomlfy=True,
         )
-        if settings_module != getattr(self, 'SETTINGS_MODULE', None):
-            self.set('SETTINGS_MODULE', settings_module)
+        if settings_module != getattr(self, "SETTINGS_MODULE", None):
+            self.set("SETTINGS_MODULE", settings_module)
         return self.SETTINGS_MODULE
 
     # Backwards compatibility see #169
@@ -490,9 +494,9 @@ class Settings(object):
         env = env or self.ENV_FOR_DYNACONF
 
         if not isinstance(env, str):
-            raise AttributeError('env should be a string')
+            raise AttributeError("env should be a string")
         if "_" in env:
-            raise AttributeError('env should not contains _')
+            raise AttributeError("env should not contains _")
 
         self.logger.debug("env switching to: %s", env)
 
@@ -522,7 +526,7 @@ class Settings(object):
         """
         key = key.strip().upper()
         if key not in dir(default_settings) and key not in self._defaults:
-            self.logger.debug('Unset %s', key)
+            self.logger.debug("Unset %s", key)
             delattr(self, key)
             self.store.pop(key, None)
 
@@ -538,7 +542,7 @@ class Settings(object):
 
         data = DynaBox(default_box=True)
         tree = data
-        split_keys = dotted_key.split('.')
+        split_keys = dotted_key.split(".")
 
         for k in split_keys[:-1]:
             tree = tree.setdefault(k, {})
@@ -548,8 +552,15 @@ class Settings(object):
 
         self.update(data=data, **kwargs)
 
-    def set(self, key, value, loader_identifier=None, tomlfy=False,
-            dotted_lookup=True, is_secret=False):
+    def set(
+        self,
+        key,
+        value,
+        loader_identifier=None,
+        tomlfy=False,
+        dotted_lookup=True,
+        is_secret=False,
+    ):
         """Set a value storing references for the loader
 
         :param key: The key to store
@@ -559,12 +570,10 @@ class Settings(object):
         :param is_secret: Bool define if secret values is hidden on logs.
         """
 
-        if '.' in key and dotted_lookup is True:
+        if "." in key and dotted_lookup is True:
             return self._dotted_set(
-                key,
-                value,
-                loader_identifier=loader_identifier,
-                tomlfy=tomlfy)
+                key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
+            )
 
         value = parse_conf_data(value, tomlfy=tomlfy)
         key = key.strip().upper()
@@ -589,8 +598,14 @@ class Settings(object):
             # a default value and goes away only when explicitly unset
             self._defaults[key] = value
 
-    def update(self, data=None, loader_identifier=None,
-               tomlfy=False, is_secret=False, **kwargs):
+    def update(
+        self,
+        data=None,
+        loader_identifier=None,
+        tomlfy=False,
+        is_secret=False,
+        **kwargs
+    ):
         """
         Update values in the current settings object without saving in stores::
 
@@ -612,48 +627,48 @@ class Settings(object):
         data = data or {}
         data.update(kwargs)
         for key, value in data.items():
-            self.set(key, value, loader_identifier=loader_identifier,
-                     tomlfy=tomlfy, is_secret=is_secret)
+            self.set(
+                key,
+                value,
+                loader_identifier=loader_identifier,
+                tomlfy=tomlfy,
+                is_secret=is_secret,
+            )
 
     def _merge_before_set(self, key, existing, value, is_secret):
         """Merge the new value being set with the existing value before set"""
 
         def _log_before_merging(_value):
             self.logger.debug(
-                'Merging existing %s: %s with new: %s',
-                key,
-                existing,
-                _value
+                "Merging existing %s: %s with new: %s", key, existing, _value
             )
 
         def _log_after_merge(_value):
-            self.logger.debug(
-                '%s merged to %s',
-                key,
-                _value
-            )
+            self.logger.debug("%s merged to %s", key, _value)
 
-        global_merge = getattr(self, 'MERGE_ENABLED_FOR_DYNACONF', False)
+        global_merge = getattr(self, "MERGE_ENABLED_FOR_DYNACONF", False)
 
         if isinstance(value, dict):
             local_merge = value.pop(
-                'dynaconf_merge',
-                value.pop('dynaconf_merge_unique', None)
+                "dynaconf_merge", value.pop("dynaconf_merge_unique", None)
             )
             if global_merge or local_merge:
-                safe_value = {k: '***' for k in value} if is_secret else value
+                safe_value = {k: "***" for k in value} if is_secret else value
                 _log_before_merging(safe_value)
                 object_merge(existing, value)
-                safe_value = {
-                    k: ('***' if k in safe_value else v)
-                    for k, v
-                    in value.items()
-                } if is_secret else value
+                safe_value = (
+                    {
+                        k: ("***" if k in safe_value else v)
+                        for k, v in value.items()
+                    }
+                    if is_secret
+                    else value
+                )
                 _log_after_merge(safe_value)
 
         if isinstance(value, (list, tuple)):
             local_merge = (
-                'dynaconf_merge' in value or 'dynaconf_merge_unique' in value
+                "dynaconf_merge" in value or "dynaconf_merge_unique" in value
             )
             if global_merge or local_merge:
                 value = list(value)
@@ -661,21 +676,21 @@ class Settings(object):
 
                 if local_merge:
                     try:
-                        value.remove('dynaconf_merge')
+                        value.remove("dynaconf_merge")
                     except ValueError:  # EAFP
-                        value.remove('dynaconf_merge_unique')
+                        value.remove("dynaconf_merge_unique")
                         unique = True
 
                 original = set(value)
                 _log_before_merging(
-                    ['***' for item in value] if is_secret else value
+                    ["***" for item in value] if is_secret else value
                 )
                 object_merge(existing, value, unique=unique)
-                safe_value = [
-                    '***' if item in original else item
-                    for item
-                    in value
-                ] if is_secret else value
+                safe_value = (
+                    ["***" if item in original else item for item in value]
+                    if is_secret
+                    else value
+                )
                 _log_after_merge(safe_value)
 
         return value
@@ -684,7 +699,7 @@ class Settings(object):
     def loaders(self):  # pragma: no cover
         """Return available loaders"""
         if self.LOADERS_FOR_DYNACONF in (None, 0, "0", "false", False):
-            self.logger.info('No loader defined')
+            self.logger.info("No loader defined")
             return []
 
         if not self._loaders:
@@ -711,44 +726,45 @@ class Settings(object):
             default_loader(self, self._defaults)
         env = (env or self.current_env).upper()
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
-        settings_loader(self, env=env, silent=silent, key=key,
-                        filename=filename)
+        settings_loader(
+            self, env=env, silent=silent, key=key, filename=filename
+        )
         self.load_extra_yaml(env, silent, key)  # DEPRECATED
         enable_external_loaders(self)
         for loader in self.loaders:
-            self.logger.debug('Dynaconf executing: %s', loader.__name__)
+            self.logger.debug("Dynaconf executing: %s", loader.__name__)
             loader.load(self, env, silent=silent, key=key)
         self.load_includes(env, silent=silent, key=key)
-        self.logger.debug('Loaded Files: %s', deduplicate(self._loaded_files))
+        self.logger.debug("Loaded Files: %s", deduplicate(self._loaded_files))
 
     def load_includes(self, env, silent, key):
         """Do we have any nested includes we need to process?"""
-        includes = self.get('DYNACONF_INCLUDE', [])
-        includes.extend(self.get('INCLUDES_FOR_DYNACONF', []))
+        includes = self.get("DYNACONF_INCLUDE", [])
+        includes.extend(self.get("INCLUDES_FOR_DYNACONF", []))
         if includes:
-            self.logger.debug('Found %s includes to process', includes)
+            self.logger.debug("Found %s includes to process", includes)
             already_loaded = set()
             for include in includes:
-                self.logger.debug('Processing include %s', include)
+                self.logger.debug("Processing include %s", include)
                 included_filename = os.path.join(self._root_path, include)
-                self.logger.debug('Include path is %s', included_filename)
+                self.logger.debug("Include path is %s", included_filename)
                 # Handle possible *.globs sorted alphanumeric
                 for path in sorted(glob.glob(included_filename)):
-                    self.logger.debug('Loading %s', path)
+                    self.logger.debug("Loading %s", path)
                     if path in already_loaded:  # pragma: no cover
-                        self.logger.debug('Skipping %s, already loaded', path)
+                        self.logger.debug("Skipping %s, already loaded", path)
                         continue
                     settings_loader(
                         obj=self,
                         env=env,
                         silent=silent,
                         key=key,
-                        filename=path
+                        filename=path,
                     )
                     already_loaded.add(path)
             if not already_loaded:
                 self.logger.warning(
-                    'Not able to locate the files %s to include', includes
+                    "Not able to locate the files %s to include", includes
                 )
 
     @property
@@ -758,7 +774,7 @@ class Settings(object):
             return self.ROOT_PATH_FOR_DYNACONF
         elif self._loaded_files:  # called once
             root_path = os.path.dirname(self._loaded_files[0])
-            self.set('ROOT_PATH_FOR_DYNACONF', root_path)
+            self.set("ROOT_PATH_FOR_DYNACONF", root_path)
             return root_path
 
     def load_extra_yaml(self, env, silent, key):
@@ -767,7 +783,7 @@ class Settings(object):
         .. deprecated:: 1.0.0
             Use multiple settings or INCLUDES_FOR_DYNACONF files instead.
         """
-        if self.get('YAML') is not None:
+        if self.get("YAML") is not None:
             self.logger.warning(
                 "The use of YAML var is deprecated, please define multiple "
                 "filepaths instead: "
@@ -776,33 +792,30 @@ class Settings(object):
                 "INCLUDES_FOR_DYNACONF=['path.toml', 'folder/*']"
             )
             yaml_loader.load(
-                self, env=env,
-                filename=self.find_file(self.get('YAML')),
+                self,
+                env=env,
+                filename=self.find_file(self.get("YAML")),
                 silent=silent,
-                key=key
+                key=key,
             )
 
     def path_for(self, *args):
         """Path containing _root_path"""
         if args and args[0].startswith(os.path.sep):
             return os.path.join(*args)
-        return os.path.join(
-            self._root_path or os.getcwd(),
-            *args
-        )
+        return os.path.join(self._root_path or os.getcwd(), *args)
 
     def find_file(self, *args, **kwargs):
-        kwargs.setdefault('project_root', self._root_path)
+        kwargs.setdefault("project_root", self._root_path)
         kwargs.setdefault(
-            'skip_files',
-            self.get('SKIP_FILES_FOR_DYNACONF', [])
+            "skip_files", self.get("SKIP_FILES_FOR_DYNACONF", [])
         )
         return find_file(*args, **kwargs)
 
     @property
     def validators(self):
         """Gets or creates validator wrapper"""
-        if not hasattr(self, '_validators'):
+        if not hasattr(self, "_validators"):
             self._validators = ValidatorList(self)
         return self._validators
 

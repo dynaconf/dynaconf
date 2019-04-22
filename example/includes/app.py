@@ -1,16 +1,17 @@
 from dynaconf import settings
 
 assert settings.DYNACONF_INCLUDE == [
-    'configs/*', 'this_is_not_loaded.toml'
+    "configs/*",
+    "this_is_not_loaded.toml",
 ], settings.DYNACONF_INCLUDE
 assert settings.SETTINGS_VAR is True
-assert settings.LASTFILE == 'configs/plugin4.py'
+assert settings.LASTFILE == "configs/plugin4.py"
 assert settings.MERGEABLE == {
-    'plugin1': True,
-    'plugin2': True,
-    'plugin3': True,
-    'plugin4': True,
-    'settings': True
+    "plugin1": True,
+    "plugin2": True,
+    "plugin3": True,
+    "plugin4": True,
+    "settings": True,
 }
 assert settings.PLUGIN1_VAR is True
 assert settings.PLUGIN2_VAR is True

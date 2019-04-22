@@ -1,11 +1,11 @@
-# coding: utf-8
 import io
-from pathlib import Path
-from dynaconf import default_settings
-from dynaconf.loaders.base import BaseLoader
-from dynaconf.constants import JSON_EXTENSIONS
-from dynaconf.utils import object_merge
 import json
+from pathlib import Path
+
+from dynaconf import default_settings
+from dynaconf.constants import JSON_EXTENSIONS
+from dynaconf.loaders.base import BaseLoader
+from dynaconf.utils import object_merge
 
 try:  # pragma: no cover
     import commentjson
@@ -24,7 +24,9 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :param filename: Optional custom filename to load
     :return: None
     """
-    if obj.get('COMMENTJSON_ENABLED_FOR_DYNACONF') and commentjson:  # pragma: no cover  # noqa
+    if (
+        obj.get("COMMENTJSON_ENABLED_FOR_DYNACONF") and commentjson
+    ):  # pragma: no cover  # noqa
         file_reader = commentjson.load
         string_reader = commentjson.loads
     else:
@@ -34,10 +36,10 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     loader = BaseLoader(
         obj=obj,
         env=env,
-        identifier='json',
+        identifier="json",
         extensions=JSON_EXTENSIONS,
         file_reader=file_reader,
-        string_reader=string_reader
+        string_reader=string_reader,
     )
     loader.load(filename=filename, key=key, silent=silent)
 
@@ -52,13 +54,13 @@ def write(settings_path, settings_data, merge=True):
     settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover
         with io.open(
-            str(settings_path),
-            encoding=default_settings.ENCODING_FOR_DYNACONF
+            str(settings_path), encoding=default_settings.ENCODING_FOR_DYNACONF
         ) as open_file:
             object_merge(json.load(open_file), settings_data)
 
     with io.open(
-        str(settings_path), 'w',
-        encoding=default_settings.ENCODING_FOR_DYNACONF
+        str(settings_path),
+        "w",
+        encoding=default_settings.ENCODING_FOR_DYNACONF,
     ) as open_file:
         json.dump(settings_data, open_file)

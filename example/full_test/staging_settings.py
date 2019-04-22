@@ -1,1 +1,1 @@
-PYVAR="Come from staging_settings.py"
+PYVAR = "Come from staging_settings.py"

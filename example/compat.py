@@ -19,12 +19,12 @@ for old, new in RENAMED_VARS.items():
 # 0 given a full old-style configured setting
 settings = LazySettings(
     DYNACONF_NAMESPACE="FOO",
-    DYNACONF_SETTINGS_MODULE='/tmp/foo.toml',
-    PROJECT_ROOT='/tmp/',
+    DYNACONF_SETTINGS_MODULE="/tmp/foo.toml",
+    PROJECT_ROOT="/tmp/",
     DYNACONF_SILENT_ERRORS=False,
-    DYNACONF_ALWAYS_FRESH_VARS=['baz', 'zaz', 'caz'],
-    BASE_NAMESPACE_FOR_DYNACONF='original',
-    GLOBAL_ENV_FOR_DYNACONF='RAZAMANAZ'
+    DYNACONF_ALWAYS_FRESH_VARS=["baz", "zaz", "caz"],
+    BASE_NAMESPACE_FOR_DYNACONF="original",
+    GLOBAL_ENV_FOR_DYNACONF="RAZAMANAZ",
 )
 
 # 1 Ensure all renamed vars exists in object
@@ -48,21 +48,21 @@ for old, new in RENAMED_VARS.items():
     )
 
 settings = LazySettings(
-    DYNACONF_NAMESPACE='FOO',
-    DYNACONF_SETTINGS_MODULE='foo.py',
-    PROJECT_ROOT='/tmp',
+    DYNACONF_NAMESPACE="FOO",
+    DYNACONF_SETTINGS_MODULE="foo.py",
+    PROJECT_ROOT="/tmp",
     DYNACONF_SILENT_ERRORS=True,
-    DYNACONF_ALWAYS_FRESH_VARS=['BAR'],
-    GLOBAL_ENV_FOR_DYNACONF='BLARG'
+    DYNACONF_ALWAYS_FRESH_VARS=["BAR"],
+    GLOBAL_ENV_FOR_DYNACONF="BLARG",
 )
 
 
-assert settings.ENV_FOR_DYNACONF == 'FOO'
-assert settings.SETTINGS_FILE_FOR_DYNACONF == 'foo.py'
-assert settings.ROOT_PATH_FOR_DYNACONF == '/tmp'
+assert settings.ENV_FOR_DYNACONF == "FOO"
+assert settings.SETTINGS_FILE_FOR_DYNACONF == "foo.py"
+assert settings.ROOT_PATH_FOR_DYNACONF == "/tmp"
 assert settings.SILENT_ERRORS_FOR_DYNACONF is True
-assert settings.FRESH_VARS_FOR_DYNACONF == ['BAR']
-assert settings.ENVVAR_PREFIX_FOR_DYNACONF == 'BLARG'
+assert settings.FRESH_VARS_FOR_DYNACONF == ["BAR"]
+assert settings.ENVVAR_PREFIX_FOR_DYNACONF == "BLARG"
 
 print(settings.ENV_FOR_DYNACONF)
 print(settings.SETTINGS_FILE_FOR_DYNACONF)
@@ -72,19 +72,19 @@ print(settings.FRESH_VARS_FOR_DYNACONF)
 
 
 settings = LazySettings(
-    NAMESPACE_FOR_DYNACONF='FOO',
-    SETTINGS_MODULE='foo.py',
-    PROJECT_ROOT_FOR_DYNACONF='/tmp',
+    NAMESPACE_FOR_DYNACONF="FOO",
+    SETTINGS_MODULE="foo.py",
+    PROJECT_ROOT_FOR_DYNACONF="/tmp",
     DYNACONF_SILENT_ERRORS=True,
-    DYNACONF_ALWAYS_FRESH_VARS=['BAR']
+    DYNACONF_ALWAYS_FRESH_VARS=["BAR"],
 )
 
 
-assert settings.ENV_FOR_DYNACONF == 'FOO'
-assert settings.SETTINGS_FILE_FOR_DYNACONF == 'foo.py'
-assert settings.ROOT_PATH_FOR_DYNACONF == '/tmp'
+assert settings.ENV_FOR_DYNACONF == "FOO"
+assert settings.SETTINGS_FILE_FOR_DYNACONF == "foo.py"
+assert settings.ROOT_PATH_FOR_DYNACONF == "/tmp"
 assert settings.SILENT_ERRORS_FOR_DYNACONF is True
-assert settings.FRESH_VARS_FOR_DYNACONF == ['BAR']
+assert settings.FRESH_VARS_FOR_DYNACONF == ["BAR"]
 
 print(settings.ENV_FOR_DYNACONF)
 print(settings.SETTINGS_FILE_FOR_DYNACONF)

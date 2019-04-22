@@ -1,37 +1,34 @@
-import os
 import json
+import os
+
 import toml
 
 from dynaconf.utils.boxing import DynaBox
 
 
-true_values = (
-    't', 'true', 'enabled', '1', 'on', 'yes', 'True'
-)
-false_values = (
-    'f', 'false', 'disabled', '0', 'off', 'no', 'False', ''
-)
+true_values = ("t", "true", "enabled", "1", "on", "yes", "True")
+false_values = ("f", "false", "disabled", "0", "off", "no", "False", "")
 
 converters = {
-    '@int': int,
-    '@float': float,
-    '@bool': (
+    "@int": int,
+    "@float": float,
+    "@bool": (
         lambda value: True if str(value).lower() in true_values else False
     ),
-    '@json': json.loads,
+    "@json": json.loads,
     # Special markers to be used as placeholders e.g: in prefilled forms
     # will always return None when evaluated
-    '@note': lambda value: None,
-    '@comment': lambda value: None,
-    '@null': lambda value: None,
-    '@none': lambda value: None,
+    "@note": lambda value: None,
+    "@comment": lambda value: None,
+    "@null": lambda value: None,
+    "@none": lambda value: None,
 }
 
 
 def parse_with_toml(data):
     """Uses TOML syntax to parse data"""
     try:
-        return toml.loads('key={}'.format(data), DynaBox).key
+        return toml.loads("key={}".format(data), DynaBox).key
     except toml.TomlDecodeError:
         return data
 
@@ -48,13 +45,16 @@ def _parse_conf_data(data, tomlfy=False):
     export DYNACONF_MONGODB_SETTINGS='@json {"DB": "quokka_db"}'
     export DYNACONF_ALLOWED_EXTENSIONS='@json ["jpg", "png"]'
     """
-    cast_toggler = os.environ.get('AUTO_CAST_FOR_DYNACONF', 'true').lower()
+    cast_toggler = os.environ.get("AUTO_CAST_FOR_DYNACONF", "true").lower()
     castenabled = cast_toggler not in false_values
 
-    if castenabled and data and isinstance(
-        data, str
-    ) and data.startswith(tuple(converters.keys())):
-        parts = data.partition(' ')
+    if (
+        castenabled
+        and data
+        and isinstance(data, str)
+        and data.startswith(tuple(converters.keys()))
+    ):
+        parts = data.partition(" ")
         converter_key = parts[0]
         value = parts[-1]
         return converters.get(converter_key)(value)

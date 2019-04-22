@@ -1,4 +1,3 @@
-# coding: utf-8
 from dynaconf import validator_conditions
 
 
@@ -54,20 +53,22 @@ class Validator(object):
        # it is executed before operations.
 
     """
+
     def __init__(
-            self,
-            *names,
-            must_exist=None,
-            condition=None,
-            when=None,
-            env=None,
-            **operations):
+        self,
+        *names,
+        must_exist=None,
+        condition=None,
+        when=None,
+        env=None,
+        **operations
+    ):
 
         if when is not None and not isinstance(when, Validator):
-            raise TypeError('when must be Validator instance')
+            raise TypeError("when must be Validator instance")
 
         if condition is not None and not callable(condition):
-            raise TypeError('condition must be callable')
+            raise TypeError("condition must be callable")
 
         self.names = names
         self.must_exist = must_exist
@@ -101,8 +102,8 @@ class Validator(object):
 
         # If only using current_env, skip using_env decoration (reload)
         if (
-            len(self.envs) == 1 and
-            self.envs[0].upper() == settings.current_env.upper()
+            len(self.envs) == 1
+            and self.envs[0].upper() == settings.current_env.upper()
         ):
             self._validate_items(settings, settings.current_env)
             return
@@ -118,15 +119,11 @@ class Validator(object):
             # is name required but not exists?
             if self.must_exist is True and not exists:
                 raise ValidationError(
-                    '{0} is required in env {1}'.format(
-                        name, env
-                    )
+                    "{0} is required in env {1}".format(name, env)
                 )
             elif self.must_exist is False and exists:
                 raise ValidationError(
-                    '{0} cannot exists in env {1}'.format(
-                        name, env
-                    )
+                    "{0} cannot exists in env {1}".format(name, env)
                 )
 
             # if not exists and not required cancel validation flow
@@ -139,10 +136,9 @@ class Validator(object):
             if self.condition is not None:
                 if not self.condition(value):
                     raise ValidationError(
-                        '{0} invalid for {1}({2}) '
-                        'in env {3}'.format(
-                            name, self.condition.__name__,
-                            value, env
+                        "{0} invalid for {1}({2}) "
+                        "in env {3}".format(
+                            name, self.condition.__name__, value, env
                         )
                     )
 
@@ -151,16 +147,14 @@ class Validator(object):
                 op_function = getattr(validator_conditions, op_name)
                 if not op_function(value, op_value):
                     raise ValidationError(
-                        '{0} must {1} {2} but it is {3} '
-                        'in env {4}'.format(
-                            name, op_function.__name__,
-                            op_value, value, env
+                        "{0} must {1} {2} but it is {3} "
+                        "in env {4}".format(
+                            name, op_function.__name__, op_value, value, env
                         )
                     )
 
 
 class ValidatorList(list):
-
     def __init__(self, settings, *args, **kwargs):
         super(ValidatorList, self).__init__(*args, **kwargs)
         self.settings = settings
