@@ -11,10 +11,13 @@ except ImportError:
 
 def read(*names, **kwargs):
     """Read a file."""
-    return io.open(
+    content = ''
+    with io.open(
         os.path.join(os.path.dirname(__file__), *names),
         encoding=kwargs.get('encoding', 'utf8')
-    ).read().strip()
+    ) as open_file:
+        content = open_file.read().strip()
+    return content
 
 
 setup(

@@ -13,6 +13,7 @@ from dynaconf import LazySettings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.validator import Validator, ValidationError
 from dynaconf.utils.parse_conf import parse_conf_data
+from dynaconf.utils.files import read_file
 from dotenv import cli as dotenv_cli
 from contextlib import suppress
 
@@ -99,11 +100,11 @@ def split_vars(_vars):
 
 
 def read_file_in_root_directory(*names, **kwargs):
-    """Read a file."""
-    return io.open(
+    """Read a file on root dir."""
+    return read_file(
         os.path.join(os.path.dirname(__file__), *names),
         encoding=kwargs.get('encoding', 'utf-8')
-    ).read().strip()
+    )
 
 
 def print_version(ctx, param, value):

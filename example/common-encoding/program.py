@@ -29,19 +29,17 @@ print(settings.dynaconf_banner)
 print('#' * 79)
 print('\n* The settings are defined in .toml files\n')
 print('$ cat settings.toml')
-print(
-    io.open(
-        settings.find_file('settings.toml'),
-        encoding=os.environ.get('ENCODING_FOR_DYNACONF')
-    ).read()
-)
+with io.open(
+    settings.find_file('settings.toml'),
+    encoding=os.environ.get('ENCODING_FOR_DYNACONF')
+) as settings_file:
+    print(settings_file.read())
 print('$ cat .secrets.toml')
-print(
-    io.open(
-        settings.find_file('.secrets.toml'),
-        encoding=os.environ.get('ENCODING_FOR_DYNACONF')
-    ).read()
-)
+with io.open(
+    settings.find_file('.secrets.toml'),
+    encoding=os.environ.get('ENCODING_FOR_DYNACONF')
+) as secrets_file:
+    print(secrets_file.read())
 
 print('#' * 79)
 print('\n* Acessing settings defined in .toml files\n')
