@@ -1,10 +1,11 @@
-# coding: utf-8
 import io
 from pathlib import Path
+
 from dynaconf import default_settings
-from dynaconf.loaders.base import BaseLoader
 from dynaconf.constants import TOML_EXTENSIONS
+from dynaconf.loaders.base import BaseLoader
 from dynaconf.utils import object_merge
+
 try:
     import toml
 except ImportError:  # pragma: no cover
@@ -23,16 +24,16 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :return: None
     """
     if toml is None:  # pragma: no cover
-        BaseLoader.warn_not_installed(obj, 'toml')
+        BaseLoader.warn_not_installed(obj, "toml")
         return
 
     loader = BaseLoader(
         obj=obj,
         env=env,
-        identifier='toml',
+        identifier="toml",
         extensions=TOML_EXTENSIONS,
         file_reader=toml.load,
-        string_reader=toml.loads
+        string_reader=toml.loads,
     )
     loader.load(filename=filename, key=key, silent=silent)
 
@@ -47,13 +48,13 @@ def write(settings_path, settings_data, merge=True):
     settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover
         with io.open(
-            str(settings_path),
-            encoding=default_settings.ENCODING_FOR_DYNACONF
+            str(settings_path), encoding=default_settings.ENCODING_FOR_DYNACONF
         ) as open_file:
             object_merge(toml.load(open_file), settings_data)
 
     with io.open(
-        str(settings_path), 'w',
-        encoding=default_settings.ENCODING_FOR_DYNACONF
+        str(settings_path),
+        "w",
+        encoding=default_settings.ENCODING_FOR_DYNACONF,
     ) as open_file:
         toml.dump(settings_data, open_file)

@@ -28,34 +28,39 @@ print("Read from .env:", settings.WORKS)  # noqa
 print("The dict should include all files", settings.A_BIG_DICT)  # noqa
 
 keys = (
-    'settings.py',
-    'development_settings.py',
-    'global_settings.py',
-    'settings.yaml',
-    'settings.yml',
-    'settings.toml.default',
-    'settings.toml.global',
-    'settings.tml.default',
-    'settings.tml.global',
-    'settings.ini',
-    'settings.conf',
-    'settings.properties',
-    'settings.json.default',
-    'settings.json.global',
-    '.env',
+    "settings.py",
+    "development_settings.py",
+    "global_settings.py",
+    "settings.yaml",
+    "settings.yml",
+    "settings.toml.default",
+    "settings.toml.global",
+    "settings.tml.default",
+    "settings.tml.global",
+    "settings.ini",
+    "settings.conf",
+    "settings.properties",
+    "settings.json.default",
+    "settings.json.global",
+    ".env",
 )
 
 for key in keys:
     assert key in settings.A_BIG_DICT.file
-    assert key in settings('A_BIG_DICT').file
-    assert key in settings('A_BIG_DICT')['file']
-    assert key in settings('A_BIG_DICT').get('file')
-    assert key in settings.A_BIG_DICT['file']
-    assert key in settings.A_BIG_DICT.get('file')
+    assert key in settings("A_BIG_DICT").file
+    assert key in settings("A_BIG_DICT")["file"]
+    assert key in settings("A_BIG_DICT").get("file")
+    assert key in settings.A_BIG_DICT["file"]
+    assert key in settings.A_BIG_DICT.get("file")
 
 
-print("Big nest", settings.A_BIG_DICT.nested_1.nested_2.nested_3.nested_4)  # noqa
+print(
+    "Big nest", settings.A_BIG_DICT.nested_1.nested_2.nested_3.nested_4
+)  # noqa
 
 assert settings.A_BIG_DICT.nested_1.nested_2.nested_3.nested_4 == {
-    'json': True, 'yaml': True, 'toml': True, 'py': True
+    "json": True,
+    "yaml": True,
+    "toml": True,
+    "py": True,
 }

@@ -1,7 +1,6 @@
-# coding: utf-8
+import functools
 import os
 import warnings
-import functools
 
 
 BANNER = """
@@ -13,7 +12,7 @@ BANNER = """
 ╚═════╝    ╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝
 """
 
-if os.name == 'nt':  # pragma: no cover
+if os.name == "nt":  # pragma: no cover
     # windows can't handle the above charmap
     BANNER = "DYNACONF"
 
@@ -42,6 +41,7 @@ def object_merge(old, new, unique=False):
 class DynaconfDict(dict):
     """A dict representing en empty Dynaconf object
     useful to run loaders in to a dict for testing"""
+
     def __init__(self, *args, **kwargs):
         self._loaded_files = []
         super(DynaconfDict, self).__init__(*args, **kwargs)
@@ -64,13 +64,14 @@ class DynaconfDict(dict):
 @functools.lru_cache()
 def _logger(level):
     import logging
+
     logging.basicConfig(
         format=(
-            '%(asctime)s,%(msecs)d %(levelname)-8s '
-            '[%(filename)s:%(lineno)d - %(funcName)s] %(message)s'
+            "%(asctime)s,%(msecs)d %(levelname)-8s "
+            "[%(filename)s:%(lineno)d - %(funcName)s] %(message)s"
         ),
-        datefmt='%Y-%m-%d:%H:%M:%S',
-        level=getattr(logging, level, 'DEBUG')
+        datefmt="%Y-%m-%d:%H:%M:%S",
+        level=getattr(logging, level, "DEBUG"),
     )
     logger = logging.getLogger("dynaconf")
     return logger
@@ -78,24 +79,24 @@ def _logger(level):
 
 def raw_logger(level=None):
     """Get or create inner logger"""
-    level = level or os.environ.get('DEBUG_LEVEL_FOR_DYNACONF', 'ERROR')
+    level = level or os.environ.get("DEBUG_LEVEL_FOR_DYNACONF", "ERROR")
     return _logger(level)
 
 
 RENAMED_VARS = {
     # old: new
-    'DYNACONF_NAMESPACE': 'ENV_FOR_DYNACONF',
-    'NAMESPACE_FOR_DYNACONF': 'ENV_FOR_DYNACONF',
-    'DYNACONF_SETTINGS_MODULE': 'SETTINGS_FILE_FOR_DYNACONF',
-    'DYNACONF_SETTINGS': 'SETTINGS_FILE_FOR_DYNACONF',
-    'SETTINGS_MODULE': 'SETTINGS_FILE_FOR_DYNACONF',
-    'SETTINGS_MODULE_FOR_DYNACONF': 'SETTINGS_FILE_FOR_DYNACONF',
-    'PROJECT_ROOT': 'ROOT_PATH_FOR_DYNACONF',
-    'PROJECT_ROOT_FOR_DYNACONF': 'ROOT_PATH_FOR_DYNACONF',
-    'DYNACONF_SILENT_ERRORS': 'SILENT_ERRORS_FOR_DYNACONF',
-    'DYNACONF_ALWAYS_FRESH_VARS': 'FRESH_VARS_FOR_DYNACONF',
-    'BASE_NAMESPACE_FOR_DYNACONF': 'DEFAULT_ENV_FOR_DYNACONF',
-    'GLOBAL_ENV_FOR_DYNACONF': 'ENVVAR_PREFIX_FOR_DYNACONF',
+    "DYNACONF_NAMESPACE": "ENV_FOR_DYNACONF",
+    "NAMESPACE_FOR_DYNACONF": "ENV_FOR_DYNACONF",
+    "DYNACONF_SETTINGS_MODULE": "SETTINGS_FILE_FOR_DYNACONF",
+    "DYNACONF_SETTINGS": "SETTINGS_FILE_FOR_DYNACONF",
+    "SETTINGS_MODULE": "SETTINGS_FILE_FOR_DYNACONF",
+    "SETTINGS_MODULE_FOR_DYNACONF": "SETTINGS_FILE_FOR_DYNACONF",
+    "PROJECT_ROOT": "ROOT_PATH_FOR_DYNACONF",
+    "PROJECT_ROOT_FOR_DYNACONF": "ROOT_PATH_FOR_DYNACONF",
+    "DYNACONF_SILENT_ERRORS": "SILENT_ERRORS_FOR_DYNACONF",
+    "DYNACONF_ALWAYS_FRESH_VARS": "FRESH_VARS_FOR_DYNACONF",
+    "BASE_NAMESPACE_FOR_DYNACONF": "DEFAULT_ENV_FOR_DYNACONF",
+    "GLOBAL_ENV_FOR_DYNACONF": "ENVVAR_PREFIX_FOR_DYNACONF",
 }
 
 
@@ -134,7 +135,7 @@ class Missing(object):
         Unambiguously identify this string-based representation of Missing,
         used as a singleton.
         """
-        return '<dynaconf.missing>'
+        return "<dynaconf.missing>"
 
 
 missing = Missing()
@@ -150,18 +151,18 @@ def deduplicate(list_object):
 
 
 def warn_deprecations(data):
-    if data.get('MERGE_ENABLED_FOR_DYNACONF'):
+    if data.get("MERGE_ENABLED_FOR_DYNACONF"):
         warnings.warn(
             "MERGE_ENABLED_FOR_DYNACONF is deprecated "
             "instead it is prefered to use the local merge feature "
             "see: https://dynaconf.readthedocs.io/en/latest/guides/usage.html"
             "#merging-existing-values",
-            DeprecationWarning
+            DeprecationWarning,
         )
     for old, new in RENAMED_VARS.items():
         if old in data:
             warnings.warn(
                 "You are using %s which is a deprecated settings "
                 "replace it with %s" % (old, new),
-                DeprecationWarning
+                DeprecationWarning,
             )

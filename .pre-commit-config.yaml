@@ -1,0 +1,36 @@
+exclude: docs
+repos:
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v1.4.0
+    hooks:
+      - id: reorder-python-imports
+        language_version: python3
+        args: [--py3-plus]
+  - repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+      - id: black
+        args: [--line-length=79]
+        language_version: python3.7
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.0.0
+    hooks:
+      - id: trailing-whitespace
+        language_version: python3
+      - id: end-of-file-fixer
+        language_version: python3
+      - id: check-yaml
+        language_version: python3
+      - id: check-merge-conflict
+        language_version: python3
+      - id: debug-statements
+        language_version: python3
+      - id: fix-encoding-pragma
+        language_version: python3
+        args: [--remove]
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.7.0
+    hooks:
+      - id: flake8
+        args: ['--ignore=F403,W504,W503,F841,E401,F401,E402']
+        language_version: python3

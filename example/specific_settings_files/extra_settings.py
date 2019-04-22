@@ -1,1 +1,1 @@
-EXTRA_VAR = 'extra_value'
+EXTRA_VAR = "extra_value"

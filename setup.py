@@ -1,4 +1,3 @@
-
 import io
 import os
 import sys
@@ -11,37 +10,41 @@ except ImportError:
 
 def read(*names, **kwargs):
     """Read a file."""
-    content = ''
+    content = ""
     with io.open(
         os.path.join(os.path.dirname(__file__), *names),
-        encoding=kwargs.get('encoding', 'utf8')
+        encoding=kwargs.get("encoding", "utf8"),
     ) as open_file:
         content = open_file.read().strip()
     return content
 
 
 setup(
-    name='dynaconf',
-    version=read('dynaconf', 'VERSION'),
-    url='https://github.com/rochacbruno/dynaconf',
-    license='MIT',
+    name="dynaconf",
+    version=read("dynaconf", "VERSION"),
+    url="https://github.com/rochacbruno/dynaconf",
+    license="MIT",
     author="Bruno Rocha",
     author_email="rochacbruno@gmail.com",
-    description='The dynamic configurator for your Python Project',
+    description="The dynamic configurator for your Python Project",
     long_description=read("README.md"),
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     packages=find_packages(
         exclude=[
-            'tests', 'tests.*',
-            'example', 'example.*',
-            'docs', 'docs.*',
-            'build', 'build.*'
+            "tests",
+            "tests.*",
+            "example",
+            "example.*",
+            "docs",
+            "docs.*",
+            "build",
+            "build.*",
         ]
     ),
     include_package_data=True,
     zip_safe=False,
-    platforms='any',
-    install_requires=['python-box', 'python-dotenv', 'toml', 'click'],
+    platforms="any",
+    install_requires=["python-box", "python-dotenv", "toml", "click"],
     tests_require=[
         "pytest",
         "pytest-cov",
@@ -55,41 +58,37 @@ setup(
         "flask>=0.12",
         "python-dotenv",
         "toml",
-        "codecov"
+        "codecov",
     ],
     extras_require={
-        "redis": ['redis'],
-        "vault": ['hvac'],
-        "yaml": ['PyYAML'],
-        "toml": ['toml'],
-        "ini": ['configobj'],
-        "configobj": ['configobj'],
-        "all": ['redis', 'PyYAML', 'configobj', 'hvac'],
+        "redis": ["redis"],
+        "vault": ["hvac"],
+        "yaml": ["PyYAML"],
+        "toml": ["toml"],
+        "ini": ["configobj"],
+        "configobj": ["configobj"],
+        "all": ["redis", "PyYAML", "configobj", "hvac"],
     },
-    entry_points={
-        'console_scripts': [
-            'dynaconf=dynaconf.cli:main'
-        ]
-    },
-    setup_requires=[
-        'setuptools>=38.6.0'
-    ] if sys.version_info >= (3, 6, 0) else [],
+    entry_points={"console_scripts": ["dynaconf=dynaconf.cli:main"]},
+    setup_requires=["setuptools>=38.6.0"]
+    if sys.version_info >= (3, 6, 0)
+    else [],
     classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Framework :: Django',
-          'Framework :: Flask',
-          'Intended Audience :: Developers',
-          'License :: OSI Approved :: MIT License',
-          'Natural Language :: English',
-          'Operating System :: OS Independent',
-          'Programming Language :: Python',
-          'Programming Language :: Python :: 3',
-          'Programming Language :: Python :: 3 :: Only',
-          'Programming Language :: Python :: 3.5',
-          'Programming Language :: Python :: 3.6',
-          'Programming Language :: Python :: 3.7',
-          'Topic :: Utilities',
-          'Topic :: Software Development :: Libraries',
-          'Topic :: Software Development :: Libraries :: Python Modules',
-      ],
+        "Development Status :: 5 - Production/Stable",
+        "Framework :: Django",
+        "Framework :: Flask",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Topic :: Utilities",
+        "Topic :: Software Development :: Libraries",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ],
 )

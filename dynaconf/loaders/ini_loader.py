@@ -1,10 +1,11 @@
-# coding: utf-8
 import io
 from pathlib import Path
+
 from dynaconf import default_settings
-from dynaconf.loaders.base import BaseLoader
 from dynaconf.constants import INI_EXTENSIONS
+from dynaconf.loaders.base import BaseLoader
 from dynaconf.utils import object_merge
+
 try:
     from configobj import ConfigObj
 except ImportError as e:  # pragma: no cover
@@ -23,16 +24,16 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :return: None
     """
     if ConfigObj is None:  # pragma: no cover
-        BaseLoader.warn_not_installed(obj, 'ini')
+        BaseLoader.warn_not_installed(obj, "ini")
         return
 
     loader = BaseLoader(
         obj=obj,
         env=env,
-        identifier='ini',
+        identifier="ini",
         extensions=INI_EXTENSIONS,
         file_reader=lambda fileobj: ConfigObj(fileobj).dict(),
-        string_reader=lambda strobj: ConfigObj(strobj.split('\n')).dict()
+        string_reader=lambda strobj: ConfigObj(strobj.split("\n")).dict(),
     )
     loader.load(filename=filename, key=key, silent=silent)
 
@@ -47,13 +48,9 @@ def write(settings_path, settings_data, merge=True):
     settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover
         with io.open(
-            str(settings_path),
-            encoding=default_settings.ENCODING_FOR_DYNACONF
+            str(settings_path), encoding=default_settings.ENCODING_FOR_DYNACONF
         ) as open_file:
-            object_merge(
-                ConfigObj(open_file).dict(),
-                settings_data
-            )
+            object_merge(ConfigObj(open_file).dict(), settings_data)
     new = ConfigObj()
     new.update(settings_data)
-    new.write(open(str(settings_path), 'bw'))
+    new.write(open(str(settings_path), "bw"))

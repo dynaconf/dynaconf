@@ -1,7 +1,6 @@
-# coding: utf-8
-from dynaconf.utils.parse_conf import (
-    parse_conf_data, unparse_conf_data
-)
+from dynaconf.utils.parse_conf import parse_conf_data
+from dynaconf.utils.parse_conf import unparse_conf_data
+
 try:
     from redis import StrictRedis
 except ImportError as e:
@@ -11,7 +10,7 @@ except ImportError as e:
         "export REDIS_ENABLED_FOR_DYNACONF=false"
     )
 
-IDENTIFIER = 'redis'
+IDENTIFIER = "redis"
 
 
 def load(obj, env=None, silent=True, key=None):
@@ -23,8 +22,8 @@ def load(obj, env=None, silent=True, key=None):
     :param key: if defined load a single key, else load all in env
     :return: None
     """
-    redis = StrictRedis(**obj.get('REDIS_FOR_DYNACONF'))
-    holder = obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
+    redis = StrictRedis(**obj.get("REDIS_FOR_DYNACONF"))
+    holder = obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
     try:
         if key:
             value = redis.hget(holder.upper(), key)
@@ -34,7 +33,7 @@ def load(obj, env=None, silent=True, key=None):
                     key,
                     value,
                     IDENTIFIER,
-                    holder
+                    holder,
                 )
             if value:
                 parsed_value = parse_conf_data(value, tomlfy=True)
@@ -50,12 +49,12 @@ def load(obj, env=None, silent=True, key=None):
                     "redis_loader: loading: %s (%s:%s)",
                     data,
                     IDENTIFIER,
-                    holder
+                    holder,
                 )
                 obj.update(data, loader_identifier=IDENTIFIER)
     except Exception as e:
         if silent:
-            if hasattr(obj, 'logger'):
+            if hasattr(obj, "logger"):
                 obj.logger.error(str(e))
             return False
         raise
@@ -71,19 +70,18 @@ def write(obj, data=None, **kwargs):
     """
     if obj.REDIS_ENABLED_FOR_DYNACONF is False:
         raise RuntimeError(
-            'Redis is not configured \n'
-            'export REDIS_ENABLED_FOR_DYNACONF=true\n'
-            'and configure the REDIS_FOR_DYNACONF_* variables'
+            "Redis is not configured \n"
+            "export REDIS_ENABLED_FOR_DYNACONF=true\n"
+            "and configure the REDIS_FOR_DYNACONF_* variables"
         )
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
+    holder = obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
     data = data or {}
     data.update(kwargs)
     if not data:
-        raise AttributeError('Data must be provided')
+        raise AttributeError("Data must be provided")
     redis_data = {
-        key.upper(): unparse_conf_data(value)
-        for key, value in data.items()
+        key.upper(): unparse_conf_data(value) for key, value in data.items()
     }
     client.hmset(holder.upper(), redis_data)
     load(obj)
@@ -97,7 +95,7 @@ def delete(obj, key=None):
     :return: None
     """
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
-    holder = obj.get('ENVVAR_PREFIX_FOR_DYNACONF')
+    holder = obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
     if key:
         client.hdel(holder.upper(), key.upper())
         obj.unset(key)

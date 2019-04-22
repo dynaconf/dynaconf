@@ -1,13 +1,16 @@
 scanner:
     diff_only: True  # If False, the entire file touched by the Pull Request is scanned for errors. If True, only the diff is scanned.
     linter: flake8  # Other option is flake8
- 
+
 flake8:  # Same as scanner.linter value. Other option is flake8
     max-line-length: 79  # Default is 79 in PEP 8
     ignore:  # Errors and warnings to ignore
       - F841 # (local variable assigned but never used, useful for debugging on exception)
       - W504 # (line break after binary operator, I prefer to put `and|or` at the end)
+      - W503 # (line break before binary operator, black prefer to put `and|or` at the end)
       - F403 # (star import `from foo import *` often used in __init__ files)
       - E401 # (multiple imports on one line)
-      
+      - F401 # (not used import)
+      - E402 # (Imports not on top)
+
 # no_blank_comment: True  # If True, no comment is made on PR without any errors.

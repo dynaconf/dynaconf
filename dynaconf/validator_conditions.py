@@ -1,4 +1,3 @@
-# coding: utf-8
 # pragma: no cover
 """
 Implement basic assertions to be used in assertion action

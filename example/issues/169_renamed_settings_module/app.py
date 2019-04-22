@@ -10,14 +10,20 @@ assert settings.DICT.NAME == "dynaconf"
 assert settings.FOOBAR == "baz"
 
 for key in [
-    "INT", "FLOAT", "LIST", "BOOL", "DICT", "DICT.NAME",
-    "NOWAY", "FOOBAR"
+    "INT",
+    "FLOAT",
+    "LIST",
+    "BOOL",
+    "DICT",
+    "DICT.NAME",
+    "NOWAY",
+    "FOOBAR",
 ]:
     print(settings.get(key, None))  # noqa
 
 
-assert settings.SETTINGS_FILE_FOR_DYNACONF == 'foo_bar.toml'
-assert settings.SETTINGS_MODULE_FOR_DYNACONF == 'foo_bar.toml'
-assert settings.SETTINGS_MODULE == 'foo_bar.toml'
-assert settings.settings_module == 'foo_bar.toml'
-assert settings.DYNACONF_SETTINGS == 'foo_bar.toml'
+assert settings.SETTINGS_FILE_FOR_DYNACONF == "foo_bar.toml"
+assert settings.SETTINGS_MODULE_FOR_DYNACONF == "foo_bar.toml"
+assert settings.SETTINGS_MODULE == "foo_bar.toml"
+assert settings.settings_module == "foo_bar.toml"
+assert settings.DYNACONF_SETTINGS == "foo_bar.toml"

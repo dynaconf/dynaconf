@@ -1,4 +1,3 @@
-# coding: utf-8
 # In order to have multiple envs support use BaseLoader
 # Take a look in dynaconf/loaders/json_loader.py
 
@@ -22,19 +21,19 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     # This loader reads the .sff file // Stupid File Format
     keys = []
     values = []
-    found_file = obj.find_file('settings.sff')
+    found_file = obj.find_file("settings.sff")
     if not found_file:
-        obj.logger.debug('Cannot find settings.sff')
+        obj.logger.debug("Cannot find settings.sff")
         return
 
     with open(found_file) as settings_file:
         for line in settings_file.readlines():
-            if line.startswith('#'):
+            if line.startswith("#"):
                 continue
-            if line.startswith('KEYS:'):
-                keys = line.strip('KEYS:').strip('\n').split(';')
-            if line.startswith('VALUES:'):
-                values = line.strip('VALUES:').strip('\n').split(';')
+            if line.startswith("KEYS:"):
+                keys = line.strip("KEYS:").strip("\n").split(";")
+            if line.startswith("VALUES:"):
+                values = line.strip("VALUES:").strip("\n").split(";")
 
     # // PLEASE DON'T USE THIS SFF file format :)
 
@@ -42,10 +41,10 @@ def load(obj, env=None, silent=True, key=None, filename=None):
 
     if key:
         value = data.get(key.lower())  # sff format have lower case keys
-        obj.logger.debug('Sff loader: %s:%s', key, value)
+        obj.logger.debug("Sff loader: %s:%s", key, value)
         obj.set(key, value)
     else:
-        obj.logger.debug('Sff loader: loading: {0}'.format(data))
+        obj.logger.debug("Sff loader: loading: {0}".format(data))
         obj.update(data)
 
     obj._loaded_files.append(found_file)

@@ -1,6 +1,6 @@
-# coding: utf-8
+from flask import Flask
+from flask import render_template
 
-from flask import Flask, render_template
 from dynaconf.contrib import FlaskDynaconf
 
 # create your app
@@ -10,18 +10,18 @@ app = Flask(__name__)
 FlaskDynaconf(app)
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    return render_template('dynaconf.html')
+    return render_template("dynaconf.html")
 
 
-@app.route('/test')
+@app.route("/test")
 def test():
-    return app.config['HELLO']
+    return app.config["HELLO"]
 
 
-app.add_url_rule(app.config.TEST_RULE, view_func=lambda: 'test')
+app.add_url_rule(app.config.TEST_RULE, view_func=lambda: "test")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

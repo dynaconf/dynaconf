@@ -28,6 +28,7 @@ flake8-debugger
 flake8-print
 flake8-todo
 radon
+pre-commit
 
 # documentation
 sphinx

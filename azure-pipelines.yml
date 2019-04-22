@@ -8,7 +8,28 @@ trigger:
 
 jobs:
 
+- job: 'Adequacy'
+  variables:
+    DEBUG_LEVEL_FOR_DYNACONF: DEBUG
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+    maxParallel: 4
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+
+  - bash: make clean install run-pre-commit
+    displayName: 'Adequacy Tests'
+
 - job: 'LinuxInstall'
+  dependsOn: Adequacy
   variables:
       DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
@@ -38,7 +59,8 @@ jobs:
       dynaconf --version
     displayName: 'Install and test cli'
 
-- job: 'LinuxUnit'      
+- job: 'LinuxUnit'
+  dependsOn: Adequacy
   variables:
     - group: codecov
   pool:
@@ -76,6 +98,7 @@ jobs:
     condition: succeededOrFailed()
 
 - job: 'LinuxFunctional'
+  dependsOn: Adequacy
   variables:
       DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
@@ -101,6 +124,7 @@ jobs:
     displayName: 'Functional tests for examples and frameworks'
 
 - job: 'Redis'
+  dependsOn: Adequacy
   variables:
     REDIS_ENABLED_FOR_DYNACONF: true
     DEBUG_LEVEL_FOR_DYNACONF: DEBUG
@@ -131,6 +155,7 @@ jobs:
     displayName: 'Functional test for redis'
 
 - job: 'Vault'
+  dependsOn: Adequacy
   variables:
     VAULT_ENABLED_FOR_DYNACONF: true
     VAULT_TOKEN_FOR_DYNACONF: myroot
@@ -162,6 +187,7 @@ jobs:
     displayName: 'Functional test for vault'
 
 - job: 'WindowsUnit'
+  dependsOn: Adequacy
   variables:
       DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
@@ -175,7 +201,7 @@ jobs:
     inputs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
-      
+
   - script: |
       python -m pip install --upgrade pip
       python -m pip install -r requirements_dev.txt
@@ -189,6 +215,7 @@ jobs:
     condition: succeededOrFailed()
 
 - job: 'WindowsInstall'
+  dependsOn: Adequacy
   variables:
       DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
@@ -213,6 +240,7 @@ jobs:
     displayName: 'Install and test cli'
 
 - job: 'WindowsFunctional'
+  dependsOn: Adequacy
   variables:
       DEBUG_LEVEL_FOR_DYNACONF: DEBUG
       DJANGO_SETTINGS_MODULE: foo.settings

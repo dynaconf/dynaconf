@@ -1,12 +1,13 @@
-# coding: utf-8
 import os
+
 import pytest
+
 from dynaconf.utils.parse_conf import true_values
 
 
 def test_deleted_raise(settings):
     """asserts variable can be deleted"""
-    assert 'TODELETE' in settings
+    assert "TODELETE" in settings
     assert settings.TODELETE is True
     del settings.TODELETE
     with pytest.raises(AttributeError):
@@ -45,7 +46,7 @@ def test_populate_obj_with_keys(settings):
 
     obj = Obj()
 
-    settings.populate_obj(obj, ['VALUE'])
+    settings.populate_obj(obj, ["VALUE"])
 
     assert obj.VALUE == 42.1
 
@@ -171,12 +172,12 @@ def test_env_should_not_have_underline(settings):
 
 
 def test_path_for(settings):
-    assert settings.path_for(
+    assert settings.path_for(os.path.sep, "tmp", "bla") == os.path.join(
         os.path.sep, "tmp", "bla"
-    ) == os.path.join(os.path.sep, "tmp", "bla")
-    assert settings.path_for(
-        "foo", "bar", "blaz"
-    ) == os.path.join(settings._root_path, 'foo', 'bar', 'blaz')
+    )
+    assert settings.path_for("foo", "bar", "blaz") == os.path.join(
+        settings._root_path, "foo", "bar", "blaz"
+    )
 
 
 def test_get_item(settings):
@@ -206,16 +207,18 @@ def test_set(settings):
 
 def test_global_set_merge(settings):
     settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
-    settings.set("MERGE_KEY", {
-        "items": [{"name": "item 1"}, {"name": "item 2"}]
-    })
-    settings.set("MERGE_KEY", {
-        "items": [{"name": "item 3"}, {"name": "item 4"}]
-    })
+    settings.set(
+        "MERGE_KEY", {"items": [{"name": "item 1"}, {"name": "item 2"}]}
+    )
+    settings.set(
+        "MERGE_KEY", {"items": [{"name": "item 3"}, {"name": "item 4"}]}
+    )
     assert settings.MERGE_KEY == {
         "items": [
-            {"name": "item 1"}, {"name": "item 2"},
-            {"name": "item 3"}, {"name": "item 4"}
+            {"name": "item 1"},
+            {"name": "item 2"},
+            {"name": "item 3"},
+            {"name": "item 4"},
         ]
     }
 
@@ -234,12 +237,11 @@ def test_local_set_merge_dict(settings):
     assert settings.DATABASE == {"host": "localhost", "port": 666}
 
     settings.set(
-        "DATABASE",
-        {"host": "new", "user": "admin", "dynaconf_merge": True}
+        "DATABASE", {"host": "new", "user": "admin", "dynaconf_merge": True}
     )
-    assert settings.DATABASE == {'host': 'new', 'port': 666, 'user': 'admin'}
-    assert settings.DATABASE.HOST == 'new'
-    assert settings.DATABASE.user == 'admin'
+    assert settings.DATABASE == {"host": "new", "port": 666, "user": "admin"}
+    assert settings.DATABASE.HOST == "new"
+    assert settings.DATABASE.user == "admin"
 
 
 def test_local_set_merge_list(settings):
@@ -252,49 +254,46 @@ def test_local_set_merge_list(settings):
 
 
 def test_local_set_merge_list_unique(settings):
-    settings.set("SCRIPTS", ['install.sh', 'deploy.sh'])
-    settings.set("SCRIPTS", ['install.sh', 'deploy.sh'])
-    assert settings.SCRIPTS == ['install.sh', 'deploy.sh']
+    settings.set("SCRIPTS", ["install.sh", "deploy.sh"])
+    settings.set("SCRIPTS", ["install.sh", "deploy.sh"])
+    assert settings.SCRIPTS == ["install.sh", "deploy.sh"]
 
     settings.set(
-        "SCRIPTS",
-        ['dev.sh', 'test.sh', 'deploy.sh', 'dynaconf_merge_unique']
+        "SCRIPTS", ["dev.sh", "test.sh", "deploy.sh", "dynaconf_merge_unique"]
     )
-    assert settings.SCRIPTS == ['install.sh', 'dev.sh', 'test.sh', 'deploy.sh']
+    assert settings.SCRIPTS == ["install.sh", "dev.sh", "test.sh", "deploy.sh"]
 
 
 def test_exists(settings):
-    settings.set('BOOK', 'TAOCP')
-    assert settings.exists('BOOK') is True
+    settings.set("BOOK", "TAOCP")
+    assert settings.exists("BOOK") is True
 
 
 def test_dotted_traversal_access(settings):
     settings.set(
-        'PARAMS',
+        "PARAMS",
         {
-            'PASSWORD': 'secret',
-            'SSL': {'CONTEXT': 'SECURE'},
-            'DOTTED.KEY': True
+            "PASSWORD": "secret",
+            "SSL": {"CONTEXT": "SECURE"},
+            "DOTTED.KEY": True,
         },
-        dotted_lookup=False
+        dotted_lookup=False,
     )
-    assert settings.get('PARAMS') == {
-        'PASSWORD': 'secret',
-        'SSL': {
-            'CONTEXT': 'SECURE'
-        },
-        'DOTTED.KEY': True
+    assert settings.get("PARAMS") == {
+        "PASSWORD": "secret",
+        "SSL": {"CONTEXT": "SECURE"},
+        "DOTTED.KEY": True,
     }
 
-    assert settings('PARAMS.PASSWORD') == 'secret'
-    assert settings('PARAMS.SSL.CONTEXT') == 'SECURE'
-    assert settings('PARAMS.TOKEN.IMAGINARY', 1234) == 1234
-    assert settings('IMAGINARY_KEY.FOO') is None
-    assert settings('IMAGINARY_KEY') is None
+    assert settings("PARAMS.PASSWORD") == "secret"
+    assert settings("PARAMS.SSL.CONTEXT") == "SECURE"
+    assert settings("PARAMS.TOKEN.IMAGINARY", 1234) == 1234
+    assert settings("IMAGINARY_KEY.FOO") is None
+    assert settings("IMAGINARY_KEY") is None
 
-    assert settings['PARAMS.PASSWORD'] == 'secret'
-    assert settings['PARAMS.SSL.CONTEXT'] == 'SECURE'
-    assert settings.PARAMS.SSL.CONTEXT == 'SECURE'
+    assert settings["PARAMS.PASSWORD"] == "secret"
+    assert settings["PARAMS.SSL.CONTEXT"] == "SECURE"
+    assert settings.PARAMS.SSL.CONTEXT == "SECURE"
 
     assert settings.exists("PARAMS") is True
     assert settings.exists("PARAMS.PASSWORD") is True
@@ -304,53 +303,40 @@ def test_dotted_traversal_access(settings):
 
     # Dotted traversal should not work for dictionary-like key access.
     with pytest.raises(KeyError):
-        settings['PARAMS.DOESNOTEXIST']
+        settings["PARAMS.DOESNOTEXIST"]
 
     # Disable dot-traversal on a per-call basis.
-    assert settings('PARAMS.PASSWORD', dotted_lookup=False) is None
+    assert settings("PARAMS.PASSWORD", dotted_lookup=False) is None
 
-    assert settings('PARAMS.DOTTED.KEY') is None
-    assert settings('PARAMS').get('DOTTED.KEY') is True
+    assert settings("PARAMS.DOTTED.KEY") is None
+    assert settings("PARAMS").get("DOTTED.KEY") is True
 
-    settings.set('DOTTED.KEY', True, dotted_lookup=False)
-    assert settings('DOTTED.KEY', dotted_lookup=False) is True
+    settings.set("DOTTED.KEY", True, dotted_lookup=False)
+    assert settings("DOTTED.KEY", dotted_lookup=False) is True
 
-    settings.set(
-        'NESTED_1',
-        {
-            "nested_2": {
-                "nested_3": {
-                    "nested_4": True
-                }
-            }
-        }
-    )
+    settings.set("NESTED_1", {"nested_2": {"nested_3": {"nested_4": True}}})
 
     assert settings.NESTED_1.nested_2.nested_3.nested_4 is True
-    assert settings['NESTED_1.nested_2.nested_3.nested_4'] is True
-    assert settings('NESTED_1.nested_2.nested_3.nested_4') is True
+    assert settings["NESTED_1.nested_2.nested_3.nested_4"] is True
+    assert settings("NESTED_1.nested_2.nested_3.nested_4") is True
     # First key is always transformed to upper()
-    assert settings('nested_1.nested_2.nested_3.nested_4') is True
+    assert settings("nested_1.nested_2.nested_3.nested_4") is True
 
 
 def test_dotted_set(settings):
 
-    settings.set('nested_1.nested_2.nested_3.nested_4', 'secret')
+    settings.set("nested_1.nested_2.nested_3.nested_4", "secret")
 
-    assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == 'secret'
-    assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {'nested_4': 'secret'}
+    assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "secret"
+    assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {
+        "nested_4": "secret"
+    }
     assert settings.NESTED_1.NESTED_2.to_dict() == {
-        'nested_3': {
-            'nested_4': 'secret'
-        }
+        "nested_3": {"nested_4": "secret"}
     }
 
-    assert settings.get('nested_1').to_dict() == {
-        'nested_2': {
-            'nested_3': {
-                'nested_4': 'secret'
-            }
-        }
+    assert settings.get("nested_1").to_dict() == {
+        "nested_2": {"nested_3": {"nested_4": "secret"}}
     }
 
     with pytest.raises(KeyError):
@@ -360,18 +346,18 @@ def test_dotted_set(settings):
 def test_dotted_set_with_merge(settings):
     settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
 
-    settings.set("MERGE.KEY", {
-        "items": [{"name": "item 1"}, {"name": "item 2"}]
-    })
-    settings.set("MERGE.KEY", {
-        "items": [{"name": "item 3"}, {"name": "item 4"}]
-    })
+    settings.set(
+        "MERGE.KEY", {"items": [{"name": "item 1"}, {"name": "item 2"}]}
+    )
+    settings.set(
+        "MERGE.KEY", {"items": [{"name": "item 3"}, {"name": "item 4"}]}
+    )
 
     assert settings.MERGE.KEY == {
-        'items': [
-            {'name': 'item 1'},
-            {'name': 'item 2'},
-            {'name': 'item 3'},
-            {'name': 'item 4'},
+        "items": [
+            {"name": "item 1"},
+            {"name": "item 2"},
+            {"name": "item 3"},
+            {"name": "item 4"},
         ]
     }

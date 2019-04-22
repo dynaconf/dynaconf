@@ -1,6 +1,6 @@
-# coding: utf-8
 try:
     from flask.config import Config
+
     flask_installed = True
 except ImportError:  # pragma: no cover
     flask_installed = False
@@ -70,8 +70,14 @@ class FlaskDynaconf(object):
     Take a look at examples/flask in Dynaconf repository
 
     """
-    def __init__(self, app=None, instance_relative_config=False,
-                 dynaconf_instance=None, **kwargs):
+
+    def __init__(
+        self,
+        app=None,
+        instance_relative_config=False,
+        dynaconf_instance=None,
+        **kwargs
+    ):
         """kwargs holds initial dynaconf configuration"""
         if not flask_installed:  # pragma: no cover
             raise RuntimeError(
@@ -80,13 +86,13 @@ class FlaskDynaconf(object):
             )
         self.kwargs = kwargs
 
-        kwargs.setdefault('ENVVAR_PREFIX_FOR_DYNACONF', 'FLASK')
+        kwargs.setdefault("ENVVAR_PREFIX_FOR_DYNACONF", "FLASK")
 
-        env_prefix = '{0}_ENV'.format(
-            kwargs['ENVVAR_PREFIX_FOR_DYNACONF']
+        env_prefix = "{0}_ENV".format(
+            kwargs["ENVVAR_PREFIX_FOR_DYNACONF"]
         )  # FLASK_ENV
 
-        kwargs.setdefault('ENV_SWITCHER_FOR_DYNACONF', env_prefix)
+        kwargs.setdefault("ENV_SWITCHER_FOR_DYNACONF", env_prefix)
 
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config
@@ -107,9 +113,7 @@ class FlaskDynaconf(object):
         if self.dynaconf_instance:
             self.settings.update(self.kwargs)
         return DynaconfConfig(
-            root_path=root_path,
-            defaults=app.config,
-            _settings=self.settings
+            root_path=root_path, defaults=app.config, _settings=self.settings
         )
 
 

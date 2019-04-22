@@ -23,4 +23,3 @@ production:
   custom: 'this is custom from [production]'
   host: prod_server.com from yaml
   works: yaml_example in prod env
-
