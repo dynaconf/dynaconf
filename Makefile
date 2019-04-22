@@ -113,7 +113,7 @@ setup-pre-commit:
 	pre-commit install-hooks
 
 run-pre-commit:
-	pre-commit run --files $$(find -regex '.*\.\(py\|yaml\|yml\)') -v
+	pre-commit run --files $$(find -regex '.*\.\(py\|yaml\|yml\|md\)') -v
 
 pep8:
 	# Flake8 ignores

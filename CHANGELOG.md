@@ -1063,5 +1063,3 @@ Changelog
 - Update README.md. [Bruno Rocha]
 - Added default. [Bruno Rocha]
 - Initial commit. [Bruno Rocha]
-
-

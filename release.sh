@@ -20,6 +20,11 @@ if ! git --version > /dev/null; then
   exit 1
 fi
 
+if ! pre-commit --version > /dev/null; then
+  echo 'pre-commit is required'
+  exit 1
+fi
+
 if ! python3 -V > /dev/null; then
   echo 'python3 is required'
   exit 1
@@ -79,7 +84,7 @@ while true; do
 done
 new_version="$1"; shift
 
-old_version="$(git describe --abbrev=0)"  # e.g. 1.1.0
+old_version="$(git describe --tags "$(git rev-list --tags --max-count=1)")"  # e.g. 1.1.0
 if [ "${new_version}" = "${old_version}" ]; then
     echo Nothing to release!
     exit 1
@@ -88,7 +93,7 @@ fi
 # Generate new packages.
 echo "${new_version}" > dynaconf/VERSION
 make dist
-
+echo 'New Package generated!'
 # Create a venv, and schedule it for deletion.
 cleanup() { if [ -n "${venv:-}" ]; then rm -rf "${venv}"; fi }
 trap cleanup EXIT  # bash pseudo signal
@@ -110,9 +115,14 @@ done
 set +u
 deactivate
 set -u
+echo "Starting release of $new_version"
+
+# ensure pre-commit is ok
+make setup-pre-commit
 
 # Create a new commit and annotated tag.
 git add dynaconf/VERSION
+pre-commit run --files dynaconf/VERSION || true
 commit_message="$(git shortlog "${old_version}.." | sed 's/^./    &/')"
 git commit \
     --message "Release version ${new_version}" \
@@ -122,8 +132,10 @@ git tag --annotate "${new_version}" --message "Dynaconf ${new_version}" \
     --message "${commit_message}"
 
 # Update changelog file
+git rm -f CHANGELOG.md
 gitchangelog > CHANGELOG.md
-git add CHANGELOG.md
+pre-commit run --files CHANGELOG.md || true
+git add -f CHANGELOG.md
 git commit --amend --no-edit
 
 fmt <<EOF
