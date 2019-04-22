@@ -150,5 +150,6 @@ cat <<EOF
 
     git push --tags origin master
     make publish
+    hub release create ${new_version} -m "${new_version}"
 
 EOF
