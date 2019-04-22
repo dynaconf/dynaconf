@@ -37,7 +37,7 @@ test_examples:
 	cd example/project_root/;pwd;rm -rf /tmp/dynaconf_project_root_test/settings.py;mkdir -p /tmp/dynaconf_project_root_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/dynaconf_project_root_test/settings.py;python app.py;rm -rf /tmp/dynaconf_project_root_test/
 	cd example/settings_file/;pwd;rm -rf /tmp/settings_file_test/settings.py;mkdir -p /tmp/settings_file_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/settings_file_test/settings.py;python app.py;rm -rf /tmp/settings_file_test/
 	cd example/configure/;pwd;rm -rf /tmp/configure_test/settings.py;mkdir -p /tmp/configure_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/configure_test/settings.py;python app.py;rm -rf /tmp/configure_test/
-	
+
 	@echo '###############  Calling from outer folder  ###############'
 	python example/common/program.py
 	python example/common-encoding/program.py
@@ -98,9 +98,14 @@ install:
 	pip install --upgrade pip
 	python setup.py develop
 	pip install -r requirements_dev.txt
+	make setup-pre-commit
+
+setup-pre-commit:
+	pre-commit install
+	pre-commit install-hooks
 
 pep8:
-	# Flake8 ignores 
+	# Flake8 ignores
 	#   F841 (local variable assigned but never used, useful for debugging on exception)
 	#   W504 (line break after binary operator, I prefer to put `and|or` at the end)
 	#   F403 (star import `from foo import *` often used in __init__ files)
