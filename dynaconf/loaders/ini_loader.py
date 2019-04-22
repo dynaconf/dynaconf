@@ -46,15 +46,14 @@ def write(settings_path, settings_data, merge=True):
     """
     settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover
-        object_merge(
-            ConfigObj(
-                io.open(
-                    str(settings_path),
-                    encoding=default_settings.ENCODING_FOR_DYNACONF
-                )
-            ).dict(),
-            settings_data
-        )
+        with io.open(
+            str(settings_path),
+            encoding=default_settings.ENCODING_FOR_DYNACONF
+        ) as open_file:
+            object_merge(
+                ConfigObj(open_file).dict(),
+                settings_data
+            )
     new = ConfigObj()
     new.update(settings_data)
     new.write(open(str(settings_path), 'bw'))

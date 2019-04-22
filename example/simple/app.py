@@ -21,7 +21,8 @@ print('IS Dynaconf loaded?', settings.configured)
 print('# ^ That means that settings was read! dynaconf is loaded')
 print('# Lets read a file using settings.find_file...')
 print('\n')
-print(open(settings.find_file('settings.toml')).read())
+with open(settings.find_file('settings.toml')) as settings_file:
+    print(settings_file.read())
 
 from dynaconf.utils.files import SEARCHTREE  # noqa
 print('Searchtree', SEARCHTREE)

@@ -27,13 +27,15 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         obj.logger.debug('Cannot find settings.sff')
         return
 
-    for line in open(found_file).readlines():
-        if line.startswith('#'):
-            continue
-        if line.startswith('KEYS:'):
-            keys = line.strip('KEYS:').strip('\n').split(';')
-        if line.startswith('VALUES:'):
-            values = line.strip('VALUES:').strip('\n').split(';')
+    with open(found_file) as settings_file:
+        for line in settings_file.readlines():
+            if line.startswith('#'):
+                continue
+            if line.startswith('KEYS:'):
+                keys = line.strip('KEYS:').strip('\n').split(';')
+            if line.startswith('VALUES:'):
+                values = line.strip('VALUES:').strip('\n').split(';')
+
     # // PLEASE DON'T USE THIS SFF file format :)
 
     data = dict(zip(keys, values))

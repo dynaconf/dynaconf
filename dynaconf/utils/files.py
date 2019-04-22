@@ -1,4 +1,5 @@
 import os
+import io
 import inspect
 from dynaconf.utils import raw_logger, deduplicate
 
@@ -84,3 +85,10 @@ def find_file(filename='.env', project_root=None, skip_files=None, **kwargs):
 
     # return empty string if not found so it can still be joined in os.path
     return ''
+
+
+def read_file(path, **kwargs):
+    content = ''
+    with io.open(path, **kwargs) as open_file:
+        content = open_file.read().strip()
+    return content
