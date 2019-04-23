@@ -40,3 +40,4 @@ def test_envvar_prefix_false_from_envvar(tmpdir):
 
     with pytest.raises(AttributeError):
         assert settings.THISVAR == "should not be set"
+    del os.environ["ENVVAR_PREFIX_FOR_DYNACONF"]
