@@ -7,6 +7,9 @@ from dynaconf import LazySettings
 TOML = """
 [global]
 var = "my value"
+
+[false]
+thisvar = "should not be set"
 """
 
 
