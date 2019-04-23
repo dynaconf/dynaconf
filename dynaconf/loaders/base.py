@@ -68,7 +68,7 @@ class BaseLoader(object):
 
         # compatibility with older versions that still uses [dynaconf] as
         # [default] env
-        global_env = self.obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
+        global_env = self.obj.get("ENVVAR_PREFIX_FOR_DYNACONF") or "DYNACONF"
         if global_env not in env_list:
             env_list.append(global_env)
 
