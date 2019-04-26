@@ -94,7 +94,7 @@ test_redis:
 	@cd example/redis_example;pwd;python redis_example.py | grep -c redis_works
 
 test_only:
-	py.test --boxed -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
+	py.test -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
 	coverage xml
 
 coverage-report:
