@@ -1,5 +1,6 @@
 import importlib
 import io
+import json
 import os
 import pprint
 import sys
@@ -372,7 +373,14 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     is_flag=True,
     help="show dynaconf internal settings?",
 )
-def _list(env, key, more, loader, _all=False):
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(writable=True, dir_okay=False),
+    default=None,
+    help="Filepath to write the listed values as json",
+)
+def _list(env, key, more, loader, _all=False, output=None):
     """Lists all user defined config values
     and if `--all` is passed it also shows dynaconf internal variables.
     """
@@ -398,7 +406,7 @@ def _list(env, key, more, loader, _all=False):
     )
 
     if not loader:
-        data = settings.store
+        data = settings.as_dict(env=env, internal=_all)
     else:
         identifier = "{}_{}".format(loader, cur_env)
         data = settings._loaded_by_loaders.get(identifier, {})
@@ -406,11 +414,6 @@ def _list(env, key, more, loader, _all=False):
 
     # remove to avoid displaying twice
     data.pop("SETTINGS_MODULE", None)
-
-    # if not --all remove internal settings
-    if not _all:
-        for name in dir(default_settings):
-            data.pop(name, None)
 
     def color(_k):
         if _k in dir(default_settings):
@@ -424,6 +427,9 @@ def _list(env, key, more, loader, _all=False):
             for k, v in data.items()
         )
         (click.echo_via_pager if more else click.echo)(datalines)
+        if output:
+            with open(output, "w") as output_file:
+                json.dump({cur_env: data}, output_file)
     else:
         key = key.upper()
         value = data.get(key)
@@ -437,6 +443,9 @@ def _list(env, key, more, loader, _all=False):
                 pprint.pformat(value),
             )
         )
+        if output:
+            with open(output, "w") as output_file:
+                json.dump({cur_env: {key.upper(): value}}, output_file)
 
     if env:
         settings.setenv()

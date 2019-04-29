@@ -2,6 +2,7 @@ import glob
 import importlib
 import os
 from contextlib import contextmanager
+from contextlib import suppress
 
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
@@ -232,6 +233,21 @@ class Settings(object):
     def values(self):
         """Redirects to store object"""
         return self.store.values()
+
+    def as_dict(self, env=None, internal=False):
+        """Returns a dictionary with set key and values.
+
+        :param env: Str env name, default self.current_env `DEVELOPMENT`
+        :param internal: bool - should include dynaconf internal vars?
+        """
+        ctx_mgr = suppress() if env is None else self.using_env(env)
+        with ctx_mgr:
+            data = self.store.copy()
+            # if not internal remove internal settings
+            if not internal:
+                for name in dir(default_settings):
+                    data.pop(name, None)
+            return data
 
     def _dotted_get(self, dotted_key, default=None, **kwargs):
         """

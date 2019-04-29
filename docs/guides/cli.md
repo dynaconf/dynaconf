@@ -100,23 +100,28 @@ Options:
                                   e.g: `dynaconf init -s TOKEN=kdslmflds
   --wg / --no-wg
   -y
+  --django TEXT
   --help                          Show this message and exit.
+
 ```
 
 ## dynaconf list
 
-List all defined parameters
+List all defined parameters and optionally export to a json file.
 
 ```
 Usage: dynaconf list [OPTIONS]
 
-  Lists all defined config values
+  Lists all user defined config values and if `--all` is passed it also
+  shows dynaconf internal variables.
 
 Options:
   -e, --env TEXT     Filters the env to get the values
   -k, --key TEXT     Filters a single key
   -m, --more         Pagination more|less style
   -l, --loader TEXT  a loader identifier to filter e.g: toml|yaml
+  -a, --all          show dynaconf internal settings?
+  -o, --output FILE  Filepath to write the listed values as json
   --help             Show this message and exit.
 ```
 
