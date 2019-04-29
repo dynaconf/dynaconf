@@ -839,7 +839,7 @@ class Settings(object):
         :param key: The flag name
         :param env: The env to look for
         """
-        env = env or self.ENVVAR_FOR_DYNACONF or "DYNACONF"
+        env = env or self.ENVVAR_PREFIX_FOR_DYNACONF or "DYNACONF"
         with self.using_env(env):
             value = self.get_fresh(key)
             return value is True or value in true_values
