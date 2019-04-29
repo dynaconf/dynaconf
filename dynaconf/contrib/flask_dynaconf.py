@@ -47,7 +47,7 @@ class FlaskDynaconf(object):
     - Load all defaults and Flask defaults
     - Load all passed variables when applying FlaskDynaconf
     - Update with data in settings files
-    - Update with data in environmente vars `ENV_FOR_DYNACONF_`
+    - Update with data in environment vars `ENVVAR_FOR_DYNACONF_`
 
 
     TOML files are very useful to have `envd` settings, lets say,
