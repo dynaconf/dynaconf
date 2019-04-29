@@ -29,6 +29,10 @@ flake8-todo
 radon
 pre-commit
 
+# tools
+ipython
+ipdb
+
 # documentation
 sphinx
 recommonmark
