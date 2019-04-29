@@ -1,10 +1,8 @@
-import io
-import os
+import json
 from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-from dotenv import cli as dotenv_cli
 
 from dynaconf import default_settings
 from dynaconf import LazySettings
@@ -90,6 +88,22 @@ def test_list(testdir):
     assert "GLOBAL_ENV_FOR_DYNACONF: 'DYNACONF'" not in result
 
 
+def test_list_export_json(testdir):
+    result = run(
+        ["list", "-o", "sets.json"], env={"ROOT_PATH_FOR_DYNACONF": testdir}
+    )
+    assert "DOTENV_STR: 'hello'" in result
+    assert "DOTENV_STR" in read_file("sets.json")
+    assert (
+        json.loads(read_file("sets.json"))["development"]["DOTENV_STR"]
+        == "hello"
+    )
+    assert (
+        json.loads(read_file("sets.json"))["development"]["DOTENV_FLOAT"]
+        == 4.2
+    )
+
+
 def test_list_with_all(testdir):
     """Test list command with --all includes interval vars"""
     result = run(["list", "-a"], env={"ROOT_PATH_FOR_DYNACONF": testdir})
@@ -142,6 +156,18 @@ def test_instance_pypath_error():
 def test_list_with_key():
     result = run(["list", "-k", "DOTENV_STR"])
     assert "DOTENV_STR: 'hello'" in result
+
+
+def test_list_with_key_export_json(tmpdir):
+    result = run(["list", "-k", "DOTENV_STR", "-o", "sets.json"])
+    assert "DOTENV_STR: 'hello'" in result
+    assert "DOTENV_STR" in read_file("sets.json")
+    assert (
+        json.loads(read_file("sets.json"))["development"]["DOTENV_STR"]
+        == "hello"
+    )
+    with pytest.raises(KeyError):
+        json.loads(read_file("sets.json"))["development"]["DOTENV_FLOAT"]
 
 
 def test_list_with_missing_key():

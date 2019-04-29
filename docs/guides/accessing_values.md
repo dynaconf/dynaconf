@@ -91,3 +91,25 @@ connect(
     passwd=settings.MYSQL.auth.get('passwd'),
 )
 ```
+
+## Export settings as a Python dictionary
+
+After exporting the settings to a python dictionary it is easy to use it to serialize as a JSON, YAML or any other format you may need.
+
+### Programmatically
+
+```py
+from dynaconf import settings
+settings.as_dict()  # a dict with only user defined values in current env
+settings.as_dict(env='production')  # a dict with only user defined values in production env
+settings.as_dict(internal=True)  # a dict with all values, user defined and dynaconf internal
+```
+
+### CLI (export to json)
+
+from your project root folder (generally the same place where you have `.env` or from where you call your scripts.
+
+```bash
+dynaconf list -o path/to/file.json
+dynaconf list -e production -o path/to/file.json
+```
