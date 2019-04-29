@@ -1,0 +1,5 @@
+[development]
+VAR1 = 'config2_dev'
+
+[production]
+VAR1 = 'config2_prod'

@@ -1,6 +1,7 @@
 import io
 import os
 
+from dynaconf.utils import ensure_a_list
 from dynaconf.utils import raw_logger
 
 
@@ -53,10 +54,10 @@ class BaseLoader(object):
             return
 
         if not isinstance(filename, (list, tuple)):
-            split_files = filename.split(",")
+            split_files = ensure_a_list(filename)
             if all([f.endswith(self.extensions) for f in split_files]):  # noqa
-                files = split_files  # it is a ['file.ini', ...]
-            else:  # it is a single ini string
+                files = split_files  # it is a ['file.ext', ...]
+            else:  # it is a single config as string
                 files = [filename]
         else:  # it is already a list/tuple
             files = filename

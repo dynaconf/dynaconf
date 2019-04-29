@@ -70,7 +70,7 @@ ENV_FOR_DYNACONF=staging python yourapp.py
 > NOTE: The settings files are optional. If it is not present, only the values from **environment variables** are used (**.env** file is also supported).
 
 Dynaconf will search for the settings files defined in `SETTINGS_FILE_FOR_DYNACONF` which by default is a list containing combinations of **settings.{py|toml|json|ini|yaml}** and **.secrets.{py|toml|json|ini|yaml}**
-and dynaconf will try to find each one of those combinations, optionally it is possible to configure it to a different set of files e.g: `export SETTINGS_FILE_FOR_DYNACONF='["myfilename.toml", "another.json"]'`, this value contains a list of relative or absolute paths, can be a toml-like list or a comma separated string and can be exported to `envvars`, write to `.env` file or passed directly to Dynaconf instance.
+and dynaconf will try to find each one of those combinations, optionally it is possible to configure it to a different set of files e.g: `export SETTINGS_FILE_FOR_DYNACONF='["myfilename.toml", "another.json"]'`, this value contains a list of relative or absolute paths, can be a toml-like list or a comma/semicolon separated string and can be exported to `envvars`, write to `.env` file or passed directly to Dynaconf instance.
 
 > IMPORTANT: Dynaconf by default reads settings files using `utf-8` encoding, if you have settings files written in other encoding please set `ENCODING_FOR_DYNACONF` environment variable.
 
@@ -80,7 +80,7 @@ See more details in [configuration](configuration.html)
 
 To find the files defined in `SETTINGS_FILE_FOR_DYNACONF` the search will start at the path defined in `ROOT_PATH_FOR_DYNACONF` (if defined), then will recursively walk to its root and then will try the **folder where the called program is located** and then it will recursivelly try its parent directories **until the root parent is reached which can be File System `/` or the current working dir** then finally will try the **current working directory** as the last option.
 
-Some people prefer to put settings in a subfolder so for each of the paths it will also search in a relative folder called `config/`.
+Some people prefer to put settings in a sub-folder so for each of the paths it will also search in a relative folder called `config/`.
 
 Dynaconf will stop searching on the first match and if no file is found it will **fail silently** unless `SILENT_ERRORS_FOR_DYNACONF=false` is exported.
 
@@ -343,8 +343,22 @@ A settings file can include a `dynaconf_include` stanza, whose exact
 It is also possible to setup includes using environment variable.
 
 ```bash
-export INCLUDES_FOR_DYNACONF='["/etc/myprogram/conf.d/*.toml"]'
+# A glob pattern
+export INCLUDES_FOR_DYNACONF='/etc/myprogram/conf.d/*.toml'
+# a single path
+export INCLUDES_FOR_DYNACONF='/path/to/file.yaml'
+# multiple files
+export INCLUDES_FOR_DYNACONF='/path/to/file.yaml;/other/path/to/file.toml'
 ```
+
+## Programmatically loading a settings file
+
+```python
+from dynaconf import settings
+settings.load_file(path="/path/to/file.toml")  # list or `;/,` separated allowed
+```
+
+> **NOTE**: programmatically loaded file is not persisted, once `env` is changed via `setenv|ugin_env`, or a `reload` or `configure` is invoked it will be cleaned, to persist it needs to go to `INCLUDES_FOR_DYNACONF` variable or you need to load it programmatically again.
 
 ## Merging existing values
 
@@ -397,6 +411,7 @@ settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234
 The same can be applied to **lists**:
 
 `settings.toml`
+
 ```cfg
 [default]
 plugins = ["core"]

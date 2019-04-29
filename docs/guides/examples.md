@@ -119,6 +119,49 @@ MESSAGE="Dynaconf works like a charm with Flask and .env"
 TEST_RULE='/flask_with_ini'
 ```
 
+## Using a default main config file plus variable settings file
+
+On the `.env`
+
+```bash
+export SETTINGS_FILE_FOR_DYNACONF="default.toml"
+```
+
+The default file
+
+```ini
+[default]
+variable1 = 'value1'
+```
+
+Now having specific settings per environment
+
+Use cases:
+
+- plugin based apps
+- user specific settings
+- dev specific settings
+
+On the **user1** environment
+
+```bash
+export INCLUDES_FOR_DYNACONF='/path/to/user1_specific_settings.toml'
+```
+
+On the **user2** environment
+
+```bash
+export INCLUDES_FOR_DYNACONF='/path/to/user2_specific_settings.toml'
+```
+
+It can be a glob
+
+```bash
+export INCLUDES_FOR_DYNACONF='/path/to/config/*.toml'
+```
+
+And also supports having a `;` or `,` separated list of paths or globs.
+
 ## More examples
 
 Take a look at [example/](https://github.com/rochacbruno/dynaconf/tree/master/example) for more examples.

@@ -39,10 +39,10 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENVVAR              | str     | The envvar which holds the list of settings files| 'SETTINGS_FILE_FOR_DYNACONF'                     | ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS                       |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| SETTINGS_FILE       | list    | List of files to load                            | | List of all supportes files:                   || SETTINGS_FILE_FOR_DYNACONF="conf.toml,settings.yaml"        |
+| SETTINGS_FILE       | list    | List of files to load                            | | List of all supportes files:                   || SETTINGS_FILE_FOR_DYNACONF="myconfig.toml"                  |
 |                     | str     |                                                  | | `settings.{py,toml,yaml,ini,conf,json}`        || SETTINGS_FILE_FOR_DYNACONF="['conf.toml','settings.yaml']"  |
-|                     |         |                                                  | | `.secrets.{py,toml,yaml,ini,conf,json}`        ||                                                             |
-|                     |         |                                                  | |                                                ||                                                             |
+|                     |         |                                                  | | `.secrets.{py,toml,yaml,ini,conf,json}`        || SETTINGS_FILE_FOR_DYNACONF="conf.toml,settings.yaml"        |
+|                     |         |                                                  | |                                                || SETTINGS_FILE_FOR_DYNACONF="conf.toml;settings.yaml"        |
 |                     |         |                                                  | | This var name can be replaced by:              ||                                                             |
 |                     |         |                                                  | | `ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS`       || MYPROGRAM_SETTINGS="conf.toml,settings.yaml"                |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
@@ -108,7 +108,11 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | SECRETS             | str     | Path to aditional secrets file to be loaded      | None                                             | SECRETS_FOR_DYNACONF=/var/jenkins/settings_ci.toml           |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| INCLUDES            | list    | A list of paths or a glob to load                | []                                               | INCLUDES_FOR_DYNACONF="['path1.ext', 'folder/*']"            |
+| INCLUDES            | list    || A list of paths or a glob to load               | []                                               | INCLUDES_FOR_DYNACONF="['path1.ext', 'folder/*']"            |
+|                     |         || can be a toml-like list, or sep by , or ;       |                                                  | INCLUDES_FOR_DYNACONF="path1.toml;path2.toml"                |
+|                     |         ||                                                 |                                                  | INCLUDES_FOR_DYNACONF="path1.toml,path2.toml"                |
+|                     |         ||                                                 |                                                  | INCLUDES_FOR_DYNACONF="single_path.toml"                     |
+|                     |         ||                                                 |                                                  | INCLUDES_FOR_DYNACONF="single_path/glob/*.toml"              |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 ```
 

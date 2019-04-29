@@ -2,9 +2,11 @@ import io
 import os
 
 from dynaconf import default_settings
+from dynaconf.utils import ensure_a_list
 from dynaconf.utils import Missing
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
+from dynaconf.utils import trimmed_split
 from dynaconf.utils.files import find_file
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import unparse_conf_data
@@ -140,3 +142,55 @@ def test_merge_existing_dict():
 
     object_merge(existing, new)
     assert new == {"host": "localhost", "port": 666, "user": "admin"}
+
+
+def test_trimmed_split():
+    # No sep
+    assert trimmed_split("hello") == ["hello"]
+
+    # a comma sep string
+    assert trimmed_split("ab.toml,cd.yaml") == ["ab.toml", "cd.yaml"]
+    # spaces are trimmed
+    assert trimmed_split(" ab.toml , cd.yaml ") == ["ab.toml", "cd.yaml"]
+
+    # a semicollon sep string
+    assert trimmed_split("ab.toml;cd.yaml") == ["ab.toml", "cd.yaml"]
+    # semicollon are trimmed
+    assert trimmed_split(" ab.toml ; cd.yaml ") == ["ab.toml", "cd.yaml"]
+
+    # has comma and also semicollon (semicollon has precedence)
+    assert trimmed_split("ab.toml,cd.yaml;ef.ini") == [
+        "ab.toml,cd.yaml",
+        "ef.ini",
+    ]
+
+    # has comma and also semicollon (changing precedence)
+    assert trimmed_split("ab.toml,cd.yaml;ef.ini", seps=(",", ";")) == [
+        "ab.toml",
+        "cd.yaml;ef.ini",
+    ]
+
+    # using different separator
+    assert trimmed_split("ab.toml|cd.yaml", seps=("|")) == [
+        "ab.toml",
+        "cd.yaml",
+    ]
+
+
+def test_ensure_a_list():
+
+    # No data is empty list
+    assert ensure_a_list(None) == []
+
+    # Sequence types is only converted
+    assert ensure_a_list([1, 2]) == [1, 2]
+    assert ensure_a_list((1, 2)) == [1, 2]
+    assert ensure_a_list({1, 2}) == [1, 2]
+
+    # A string is trimmed_splitted
+    assert ensure_a_list("ab.toml") == ["ab.toml"]
+    assert ensure_a_list("ab.toml,cd.toml") == ["ab.toml", "cd.toml"]
+    assert ensure_a_list("ab.toml;cd.toml") == ["ab.toml", "cd.toml"]
+
+    # other types get wrapped in a list
+    assert ensure_a_list(1) == [1]
