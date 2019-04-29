@@ -65,15 +65,19 @@ class DynaconfDict(dict):
 def _logger(level):
     import logging
 
-    logging.basicConfig(
-        format=(
+    formatter = logging.Formatter(
+        fmt=(
             "%(asctime)s,%(msecs)d %(levelname)-8s "
             "[%(filename)s:%(lineno)d - %(funcName)s] %(message)s"
         ),
         datefmt="%Y-%m-%d:%H:%M:%S",
-        level=getattr(logging, level, "DEBUG"),
     )
+    handler = logging.StreamHandler()
+    handler.setFormatter(formatter)
+
     logger = logging.getLogger("dynaconf")
+    logger.addHandler(handler)
+    logger.setLevel(level=getattr(logging, level, "DEBUG"))
     return logger
 
 
