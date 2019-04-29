@@ -79,6 +79,7 @@ test_examples:
 	cd example/issues/166_renamed_global_env;pwd;python app.py
 	cd example/issues/169_renamed_settings_module;pwd;python app.py
 	cd example/issues/182_multiple_locations;pwd;python app.py
+	cd example/issues/184_ipython;pwd;./test.sh
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
@@ -114,6 +115,7 @@ setup-pre-commit:
 	pre-commit install-hooks
 
 run-pre-commit:
+	rm -rf .tox/
 	pre-commit run --files $$(find -regex '.*\.\(py\|yaml\|yml\|md\)') -v
 
 pep8:

@@ -61,12 +61,13 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
 
     script_dir = os.path.dirname(os.path.abspath(inspect.stack()[-1].filename))
 
-    # Path to invoked script and recursivelly to root with its ./config dirs
+    # Path to invoked script and recursively to root with its ./config dirs
     search_tree.extend(_walk_to_root(script_dir))
 
-    # Where Python interpreter was invoked from and its ./config
-    search_tree.extend([work_dir, os.path.join(work_dir, "config")])
+    # Path to where Python interpreter was invoked and recursively to root
+    search_tree.extend(_walk_to_root(work_dir))
 
+    # Don't look the same place twice
     search_tree = deduplicate(search_tree)
 
     global SEARCHTREE
