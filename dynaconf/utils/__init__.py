@@ -166,3 +166,25 @@ def warn_deprecations(data):
                 "replace it with %s" % (old, new),
                 DeprecationWarning,
             )
+
+
+def trimmed_split(s, seps=(";", ",")):
+    """Given a string s, split is by one of one of the seps."""
+    for sep in seps:
+        if sep not in s:
+            continue
+        data = [item.strip() for item in s.strip().split(sep)]
+        return data
+    return [s]  # raw un-splitted
+
+
+def ensure_a_list(data):
+    """Ensure data is a list or wrap it in a list"""
+    if not data:
+        return []
+    if isinstance(data, (list, tuple, set)):
+        return list(data)
+    if isinstance(data, str):
+        data = trimmed_split(data)  # settings.toml,other.yaml
+        return data
+    return [data]

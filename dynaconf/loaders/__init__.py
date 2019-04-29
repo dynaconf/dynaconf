@@ -8,6 +8,7 @@ from dynaconf.loaders import py_loader
 from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.utils import deduplicate
+from dynaconf.utils import ensure_a_list
 from dynaconf.utils.parse_conf import false_values
 
 
@@ -71,20 +72,11 @@ def settings_loader(
         settings_module = settings_module or obj.settings_module
         if not settings_module:  # pragma: no cover
             return
-
-        if isinstance(settings_module, (list, tuple)):
-            files = list(settings_module)
-        else:
-            files = settings_module.split(",")
+        files = ensure_a_list(settings_module)
     else:
-        files = [filename]
+        files = ensure_a_list(filename)
 
-    secrets_file = obj.get("SECRETS_FOR_DYNACONF", None)
-    if secrets_file is not None:
-        if isinstance(secrets_file, (list, tuple)):
-            files.extend(secrets_file)
-        else:
-            files.extend(secrets_file.split(","))
+    files.extend(ensure_a_list(obj.get("SECRETS_FOR_DYNACONF", None)))
 
     found_files = []
     modules_names = []

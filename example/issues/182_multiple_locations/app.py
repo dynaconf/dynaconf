@@ -7,9 +7,8 @@ os.environ["SETTINGS_FILE_FOR_DYNACONF"] = "default.toml"
 
 
 # To make dynaconf read more file we need to include it
-# includes is a toml-like list
 print("using config 1")
-os.environ["INCLUDES_FOR_DYNACONF"] = "['./cfg/settings.toml']"
+os.environ["INCLUDES_FOR_DYNACONF"] = "./cfg/settings.toml"
 
 print("development")
 settings.setenv("development")
@@ -29,6 +28,7 @@ print("----")
 
 
 # To make dynaconf a diferent file we need to include it
+# includes can be a toml-like list
 print("using config 2")
 os.environ["INCLUDES_FOR_DYNACONF"] = "['./cfg2/settings.toml']"
 # if it is done during a running process we need to reload to read the new

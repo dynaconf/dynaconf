@@ -286,3 +286,36 @@ def test_load_nested_different_types_with_merge(tmpdir):
     assert settings.NESTED_1.nested_2.nested_3.nested_4.base == 4
     for ext in ["toml", "json", "yaml", "ini", "py"]:
         assert settings.NESTED_1.nested_2.nested_3.nested_4[ext] == 5
+
+
+def test_programmatically_file_load(tmpdir):
+    """Check file can be included programmatically"""
+    settings_file = tmpdir.join("settings.toml")
+    settings_file.write(
+        """
+       [default]
+       default_var = 'default'
+    """
+    )
+
+    settings = LazySettings(SETTINGS_FILE_FOR_DYNACONF=str(settings_file))
+    assert settings.DEFAULT_VAR == "default"
+
+    toml_plugin_file = tmpdir.join("plugin1.toml")
+    toml_plugin_file.write(
+        """
+        [development]
+        plugin_value = 'plugin'
+    """
+    )
+
+    settings.load_file(path=str(toml_plugin_file))
+    assert settings.PLUGIN_VALUE == "plugin"
+
+    settings.setenv("production")
+    assert settings.DEFAULT_VAR == "default"
+    # programmatically loaded file is not persisted
+    # once `env` is changed, or a `reload` it will be missed
+    # to persist it needs to go to `INCLUDES_FOR_DYNACONF` variable
+    with pytest.raises(AttributeError):
+        assert settings.PLUGIN_VALUE == "plugin"
