@@ -83,9 +83,18 @@ def test_init_with_path(fileformat, tmpdir):
 
 
 def test_list(testdir):
+    """Test list command shows only user defined vars"""
 
     result = run(["list"], env={"ROOT_PATH_FOR_DYNACONF": testdir})
     assert "DOTENV_STR: 'hello'" in result
+    assert "GLOBAL_ENV_FOR_DYNACONF: 'DYNACONF'" not in result
+
+
+def test_list_with_all(testdir):
+    """Test list command with --all includes interval vars"""
+    result = run(["list", "-a"], env={"ROOT_PATH_FOR_DYNACONF": testdir})
+    assert "DOTENV_STR: 'hello'" in result
+    assert "GLOBAL_ENV_FOR_DYNACONF: 'DYNACONF'" in result
 
 
 @pytest.mark.parametrize("loader", WRITERS)

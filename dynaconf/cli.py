@@ -364,8 +364,18 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     default=None,
     help="a loader identifier to filter e.g: toml|yaml",
 )
-def _list(env, key, more, loader):
-    """Lists all defined config values"""
+@click.option(
+    "--all",
+    "_all",
+    "-a",
+    default=False,
+    is_flag=True,
+    help="show dynaconf internal settings?",
+)
+def _list(env, key, more, loader, _all=False):
+    """Lists all user defined config values
+    and if `--all` is passed it also shows dynaconf internal variables.
+    """
     if env:
         env = env.strip()
     if key:
@@ -396,6 +406,11 @@ def _list(env, key, more, loader):
 
     # remove to avoid displaying twice
     data.pop("SETTINGS_MODULE", None)
+
+    # if not --all remove internal settings
+    if not _all:
+        for name in dir(default_settings):
+            data.pop(name, None)
 
     def color(_k):
         if _k in dir(default_settings):
