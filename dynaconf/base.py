@@ -11,6 +11,7 @@ from dynaconf.loaders import yaml_loader
 from dynaconf.utils import BANNER
 from dynaconf.utils import compat_kwargs
 from dynaconf.utils import deduplicate
+from dynaconf.utils import ensure_a_list
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
 from dynaconf.utils import raw_logger
@@ -720,7 +721,7 @@ class Settings(object):
         :param env: The environment to load
         :param silent: If loading erros is silenced
         :param key: if provided load a single key
-        :param filename: optinal custom filename to load
+        :param filename: optional custom filename to load
         """
         if key is None:
             default_loader(self, self._defaults)
@@ -740,16 +741,30 @@ class Settings(object):
     def load_includes(self, env, silent, key):
         """Do we have any nested includes we need to process?"""
         includes = self.get("DYNACONF_INCLUDE", [])
-        includes.extend(self.get("INCLUDES_FOR_DYNACONF", []))
+        includes.extend(ensure_a_list(self.get("INCLUDES_FOR_DYNACONF")))
         if includes:
-            self.logger.debug("Found %s includes to process", includes)
+            self.logger.debug("Processing includes %s", includes)
+            self.load_file(path=includes, env=env, silent=silent, key=key)
+
+    def load_file(self, path=None, env=None, silent=True, key=None):
+        """Programmatically load files from ``path``.
+
+        :param path: A single filename or a file list
+        :param env: Which env to load from file (default current_env)
+        :param silent: Should raise errors?
+        :param key: Load a single key?
+        """
+        env = (env or self.current_env).upper()
+        files = ensure_a_list(path)
+        if files:
+            self.logger.debug("Got %s files to process", files)
             already_loaded = set()
-            for include in includes:
-                self.logger.debug("Processing include %s", include)
-                included_filename = os.path.join(self._root_path, include)
-                self.logger.debug("Include path is %s", included_filename)
+            for _filename in files:
+                self.logger.debug("Processing file %s", _filename)
+                filepath = os.path.join(self._root_path, _filename)
+                self.logger.debug("File path is %s", filepath)
                 # Handle possible *.globs sorted alphanumeric
-                for path in sorted(glob.glob(included_filename)):
+                for path in sorted(glob.glob(filepath)):
                     self.logger.debug("Loading %s", path)
                     if path in already_loaded:  # pragma: no cover
                         self.logger.debug("Skipping %s, already loaded", path)
@@ -764,7 +779,7 @@ class Settings(object):
                     already_loaded.add(path)
             if not already_loaded:
                 self.logger.warning(
-                    "Not able to locate the files %s to include", includes
+                    "Not able to locate the files %s to load", files
                 )
 
     @property

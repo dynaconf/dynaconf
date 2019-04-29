@@ -78,6 +78,7 @@ test_examples:
 	cd example/issues/160_path_traversal_fixed;pwd;./test.sh
 	cd example/issues/166_renamed_global_env;pwd;python app.py
 	cd example/issues/169_renamed_settings_module;pwd;python app.py
+	cd example/issues/182_multiple_locations;pwd;python app.py
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
