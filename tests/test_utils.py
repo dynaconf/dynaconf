@@ -1,6 +1,8 @@
 import io
 import os
 
+import pytest
+
 from dynaconf import default_settings
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import Missing
@@ -92,6 +94,11 @@ def test_tomlfy():
         "key": "value",
         "v": 1,
     }
+
+
+@pytest.mark.parametrize("test_input", ["something=42"])
+def test_tomlfy_unparseable(test_input):
+    assert parse_conf_data(test_input, tomlfy=True) == test_input
 
 
 def test_missing_sentinel():
