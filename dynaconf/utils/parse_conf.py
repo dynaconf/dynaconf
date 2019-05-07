@@ -2,9 +2,9 @@ import json
 import os
 
 import toml
+from box import BoxKeyError
 
 from dynaconf.utils.boxing import DynaBox
-
 
 true_values = ("t", "true", "enabled", "1", "on", "yes", "True")
 false_values = ("f", "false", "disabled", "0", "off", "no", "False", "")
@@ -29,7 +29,7 @@ def parse_with_toml(data):
     """Uses TOML syntax to parse data"""
     try:
         return toml.loads("key={}".format(data), DynaBox).key
-    except toml.TomlDecodeError:
+    except (toml.TomlDecodeError, BoxKeyError):
         return data
 
 
