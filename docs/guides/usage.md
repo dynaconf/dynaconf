@@ -183,7 +183,7 @@ Dynaconf loads file in a overriding cascade loading order using the predefined o
 The order can be changed by overriding the `SETTINGS_FILE_FOR_DYNACONF` the `CORE_LOADERS_FOR_DYNACONF` and `LOADERS_FOR_DYNACONF` variables.
 
 > **NOTE**: Dynaconf works in an **layered override** mode based on the above order, so if you have multiple file formats with conflicting keys defined, the precedence will be based on the loading order.
-> If you don want to have values like `lists` and `dicts` overwritten take a look on how to [merge existing values](usage.html#merging-existing-values)
+> If you dont want to have values like `lists` and `dicts` overwritten take a look on how to [merge existing values](usage.html#merging-existing-values)
 
 ## Settings File Formats
 
