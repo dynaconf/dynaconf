@@ -400,7 +400,7 @@ default:
     dynaconf_merge: true
 ```
 
-The `dynaconf_merge` token will mark that object to be merged with existing values (of course `dynaconf_merge` key will not be added to the final settings it is jsut a mark)
+The `dynaconf_merge` token will mark that object to be merged with existing values (of course `dynaconf_merge` key will not be added to the final settings it is just a mark)
 
 The end result will be on `[development]` env:
 
