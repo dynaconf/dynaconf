@@ -4,6 +4,7 @@ from dynaconf.utils.parse_conf import parse_conf_data
 
 try:
     from hvac import Client
+    from hvac.exceptions import InvalidPath
 except ImportError:
     raise ImportError(
         "vault package is not installed in your environment. "
@@ -63,8 +64,12 @@ def load(obj, env=None, silent=None, key=None):
     client = get_client(obj)
     env_list = _get_env_list(obj, env)
     for env in env_list:
-        path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, env]).replace("//", "/")
-        data = client.read(path)
+        path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, env])
+        try:
+            data = client.secrets.kv.read_secret_version(path)
+        except InvalidPath:
+            # If the path doesn't exist, ignore it and set data to None
+            data = None
         if data:
             # There seems to be a data dict within a data dict,
             # extract the inner data
@@ -116,8 +121,6 @@ def write(obj, data=None, **kwargs):
     if not data:
         raise AttributeError("Data must be provided")
     client = get_client(obj)
-    path = "/".join(
-        [obj.VAULT_PATH_FOR_DYNACONF, obj.current_env.lower()]
-    ).replace("//", "/")
-    client.write(path, data=data)
+    path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, obj.current_env.lower()])
+    client.secrets.kv.create_or_update_secret(path, secret=data)
     load(obj)
