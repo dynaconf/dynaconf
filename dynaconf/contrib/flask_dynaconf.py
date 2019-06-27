@@ -145,6 +145,12 @@ class DynaconfConfig(Config):
         """
         return self.get(key)
 
+    def __setitem__(self, key, value):
+        """
+        Allows app.config['key'] = 'foo'
+        """
+        return self._settings.__setitem__(key, value)
+
     def __getattr__(self, name):
         """
         First try to get value from dynaconf then from Flask
