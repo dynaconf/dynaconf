@@ -2,6 +2,50 @@ Changelog
 =========
 
 
+2.0.3 (2019-06-27)
+------------------
+- Release version 2.0.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 2.0.2
+            Fix #194 flask.app.config __setitem__ (#199)
+
+      Jan Willhaus (1):
+            Catch BoxKeyError when contents are TOML parsable but not keyable (#192)
+
+      Raoul Snyman (1):
+            Use the Key Value API rather than the old 'read' and 'write' methods (#198)
+- Fix #194 flask.app.config __setitem__ (#199) [Bruno Rocha]
+
+  Flask.config was not proxying __setitem__ atribute so this
+  change adds a call to __setitem__ on contrib/flask_dynaconf
+- Use the Key Value API rather than the old 'read' and 'write' methods
+  (#198) [Raoul Snyman]
+- Catch BoxKeyError when contents are TOML parsable but not keyable
+  (#192) [Jan Willhaus]
+- Release version 2.0.2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (8):
+            Release version 2.0.1
+            Add note to release script
+            Adhering to Github Community Standards (#175)
+            removed pytest-xdist (#181)
+            Add example and test for issue #182 (#183)
+            Fix #179 dynaconf cli shows only user defined vars unless -a used (#188)
+            Fix #184 - workdir should walk to root in ipython REPL (#190)
+            Fix #189 added `settings.as_dict()` and `dynaconf list -o file.json` (#191)
+
+      Jan Willhaus (4):
+            Fix `False` not being an acceptable env (#176)
+            Fix  base loader when having no ENVVAR_PREFIX_ (Addresses #177) (#185)
+            Hide DeprecationWarning from Pytest when testing for them (#186)
+            Replace logging.basicConfig with handler on logger (#187)
+
+
 2.0.2 (2019-04-29)
 ------------------
 - Release version 2.0.2. [Bruno Rocha]
