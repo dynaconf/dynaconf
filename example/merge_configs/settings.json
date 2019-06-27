@@ -1,6 +1,6 @@
 {
     "default": {
-        "json_var": 1, 
+        "json_var": 1,
         "a_big_dict": {
             "file": {"settings.json.default": true},
             "nested_1": {
@@ -11,10 +11,10 @@
                         }
                     }
                 }
-            } 
+            }
         }
     },
-    "global": { 
+    "global": {
         "a_big_dict": {
             "file": {"settings.json.global": true}
         }

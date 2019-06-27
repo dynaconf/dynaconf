@@ -1,4 +1,4 @@
-[default]  
+[default]
 host = "server.com from TOML"
 port = 5000.0
 username = "admin"

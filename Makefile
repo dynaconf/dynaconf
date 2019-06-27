@@ -80,6 +80,7 @@ test_examples:
 	cd example/issues/169_renamed_settings_module;pwd;python app.py
 	cd example/issues/182_multiple_locations;pwd;python app.py
 	cd example/issues/184_ipython;pwd;./test.sh
+	cd example/issues/194_flask_config;pwd;python app.py
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
