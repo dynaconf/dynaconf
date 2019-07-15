@@ -45,9 +45,15 @@ def get_client(obj):
     client = Client(
         **{k: v for k, v in obj.VAULT_FOR_DYNACONF.items() if v is not None}
     )
+    if obj.VAULT_ROLE_ID_FOR_DYNACONF is not None:
+        client.auth_approle(
+            role_id=obj.VAULT_ROLE_ID_FOR_DYNACONF,
+            secret_id=obj.get("VAULT_SECRET_ID_FOR_DYNACONF"),
+        )
     assert (
         client.is_authenticated()
-    ), "Vault authentication error is VAULT_TOKEN_FOR_DYNACONF defined?"
+    ), "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF or " \
+       "VAULT_ROLE_ID_FOR_DYNACONF defined?"
     return client
 
 

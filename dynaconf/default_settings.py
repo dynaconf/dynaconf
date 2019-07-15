@@ -154,6 +154,8 @@ VAULT_ENABLED_FOR_DYNACONF = get("VAULT_ENABLED_FOR_DYNACONF", False)
 VAULT_PATH_FOR_DYNACONF = get(
     "VAULT_PATH_FOR_DYNACONF", "/secret/data/"
 )  # /DYNACONF will be added
+VAULT_ROLE_ID_FOR_DYNACONF = get("VAULT_ROLE_ID_FOR_DYNACONF", None)
+VAULT_SECRET_ID_FOR_DYNACONF = get("VAULT_SECRET_ID_FOR_DYNACONF", None)
 
 # Only core loaders defined on this list will be invoked
 core_loaders = ["YAML", "TOML", "INI", "JSON", "PY"]
