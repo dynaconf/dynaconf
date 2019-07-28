@@ -50,10 +50,10 @@ def get_client(obj):
             role_id=obj.VAULT_ROLE_ID_FOR_DYNACONF,
             secret_id=obj.get("VAULT_SECRET_ID_FOR_DYNACONF"),
         )
-    assert (
-        client.is_authenticated()
-    ), "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF or " \
-       "VAULT_ROLE_ID_FOR_DYNACONF defined?"
+    assert client.is_authenticated(), (
+        "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF or "
+        "VAULT_ROLE_ID_FOR_DYNACONF defined?"
+    )
     return client
 
 
