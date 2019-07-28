@@ -39,12 +39,12 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENVVAR              | str     | The envvar which holds the list of settings files| 'SETTINGS_FILE_FOR_DYNACONF'                     | ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS                       |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| SETTINGS_FILE       | list    | List of files to load                            | | List of all supportes files:                   || SETTINGS_FILE_FOR_DYNACONF="myconfig.toml"                  |
-|                     | str     |                                                  | | `settings.{py,toml,yaml,ini,conf,json}`        || SETTINGS_FILE_FOR_DYNACONF="['conf.toml','settings.yaml']"  |
-|                     |         |                                                  | | `.secrets.{py,toml,yaml,ini,conf,json}`        || SETTINGS_FILE_FOR_DYNACONF="conf.toml,settings.yaml"        |
-|                     |         |                                                  | |                                                || SETTINGS_FILE_FOR_DYNACONF="conf.toml;settings.yaml"        |
-|                     |         |                                                  | | This var name can be replaced by:              ||                                                             |
-|                     |         |                                                  | | `ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS`       || MYPROGRAM_SETTINGS="conf.toml,settings.yaml"                |
+| SETTINGS_FILE       | list    | List of files to load                            | | List of all supportes files:                   | SETTINGS_FILE_FOR_DYNACONF="myconfig.toml"                  |
+|                     | str     |                                                  | | `settings.{py,toml,yaml,ini,conf,json}`        | SETTINGS_FILE_FOR_DYNACONF="['conf.toml','settings.yaml']"  |
+|                     |         |                                                  | | `.secrets.{py,toml,yaml,ini,conf,json}`        | SETTINGS_FILE_FOR_DYNACONF="conf.toml,settings.yaml"        |
+|                     |         |                                                  | |                                                | SETTINGS_FILE_FOR_DYNACONF="conf.toml;settings.yaml"        |
+|                     |         |                                                  | | This var name can be replaced by:              |                                                             |
+|                     |         |                                                  | | `ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS`       | MYPROGRAM_SETTINGS="conf.toml,settings.yaml"                |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | SKIP_FILES          | list    | Files to skip/ignore if found on search tree     | []                                               | SKIP_FILES_FOR_DYNACONF="['/absolute/path/to/file.ext']"     |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
@@ -52,10 +52,10 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENV_SWITCHER        | str     | Variable used to change working env              | ENV_FOR_DYNACONF                                 | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV                      |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| ENVVAR_PREFIX       | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       || ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM  (loads MYPROGRAM_VAR) |
-|                     |         | |                                                |                                                  ||                                                             |
-|                     |         | | Example:                                       |                                                  || ENVVAR_PREFIX_FOR_DYNACONF=''         (loads _VAR)          |
-|                     |         | | If your program is called `MYPROGRAM`          |                                                  || ENVVAR_PREFIX_FOR_DYNACONF=false      (loads VAR)           |
+| ENVVAR_PREFIX       | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       | ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM  (loads MYPROGRAM_VAR) |
+|                     |         | |                                                |                                                  |                                                             |
+|                     |         | | Example:                                       |                                                  | ENVVAR_PREFIX_FOR_DYNACONF=''         (loads _VAR)          |
+|                     |         | | If your program is called `MYPROGRAM`          |                                                  | ENVVAR_PREFIX_FOR_DYNACONF=false      (loads VAR)           |
 |                     |         | | you may want users to use `MYPROGRAM_FOO=bar`  |                                                  |                                                              |
 |                     |         | | instead of `DYNACONF_FOO=bar` on envvars.      |                                                  |                                                              |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
@@ -78,13 +78,13 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | REDIS_ENABLED       | bool    | Redis loader is enabled                          | false                                            | REDIS_ENABLED_FOR_DYNACONF=true                              |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| VAULT_ENABLED       | bool    | Vault server is enabled                          | false                                            | VAULT_ENABLED_FOR_DYNACONF=true                              |
-+---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | REDIS_HOST          | str     | Redis server address                             | localhost                                        | REDIS_HOST_FOR_DYNACONF="localhost"                          |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | REDIS_PORT          | int     | Redis port                                       | 6379                                             | REDIS_PORT_FOR_DYNACONF=8899                                 |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | REDIS_DB            | int     | Redis DB                                         | 0                                                | REDIS_DB_FOR_DYNACONF=1                                      |
++---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
+| VAULT_ENABLED       | bool    | Vault server is enabled                          | false                                            | VAULT_ENABLED_FOR_DYNACONF=true                              |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | VAULT_URL           | str     | Vault URL                                        | http:// localhost :8200                          | VAULT_URL_FOR_DYNACONF="http://server/8200"                  |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
@@ -94,8 +94,8 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | VAULT_VERIFY        | bool    | vault should verify                              | None                                             | VAULT_VERIFY_FOR_DYNACONF=true                               |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-|| INSTANCE           | str     || custom instance of LazySettings                 | None                                             | INSTANCE_FOR_DYNACONF=myapp.settings                         |
-|| **used only by**   |         || Must be an importable Python module             |                                                  |                                                              |
+| INSTANCE            | str     | custom instance of LazySettings                  | None                                             | INSTANCE_FOR_DYNACONF=myapp.settings                         |
+| **used only by**    |         | Must be an importable Python module              |                                                  |                                                              |
 |`$ dynaconf` **cli** |         |                                                  |                                                  |                                                              |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | YAML_LOADER         | str     | yaml method name {safe,full,unsafe}_load         | full_load                                        | YAML_LOADER_FOR_DYNACONF=unsafe_load                         |
@@ -108,11 +108,11 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | SECRETS             | str     | Path to aditional secrets file to be loaded      | None                                             | SECRETS_FOR_DYNACONF=/var/jenkins/settings_ci.toml           |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| INCLUDES            | list    || A list of paths or a glob to load               | []                                               | INCLUDES_FOR_DYNACONF="['path1.ext', 'folder/*']"            |
-|                     |         || can be a toml-like list, or sep by , or ;       |                                                  | INCLUDES_FOR_DYNACONF="path1.toml;path2.toml"                |
-|                     |         ||                                                 |                                                  | INCLUDES_FOR_DYNACONF="path1.toml,path2.toml"                |
-|                     |         ||                                                 |                                                  | INCLUDES_FOR_DYNACONF="single_path.toml"                     |
-|                     |         ||                                                 |                                                  | INCLUDES_FOR_DYNACONF="single_path/glob/*.toml"              |
+| INCLUDES            | list    | A list of paths or a glob to load                | []                                               | INCLUDES_FOR_DYNACONF="['path1.ext', 'folder/*']"            |
+|                     |         | can be a toml-like list, or sep by , or ;        |                                                  | INCLUDES_FOR_DYNACONF="path1.toml;path2.toml"                |
+|                     |         |                                                  |                                                  | INCLUDES_FOR_DYNACONF="path1.toml,path2.toml"                |
+|                     |         |                                                  |                                                  | INCLUDES_FOR_DYNACONF="single_path.toml"                     |
+|                     |         |                                                  |                                                  | INCLUDES_FOR_DYNACONF="single_path/glob/*.toml"              |
 +---------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 ```
 
