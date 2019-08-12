@@ -147,13 +147,12 @@ default_vault = {
     "timeout": get("VAULT_TIMEOUT_FOR_DYNACONF", None),
     "proxies": get("VAULT_PROXIES_FOR_DYNACONF", None),
     "allow_redirects": get("VAULT_ALLOW_REDIRECTS_FOR_DYNACONF", None),
-    "session": get("VAULT_SESSION_FOR_DYNACONF", None),
 }
 VAULT_FOR_DYNACONF = get("VAULT_FOR_DYNACONF", default_vault)
 VAULT_ENABLED_FOR_DYNACONF = get("VAULT_ENABLED_FOR_DYNACONF", False)
-VAULT_PATH_FOR_DYNACONF = get(
-    "VAULT_PATH_FOR_DYNACONF", "/secret/data/"
-)  # /DYNACONF will be added
+VAULT_PATH_FOR_DYNACONF = get("VAULT_PATH_FOR_DYNACONF", "dynaconf")
+VAULT_ROLE_ID_FOR_DYNACONF = get("VAULT_ROLE_ID_FOR_DYNACONF", None)
+VAULT_SECRET_ID_FOR_DYNACONF = get("VAULT_SECRET_ID_FOR_DYNACONF", None)
 
 # Only core loaders defined on this list will be invoked
 core_loaders = ["YAML", "TOML", "INI", "JSON", "PY"]

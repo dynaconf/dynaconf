@@ -117,7 +117,7 @@ Now you can have keys like `PASSWORD` and `TOKEN` defined in the vault and
 dynaconf will read it.
 
 To write a new secret you can use http://localhost:8200 web admin and write keys
-under the `/secret/dynaconf` secret database.
+under the `/secret/dynaconf/< env >` secret database.
 
 You can also use the Dynaconf writer via console
 
