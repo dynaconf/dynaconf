@@ -28,23 +28,23 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | Variable              | Type    | Usage                                            | default                                          | envvar example                                               |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| ROOT_PATH             | str     | | Directory to look for settings files           | | `None`                                         | ROOT_PATH_FOR_DYNACONF="/my/custom/absolute/path/"           |
-|                       |         | |                                                |                                                  |                                                              |
-|                       |         | | This path is the base to search for            | | If set Dynaconf will look this path first      |                                                              |
-|                       |         | | files defined in `SETTINGS_FILE`               | | before it starts to search for file in the     |                                                              |
-|                       |         | | Dynaconf will also search for files            | | other locations.                               |                                                              |
-|                       |         | | in a relative `config/` subfolder if exists.   | | see: `<usage.html#the-settings-files>`_        |                                                              |
+| ROOT_PATH             | str     | Directory to look for settings files             |  `None`                                          | ROOT_PATH_FOR_DYNACONF="/my/custom/absolute/path/"           |
+|                       |         |                                                  |                                                  |                                                              |
+|                       |         | | This path is the base to search for            | If set Dynaconf will look this path first        |                                                              |
+|                       |         | | files defined in `SETTINGS_FILE`               | before it starts to search for file in th e      |                                                              |
+|                       |         | | Dynaconf will also search for files            | other locations.                                 |                                                              |
+|                       |         | | in a relative `config/` subfolder if exists.   | see: `<usage.html#the-settings-files>`_          |                                                              |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENCODING              | str     | Encoding to read settings files                  | utf-8                                            | ENCODING_FOR_DYNACONF="cp1252"                               |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENVVAR                | str     | The envvar which holds the list of settings files| 'SETTINGS_FILE_FOR_DYNACONF'                     | ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS                       |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| SETTINGS_FILE         | list    | List of files to load                            | | List of all supportes files:                   | SETTINGS_FILE_FOR_DYNACONF="myconfig.toml"                  |
-|                       | str     |                                                  | | `settings.{py,toml,yaml,ini,conf,json}`        | SETTINGS_FILE_FOR_DYNACONF="['conf.toml','settings.yaml']"  |
-|                       |         |                                                  | | `.secrets.{py,toml,yaml,ini,conf,json}`        | SETTINGS_FILE_FOR_DYNACONF="conf.toml,settings.yaml"        |
-|                       |         |                                                  | |                                                | SETTINGS_FILE_FOR_DYNACONF="conf.toml;settings.yaml"        |
-|                       |         |                                                  | | This var name can be replaced by:              |                                                             |
-|                       |         |                                                  | | `ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS`       | MYPROGRAM_SETTINGS="conf.toml,settings.yaml"                |
+| SETTINGS_FILE         | list    | List of files to load                            | List of all supportes files:                     | SETTINGS_FILE_FOR_DYNACONF="myconfig.toml"                   |
+|                       | str     |                                                  | `settings.{py,toml,yaml,ini,conf,json}`          | SETTINGS_FILE_FOR_DYNACONF="['conf.toml','settings.yaml']"   |
+|                       |         |                                                  | `.secrets.{py,toml,yaml,ini,conf,json}`          | SETTINGS_FILE_FOR_DYNACONF="conf.toml,settings.yaml"         |
+|                       |         |                                                  |                                                  | SETTINGS_FILE_FOR_DYNACONF="conf.toml;settings.yaml"         |
+|                       |         |                                                  | This var name can be replaced by:                |                                                              |
+|                       |         |                                                  | `ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS`         | MYPROGRAM_SETTINGS="conf.toml,settings.yaml"                 |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | SKIP_FILES            | list    | Files to skip/ignore if found on search tree     | []                                               | SKIP_FILES_FOR_DYNACONF="['/absolute/path/to/file.ext']"     |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
@@ -52,12 +52,12 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | ENV_SWITCHER          | str     | Variable used to change working env              | ENV_FOR_DYNACONF                                 | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV                      |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| ENVVAR_PREFIX         | str     | | Prefix for exporting parameters as env vars    | "DYNACONF"                                       | ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM  (loads MYPROGRAM_VAR) |
-|                       |         | |                                                |                                                  |                                                             |
-|                       |         | | Example:                                       |                                                  | ENVVAR_PREFIX_FOR_DYNACONF=''         (loads _VAR)          |
-|                       |         | | If your program is called `MYPROGRAM`          |                                                  | ENVVAR_PREFIX_FOR_DYNACONF=false      (loads VAR)           |
-|                       |         | | you may want users to use `MYPROGRAM_FOO=bar`  |                                                  |                                                              |
-|                       |         | | instead of `DYNACONF_FOO=bar` on envvars.      |                                                  |                                                              |
+| ENVVAR_PREFIX         | str     | Prefix for exporting parameters as env vars      | "DYNACONF"                                       | ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM  (loads MYPROGRAM_VAR)  |
+|                       |         |                                                  |                                                  |                                                              |
+|                       |         | Example:                                         |                                                  | ENVVAR_PREFIX_FOR_DYNACONF=''         (loads _VAR)           |
+|                       |         | If your program is called `MYPROGRAM`            |                                                  | ENVVAR_PREFIX_FOR_DYNACONF=false      (loads VAR)            |
+|                       |         | you may want users to use `MYPROGRAM_FOO=bar`    |                                                  |                                                              |
+|                       |         | instead of `DYNACONF_FOO=bar` on envvars.        |                                                  |                                                              |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | SILENT_ERRORS         | bool    | Loading errors should be silenced                | true                                             | SILENT_ERRORS_FOR_DYNACONF=false                             |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
@@ -71,9 +71,9 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | AUTO_CAST             | bool    | `@casting` like `@int` is parsed                 | true                                             | DOTENV_OVERRIDE_FOR_DYNACONF=false                           |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
-| MERGE_ENABLED         | bool    | | Merge list/dict vars instead of overwriting.   | false                                            | MERGE_ENABLED_FOR_DYNACONF=true                              |
+| MERGE_ENABLED         | bool    | Merge list/dict vars instead of overwriting.     | false                                            | MERGE_ENABLED_FOR_DYNACONF=true                              |
 | **deprecated**        |         |                                                  |                                                  |                                                              |
-|                       |         | | Use local merging instead                      |                                                  |                                                              |
+|                       |         | Use local merging instead                        |                                                  |                                                              |
 |                       |         | `<usage.html#merging-existing-values>`_          |                                                  |                                                              |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | REDIS_ENABLED         | bool    | Redis loader is enabled                          | false                                            | REDIS_ENABLED_FOR_DYNACONF=true                              |
@@ -114,7 +114,7 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | INSTANCE              | str     | custom instance of LazySettings                  | None                                             | INSTANCE_FOR_DYNACONF=myapp.settings                         |
 | **used only by**      |         | Must be an importable Python module              |                                                  |                                                              |
-|`$ dynaconf` **cli**   |         |                                                  |                                                  |                                                              |
+| `$ dynaconf` **cli**  |         |                                                  |                                                  |                                                              |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
 | YAML_LOADER           | str     | yaml method name {safe,full,unsafe}_load         | full_load                                        | YAML_LOADER_FOR_DYNACONF=unsafe_load                         |
 +-----------------------+---------+--------------------------------------------------+--------------------------------------------------+--------------------------------------------------------------+
