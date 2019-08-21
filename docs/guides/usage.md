@@ -63,7 +63,7 @@ or
 ENV_FOR_DYNACONF=staging python yourapp.py
 ```
 
-> **NOTE:** When using [FLask Extension](flask.html) the environment can be changed via `FLASK_ENV` variable and for [Django Extension](django.html) you can use `DJANGO_ENV`.
+> **NOTE:** When using [Flask Extension](flask.html) the environment can be changed via `FLASK_ENV` variable and for [Django Extension](django.html) you can use `DJANGO_ENV`.
 
 ## The settings files
 
