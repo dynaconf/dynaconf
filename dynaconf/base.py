@@ -7,6 +7,7 @@ from contextlib import suppress
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
 from dynaconf.loaders import enable_external_loaders
+from dynaconf.loaders import py_loader
 from dynaconf.loaders import settings_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.utils import BANNER
@@ -777,6 +778,14 @@ class Settings(object):
             already_loaded = set()
             for _filename in files:
                 self.logger.debug("Processing file %s", _filename)
+
+                if py_loader.try_to_load_from_py_module_name(
+                    obj=self, name=_filename, silent=True
+                ):
+                    # if it was possible to load from module name
+                    # continue the loop.
+                    continue
+
                 filepath = os.path.join(self._root_path, _filename)
                 self.logger.debug("File path is %s", filepath)
                 # Handle possible *.globs sorted alphanumeric

@@ -319,3 +319,58 @@ def test_programmatically_file_load(tmpdir):
     # to persist it needs to go to `INCLUDES_FOR_DYNACONF` variable
     with pytest.raises(AttributeError):
         assert settings.PLUGIN_VALUE == "plugin"
+
+
+def test_include_via_python_module_name(tmpdir):
+    """Check if an include can be a Python module name"""
+    settings_file = tmpdir.join("settings.toml")
+    settings_file.write(
+        """
+       [default]
+       default_var = 'default'
+    """
+    )
+
+    dummy_folder = tmpdir.mkdir("dummy")
+    dummy_folder.join("dummy_module.py").write('FOO = "164110"')
+    dummy_folder.join("__init__.py").write('print("initing dummy...")')
+
+    settings = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
+        INCLUDES_FOR_DYNACONF=["dummy.dummy_module"],
+    )
+
+    assert settings.DEFAULT_VAR == "default"
+    assert settings.FOO == "164110"
+
+
+def test_include_via_python_module_name_and_otjers(tmpdir):
+    """Check if an include can be a Python module name plus others"""
+    settings_file = tmpdir.join("settings.toml")
+    settings_file.write(
+        """
+       [default]
+       default_var = 'default'
+    """
+    )
+
+    dummy_folder = tmpdir.mkdir("dummy")
+    dummy_folder.join("dummy_module.py").write('FOO = "164110"')
+    dummy_folder.join("__init__.py").write('print("initing dummy...")')
+
+    yaml_file = tmpdir.join("otherfile.yaml")
+    yaml_file.write(
+        """
+       default:
+         yaml_value: 748632
+    """
+    )
+
+    settings = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
+        INCLUDES_FOR_DYNACONF=["dummy.dummy_module", "otherfile.yaml"],
+    )
+
+    assert settings.DEFAULT_VAR == "default"
+    assert settings.FOO == "164110"
+    assert settings.YAML_VALUE == 748632
