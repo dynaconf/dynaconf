@@ -3,6 +3,7 @@ import importlib
 import inspect
 import io
 import types
+from contextlib import suppress
 from pathlib import Path
 
 from dynaconf import default_settings
@@ -24,6 +25,12 @@ def load(obj, settings_module, identifier="py", silent=False, key=None):
         )
         return
 
+    load_from_python_object(obj, mod, settings_module, key, identifier)
+
+
+def load_from_python_object(
+    obj, mod, settings_module, key=None, identifier=None
+):
     for setting in dir(mod):
         if setting.isupper():
             if key is None or key == setting:
@@ -35,8 +42,31 @@ def load(obj, settings_module, identifier="py", silent=False, key=None):
                     identifier,
                 )
                 obj.set(setting, setting_value, loader_identifier=identifier)
-
     obj._loaded_files.append(mod.__file__)
+
+
+def try_to_load_from_py_module_name(
+    obj, name, key=None, identifier="py", silent=False
+):
+    """Try to load module by its string name.
+
+    Arguments:
+        obj {LAzySettings} -- Dynaconf settings instance
+        name {str} -- Name of the module e.g: foo.bar.zaz
+
+    Keyword Arguments:
+        key {str} -- Single key to be loaded (default: {None})
+        identifier {str} -- Name of identifier to store (default: 'py')
+        silent {bool} -- Weather to raise or silence exceptions.
+    """
+    ctx = suppress(ImportError, TypeError) if silent else suppress()
+
+    with ctx:
+        mod = importlib.import_module(name)
+        load_from_python_object(obj, mod, name, key, identifier)
+        return True  # loaded ok!
+    # if it reaches this point that means exception occurred, module not found.
+    return False
 
 
 def get_module(obj, filename, silent=False):
@@ -51,6 +81,7 @@ def get_module(obj, filename, silent=False):
         if mod and not mod._is_error:
             loaded_from = "filename"
         else:
+            # it is important to return None in case of not loaded
             loaded_from = None
     return mod, loaded_from
 
