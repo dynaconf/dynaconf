@@ -2,6 +2,72 @@ Changelog
 =========
 
 
+2.0.4 (2019-08-22)
+------------------
+- Release version 2.0.4. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 2.0.3
+            Fix #207 allow python module path name for includes (#209)
+
+      Michał Bartoszkiewicz (1):
+            Update usage.md (#208)
+
+      Pavel Alimpiev (2):
+            Refactor Vault integration (#202)
+            Update configuration.md (#205)
+
+      Tanveer Alam (2):
+            Update usage.md (#196)
+            Update usage.md (#195)
+- Fix #207 allow python module path name for includes (#209) [Bruno
+  Rocha]
+- Update usage.md (#208) [Michał Bartoszkiewicz]
+
+  Change 'FLask' to 'Flask'
+- Update configuration.md (#205) [Pavel Alimpiev]
+- Refactor Vault integration (#202) [Pavel Alimpiev]
+
+  * Add AppRole based authorization for Vault loader
+
+  * Fix default value for VAULT_PATH_FOR_DYNACONF, Update docs
+
+  * HVAC automatically adds /secret/ prefix on read and write access
+  * /dynaconf was never added to the VAULT_PATH_FOR_DYNACONF value
+  * Docs was inconsistent with the actual code base
+
+  * Fix inconsistency in the docs
+
+  * Remove VAULT_SESSION_FOR_DYNACONF config variable.
+
+  * HVAC's session argument must be a fully initialized Session object,
+  that means - it's very complicated to setup Vault client with this
+  argument, via default instruments (.toml, .env, etc)
+  * Users can still setup this argument by setting up VAULT_FOR_DYNACONF
+  directly
+
+  * Update documentation for VAULT_* configuration
+
+  * Fix code style
+- Update usage.md (#195) [Tanveer Alam]
+- Update usage.md (#196) [Tanveer Alam]
+- Release version 2.0.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 2.0.2
+            Fix #194 flask.app.config __setitem__ (#199)
+
+      Jan Willhaus (1):
+            Catch BoxKeyError when contents are TOML parsable but not keyable (#192)
+
+      Raoul Snyman (1):
+            Use the Key Value API rather than the old 'read' and 'write' methods (#198)
+
+
 2.0.3 (2019-06-27)
 ------------------
 - Release version 2.0.3. [Bruno Rocha]
