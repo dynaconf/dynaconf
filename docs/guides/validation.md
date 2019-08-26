@@ -54,8 +54,9 @@ settings.validators.register(
     # Ensure the database.host field exists.
     Validator('DATABASE.HOST', must_exist=True),
 
-    # Make the database.password field optional.
-    Validator('DATABASE.PASSWORD', must_exist=True),
+    # Make the database.password field optional. This is a default behavior.
+    Validator('DATABASE.PASSWORD', must_exist=None),
+)
 
 # Fire the validator
 settings.validators.validate()

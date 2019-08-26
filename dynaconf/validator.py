@@ -9,7 +9,7 @@ class Validator(object):
     """Validators are conditions attached to settings variables names
     or patterns::
 
-        Validator('MESSAGE', defined=True, eq='Hello World')
+        Validator('MESSAGE', must_exist=True, eq='Hello World')
 
     The above ensure MESSAGE is available in default env and
     is equal to 'Hello World'
@@ -38,7 +38,7 @@ class Validator(object):
 
     `when` holds a validator and its return decides if validator runs or not::
 
-        Validator('NAME', defined=True, when=Validator('OTHER', eq=2))
+        Validator('NAME', must_exist=True, when=Validator('OTHER', eq=2))
         # NAME is required only if OTHER eq to 2
         # When the very first thing to be performed when passed.
         # if no env is passed to `when` it is inherited
