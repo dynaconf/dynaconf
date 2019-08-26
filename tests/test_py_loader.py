@@ -1,8 +1,11 @@
 import io
 import os
 
+import pytest
+
 from dynaconf import default_settings
 from dynaconf.loaders.py_loader import load
+from dynaconf.loaders.py_loader import try_to_load_from_py_module_name
 from dynaconf.utils import DynaconfDict
 
 
@@ -33,3 +36,28 @@ def test_py_loader_from_module(tmpdir):
     load(settings, "dummy.dummy_module")
 
     assert settings.exists("FOO")
+
+
+def test_try_to_load_from_py_module_name(tmpdir):
+    settings = DynaconfDict()
+    dummy_folder = tmpdir.mkdir("dummy")
+
+    dummy_folder.join("dummy_module.py").write('FOO = "bar"')
+    dummy_folder.join("__init__.py").write('print("initing dummy...")')
+
+    try_to_load_from_py_module_name(settings, "dummy.dummy_module")
+
+    assert settings.exists("FOO")
+
+
+def test_negative_try_to_load_from_py_module_name(tmpdir):
+    settings = DynaconfDict()
+    with pytest.raises(ImportError):
+        try_to_load_from_py_module_name(settings, "foo.bar.dummy")
+
+
+def test_silently_try_to_load_from_py_module_name(tmpdir):
+    settings = DynaconfDict()
+    try_to_load_from_py_module_name(settings, "foo.bar.dummy", silent=True)
+
+    assert settings.exists("FOO") is False
