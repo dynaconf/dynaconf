@@ -132,15 +132,22 @@ def write(obj, data=None, **kwargs):
     load(obj)
 
 
-def load_keys(obj, path):
-    """load all the keys specified at gived path in vault.
+def list_envs(obj, path=""):
+    """
+    This function is a helper to get a list of all the existing envs in
+    the source of data, the use case is:
+        existing_envs = vault_loader.list_envs(settings)
+        for env in exiting_envs:
+            with settings.using_env(env):  # switch to the env
+            # do something with a key of that env
 
     :param obj: settings object
     :param path: path to the vault secrets
     :return: list containing all the keys at the given path
     """
     client = get_client(obj)
+    path = path or obj.get("VAULT_PATH_FOR_DYNACONF")
     try:
-        return client.list('/secret/metadata/{}'.format(path))['data']['keys']
+        return client.list("/secret/metadata/{}".format(path))["data"]["keys"]
     except TypeError:
         return []

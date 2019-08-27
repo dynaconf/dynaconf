@@ -514,8 +514,6 @@ class Settings(object):
 
         if not isinstance(env, str):
             raise AttributeError("env should be a string")
-        if "_" in env:
-            raise AttributeError("env should not contains _")
 
         self.logger.debug("env switching to: %s", env)
 
