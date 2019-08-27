@@ -130,3 +130,17 @@ def write(obj, data=None, **kwargs):
     path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, obj.current_env.lower()])
     client.secrets.kv.create_or_update_secret(path, secret=data)
     load(obj)
+
+
+def load_keys(obj, path):
+    """load all the keys specified at gived path in vault.
+
+    :param obj: settings object
+    :param path: path to the vault secrets
+    :return: list containing all the keys at the given path
+    """
+    client = get_client(obj)
+    try:
+        return client.list('/secret/metadata/{}'.format(path))['data']['keys']
+    except TypeError:
+        return []
