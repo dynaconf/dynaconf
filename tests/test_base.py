@@ -324,6 +324,7 @@ def test_dotted_traversal_access(settings):
 
 
 def test_dotted_set(settings):
+    settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
 
     settings.set("nested_1.nested_2.nested_3.nested_4", "secret")
 
@@ -340,24 +341,86 @@ def test_dotted_set(settings):
     }
 
     with pytest.raises(KeyError):
-        settings.NESTED_1.NESTED_5
+        settings.NESTED_1.NESTED_2_0
+
+    settings.set("nested_1.nested_2_0", "Hello")
+    assert settings.NESTED_1.NESTED_2_0 == "Hello"
+
+    settings.set("nested_1.nested_2.nested_3.nested_4", "Updated Secret")
+    assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "Updated Secret"
+    assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {
+        "nested_4": "Updated Secret"
+    }
+    assert settings.NESTED_1.NESTED_2.to_dict() == {
+        "nested_3": {"nested_4": "Updated Secret"}
+    }
+
+    assert settings.get("nested_1").to_dict() == {
+        "nested_2": {"nested_3": {"nested_4": "Updated Secret"}},
+        "nested_2_0": "Hello",
+    }
+    settings.set(
+        "nested_1.nested_2.nested_3.nested_4", "New Stuff", merge=False
+    )
+    assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "New Stuff"
+    assert settings.NESTED_1.NESTED_2.NESTED_3 == {"nested_4": "New Stuff"}
+    assert settings.NESTED_1.NESTED_2 == {
+        "nested_3": {"nested_4": "New Stuff"}
+    }
+    assert settings.NESTED_1 == {
+        "nested_2": {"nested_3": {"nested_4": "New Stuff"}}
+    }
+    assert settings.get("nested_1").to_dict() == {
+        "nested_2": {"nested_3": {"nested_4": "New Stuff"}}
+    }
 
 
 def test_dotted_set_with_merge(settings):
-    settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
+    settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
 
-    settings.set(
-        "MERGE.KEY", {"items": [{"name": "item 1"}, {"name": "item 2"}]}
-    )
-    settings.set(
-        "MERGE.KEY", {"items": [{"name": "item 3"}, {"name": "item 4"}]}
-    )
-
-    assert settings.MERGE.KEY == {
-        "items": [
-            {"name": "item 1"},
-            {"name": "item 2"},
-            {"name": "item 3"},
-            {"name": "item 4"},
-        ]
+    start_data = {
+        "default": {
+            "NAME": "testdb",
+            "ENGINE": "db.foo.bar",
+            "PORT": 6666,
+            "PARAMS": ["a", "b", "c"],
+            "ATTRS": {"a": 1, "b": 2},
+        }
     }
+    settings.set("DATABASES", start_data)
+
+    assert settings.DATABASES == start_data
+
+    # Change DB name
+    settings.set("DATABASES.default.NAME", "bladb")
+    assert settings.DATABASES != start_data
+    assert settings.DATABASES["default"].keys() == start_data["default"].keys()
+    settings.DATABASES.default.NAME == "bladb"
+
+    # Add new item to the list
+    assert settings.DATABASES.default.PARAMS == ["a", "b", "c"]
+    settings.set("DATABASES.default.PARAMS", ["d", "e"])
+    assert settings.DATABASES != start_data
+    assert settings.DATABASES["default"].keys() == start_data["default"].keys()
+    assert settings.DATABASES.default.PARAMS == ["a", "b", "c", "d", "e"]
+
+    # Add new item to the dict
+    assert settings.DATABASES.default.ATTRS == {"a": 1, "b": 2}
+    settings.set("DATABASES.default.ATTRS", {"c": 3})
+    assert settings.DATABASES != start_data
+    assert settings.DATABASES["default"].keys() == start_data["default"].keys()
+    assert settings.DATABASES.default.ATTRS == {"a": 1, "b": 2, "c": 3}
+
+    # Replace the entire list
+    settings.set(
+        "DATABASES.default.PARAMS", '@reset ["x", "y", "z"]', tomlfy=True
+    )
+    assert settings.DATABASES != start_data
+    assert settings.DATABASES["default"].keys() == start_data["default"].keys()
+    assert settings.DATABASES.default.PARAMS == ["x", "y", "z"]
+
+    # Replace the entire dict
+    settings.set("DATABASES.default.ATTRS", "@reset {x=26}", tomlfy=True)
+    assert settings.DATABASES != start_data
+    assert settings.DATABASES["default"].keys() == start_data["default"].keys()
+    assert settings.DATABASES.default.ATTRS == {"x": 26}

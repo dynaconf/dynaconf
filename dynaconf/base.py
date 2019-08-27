@@ -556,19 +556,35 @@ class Settings(object):
         for key in keys:
             self.unset(key)
 
-    def _dotted_set(self, dotted_key, value, tomlfy=False, **kwargs):
+    def _dotted_set(
+        self, dotted_key, value, tomlfy=False, merge=True, **kwargs
+    ):
+        """Sets dotted keys as nested dictionaries.
 
-        data = DynaBox(default_box=True)
-        tree = data
+        Arguments:
+            dotted_key {str} -- A traversal name e.g: foo.bar.zaz
+            value {Any} -- The value to set to the nested value.
+
+        Keyword Arguments:
+            tomlfy {bool} -- Perform toml parsing (default: {False})
+            merge {bool} -- Merge existing dictionaries (default: {False})
+        """
+
         split_keys = dotted_key.split(".")
+        existing_data = self.get(split_keys[0], {}) if merge else {}
+        new_data = DynaBox(default_box=True)
 
+        tree = new_data
         for k in split_keys[:-1]:
             tree = tree.setdefault(k, {})
 
         value = parse_conf_data(value, tomlfy=tomlfy)
         tree[split_keys[-1]] = value
 
-        self.update(data=data, **kwargs)
+        if existing_data and merge:
+            object_merge({split_keys[0]: existing_data}, new_data)
+
+        self.update(data=new_data, tomlfy=tomlfy, **kwargs)
 
     def set(
         self,
@@ -578,6 +594,7 @@ class Settings(object):
         tomlfy=False,
         dotted_lookup=True,
         is_secret=False,
+        merge=True,
     ):
         """Set a value storing references for the loader
 
@@ -586,11 +603,16 @@ class Settings(object):
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param is_secret: Bool define if secret values is hidden on logs.
+        :param merge: Bool define if existing nested/dotted will be merged.
         """
 
         if "." in key and dotted_lookup is True:
             return self._dotted_set(
-                key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
+                key,
+                value,
+                loader_identifier=loader_identifier,
+                tomlfy=tomlfy,
+                merge=merge,
             )
 
         value = parse_conf_data(value, tomlfy=tomlfy)

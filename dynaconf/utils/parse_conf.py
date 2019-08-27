@@ -22,6 +22,7 @@ converters = {
     "@comment": lambda value: None,
     "@null": lambda value: None,
     "@none": lambda value: None,
+    "@reset": lambda value: value,
 }
 
 
