@@ -33,10 +33,10 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     ENCODING | str | Encoding to read settings files. | utf-8 | ENCODING_FOR_DYNACONF=”cp1252”
     ENVVAR | str | The envvar which holds the list of settings files. | ‘SETTINGS_FILE_FOR_DYNACONF’ | ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS
     SETTINGS_FILE | list, str | List of files to load. | List of all supportes files: *settings.{py,toml,yaml,ini,conf,json} .secrets.{py,toml,yaml,ini,conf,json}*. This var name can be replaced by: *ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS* | SETTINGS_FILE_FOR_DYNACONF=”myconfig.toml” SETTINGS_FILE_FOR_DYNACONF=”[‘conf.toml’,’settings.yaml’]” SETTINGS_FILE_FOR_DYNACONF=”conf.toml,settings.yaml” SETTINGS_FILE_FOR_DYNACONF=”conf.toml;settings.yaml” MYPROGRAM_SETTINGS=”conf.toml,settings.yaml”
-    SKIP_FILES | list | Files to skip/ignore if found on search tree.| [] | SKIP_FILES_FOR_DYNACONF=”[‘/absolute/path/to/file.ext’]”
-    ENV | str| Working environment. | “development” | ENV_FOR_DYNACONF=production
-    ENV_SWITCHER | str| Variable used to change working env. | ENV_FOR_DYNACONF | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV
-    ENVVAR_PREFIX | str| Prefix for exporting parameters as env vars. Example: If your program is called *MYPROGRAM* you may want users to use *MYPROGRAM_FOO=bar* instead of *DYNACONF_FOO=bar* on envvars. | “DYNACONF” | ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM (loads MYPROGRAM_VAR) ENVVAR_PREFIX_FOR_DYNACONF=’’ (loads _VAR) ENVVAR_PREFIX_FOR_DYNACONF=false (loads VAR)
+    SKIP_FILES | list | Files to skip/ignore if found on search tree. | [] | SKIP_FILES_FOR_DYNACONF=”[‘/absolute/path/to/file.ext’]”
+    ENV | str | Working environment. | “development” | ENV_FOR_DYNACONF=production
+    ENV_SWITCHER | str | Variable used to change working env. | ENV_FOR_DYNACONF | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV
+    ENVVAR_PREFIX | str | Prefix for exporting parameters as env vars. Example: If your program is called *MYPROGRAM* you may want users to use *MYPROGRAM_FOO=bar* instead of *DYNACONF_FOO=bar* on envvars. | “DYNACONF” | ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM (loads MYPROGRAM_VAR) ENVVAR_PREFIX_FOR_DYNACONF=’’ (loads _VAR) ENVVAR_PREFIX_FOR_DYNACONF=false (loads VAR)
     SILENT_ERRORS | bool | Loading errors should be silenced. | true | SILENT_ERRORS_FOR_DYNACONF=false
     FRESH_VARS | list | A list of vars to be re-loaded on every access. | [] | FRESH_VARS_FOR_DYNACONF=[“HOST”, “PORT”]
     DEBUG_LEVEL | str | Upper case logging level. | NOTSET | DEBUG_LEVEL_FOR_DYNACONF=DEBUG
@@ -59,7 +59,7 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     VAULT_PROXIES | dict | Vault proxies. | None | VAULT_PROXIES_FOR_DYNACONF={http=”http:/localhost:3128/”}
     VAULT_ALLOW_REDIRECTS | bool | Vault allow redirects. | None | VAULT_ALLOW_REDIRECTS_FOR_DYNACONF=false
     VAULT_CERT | str | Vault cert/pem file path. | None | VAULT_CERT_FOR_DYNACONF=”~/.ssh/key.pem”
-    VAULT_VERIFY | bool| Vault should verify. | None | VAULT_VERIFY_FOR_DYNACONF=true
+    VAULT_VERIFY | bool | Vault should verify. | None | VAULT_VERIFY_FOR_DYNACONF=true
     VAULT_ROLE_ID | str | Vault Role ID. | None | VAULT_ROLE_ID_FOR_DYNACONF=”some-role-id”
     VAULT_SECRET_ID | str | Vault Secret ID. | None | VAULT_SECRET_ID_FOR_DYNACONF=”some-secret-id”
     INSTANCE **used only by** *$dynaconf** *cli*. | str | Custom instance of LazySettings Must be an importable Python module. | None | INSTANCE_FOR_DYNACONF=myapp.settings
