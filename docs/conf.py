@@ -113,6 +113,7 @@ html_theme_options = {
     # 'codecov_button': True,
     'show_related': True,
     'fixed_sidebar': False,
+    'page_width': 'auto',
 
 }
 
