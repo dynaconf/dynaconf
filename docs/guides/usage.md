@@ -391,7 +391,26 @@ In an environment variable:
 export DYNACONF_DATABASE='{password=1234, dynaconf_merge=true}'
 ```
 
-Or in an additional file (e.g `settings.yaml, .secrets.yaml, etc`):
+It is also possible to use nested  `dunder` traversal like:
+
+```bash
+export DYNACONF_DATABASE__password=1234
+export DYNACONF_DATABASE__user=admin
+export DYNACONF_DATABASE__ARGS__timeout=30
+export DYNACONF_DATABASE__ARGS__retries=5
+```
+
+Each `__` is parsed as a level traversing thought dict keys. read more in [environment variables](environment_variables.html#nested-keys-in-dictionaries-via-environment-variables)
+
+So the above will result in
+
+```py
+DATABASE = {'password': 1234, 'user': 'admin', 'ARGS': {'timeout': 30, 'retries': 5}}
+```
+
+> **IMPORTANT** lower case keys are respected only on *nix systems, unfortunately Windows environment variables are case insensitive and Python reads it as all upper cases, that means that if you are running on Windows the dictionary can have only upper case keys.
+
+Or in an additional file (e.g `settings.yaml, .secrets.yaml, etc`) by using `dynaconf_merge` token:
 
 ```yaml
 default:

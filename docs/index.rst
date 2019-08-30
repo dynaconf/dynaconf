@@ -88,11 +88,14 @@ Dynaconf - Easy and Powerful Settings Configuration for Python
 Who is using Dynaconf?
 ^^^^^^^^^^^^^^^^^^^^^^
 
-- Pulp Project - Django - (Red Hat)
-- Ansible Galaxy - Django - (Red Hat)
-- Insights QE (Red Hat)
+- Pulp Project - Django - (RedHat)
+- Ansible Galaxy - Django - (RedHat)
+- Insights QE (RedHat)
+- CloudForms QE (RedHat)
 - Seek AI & Catho Job boards - Flask - (on AI APIs)
 - Quokka CMS - Flask
+- iNNOVO Cloud GmbH
+- Teraki
 
 Are you using Dynaconf? Please `give feedback`_
 

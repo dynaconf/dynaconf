@@ -1,4 +1,4 @@
-import os
+from os import environ
 
 from dotenv import cli as dotenv_cli
 
@@ -27,7 +27,7 @@ def load_from_env(identifier, key, env, obj, silent):
         env_ = "{0}_".format(env)
     try:
         if key:
-            value = os.environ.get("{0}{1}".format(env_, key))
+            value = environ.get("{0}{1}".format(env_, key))
             if value:
                 obj.logger.debug(
                     "env_loader: loading by key: %s:%s (%s:%s)",
@@ -41,7 +41,7 @@ def load_from_env(identifier, key, env, obj, silent):
             trim_len = len(env_)
             data = {
                 key[trim_len:]: parse_conf_data(data, tomlfy=True)
-                for key, data in os.environ.items()
+                for key, data in environ.items()
                 if key.startswith(env_)
             }
             if data:
@@ -60,4 +60,4 @@ def load_from_env(identifier, key, env, obj, silent):
 def write(settings_path, settings_data, **kwargs):
     """Write data to .env file"""
     for key, value in settings_data.items():
-        dotenv_cli.set_key(str(settings_path), key.upper(), str(value))
+        dotenv_cli.set_key(str(settings_path), key, str(value))

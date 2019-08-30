@@ -188,3 +188,17 @@ def test_using_env(tmpdir):
     with settings.using_env("DEVELOPMENT", filename=str(tmpfile)):
         assert settings.HOST == "devserver.com"
     assert settings.HOST == "prodserver.com"
+
+
+def test_load_dunder():
+    """Test load with dunder settings"""
+    yaml = """
+    foo:
+       bar: blaz
+       zaz: naz
+       colors__black__code: '#000000'
+       COLORS__black__name: Black
+    """
+    load(settings, filename=yaml, env="FOO")
+    assert settings.COLORS.black.code == "#000000"
+    assert settings.COLORS.black.name == "Black"

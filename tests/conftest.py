@@ -1,3 +1,4 @@
+import copy
 import os
 import sys
 
@@ -55,3 +56,13 @@ def go_to_tmpdir(request):
     # Chdir only for the duration of the test.
     with tmpdir.as_cwd():
         yield
+
+
+@pytest.fixture(scope="module")
+def clean_env(request):
+    backup = copy.deepcopy(os.environ)
+    for key in os.environ.keys():
+        if key.startswith("DYNACONF_"):
+            del os.environ[key]
+    yield
+    os.environ.update(backup)

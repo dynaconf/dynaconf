@@ -32,7 +32,8 @@ def load_from_python_object(
     obj, mod, settings_module, key=None, identifier=None
 ):
     for setting in dir(mod):
-        if setting.isupper():
+        # at least 3 first chars should be upper to be considered a setting var
+        if setting[:3].isupper():
             if key is None or key == setting:
                 setting_value = getattr(mod, setting)
                 obj.logger.debug(

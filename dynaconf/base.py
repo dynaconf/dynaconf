@@ -7,6 +7,7 @@ from contextlib import suppress
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
 from dynaconf.loaders import enable_external_loaders
+from dynaconf.loaders import env_loader
 from dynaconf.loaders import py_loader
 from dynaconf.loaders import settings_loader
 from dynaconf.loaders import yaml_loader
@@ -537,24 +538,30 @@ class Settings(object):
         for key in list(self.store.keys()):
             self.unset(key)
 
-    def unset(self, key):
+    def unset(self, key, force=False):
         """Unset on all references
 
         :param key: The key to be unset
+        :param force: Bypass default checks and force unset
         """
         key = key.strip().upper()
-        if key not in dir(default_settings) and key not in self._defaults:
+        if (
+            key not in dir(default_settings)
+            and key not in self._defaults
+            or force
+        ):
             self.logger.debug("Unset %s", key)
             delattr(self, key)
             self.store.pop(key, None)
 
-    def unset_all(self, keys):  # pragma: no cover
+    def unset_all(self, keys, force=False):  # pragma: no cover
         """Unset based on a list of keys
 
         :param keys: a list of keys
+        :param force: Bypass default checks and force unset
         """
         for key in keys:
-            self.unset(key)
+            self.unset(key, force=force)
 
     def _dotted_set(
         self, dotted_key, value, tomlfy=False, merge=True, **kwargs
@@ -567,7 +574,7 @@ class Settings(object):
 
         Keyword Arguments:
             tomlfy {bool} -- Perform toml parsing (default: {False})
-            merge {bool} -- Merge existing dictionaries (default: {False})
+            merge {bool} -- Merge existing dictionaries (default: {True})
         """
 
         split_keys = dotted_key.split(".")
@@ -606,6 +613,11 @@ class Settings(object):
         :param merge: Bool define if existing nested/dotted will be merged.
         """
 
+        nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
+        if nested_sep and nested_sep in key:
+            # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
+            key = key.replace(nested_sep, ".")
+
         if "." in key and dotted_lookup is True:
             return self._dotted_set(
                 key,
@@ -618,6 +630,15 @@ class Settings(object):
         value = parse_conf_data(value, tomlfy=tomlfy)
         key = key.strip().upper()
         existing = getattr(self, key, None)
+
+        if getattr(value, "dynaconf_del", None):
+            self.unset(key, force=True)
+            return
+
+        if getattr(value, "dynaconf_reset", False):
+            # just in case someone use a `@reset` in a first level var.
+            value = value.value
+
         if existing is not None and existing != value:
             value = self._merge_before_set(key, existing, value, is_secret)
 
@@ -784,6 +805,10 @@ class Settings(object):
         if includes:
             self.logger.debug("Processing includes %s", includes)
             self.load_file(path=includes, env=env, silent=silent, key=key)
+            # ensure env vars are the last thing loaded after all includes
+            last_loader = self.loaders and self.loaders[-1]
+            if last_loader and last_loader == env_loader:
+                last_loader.load(self, env, silent, key)
 
     def load_file(self, path=None, env=None, silent=True, key=None):
         """Programmatically load files from ``path``.

@@ -9,6 +9,33 @@ from dynaconf.utils.boxing import DynaBox
 true_values = ("t", "true", "enabled", "1", "on", "yes", "True")
 false_values = ("f", "false", "disabled", "0", "off", "no", "False", "")
 
+
+class MetaValue:
+    """A Marker to trigger specific actions on `set` and `object_merge`"""
+
+    meta_value = True
+
+    def __init__(self, value):
+        self.value = parse_conf_data(value, tomlfy=True)
+
+    def __repr__(self):
+        return "{_class}({value}) on {_id}".format(
+            _class=self.__class__.__name__, value=self.value, _id=id(self)
+        )
+
+
+class Reset(MetaValue):
+    """Triggers an existing key to be reset to its value"""
+
+    dynaconf_reset = True
+
+
+class Del(MetaValue):
+    """Triggers an existing key to be deleted"""
+
+    dynaconf_del = True
+
+
 converters = {
     "@int": int,
     "@float": float,
@@ -16,13 +43,15 @@ converters = {
         lambda value: True if str(value).lower() in true_values else False
     ),
     "@json": json.loads,
+    # Meta Values to trigger pre assignment actions
+    "@reset": lambda value: Reset(value),
+    "@del": lambda value: Del(value),
     # Special markers to be used as placeholders e.g: in prefilled forms
     # will always return None when evaluated
     "@note": lambda value: None,
     "@comment": lambda value: None,
     "@null": lambda value: None,
     "@none": lambda value: None,
-    "@reset": lambda value: value,
 }
 
 
