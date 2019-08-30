@@ -1,0 +1,8 @@
+.document{
+    max-width:100%;
+    overflow: hidden;
+}
+
+#configuration-options.section{
+    overflow: auto;
+}
