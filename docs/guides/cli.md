@@ -122,7 +122,22 @@ Options:
   -l, --loader TEXT  a loader identifier to filter e.g: toml|yaml
   -a, --all          show dynaconf internal settings?
   -o, --output FILE  Filepath to write the listed values as json
+  --output-flat      Output file is flat (do not include [env] name)
   --help             Show this message and exit.
+```
+
+### Exporting current environment as a file
+
+```bash
+dynaconf list -o path/to/file.yaml
+```
+
+The above command will export all the items showed by `dynaconf list` to the desired format which is inferred by the `-o` file extension, supported formats `yaml, toml, ini, json, py`
+
+When using `py` you may want a flat output (without being nested inside the env key)
+
+```bash
+dynaconf list -o path/to/file.py --output-flat
 ```
 
 ## dynaconf write

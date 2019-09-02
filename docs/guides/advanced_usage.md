@@ -148,3 +148,22 @@ settings = LazySettings(
 ```
 
 Then the working environment can now be switched using `export PROJECTNAME_ENV=production`
+
+## Exporting
+
+You can generate a file with current configs by calling `dynaconf list -o /path/to/file.ext` see more in [cli](cli.html)
+
+You can also do that programmatically with:
+
+```py
+from dynaconf import loaders
+from dynaconf import settings
+from dynaconf.utils.boxing import DynaBox
+
+# generates a dict with all the keys for `development` env
+data = settings.as_dict(env='development')
+
+# writes to a file, the format is inferred by extension
+# can be .yaml, .toml, .ini, .json, .py
+loaders.write('/path/to/file.yaml', DynaBox(data).to_dict(), merge=False, env='development')
+```

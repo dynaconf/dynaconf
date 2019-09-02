@@ -9,6 +9,7 @@ from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.utils import deduplicate
 from dynaconf.utils import ensure_a_list
+from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.parse_conf import false_values
 
 
@@ -174,3 +175,17 @@ def enable_external_loaders(obj):
         ):  # noqa
             obj.logger.debug("loaders: Enabling %s", loader)
             obj.LOADERS_FOR_DYNACONF.insert(0, loader)
+
+
+def write(filename, data, env=None):
+    """Writes `data` to `filename` infers format by file extension."""
+    loader_name = "{0}_loader".format(filename.rpartition(".")[-1])
+    loader = globals().get(loader_name)
+    if not loader:
+        raise IOError("{0} cannot be found.".format(loader_name))
+
+    data = DynaBox(data).to_dict()
+    if env and env not in data:
+        data = {env: data}
+
+    loader.write(filename, data, merge=False)

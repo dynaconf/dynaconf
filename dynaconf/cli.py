@@ -15,6 +15,7 @@ from dotenv import cli as dotenv_cli
 from dynaconf import constants
 from dynaconf import default_settings
 from dynaconf import LazySettings
+from dynaconf import loaders
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils.files import read_file
 from dynaconf.utils.parse_conf import parse_conf_data
@@ -380,7 +381,14 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     default=None,
     help="Filepath to write the listed values as json",
 )
-def _list(env, key, more, loader, _all=False, output=None):
+@click.option(
+    "--output-flat",
+    "flat",
+    is_flag=True,
+    default=False,
+    help="Output file is flat (do not include [env] name)",
+)
+def _list(env, key, more, loader, _all=False, output=None, flat=False):
     """Lists all user defined config values
     and if `--all` is passed it also shows dynaconf internal variables.
     """
@@ -428,8 +436,7 @@ def _list(env, key, more, loader, _all=False, output=None):
         )
         (click.echo_via_pager if more else click.echo)(datalines)
         if output:
-            with open(output, "w") as output_file:
-                json.dump({cur_env: data}, output_file)
+            loaders.write(output, data, env=not flat and cur_env)
     else:
         key = key.upper()
         value = data.get(key)
@@ -444,8 +451,9 @@ def _list(env, key, more, loader, _all=False, output=None):
             )
         )
         if output:
-            with open(output, "w") as output_file:
-                json.dump({cur_env: {key.upper(): value}}, output_file)
+            loaders.write(
+                output, {key.upper(): value}, env=not flat and cur_env
+            )
 
     if env:
         settings.setenv()
