@@ -344,7 +344,7 @@ def test_include_via_python_module_name(tmpdir):
     assert settings.FOO == "164110"
 
 
-def test_include_via_python_module_name_and_otjers(tmpdir):
+def test_include_via_python_module_name_and_others(tmpdir):
     """Check if an include can be a Python module name plus others"""
     settings_file = tmpdir.join("settings.toml")
     settings_file.write(

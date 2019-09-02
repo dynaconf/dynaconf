@@ -1,4 +1,6 @@
 import os
+import sys
+from os import environ
 
 import pytest
 
@@ -7,17 +9,17 @@ from dynaconf.loaders.env_loader import load
 from dynaconf.loaders.env_loader import load_from_env
 
 # GLOBAL ENV VARS
-os.environ["DYNACONF_HOSTNAME"] = "host.com"
-os.environ["DYNACONF_PORT"] = "@int 5000"
-os.environ["DYNACONF_ALIST"] = '@json ["item1", "item2", "item3", 123]'
-os.environ["DYNACONF_ADICT"] = '@json {"key": "value", "int": 42}'
-os.environ["DYNACONF_DEBUG"] = "@bool true"
-os.environ["DYNACONF_MUSTBEFRESH"] = "first"
-os.environ["DYNACONF_MUSTBEALWAYSFRESH"] = "first"
-os.environ["DYNACONF_SHOULDBEFRESHINCONTEXT"] = "first"
-os.environ["DYNACONF_VALUE"] = "@float 42.1"
+environ["DYNACONF_HOSTNAME"] = "host.com"
+environ["DYNACONF_PORT"] = "@int 5000"
+environ["DYNACONF_ALIST"] = '@json ["item1", "item2", "item3", 123]'
+environ["DYNACONF_ADICT"] = '@json {"key": "value", "int": 42}'
+environ["DYNACONF_DEBUG"] = "@bool true"
+environ["DYNACONF_MUSTBEFRESH"] = "first"
+environ["DYNACONF_MUSTBEALWAYSFRESH"] = "first"
+environ["DYNACONF_SHOULDBEFRESHINCONTEXT"] = "first"
+environ["DYNACONF_VALUE"] = "@float 42.1"
 
-# os.environ['FRESH_VARS_FOR_DYNACONF'] = '@json ["MUSTBEALWAYSFRESH"]'
+# environ['FRESH_VARS_FOR_DYNACONF'] = '@json ["MUSTBEALWAYSFRESH"]'
 # settings.configure()
 settings.configure(
     FRESH_VARS_FOR_DYNACONF=["MUSTBEALWAYSFRESH"],
@@ -33,7 +35,7 @@ def test_env_loader():
 
 
 def test_single_key():
-    os.environ["DYNACONF_HOSTNAME"] = "changedhost.com"
+    environ["DYNACONF_HOSTNAME"] = "changedhost.com"
     load(settings, key="HOSTNAME")
     # hostname is reloaded
     assert settings.HOSTNAME == "changedhost.com"
@@ -50,14 +52,14 @@ def test_dotenv_loader():
 
 def test_get_fresh():
     assert settings.MUSTBEFRESH == "first"
-    os.environ["DYNACONF_MUSTBEFRESH"] = "second"
+    environ["DYNACONF_MUSTBEFRESH"] = "second"
     with pytest.raises(AssertionError):
         # fresh should now be second
         assert settings.exists("MUSTBEFRESH")
         assert settings.get_fresh("MUSTBEFRESH") == "first"
     assert settings.get_fresh("MUSTBEFRESH") == "second"
 
-    os.environ["DYNACONF_THISMUSTEXIST"] = "@int 1"
+    environ["DYNACONF_THISMUSTEXIST"] = "@int 1"
     # must tnot exist yet (not loaded)
     assert settings.exists("THISMUSTEXIST") is False
     # must exist because fresh will call loaders
@@ -65,8 +67,8 @@ def test_get_fresh():
     # loaders run only once
     assert settings.get("THISMUSTEXIST") == 1
 
-    os.environ["DYNACONF_THISMUSTEXIST"] = "@int 23"
-    del os.environ["DYNACONF_THISMUSTEXIST"]
+    environ["DYNACONF_THISMUSTEXIST"] = "@int 23"
+    del environ["DYNACONF_THISMUSTEXIST"]
     # this should error because envvar got cleaned
     # but it is not, so cleaners should be fixed
     assert settings.get_fresh("THISMUSTEXIST") is None
@@ -75,24 +77,24 @@ def test_get_fresh():
     with pytest.raises(KeyError):
         settings["THISMUSTEXIST"]
 
-    os.environ["DYNACONF_THISMUSTEXIST"] = "@int 23"
+    environ["DYNACONF_THISMUSTEXIST"] = "@int 23"
     load(settings)
     assert settings.get("THISMUSTEXIST") == 23
 
 
 def test_always_fresh():
-    # assert os.environ['FRESH_VARS_FOR_DYNACONF'] == '@json ["MUSTBEALWAYSFRESH"]'  # noqa
+    # assert environ['FRESH_VARS_FOR_DYNACONF'] == '@json ["MUSTBEALWAYSFRESH"]'  # noqa
     assert settings.FRESH_VARS_FOR_DYNACONF == ["MUSTBEALWAYSFRESH"]
     assert settings.MUSTBEALWAYSFRESH == "first"
-    os.environ["DYNACONF_MUSTBEALWAYSFRESH"] = "second"
+    environ["DYNACONF_MUSTBEALWAYSFRESH"] = "second"
     assert settings.MUSTBEALWAYSFRESH == "second"
-    os.environ["DYNACONF_MUSTBEALWAYSFRESH"] = "third"
+    environ["DYNACONF_MUSTBEALWAYSFRESH"] = "third"
     assert settings.MUSTBEALWAYSFRESH == "third"
 
 
 def test_fresh_context():
     assert settings.SHOULDBEFRESHINCONTEXT == "first"
-    os.environ["DYNACONF_SHOULDBEFRESHINCONTEXT"] = "second"
+    environ["DYNACONF_SHOULDBEFRESHINCONTEXT"] = "second"
     assert settings.SHOULDBEFRESHINCONTEXT == "first"
     with settings.fresh():
         assert settings.get("DOTENV_INT") == 1
@@ -106,7 +108,7 @@ def test_cleaner():
 
 
 def test_empty_string_prefix():
-    os.environ["_VALUE"] = "underscored"
+    environ["_VALUE"] = "underscored"
     load_from_env(
         identifier="env_global", key=None, env="", obj=settings, silent=True
     )
@@ -114,7 +116,7 @@ def test_empty_string_prefix():
 
 
 def test_no_prefix():
-    os.environ["VALUE"] = "no_prefix"
+    environ["VALUE"] = "no_prefix"
     load_from_env(
         identifier="env_global", key=None, env=False, obj=settings, silent=True
     )
@@ -122,7 +124,7 @@ def test_no_prefix():
 
 
 def test_none_as_string_prefix():
-    os.environ["NONE_VALUE"] = "none as prefix"
+    environ["NONE_VALUE"] = "none as prefix"
     load_from_env(
         identifier="env_global",
         key=None,
@@ -131,3 +133,226 @@ def test_none_as_string_prefix():
         silent=True,
     )
     assert settings.VALUE == "none as prefix"
+
+
+def clean_environ(prefix):
+    keys = [k for k in environ if k.startswith(prefix)]
+    for key in keys:
+        environ.pop(key)
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Windows env vars are case insensitive",
+)
+def test_load_dunder(clean_env):
+    """Test load and merge with dunder settings"""
+    clean_environ("DYNACONF_DATABASES")
+    settings.set(
+        "DATABASES",
+        {
+            "default": {
+                "NAME": "db",
+                "ENGINE": "module.foo.engine",
+                "ARGS": {"timeout": 30},
+                "PORTS": [123, 456],
+            }
+        },
+    )
+    # change engine
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default__ENGINE"] = "other.module"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES.default.ENGINE == "other.module"
+
+    # change timeout directly
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default__ARGS__timeout"] = "99"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES.default.ARGS.timeout == 99
+
+    # add to ARGS
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default__ARGS"] = "{retries=10}"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES.default.ARGS.retries == 10
+    assert settings.DATABASES.default.ARGS.timeout == 99
+
+    # Ensure dictionary keeps its format
+    assert settings.DATABASES == {
+        "default": {
+            "NAME": "db",
+            "ENGINE": "other.module",
+            "ARGS": {"timeout": 99, "retries": 10},
+            "PORTS": [123, 456],
+        }
+    }
+    assert "default" in settings["DATABASES"].keys()
+    assert "DEFAULT" not in settings["DATABASES"].keys()
+    assert "NAME" in settings["DATABASES"]["default"].keys()
+    assert "name" not in settings["DATABASES"]["default"].keys()
+
+    # Clean args
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default__ARGS"] = "@reset {timeout=8}"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES.default.ARGS == {"timeout": 8}
+
+    # Make args empty
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default__ARGS"] = "@reset {}"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES.default.ARGS == {}
+
+    # Remove ARGS key
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default__ARGS"] = "@del"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert "ARGS" not in settings.DATABASES.default.keys()
+
+    # add to existing PORTS
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default__PORTS"] = "[789, 101112]"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert "ARGS" not in settings.DATABASES.default.keys()
+    assert settings.DATABASES.default.PORTS == [123, 456, 789, 101112]
+
+    # reset PORTS
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default__PORTS"] = "@reset [789, 101112]"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert "ARGS" not in settings.DATABASES.default.keys()
+    assert settings.DATABASES.default.PORTS == [789, 101112]
+
+    # delete PORTS
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default__PORTS"] = "@del"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert "ARGS" not in settings.DATABASES.default.keys()
+    assert "PORTS" not in settings.DATABASES.default.keys()
+
+    # reset default key
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default"] = "@reset {}"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES.default == {}
+
+    # remove default
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__default"] = "@del"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES == {}
+
+    # set value to databases
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES__foo"] = "bar"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES == {"foo": "bar"}
+
+    # reset databases
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES"] = "{hello='world'}"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES == {"hello": "world"}
+
+    # also reset databases
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES"] = "@reset {yes='no'}"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.DATABASES == {"yes": "no"}
+
+    # remove databases
+    clean_environ("DYNACONF_DATABASES")
+    environ["DYNACONF_DATABASES"] = "@del"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        env="dynaconf",
+        obj=settings,
+        silent=True,
+    )
+    assert "DATABASES" not in settings

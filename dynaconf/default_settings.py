@@ -119,6 +119,13 @@ ENCODING_FOR_DYNACONF = get("ENCODING_FOR_DYNACONF", "utf-8")
 # Merge objects on load
 MERGE_ENABLED_FOR_DYNACONF = get("MERGE_ENABLED_FOR_DYNACONF", False)
 
+# BY default `__` is the separator for nested env vars
+# export `DYNACONF__DATABASE__server=server.com`
+# export `DYNACONF__DATABASE__PORT=6666`
+# Should result in settings.DATABASE == {'server': 'server.com', 'PORT': 6666}
+# To disable it one can set `NESTED_SEPARATOR_FOR_DYNACONF=false`
+NESTED_SEPARATOR_FOR_DYNACONF = get("NESTED_SEPARATOR_FOR_DYNACONF", "__")
+
 # The env var specifying settings module
 ENVVAR_FOR_DYNACONF = get("ENVVAR_FOR_DYNACONF", "SETTINGS_FILE_FOR_DYNACONF")
 

@@ -121,6 +121,18 @@ def test_missing_sentinel():
     assert str(missing) == "<dynaconf.missing>"
 
 
+def test_meta_values():
+    reset = parse_conf_data("@reset [1, 2]", tomlfy=True)
+    assert reset.value == [1, 2]
+    assert reset.dynaconf_reset is True
+    assert "Reset([1, 2])" in repr(reset)
+
+    _del = parse_conf_data("@del", tomlfy=True)
+    assert _del.value == ""
+    assert _del.dynaconf_del is True
+    assert "Del()" in repr(_del)
+
+
 def test_merge_existing_list():
     existing = ["bruno", "karla"]
     object_merge(existing, existing)

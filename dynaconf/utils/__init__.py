@@ -23,9 +23,11 @@ def object_merge(old, new, unique=False):
 
     :param unique: When set to True existing list items are not set.
     """
+    if old == new:
+        # Nothing to merge
+        return
+
     if isinstance(old, list) and isinstance(new, list):
-        if old == new:
-            return
         for item in old[::-1]:
             if unique and item in new:
                 continue
@@ -36,6 +38,15 @@ def object_merge(old, new, unique=False):
                 new[key] = value
             else:
                 object_merge(value, new[key])
+
+        # Cleanup of MetaValues on New dict
+        for key, value in new.items():
+            if getattr(new[key], "dynaconf_reset", False):
+                # new Reset triggers cleanup of existing data
+                new[key] = new[key].value
+            elif getattr(new[key], "dynaconf_del", False):
+                # new Del triggers deletion of existing data
+                new.pop(key, None)
 
 
 class DynaconfDict(dict):

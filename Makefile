@@ -13,6 +13,7 @@ test_examples:
 	cd example/;pwd;python full_example.py | grep -c full_example || exit 1
 	cd example/;pwd;python compat.py
 	cd example/app;pwd;python app.py | grep -c app || exit 1
+	cd example/dunder;pwd;python app.py || exit 1
 	cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv || exit 1
 	cd example/merge_configs;pwd;python app.py | grep -c merge_configs || exit 1
 	cd example/dynaconf_merge;pwd;python app.py

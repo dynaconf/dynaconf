@@ -163,3 +163,18 @@ def test_using_env(tmpdir):
     with settings.using_env("DEVELOPMENT", filename=str(tmpfile)):
         assert settings.HOST == "devserver.com"
     assert settings.HOST == "prodserver.com"
+
+
+def test_load_dunder():
+    """Test loading with dunder settings"""
+    _JSON = """
+    {
+      "foo": {
+        "colors__yellow__code": "#FFCC00",
+        "COLORS__yellow__name": "Yellow"
+      }
+    }
+    """
+    load(settings, filename=_JSON, env="FOO")
+    assert settings.COLORS.yellow.code == "#FFCC00"
+    assert settings.COLORS.yellow.name == "Yellow"
