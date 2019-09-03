@@ -2,6 +2,8 @@ import os
 
 import pytest
 
+from dynaconf import LazySettings
+from dynaconf.loaders import toml_loader
 from dynaconf.utils.parse_conf import true_values
 
 
@@ -424,3 +426,79 @@ def test_dotted_set_with_merge(settings):
     assert settings.DATABASES != start_data
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     assert settings.DATABASES.default.ATTRS == {"x": 26}
+
+
+def test_from_env_method(clean_env, tmpdir):
+    data = {
+        "default": {"a_default": "From default env"},
+        "development": {
+            "value": "From development env",
+            "only_in_development": True,
+        },
+        "other": {"value": "From other env", "only_in_other": True},
+    }
+    toml_path = str(tmpdir.join("base_settings.toml"))
+    toml_loader.write(toml_path, data, merge=False)
+    settings = LazySettings(SETTINGS_FILE_FOR_DYNACONF=toml_path)
+    settings.set("ARBITRARY_KEY", "arbitrary value")
+
+    assert settings.VALUE == "From development env"
+    assert settings.A_DEFAULT == "From default env"
+    assert settings.ONLY_IN_DEVELOPMENT is True
+    assert settings.ARBITRARY_KEY == "arbitrary value"
+    assert settings.get("ONLY_IN_OTHER") is None
+
+    # clone the settings object pointing to a new env
+    other_settings = settings.from_env("other")
+    assert other_settings.VALUE == "From other env"
+    assert other_settings.A_DEFAULT == "From default env"
+    assert other_settings.ONLY_IN_OTHER is True
+    assert other_settings.get("ARBITRARY_KEY") is None
+    assert other_settings.get("ONLY_IN_DEVELOPMENT") is None
+    with pytest.raises(AttributeError):
+        # values set programatically are not cloned
+        other_settings.ARBITRARY_KEY
+    with pytest.raises(AttributeError):
+        # values set only in a specific env not cloned
+        other_settings.ONLY_IN_DEVELOPMENT
+    # assert it is cached not created twice
+    assert other_settings is settings.from_env("other")
+
+    # Now the same using keep=True
+    other_settings = settings.from_env("other", keep=True)
+    assert other_settings.VALUE == "From other env"
+    assert other_settings.A_DEFAULT == "From default env"
+    assert other_settings.ONLY_IN_OTHER is True
+    assert other_settings.ONLY_IN_DEVELOPMENT is True
+    assert settings.ARBITRARY_KEY == "arbitrary value"
+
+    # assert it is created not cached
+    assert other_settings is not settings.from_env("other")
+
+    # settings remains the same
+    assert settings.VALUE == "From development env"
+    assert settings.A_DEFAULT == "From default env"
+    assert settings.ONLY_IN_DEVELOPMENT is True
+    assert settings.ARBITRARY_KEY == "arbitrary value"
+    assert settings.get("ONLY_IN_OTHER") is None
+
+    # additional kwargs
+    data = {
+        "default": {"a_default": "From default env"},
+        "production": {"value": "From prod env", "only_in_prod": True},
+        "other": {"value": "From other env", "only_in_other": True},
+    }
+    toml_path = str(tmpdir.join("other_settings.toml"))
+    toml_loader.write(toml_path, data, merge=False)
+
+    new_other_settings = other_settings.from_env(
+        "production", keep=True, SETTINGS_FILE_FOR_DYNACONF=toml_path
+    )
+
+    # production values
+    assert new_other_settings.VALUE == "From prod env"
+    assert new_other_settings.ONLY_IN_PROD is True
+    # keep=True values
+    assert new_other_settings.ONLY_IN_OTHER is True
+    assert new_other_settings.ONLY_IN_DEVELOPMENT is True
+    assert settings.A_DEFAULT == "From default env"

@@ -24,29 +24,117 @@ Now you can use `export MYPROGRAM_FOO=bar` instead of `DYNACONF_FOO=bar`
 
 ## Switching working environments
 
-To switch the `environment` programatically you can use `setenv` or `using_env`.
+You can switch between existing environments using:
+
+- `from_env`: (**recommended**) Will create a new settings instance pointing to defined env.
+- `setenv`: Will set the existing instance to defined env.
+- `using_env`: Context manager that will have defined env only inside its scope.
+
+### from_env
+
+> **New in 2.0.5**
+
+Return a new isolated settings object pointing to specified env.
+
+Example of settings.toml::
+
+```ini
+[development]
+message = 'This is in dev'
+foo = 1
+[other]
+message = 'this is in other env'
+bar = 2
+```
+
+Program::
+
+```py
+>>> from dynaconf import settings
+>>> print(settings.MESSAGE)
+'This is in dev'
+>>> print(settings.FOO)
+1
+>>> print(settings.BAR)
+AttributeError: settings object has no attribute 'BAR'
+```
+
+Then you can use `from_env`:
+
+```py
+>>> print(settings.from_env('other').MESSAGE)
+'This is in other env'
+>>> print(settings.from_env('other').BAR)
+2
+>>> print(settings.from_env('other').FOO)
+AttributeError: settings object has no attribute 'FOO'
+```
+
+The existing `settings` object remains the same.
+
+```py
+>>> print(settings.MESSAGE)
+'This is in dev'
+```
+
+You can assign new settings objects to different `envs` like:
+
+```py
+development_settings = settings.from_env('development')
+other_settings = settings.from_env('other')
+```
+
+And you can choose if the variables from different `envs` will be chained and overridden in a sequence:
+
+```py
+all_settings = settings.from_env('development', keep=True).from_env('other', keep=True)
+
+>>> print(all_settings.MESSAGE)
+'This is in other env'
+>>> print(all_settings.FOO)
+1
+>>> print(all_settings.BAR)
+2
+```
+
+The variables from [development] are loaded keeping pre-loaded values, then the variables from [other] are loaded keeping pre-loaded from [development] and overriding it.
+
+It is also possible to pass additional [configuration](configuration.html) variables to `from_env` method.
+
+```py
+new_settings = settings.from_env('production', keep=True, SETTINGS_FILE_FOR_DYNACONF='another_file_path.yaml')
+```
+
+Then the `new_settings` will inherit all the variables from existing env and also load the `another_file_path.yaml` production env.
+
+### setenv
+
+Will change `in_place` the `env` for the existing object.
+
+```python
+from dynaconf import settings
+
+settings.setenv('other')
+# now values comes from [other] section of config
+assert settings.MESSAGE == 'This is in other env'
+
+settings.setenv()
+# now working env are back to previous
+```
+
+### using_env
 
 Using context manager
 
 ```python
 from dynaconf import settings
 
-with settings.using_env('envname'):
-    # now values comes from [envmane] section of config
-    assert settings.HOST == 'host.com
-```
+with settings.using_env('other'):
+    # now values comes from [other] section of config
+    assert settings.MESSAGE == 'This is in other env'
 
-Using env setter
-
-```python
-from dynaconf import settings
-
-settings.setenv('envname')
-# now values comes from [envmane] section of config
-assert settings.HOST == 'host.com'
-
-settings.setenv()
-# now working env are back to previous
+# existing settings back to normal after the context manager scope
+assert settings.MESSAGE == 'This is in dev'
 ```
 
 ## Populating objects

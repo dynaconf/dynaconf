@@ -8,7 +8,7 @@ from dynaconf.utils import object_merge
 
 try:
     from configobj import ConfigObj
-except ImportError as e:  # pragma: no cover
+except ImportError:  # pragma: no cover
     ConfigObj = None
 
 

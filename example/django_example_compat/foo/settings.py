@@ -31,7 +31,9 @@ settings = dynaconf.DjangoDynaconf(
 
 
 # test
-assert settings.ENVVAR_PREFIX_FOR_DYNACONF == "MYWEBAPP"
+assert (
+    settings.ENVVAR_PREFIX_FOR_DYNACONF == "MYWEBAPP"
+), settings.ENVVAR_PREFIX_FOR_DYNACONF
 assert settings.GLOBAL_ENV_FOR_DYNACONF == "MYWEBAPP"
 assert settings.PLUGIN_ENABLED is True
 assert settings.PLUGIN_LIST == ["plugin1", "plugin2"]
