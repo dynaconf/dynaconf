@@ -28,7 +28,12 @@ REDIS_HOST_FOR_DYNACONF=localhost
 REDIS_PORT_FOR_DYNACONF=6379
 ```
 
-You can now write variables direct in to a redis hash named `DYNACONF_< env >`
+You can now write variables direct in to a redis hash named `DYNACONF_< env >` for example:
+
+- `DYNACONF_DEFAULT`: default values
+- `DYNACONF_DEVELOPMENT`: loaded only when `ENV_FOR_DYNACONF=development` (default)
+- `DYNACONF_PRODUCTION`: loaded only when `ENV_FOR_DYNACONF=production`
+- `DYNACONF_CUSTOM`: loaded only when `ENV_FOR_DYNACONF=custom`
 
 You can also use the redis writer
 
@@ -39,17 +44,35 @@ $ dynaconf write redis -v name=Bruno -v database=localhost -v port=1234
 The above data will be recorded in redis as a hash:
 
 ```
-DYNACONF_DYNACONF {
+DYNACONF_DEFAULT {
     NAME='Bruno'
     DATABASE='localhost'
     PORT='@int 1234'
 }
 ```
 
+If you want to write to specific `env` pass the `-e` option.
+
+```bash
+$ dynaconf write redis -v name=Bruno -v database=localhost -v port=1234 -e production
+```
+
+The above data will be recorded in redis as a hash:
+
+```
+DYNACONF_PRODUCTION {
+    NAME='Bruno'
+    DATABASE='localhost'
+    PORT='@int 1234'
+}
+```
+
+Then to access that values you can set `export ENV_FOR_DYNACONF=production` or directly via `settings.from_env('production').NAME`
+
 > if you want to skip type casting, write as string intead of PORT=1234 use PORT="'1234'".
 
 Data is read from redis and another loaders only once when `dynaconf.settings` is first accessed
-or when `.setenv()` or `using_env()` are invoked.
+or when `from_env`, `.setenv()` or `using_env()` are invoked.
 
 You can access the fresh value using **settings.get_fresh(key)**
 
@@ -62,6 +85,8 @@ print(settings.FOO)  # this data was loaded once on import
 
 with settings.fresh():
     print(settings.FOO)  # this data is being freshly reloaded from source
+
+print(settings.get('FOO', fresh=True))  # this data is being freshly reloaded from source
 ```
 
 And you can also force some variables to be **fresh** setting in your setting file
@@ -88,42 +113,7 @@ print(settings.MYSQL_HOST)  # This data is being read from redis imediatelly!
 
 ## Using Hashicorp Vault to store secrets
 
-The https://www.vaultproject.io/ is a key:value store for secrets and Dynaconf can load
-variables from a Vault secret.
-
-1. Run a vault server
-
-Run a Vault server installed or via docker:
-
-```bash
-$ docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
-```
-
-2. Install support for vault in dynaconf
-
-```bash
-$ pip install dynaconf[vault]
-```
-
-3. In your `.env` file or in exported environment variables define:
-
-```bash
-VAULT_ENABLED_FOR_DYNACONF=true
-VAULT_URL_FOR_DYNACONF="http://localhost:8200"
-VAULT_TOKEN_FOR_DYNACONF="myroot"
-```
-
-Now you can have keys like `PASSWORD` and `TOKEN` defined in the vault and
-dynaconf will read it.
-
-To write a new secret you can use http://localhost:8200 web admin and write keys
-under the `/secret/dynaconf/< env >` secret database.
-
-You can also use the Dynaconf writer via console
-
-```bash
-$ dynaconf write vault -s password=123456
-```
+Read more in [Using Vault Server section](sensitive_secrets.html)
 
 ## Custom Storages
 

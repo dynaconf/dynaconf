@@ -1,6 +1,7 @@
 import io
 import os
 
+from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import raw_logger
 
@@ -64,21 +65,7 @@ class BaseLoader(object):
 
         self.obj._loaded_files.extend(files)
 
-        # add the [default] env
-        env_list = [self.obj.get("DEFAULT_ENV_FOR_DYNACONF")]
-
-        # compatibility with older versions that still uses [dynaconf] as
-        # [default] env
-        global_env = self.obj.get("ENVVAR_PREFIX_FOR_DYNACONF") or "DYNACONF"
-        if global_env not in env_list:
-            env_list.append(global_env)
-
-        # add the current [env]
-        if self.env not in env_list:
-            env_list.append(self.env)
-
-        # add the [global] env
-        env_list.append("GLOBAL")
+        env_list = build_env_list(self.obj, self.env)
 
         # load all envs
         self._read(files, env_list, silent, key)
@@ -138,7 +125,10 @@ class BaseLoader(object):
                             raise KeyError(message)
                     continue
 
-                if env != self.obj.get("DEFAULT_ENV_FOR_DYNACONF"):
+                if (
+                    env.lower()
+                    != self.obj.get("DEFAULT_ENV_FOR_DYNACONF").lower()
+                ):
                     identifier = "{0}_{1}".format(self.identifier, env.lower())
                 else:
                     identifier = self.identifier

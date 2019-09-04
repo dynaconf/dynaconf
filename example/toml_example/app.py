@@ -38,3 +38,48 @@ print(settings.HOST)
 print(settings.get("INEXISTENT"))  # None
 
 print(settings.WORKS)
+
+
+assertions = {
+    "HOST": "dev_server.com from toml",
+    "PORT": 5000,
+    "USERNAME": "admin",
+    "PASSWORD": "Secret",
+    "LEVELS": ["debug", "info", "warning"],
+    "MONEY": 500.5,
+    "AGE": 42,
+    "ENABLED": True,
+    "WORKS": "toml_example in dev env",
+    "CUSTOM": "this is custom from [development]",
+    "TEST_LOADERS": {"dev": "test_dev", "prod": "test_prod"},
+}
+
+for key, value in assertions.items():
+    found = settings.get(key)
+    assert found == getattr(settings, key)
+    assert (
+        found == value
+    ), "expected: {key}: [{value}] found: [{found}]".format(**locals())
+
+
+assertions = {
+    "HOST": "prod_server.com from toml",
+    "PORT": 5000,
+    "USERNAME": "admin",
+    "PASSWORD": "Secret",
+    "LEVELS": ["debug", "info", "warning"],
+    "MONEY": 500.5,
+    "AGE": 42,
+    "ENABLED": True,
+    "WORKS": "toml_example in prod env",
+    "CUSTOM": "this is custom from [production]",
+    "TEST_LOADERS": {"dev": "test_dev", "prod": "test_prod"},
+}
+
+
+for key, value in assertions.items():
+    found = settings.from_env("production").get(key)
+    assert found == getattr(settings.from_env("production"), key)
+    assert (
+        found == value
+    ), "expected: {key}: [{value}] found: [{found}]".format(**locals())

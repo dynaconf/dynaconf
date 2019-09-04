@@ -203,3 +203,37 @@ def ensure_a_list(data):
         data = trimmed_split(data)  # settings.toml,other.yaml
         return data
     return [data]
+
+
+def build_env_list(obj, env):
+    """Build env list for loaders to iterate.
+
+    Arguments:
+        obj {LazySettings} -- A Dynaconf settings instance
+        env {str} -- The current env to be loaded
+
+    Returns:
+        [str] -- A list of string names of the envs to load.
+    """
+    # add the [default] env
+    env_list = [obj.get("DEFAULT_ENV_FOR_DYNACONF")]
+
+    # compatibility with older versions that still uses [dynaconf] as
+    # [default] env
+    global_env = obj.get("ENVVAR_PREFIX_FOR_DYNACONF") or "DYNACONF"
+    if global_env not in env_list:
+        env_list.append(global_env)
+
+    # add the current env
+    if obj.current_env and obj.current_env not in env_list:
+        env_list.append(obj.current_env)
+
+    # add a manually set env
+    if env and env not in env_list:
+        env_list.append(env)
+
+    # add the [global] env
+    env_list.append("GLOBAL")
+
+    # loaders are responsible to change to lower/upper cases
+    return [env.lower() for env in env_list]

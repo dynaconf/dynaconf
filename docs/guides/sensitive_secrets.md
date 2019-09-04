@@ -13,7 +13,7 @@ password = "sek@987342$"
 
 The secrets file supports all the **environment** definitions supported in the **settings** file.
 
-> **IMPORTANT**: The reason to use a `.secrets.*` file is the ability to omit this file when commiting to the repository so a recommended `.gitignore` should include `.secrets.*` line.
+> **IMPORTANT**: The reason to use a `.secrets.*` file is the ability to omit this file when committing to the repository so a recommended `.gitignore` should include `.secrets.*` line.
 
 ## Using Vault server
 
@@ -48,10 +48,39 @@ dynaconf will read it.
 To write a new secret you can use http://localhost:8200 web admin and write keys
 under the `/secret/dynaconf/< env >` secret database.
 
-You can also use the Dynaconf writer via console
+You can also use the Dynaconf writer via console:
 
 ```bash
-$ dynaconf write vault -s password=123456
+# writes {'password': 123456} to secret/dynaconf/default
+$ dynaconf write vault -s password=123456  
+
+# writes {'password': 123456, 'username': 'admin'} to secret/dynaconf/default
+$ dynaconf write vault -s password=123456 -s username=admin
+
+# writes {'password': 555555} to secret/dynaconf/development
+$ dynaconf write vault -s password=555555  -e development
+
+# writes {'password': 777777, 'username': 'admin'} to secret/dynaconf/production
+$ dynaconf write vault -s password=777777 -s username=produser -e production
+```
+
+then you can access values normally in your program
+
+```py
+from dynaconf import settings
+
+settings.PASSWORD == 555555  # if ENV_FOR_DYNACONF is the default `development`
+settings.USERNAME == 'admin'  # if ENV_FOR_DYNACONF is the default `development`
+
+settings.PASSWORD == 777777  # if ENV_FOR_DYNACONF is `production`
+settings.USERNAME == 'produser'  # if ENV_FOR_DYNACONF is `production`
+```
+
+You can also ask settings to be loaded from specific env with `from_env` method:
+
+```py
+settings.from_env('production').PASSWORD == 777777
+settings.from_env('production').USERNAME == 'produser'
 ```
 
 ## Additional secrets file (for CI, jenkins etc.)
