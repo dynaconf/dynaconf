@@ -62,7 +62,7 @@ DYNACONF_ARRAY='@json [42, 3.14, "hello", true, ["otherarray"], {"foo": "bar"}]'
 
 ### Nested keys in dictionaries via environment variables.
 
-> **New in 2.0.5**
+> **New in 2.1.0**
 > 
 > This is useful for `Django` settings.
 
