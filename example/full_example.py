@@ -63,3 +63,21 @@ print(settings.WORKS)
 
 print("\nDotted path set value :")
 print(settings.set("ONE.TWO", "value"))
+
+
+assertions = {
+    "WORKS": "full_example",
+    "HOSTNAME": "host.com",
+    "PORT": 5000,
+    "VALUE": 42.1,
+    "ALIST": ["item1", "item2", "item3"],
+    "ADICT": {"key": "value"},
+    "ONE": {"TWO": "value"},
+}
+
+for key, value in assertions.items():
+    found = settings.get(key)
+    assert found == getattr(settings, key)
+    assert (
+        found == value
+    ), "expected: {key}: [{value}] found: [{found}]".format(**locals())

@@ -10,27 +10,27 @@ test_examples:
 	@echo '###############  Chdir to example directory  ###############'
 	cd example/common;pwd;python program.py
 	cd example/common-encoding;pwd;python program.py
-	cd example/;pwd;python full_example.py | grep -c full_example || exit 1
+	cd example/;pwd;python full_example.py
 	cd example/;pwd;python compat.py
-	cd example/app;pwd;python app.py | grep -c app || exit 1
-	cd example/dunder;pwd;python app.py || exit 1
-	cd example/app_with_dotenv;pwd;python app.py | grep -c app_with_dotenv || exit 1
-	cd example/merge_configs;pwd;python app.py | grep -c merge_configs || exit 1
+	cd example/app;pwd;python app.py
+	cd example/dunder;pwd;python app.py
+	cd example/app_with_dotenv;pwd;python app.py
+	cd example/merge_configs;pwd;python app.py
 	cd example/dynaconf_merge;pwd;python app.py
-	cd example/multiple_sources;pwd;python app.py | grep -c multiple_sources || exit 1
-	cd example/multiple_folders;pwd;python app.py | grep -c var2_prod || exit 1
-	cd example/toml_example/;pwd;python app.py | grep -c toml_example || exit 1
-	cd example/yaml_example/settings_file/;pwd;python app.py | grep -c yaml_example || exit 1
-	cd example/yaml_example/yaml_as_extra_config/;pwd;python app.py | grep -c yaml_as_extra_config || exit 1
+	cd example/multiple_sources;pwd;python app.py
+	cd example/multiple_folders;pwd;python app.py
+	cd example/toml_example/;pwd;python app.py
+	cd example/yaml_example/settings_file/;pwd;python app.py
+	cd example/yaml_example/yaml_as_extra_config/;pwd;python app.py
 	cd example/flask_with_dotenv;pwd;flask routes | grep -c flask_with_dotenv || exit 1
 	cd example/flask_with_toml;pwd;flask routes | grep -c flask_with_toml || exit 1
 	cd example/flask_with_yaml;pwd;flask routes | grep -c flask_with_yaml || exit 1
 	cd example/flask_with_json;pwd;flask routes | grep -c flask_with_json || exit 1
 	cd example/flask_with_commentjson;pwd;flask routes | grep -c flask_with_commentjson || exit 1
 	cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini || exit 1
-	cd example/validators/with_python/;pwd;python app.py | grep -c validator || exit 1
+	cd example/validators/with_python/;pwd;python app.py
 	cd example/validators/with_toml/;pwd;dynaconf validate
-	cd example/toml_with_secrets/;pwd;python program.py | grep -c My5up3r53c4et || exit 1
+	cd example/toml_with_secrets/;pwd;python program.py
 	cd example/envs;pwd;python app.py
 	cd example/custom_loader;pwd;python app.py
 	cd example/get_fresh;pwd;python app.py
@@ -47,19 +47,19 @@ test_examples:
 	@echo '###############  Calling from outer folder  ###############'
 	python example/common/program.py
 	python example/common-encoding/program.py
-	python example/full_example.py | grep -c full_example || exit 1
+	python example/full_example.py
 	python example/compat.py
-	python example/app/app.py | grep -c app || exit 1
-	python example/app_with_dotenv/app.py | grep -c app_with_dotenv || exit 1
-	python example/merge_configs/app.py | grep -c merge_configs || exit 1
+	python example/app/app.py
+	python example/app_with_dotenv/app.py
+	python example/merge_configs/app.py
 	python example/dynaconf_merge/app.py
-	python example/multiple_sources/app.py | grep -c multiple_sources || exit 1
-	python example/multiple_folders/app.py | grep -c var2_prod || exit 1
-	python example/toml_example/app.py | grep -c toml_example || exit 1
-	python example/yaml_example/settings_file/app.py | grep -c yaml_example || exit 1
-	python example/yaml_example/yaml_as_extra_config/app.py | grep -c yaml_as_extra_config || exit 1
-	python example/validators/with_python/app.py | grep -c validator || exit 1
-	python example/toml_with_secrets/program.py | grep -c My5up3r53c4et || exit 1
+	python example/multiple_sources/app.py
+	python example/multiple_folders/app.py
+	python example/toml_example/app.py
+	python example/yaml_example/settings_file/app.py
+	python example/yaml_example/yaml_as_extra_config/app.py
+	python example/validators/with_python/app.py
+	python example/toml_with_secrets/program.py
 	python example/envs/app.py
 	python example/custom_loader/app.py
 	python example/get_fresh/app.py
@@ -85,17 +85,22 @@ test_examples:
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
-	@cd example/vault;pwd;dynaconf write vault -s SECRET=vault_works
+	# docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+	@cd example/vault;pwd;dynaconf write vault -s SECRET=vault_works_in_default -s FOO=foo_is_default
 	@cd example/vault;pwd;dynaconf write vault -e dev -s SECRET=vault_works_in_dev
+	@cd example/vault;pwd;dynaconf write vault -e prod -s SECRET=vault_works_in_prod
 	@sleep 5
-	@cd example/vault;pwd;python vault_example.py | grep -c vault_works
+	@cd example/vault;pwd;python vault_example.py
 
 test_redis:
 	# @cd example/redis_example;pwd;python write.py
-	@cd example/redis_example;pwd;dynaconf write redis -s SECRET=redis_works
-	@cd example/redis_example;pwd;dynaconf write redis -e dev -s SECRET=redis_works_in_dev
+	# docker run -d -p 6379:6379 redis
+	@cd example/redis_example;pwd;dynaconf write redis -s FOO=foo_is_default
+	@cd example/redis_example;pwd;dynaconf write redis -s SECRET=redis_works_in_default
+	@cd example/redis_example;pwd;dynaconf write redis -e development -s SECRET=redis_works_in_development
+	@cd example/redis_example;pwd;dynaconf write redis -e production -s SECRET=redis_works_in_production
 	@sleep 5
-	@cd example/redis_example;pwd;python redis_example.py | grep -c redis_works
+	@cd example/redis_example;pwd;python redis_example.py
 
 test_only:
 	py.test -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/

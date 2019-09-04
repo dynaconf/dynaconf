@@ -22,3 +22,23 @@ print("Read from settings.properties:", settings.PROPERTIES_VAR)  # noqa
 print("Read from settings.json:", settings.JSON_VAR)  # noqa
 print("Read from .env:", settings.ENV_VAR)  # noqa
 print("Read from .env:", settings.WORKS)  # noqa
+
+
+assertions = {
+    "YAML_VAR": True,
+    "YML_VAR": True,
+    "TOML_VAR": True,
+    "INI_VAR": "1",
+    "CONF_VAR": "1",
+    "PROPERTIES_VAR": "1",
+    "JSON_VAR": True,
+    "ENV_VAR": True,
+    "WORKS": "multiple_sources",
+}
+
+for key, value in assertions.items():
+    found = settings.get(key)
+    assert found == getattr(settings, key)
+    assert (
+        found == value
+    ), "expected: {key}: [{value}] found: [{found}]".format(**locals())

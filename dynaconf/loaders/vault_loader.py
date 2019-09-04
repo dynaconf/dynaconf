@@ -1,5 +1,6 @@
 # docker run -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
 # pip install hvac
+from dynaconf.utils import build_env_list
 from dynaconf.utils.parse_conf import parse_conf_data
 
 try:
@@ -16,29 +17,8 @@ except ImportError:
 IDENTIFIER = "vault"
 
 
-def _get_env_list(obj, env):
-    """Creates the list of environments to read
-
-    :param obj: the settings instance
-    :param env: settings env default='DYNACONF'
-    :return: a list of working environments
-    """
-    # add the [default] env
-    env_list = [obj.get("DEFAULT_ENV_FOR_DYNACONF")]
-    # compatibility with older versions that still uses [dynaconf] as
-    # [default] env
-    global_env = obj.get("ENVVAR_PREFIX_FOR_DYNACONF") or "DYNACONF"
-    if global_env not in env_list:
-        env_list.append(global_env)
-    # add the current env
-    if obj.current_env and obj.current_env not in env_list:
-        env_list.append(obj.current_env)
-    # add a manually set env
-    if env and env not in env_list:
-        env_list.append(env)
-    # add the [global] env
-    env_list.append("GLOBAL")
-    return [env.lower() for env in env_list]
+# backwards compatibility
+_get_env_list = build_env_list
 
 
 def get_client(obj):
@@ -68,7 +48,7 @@ def load(obj, env=None, silent=None, key=None):
     """
 
     client = get_client(obj)
-    env_list = _get_env_list(obj, env)
+    env_list = build_env_list(obj, env)
     for env in env_list:
         path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, env])
         try:
