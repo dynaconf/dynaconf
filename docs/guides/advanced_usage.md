@@ -32,7 +32,7 @@ You can switch between existing environments using:
 
 ### from_env
 
-> **New in 2.0.5**
+> **New in 2.1.0**
 
 Return a new isolated settings object pointing to specified env.
 
