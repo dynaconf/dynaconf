@@ -18,6 +18,7 @@ from dynaconf.utils import ensure_a_list
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
 from dynaconf.utils import raw_logger
+from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import find_file
 from dynaconf.utils.functional import empty
@@ -168,7 +169,8 @@ class Settings(object):
         self._loaded_envs = []
         self._loaded_files = []
         self._deleted = set()
-        self._store = {}
+        self._store = DynaBox(box_it_up=True)
+        self._env_cache = {}
         self._loaded_by_loaders = {}
         self._loaders = []
         self._defaults = {}
@@ -244,12 +246,14 @@ class Settings(object):
         """
         ctx_mgr = suppress() if env is None else self.using_env(env)
         with ctx_mgr:
-            data = self.store.copy()
+            data = self.store.to_dict().copy()
             # if not internal remove internal settings
             if not internal:
                 for name in dir(default_settings):
                     data.pop(name, None)
             return data
+
+    to_dict = as_dict  # backwards compatibility
 
     def _dotted_get(self, dotted_key, default=None, **kwargs):
         """
@@ -285,13 +289,13 @@ class Settings(object):
         :param dotted_lookup: Should perform dotted-path lookup?
         :return: The value if found, default or None
         """
-        key = key.upper()
 
         if "." in key and dotted_lookup:
             return self._dotted_get(
                 dotted_key=key, default=default, cast=cast, fresh=fresh
             )
 
+        key = key.upper()
         if key in self._deleted:
             return default
 
@@ -394,6 +398,63 @@ class Settings(object):
     def loaded_by_loaders(self):
         """Gets the internal mapping of LOADER -> values"""
         return self._loaded_by_loaders
+
+    def from_env(self, env, keep=False, **kwargs):
+        """Return a new isolated settings object pointing to specified env.
+
+        Example of settings.toml::
+
+            [development]
+            message = 'This is in dev'
+            [other]
+            message = 'this is in other env'
+
+        Program::
+
+            >>> from dynaconf import settings
+            >>> print(settings.MESSAGE)
+            'This is in dev'
+            >>> print(settings.from_env('other').MESSAGE)
+            'This is in other env'
+            # The existing settings object remains the same.
+            >>> print(settings.MESSAGE)
+            'This is in dev'
+
+        Arguments:
+            env {str} -- Env to load (development, production, custom)
+
+        Keyword Arguments:
+            keep {bool} -- Keep pre-existing values (default: {False})
+            kwargs {dict} -- Passed directly to new instance.
+        """
+        cache_key = "{}_{}_{}".format(env, keep, kwargs)
+        if cache_key in self._env_cache:
+            self.logger.debug("Settings instance in env: %s from cache", env)
+            return self._env_cache[cache_key]
+
+        new_data = {
+            key: self.get(key)
+            for key in dir(default_settings)
+            if key.isupper() and key not in RENAMED_VARS
+        }
+
+        if keep:
+            # keep existing values from current env
+            new_data.update(
+                {
+                    key: value
+                    for key, value in self.store.to_dict().copy().items()
+                    if key.isupper() and key not in RENAMED_VARS
+                }
+            )
+
+        new_data.update(kwargs)
+        new_data["ENV_FOR_DYNACONF"] = env
+
+        new_settings = LazySettings(**new_data)
+        self.logger.debug("New settings instance in env: %s", env)
+        self._env_cache[cache_key] = new_settings
+        return new_settings
 
     @contextmanager
     def using_env(self, env, clean=True, silent=True, filename=None):

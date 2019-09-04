@@ -82,6 +82,7 @@ def settings_loader(
     found_files = []
     modules_names = []
     for item in files:
+        item = str(item)  # Ensure str in case of LocalPath/Path is passed.
         if item.endswith(ct.ALL_EXTENSIONS + (".py",)):
             p_root = obj._root_path or (
                 os.path.dirname(found_files[0]) if found_files else None
