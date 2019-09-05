@@ -46,6 +46,48 @@ export DJANGO_INTVALUE=1     # django.conf.settings['INTVALUE']
 export DJANGO_HELLO="Hello"  # django.conf.settings.get('HELLO')
 ```
 
+> **TIP**: If you dont want to use `DJANGO_` as prefix for envvars you can customize by passing a new name e.g: `dynaconf.DjangoDynaconf(__name__, ENVVAR_PREFIX_FOR_DYNACONF="FOO")` then `export FOO_DEBUG=true`
+
+You can also set nested dictionary values, for example lets say you have a configuration like this:
+
+`settings.py`
+
+```py
+...
+DATABASES = {
+    'default': {
+        'NAME': 'db',
+        'ENGINE': 'module.foo.engine',
+        'ARGS': {'timeout': 30}
+    }
+}
+...
+```
+
+And  now you want to change the values of `ENGINE` to `other.module`, via environment variables you can use the format `${ENVVAR_PREFIX}_${VARIABLE}__${NESTED_ITEM}__${NESTED_ITEM}`
+
+Each `__` (dunder, a.k.a *double underline*) denotes access to nested elements in a dictionary.
+
+So:
+
+```bash
+export DYNACONF_DATABASES__default__ENGINE=other.module
+```
+
+will result in
+
+```py
+DATABASES = {
+    'default': {
+        'NAME': 'db',
+        'ENGINE': 'other.module',
+        'ARGS': {'timeout': 30}
+    }
+}
+```
+
+Read more on [environment variables](https://dynaconf.readthedocs.io/en/latest/guides/environment_variables.html#nested-keys-in-dictionaries-via-environment-variables)
+
 ## Settings files
 
 You can also have settings files for your Django app, in the root directory (the same where `manage.py` is located) put your `settings.{yaml, toml, ini, json, py}` and `.secrets.{yaml, toml, ini, json, py}` files and then define your environments `[default]`, `[development]` and `[production]`.
