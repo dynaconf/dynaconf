@@ -2,6 +2,86 @@ Changelog
 =========
 
 
+2.1.0 (2019-09-05)
+------------------
+- Release version 2.1.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (8):
+            Release version 2.0.4
+            Merge branch 'dgarcia360-master'
+            Fix #197 add support for DOTTED__ENV__VARS (#215)
+            Add support to export merged env to filesystem via cli. (#217)
+            Adds `from_env` method and change `_store` to be a `DynaBox` (#219)
+            hotfix: next release will be 2.1.0 because new features added. (#220)
+            Fix `make test_examples` to use better assertions, redis and vault loader now respects `envs` (#222)
+            fix #221 removed JSON,YAML,INI,TOML cosntants from default_settings (#223)
+
+      Kedar Kulkarni (1):
+            Add `list_envs` function to vault loader and now envs can have `_` on its name.
+
+      Pavel Alimpiev (1):
+            Fix typo in documentation for a Validator class (#213)
+
+      dgarcia360 (3):
+            Updated configuration options table to csv table
+            Added responsive table fix
+            Fix format
+- Fix #221 removed JSON,YAML,INI,TOML cosntants from default_settings
+  (#223) [Bruno Rocha]
+
+  Default settings should hold only constants ending in _FOR_DYNACONF
+- Fix `make test_examples` to use better assertions, redis and vault
+  loader now respects `envs` (#222) [Bruno Rocha]
+- Hotfix: next release will be 2.1.0 because new features added. (#220)
+  [Bruno Rocha]
+- Adds `from_env` method and change `_store` to be a `DynaBox` (#219)
+  [Bruno Rocha]
+- Add `list_envs` function to vault loader and now envs can have `_` on
+  its name. [Kedar Kulkarni]
+
+  * Adding new feature to address issue #211 `list_envs ` function on vault loader
+  * Removing restriction with env cannot contain underscore chars
+- Add support to export merged env to filesystem via cli. (#217) [Bruno
+  Rocha]
+
+  fix #200
+
+  ```bash
+  dynaconf list -o path/to/file.yaml --output-flat
+  ```
+- Fix #197 add support for DOTTED__ENV__VARS (#215) [Bruno Rocha]
+
+  * Fix #197 add support for DOTTED__ENV__VARS
+
+  * Full support for `__` - @reset and @del markers
+- Merge branch 'dgarcia360-master' [Bruno Rocha]
+- Fix format. [dgarcia360]
+- Added responsive table fix. [dgarcia360]
+- Updated configuration options table to csv table. [dgarcia360]
+- Fix typo in documentation for a Validator class (#213) [Pavel
+  Alimpiev]
+- Release version 2.0.4. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 2.0.3
+            Fix #207 allow python module path name for includes (#209)
+
+      Michał Bartoszkiewicz (1):
+            Update usage.md (#208)
+
+      Pavel Alimpiev (2):
+            Refactor Vault integration (#202)
+            Update configuration.md (#205)
+
+      Tanveer Alam (2):
+            Update usage.md (#196)
+            Update usage.md (#195)
+
+
 2.0.4 (2019-08-22)
 ------------------
 - Release version 2.0.4. [Bruno Rocha]
