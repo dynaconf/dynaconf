@@ -167,7 +167,7 @@ def test_no_reload_on_single_env(tmpdir, mocker):
     settings = LazySettings(
         ENV_FOR_DYNACONF="DEVELOPMENt", SETTINGS_FILE_FOR_DYNACONF=str(tmpfile)
     )
-    using_env = mocker.patch.object(settings, "using_env")
+    using_env = mocker.patch.object(settings, "from_env")
 
     settings.validators.register(same_env_validator)
     settings.validators.validate()

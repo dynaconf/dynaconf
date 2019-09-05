@@ -109,10 +109,10 @@ class Validator(object):
             return
 
         for env in self.envs:
-            with settings.using_env(env):
-                self._validate_items(settings, env)
+            self._validate_items(settings.from_env(env))
 
-    def _validate_items(self, settings, env):
+    def _validate_items(self, settings, env=None):
+        env = env or settings.current_env
         for name in self.names:
             exists = settings.exists(name)
 
