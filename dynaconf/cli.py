@@ -235,7 +235,7 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     `ENV_FOR_DYNACONF=production` just pass --env=production and then .env
     will also be created and the env defined to production.
     """
-    click.echo("Cofiguring your Dynaconf environment")
+    click.echo("Configuring your Dynaconf environment")
 
     env = env or settings.current_env.lower()
 
