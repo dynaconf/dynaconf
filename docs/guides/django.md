@@ -249,8 +249,10 @@ DATABASES = settings.get('DATABASES', {
 ...
 
 # At the end of your settings.py
-settings.populate_obj(sys.modules[__name__])
+settings.populate_obj(sys.modules[__name__], ignore=locals())
 ```
+
+> **NOTE**: Starting in `2.1.1` the `ignore` argument will tell Dynaconf to not override variables that already exists in the current settings file, remove it if you want all the existing local variables to be overwritten by dynaconf.
 
 You can still change env with `export DJANGO_ENV=production` and also can export variables lile `export DJANGO_DEBUG=true`
 

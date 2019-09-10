@@ -56,6 +56,20 @@ def test_populate_obj_with_keys(settings):
         assert obj.DEBUG is True
 
 
+def test_populate_obj_with_ignore(settings):
+    class Obj:
+        pass
+
+    obj = Obj()
+
+    settings.populate_obj(obj, ignore=["VALUE"])
+
+    assert obj.DEBUG is True
+
+    with pytest.raises(AttributeError):
+        assert obj.VALUE == 42.1
+
+
 def test_call_works_as_get(settings):
     """settings.get('name') is the same as settings('name')"""
 

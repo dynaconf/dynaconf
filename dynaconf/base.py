@@ -990,11 +990,18 @@ class Settings(object):
             value = self.get_fresh(key)
             return value is True or value in true_values
 
-    def populate_obj(self, obj, keys=None):
-        """Given the `obj` populate it using self.store items."""
+    def populate_obj(self, obj, keys=None, ignore=None):
+        """Given the `obj` populate it using self.store items.
+
+        :param obj: An object to be populated, a class instance.
+        :param keys: A list of keys to be included.
+        :param ignore: A list of keys to be excluded.
+        """
         keys = keys or self.keys()
         for key in keys:
             key = key.upper()
+            if ignore and key in ignore:
+                continue
             value = self.get(key, empty)
             if value is not empty:
                 setattr(obj, key, value)
