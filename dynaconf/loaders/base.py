@@ -103,17 +103,27 @@ class BaseLoader(object):
                 k.lower(): value for k, value in source_data.items()
             }
 
-            for env in envs:
+            # all lower case for comparison
+            base_envs = [
+                # DYNACONF or MYPROGRAM
+                (self.obj.get("ENVVAR_PREFIX_FOR_DYNACONF") or "").lower(),
+                # DEFAULT
+                self.obj.get("DEFAULT_ENV_FOR_DYNACONF").lower(),
+                # default active env unless ENV_FOR_DYNACONF is changed
+                "development",
+                # backwards compatibility for global
+                "dynaconf",
+                # global that rules all
+                "global",
+            ]
 
+            for env in envs:
+                env = env.lower()  # lower for better comparison
                 data = {}
                 try:
-                    data = source_data[env.lower()]
+                    data = source_data[env]
                 except KeyError:
-                    if env not in (
-                        self.obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
-                        or "DYNACONF",
-                        "GLOBAL",
-                    ):
+                    if env not in base_envs:
                         message = "%s_loader: %s env not defined in %s" % (
                             self.identifier,
                             env,
@@ -125,11 +135,8 @@ class BaseLoader(object):
                             raise KeyError(message)
                     continue
 
-                if (
-                    env.lower()
-                    != self.obj.get("DEFAULT_ENV_FOR_DYNACONF").lower()
-                ):
-                    identifier = "{0}_{1}".format(self.identifier, env.lower())
+                if env != self.obj.get("DEFAULT_ENV_FOR_DYNACONF").lower():
+                    identifier = "{0}_{1}".format(self.identifier, env)
                 else:
                     identifier = self.identifier
 
@@ -144,7 +151,7 @@ class BaseLoader(object):
                     "{}_loader: {}[{}]{}".format(
                         self.identifier,
                         os.path.split(source_file)[-1],
-                        env.lower(),
+                        env,
                         list(data.keys()) if is_secret else data,
                     )
                 )
