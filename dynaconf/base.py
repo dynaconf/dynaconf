@@ -892,7 +892,9 @@ class Settings(object):
                     # continue the loop.
                     continue
 
-                filepath = os.path.join(self._root_path, _filename)
+                filepath = os.path.join(
+                    self._root_path or os.getcwd(), _filename
+                )
                 self.logger.debug("File path is %s", filepath)
                 # Handle possible *.globs sorted alphanumeric
                 for path in sorted(glob.glob(filepath)):
