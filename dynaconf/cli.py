@@ -23,7 +23,6 @@ from dynaconf.validator import Validator
 
 
 CWD = Path.cwd()
-ENVS = ["default", "development", "staging", "testing", "production", "global"]
 EXTS = ["ini", "toml", "yaml", "json", "py", "env"]
 WRITERS = ["ini", "toml", "yaml", "json", "py", "redis", "vault", "env"]
 
@@ -247,8 +246,8 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     _secrets = split_vars(_secrets)
 
     # create placeholder data for every env
-    settings_data = {k: {"value": "value for {}".format(k)} for k in ENVS}
-    secrets_data = {k: {"secret": "secret for {}".format(k)} for k in ENVS}
+    settings_data = {}
+    secrets_data = {}
     if env_data:
         settings_data[env] = env_data
         settings_data["default"] = {k: "default" for k in env_data}
