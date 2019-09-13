@@ -10,8 +10,8 @@ ALL_EXTENSIONS = (
 
 EXTERNAL_LOADERS = {
     "ENV": "dynaconf.loaders.env_loader",
-    "REDIS": "dynaconf.loaders.redis_loader",
     "VAULT": "dynaconf.loaders.vault_loader",
+    "REDIS": "dynaconf.loaders.redis_loader",
 }
 
 DJANGO_PATCH = """
