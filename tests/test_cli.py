@@ -6,7 +6,6 @@ from click.testing import CliRunner
 
 from dynaconf import default_settings
 from dynaconf import LazySettings
-from dynaconf.cli import ENVS
 from dynaconf.cli import EXTS
 from dynaconf.cli import main
 from dynaconf.cli import read_file_in_root_directory
@@ -117,7 +116,7 @@ def test_list_with_loader(loader):
     assert "Working in development environment" in result
 
 
-@pytest.mark.parametrize("env", ENVS)
+@pytest.mark.parametrize("env", ["default", "development"])
 def test_list_with_env(env):
     result = run(["list", "-e", env])
     assert "Working in {} environment".format(env) in result
@@ -176,7 +175,7 @@ def test_list_with_missing_key():
 
 
 @pytest.mark.parametrize("writer", EXTS)
-@pytest.mark.parametrize("env", ENVS)
+@pytest.mark.parametrize("env", ["default", "development"])
 @pytest.mark.parametrize("onlydir", (True, False))
 def test_write(writer, env, onlydir, tmpdir):
     if onlydir is True:
