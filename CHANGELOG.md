@@ -2,6 +2,67 @@ Changelog
 =========
 
 
+2.1.1 (2019-09-16)
+------------------
+- Release version 2.1.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (7):
+            Release version 2.1.0
+            Improve validators to use `from_env` method (#225)
+            Add info about dunder envvars on django.md docs guide (#226)
+            Fix #228 add `ignore` argument to Django explicit mode. (#229)
+            Improvement to close #230 - do not throw error for base envs. (#231)
+            dynaconf init will not write all possible envs, only [default] (#233)
+            When both enabled, Vault has the priority over Redis for overriding (#234)
+
+      Dave Barnow (1):
+            Fix typo in CLI init (#227)
+
+      Kedar Kulkarni (1):
+            Fixing self._root_path to fall back to os.getcwd() only when `settings.load_file` is called directly or from includes (#232)
+- When both enabled, Vault has the priority over Redis for overriding
+  (#234) [Bruno Rocha]
+- Dynaconf init will not write all possible envs, only [default] (#233)
+  [Bruno Rocha]
+- Fixing self._root_path to fall back to os.getcwd() only when
+  `settings.load_file` is called directly or from includes (#232) [Kedar
+  Kulkarni]
+- Improvement to close #230 - do not throw error for base envs. (#231)
+  [Bruno Rocha]
+- Fix #228 add `ignore` argument to Django explicit mode. (#229) [Bruno
+  Rocha]
+- Fix typo in CLI init (#227) [Dave Barnow]
+- Add info about dunder envvars on django.md docs guide (#226) [Bruno
+  Rocha]
+- Improve validators to use `from_env` method (#225) [Bruno Rocha]
+- Release version 2.1.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (8):
+            Release version 2.0.4
+            Merge branch 'dgarcia360-master'
+            Fix #197 add support for DOTTED__ENV__VARS (#215)
+            Add support to export merged env to filesystem via cli. (#217)
+            Adds `from_env` method and change `_store` to be a `DynaBox` (#219)
+            hotfix: next release will be 2.1.0 because new features added. (#220)
+            Fix `make test_examples` to use better assertions, redis and vault loader now respects `envs` (#222)
+            fix #221 removed JSON,YAML,INI,TOML cosntants from default_settings (#223)
+
+      Kedar Kulkarni (1):
+            Add `list_envs` function to vault loader and now envs can have `_` on its name.
+
+      Pavel Alimpiev (1):
+            Fix typo in documentation for a Validator class (#213)
+
+      dgarcia360 (3):
+            Updated configuration options table to csv table
+            Added responsive table fix
+            Fix format
+
+
 2.1.0 (2019-09-05)
 ------------------
 - Release version 2.1.0. [Bruno Rocha]
