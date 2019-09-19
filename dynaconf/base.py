@@ -896,8 +896,16 @@ class Settings(object):
                     self._root_path or os.getcwd(), _filename
                 )
                 self.logger.debug("File path is %s", filepath)
+                paths = [
+                    p
+                    for p in sorted(glob.glob(filepath))
+                    if ".local." not in p
+                ]
+                local_paths = [
+                    p for p in sorted(glob.glob(filepath)) if ".local." in p
+                ]
                 # Handle possible *.globs sorted alphanumeric
-                for path in sorted(glob.glob(filepath)):
+                for path in paths + local_paths:
                     self.logger.debug("Loading %s", path)
                     if path in already_loaded:  # pragma: no cover
                         self.logger.debug("Skipping %s, already loaded", path)
