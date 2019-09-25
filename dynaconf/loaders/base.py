@@ -4,6 +4,7 @@ import os
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import raw_logger
+from dynaconf.utils import upperfy
 
 
 logger = raw_logger()
@@ -141,9 +142,9 @@ class BaseLoader(object):
                     identifier = self.identifier
 
                 # data 1st level keys should be transformed to upper case.
-                data = {k.upper(): v for k, v in data.items()}
+                data = {upperfy(k): v for k, v in data.items()}
                 if key:
-                    key = key.upper()
+                    key = upperfy(key)
 
                 is_secret = "secret" in source_file
 

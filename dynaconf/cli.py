@@ -16,6 +16,7 @@ from dynaconf import default_settings
 from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf.loaders.py_loader import get_module
+from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.validator import ValidationError
@@ -107,7 +108,7 @@ def split_vars(_vars):
     """Splits values like foo=bar=zaz in {'foo': 'bar=zaz'}"""
     return (
         {
-            k.upper().strip(): parse_conf_data(v.strip(), tomlfy=True)
+            upperfy(k.strip()): parse_conf_data(v.strip(), tomlfy=True)
             for k, _, v in [item.partition("=") for item in _vars]
         }
         if _vars
@@ -436,7 +437,7 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
         if output:
             loaders.write(output, data, env=not flat and cur_env)
     else:
-        key = key.upper()
+        key = upperfy(key)
         value = data.get(key)
         if not value:
             click.echo(click.style("Key not found", bg="red", fg="white"))
@@ -444,13 +445,13 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
         click.echo(
             "%s: %s"
             % (
-                click.style(key.upper(), bg=color(key), fg="white"),
+                click.style(upperfy(key), bg=color(key), fg="white"),
                 pprint.pformat(value),
             )
         )
         if output:
             loaders.write(
-                output, {key.upper(): value}, env=not flat and cur_env
+                output, {upperfy(key): value}, env=not flat and cur_env
             )
 
     if env:

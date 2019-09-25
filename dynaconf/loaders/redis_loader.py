@@ -1,4 +1,5 @@
 from dynaconf.utils import build_env_list
+from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import unparse_conf_data
 
@@ -89,7 +90,7 @@ def write(obj, data=None, **kwargs):
     if not data:
         raise AttributeError("Data must be provided")
     redis_data = {
-        key.upper(): unparse_conf_data(value) for key, value in data.items()
+        upperfy(key): unparse_conf_data(value) for key, value in data.items()
     }
     client.hmset(holder.upper(), redis_data)
     load(obj)
@@ -108,7 +109,7 @@ def delete(obj, key=None):
     holder = "{0}_{1}".format(holder, obj.current_env.upper())
 
     if key:
-        client.hdel(holder.upper(), key.upper())
+        client.hdel(holder.upper(), upperfy(key))
         obj.unset(key)
     else:
         keys = client.hkeys(holder.upper())

@@ -199,10 +199,10 @@ def test_local_files(tmpdir):
         link: brunorocha.org
       other:
         foo: bar
-      MUSIC:
-        CURRENT:
-          VOLUME: 10
-          TITLE: The Beatles - Strawberry Fields
+      music:
+        current:
+          volume: 10
+          title: The Beatles - Strawberry Fields
     """
     tmpdir.join("settings.yaml").write(settings_file_yaml)
 
@@ -217,8 +217,8 @@ def test_local_files(tmpdir):
         dynaconf_merge: true
       other:
         baz: zaz
-      MUSIC__current__volume: 100
-      MUSIC__current__title: Led Zeppelin - Immigrant Song
+      music__current__volume: 100
+      music__current__title: Led Zeppelin - Immigrant Song
     """
     tmpdir.join("settings.local.yaml").write(local_file_yaml)
 
@@ -244,10 +244,10 @@ def test_explicit_local_files(tmpdir):
         link: brunorocha.org
       other:
         foo: bar
-      MUSIC:
-        CURRENT:
-          VOLUME: 10
-          TITLE: The Beatles - Strawberry Fields
+      music:
+        current:
+          volume: 10
+          title: The Beatles - Strawberry Fields
     """
     tmpdir.join("foo.yaml").write(settings_file_yaml)
 
@@ -262,8 +262,9 @@ def test_explicit_local_files(tmpdir):
         dynaconf_merge: true
       other:
         baz: zaz
-      MUSIC__current__volume: 100
-      MUSIC__current__title: Led Zeppelin - Immigrant Song
+      music__current__volume: 100
+      music__current__title: Led Zeppelin - Immigrant Song
+      music__current__even__inner__element: true
     """
     tmpdir.join("foo.local.yaml").write(local_file_yaml)
 
@@ -278,3 +279,4 @@ def test_explicit_local_files(tmpdir):
     assert conf.OTHER == {"baz": "zaz"}
     assert conf.MUSIC.current.volume == 100
     assert conf.MUSIC.current.title == "Led Zeppelin - Immigrant Song"
+    assert conf.get("music.current.even.inner.element") is True

@@ -10,6 +10,7 @@ from dynaconf import default_settings
 from dynaconf.utils import DynaconfDict
 from dynaconf.utils import object_merge
 from dynaconf.utils import raw_logger
+from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 
 
@@ -145,7 +146,7 @@ def write(settings_path, settings_data, merge=True):
     ) as f:
         f.writelines(
             [
-                "{} = {}\n".format(k.upper(), repr(v))
+                "{} = {}\n".format(upperfy(k), repr(v))
                 for k, v in settings_data.items()
             ]
         )
