@@ -47,6 +47,7 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     INCLUDES | list | A list of paths or a glob to load can be a toml-like list, or sep by , or ; | [] | INCLUDES_FOR_DYNACONF=”[‘path1.ext’, ‘folder/’]” INCLUDES_FOR_DYNACONF=”path1.toml;path2.toml” INCLUDES_FOR_DYNACONF=”path1.toml,path2.toml” INCLUDES_FOR_DYNACONF=”single_path.toml” INCLUDES_FOR_DYNACONF=”single_path/glob/.toml”
     INSTANCE **used only by** *$dynaconf** *cli*. | str | Custom instance of LazySettings Must be an importable Python module. | None | INSTANCE_FOR_DYNACONF=myapp.settings
     LOADERS | list | A list of enabled external loaders. |	[‘dynaconf.loaders.env_loader’] | LOADERS_FOR_DYNACONF=’[‘module.mycustomloader’, …]’
+    MERGE_ENABLED | bool | A bool to activate the global merge feature | False | MERGE_ENABLED_FOR_DYNACONF=1
     NESTED_SEPARATOR | str | Separator for nested assignment like `export DYNACONF_DATABASES__NAME='foo'` | `__` double underline | NESTED_SEPARATOR_FOR_DYNACONF='___'
     REDIS_DB | int | Redis DB. | 0 | REDIS_DB_FOR_DYNACONF=1
     REDIS_ENABLED | bool | Redis loader is enabled. | false | REDIS_ENABLED_FOR_DYNACONF=true
@@ -78,7 +79,6 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
 
 Some configuration options has been deprecated and replaced with a new name, we try to make it without breaking backwards compatibility with old version, but you may receive a warning if use:
 
-- `MERGE_ENABLED_FOR_DYNACONF` replaced by [local merge](usage.html#merging-existing-values)
 - `PROJECT_ROOT` replaced by `ROOT_PATH_FOR_DYNACONF`
 - `PROJECT_ROOT_FOR_DYNACONF` replaced by `ROOT_PATH_FOR_DYNACONF`
 - `DYNACONF_NAMESPACE` replaced by `ENV_FOR_DYNACONF`

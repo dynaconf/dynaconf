@@ -34,22 +34,25 @@ conn = Client(
 
 ### Understanding the settings
 
-Dynaconf aims to have a flexible and usable configuration system. Your applications can be configured via a **configuration files**, through **environment variables**, or both. Configurations are separated into environments: **[development], [staging], [testing] and [production]**. The working environment is selected via an environment variable.
+Dynaconf aims to have a flexible and usable configuration system. Your applications can be configured via a [**configuration files**](#the-settings-files), through [**environment variables**](environment_variables.html), or both. Configurations can be separated into environments: **[default], [development], [staging], [testing] and [production]**. The working environment is switched via an environment variable.
 
-**Sensitive data** like tokens, secret keys and password can be stored in `.secrets.*` files and/or external storages like `Redis` or `vault` secrets server.
+But this is all **optional** you can of course follow strictly the [12 factor app](https://12factor.net/config) guide, have your configuration coming only from environment variables and provide files only to store `[default]` values. (take also a look on how to add a [dynaconf validation](validation.html) file to your project).
 
-Besides the built-in optional support to **redis** as settings storage dynaconf allows you to create **custom loaders** and store the data wherever you want e.g: databases, memory storages, other file formats, nosql databases etc.
+**Sensitive data** like tokens, secret keys and password can be stored in `.secrets.*` files and/or [external storages](external_storages.html) like `Redis` or `vault` secrets server.
+
+Besides the built-in optional support to **Redis** as settings storage dynaconf allows you to create [**Custom Loaders**](extend.html) and store the data wherever you want e.g: databases, memory storages, other file formats, nosql databases etc.
 
 ## Working environments
 
 At any point in time, your application is operating in a given configuration environment. By default there are four such environments:
 
-- [development]
+- [development] (selected by default)
 - [staging]
 - [testing]
 - [production]
+- [{custom}] <-- You can create named environments that you need
 
-> You can also define **[custom environment]** and use the pseudo-envs **[default]** to provide comprehensive default values and **[global]** to provide global values to overrride in any other environment.
+> There is also the pseudo-envs **[default]** to provide comprehensive default values and **[global]** to provide global values to override in any other environment.
 
 Without any action, your applications by default run in the **[development]** environment. The environment can be changed via the `ENV_FOR_DYNACONF` environment variable. For example, to launch an application in the **[staging]** environment, we can run:
 
@@ -67,7 +70,7 @@ ENV_FOR_DYNACONF=staging python yourapp.py
 
 ## The settings files
 
-> NOTE: The settings files are optional. If it is not present, only the values from **environment variables** are used (**.env** file is also supported).
+> **NOTE:** The settings files are optional. If it is not present, only the values from **environment variables** and enabled external loaders are used (**.env** file is also supported).
 
 Dynaconf will search for the settings files defined in `SETTINGS_FILE_FOR_DYNACONF` which by default is a list containing combinations of **settings.{py|toml|json|ini|yaml}** and **.secrets.{py|toml|json|ini|yaml}**
 and dynaconf will try to find each one of those combinations, optionally it is possible to configure it to a different set of files e.g: `export SETTINGS_FILE_FOR_DYNACONF='["myfilename.toml", "another.json"]'`, this value contains a list of relative or absolute paths, can be a toml-like list or a comma/semicolon separated string and can be exported to `envvars`, write to `.env` file or passed directly to Dynaconf instance.
@@ -78,11 +81,15 @@ See more details in [configuration](configuration.html)
 
 ## Settings files location
 
-To find the files defined in `SETTINGS_FILE_FOR_DYNACONF` the search will start at the path defined in `ROOT_PATH_FOR_DYNACONF` (if defined), then will recursively walk to its root and then will try the **folder where the called program is located** and then it will recursivelly try its parent directories **until the root parent is reached which can be File System `/` or the current working dir** then finally will try the **current working directory** as the last option.
+To find the files defined in `SETTINGS_FILE_FOR_DYNACONF` the search will start at the path defined in `ROOT_PATH_FOR_DYNACONF` (if defined), then will recursively walk to its root and then will try the **folder where the called program is located** and then it will recursively try its parent directories **until the root parent is reached which can be File System `/` or the current working dir** then finally will try the **current working directory** as the last option.
+
+> **NOTE**: If by any reason you need Dynaconf to first look at the current working dir you can customize the `ROOT_PATH_FOR_DYNACONF` via environment variable or by creating a [custom settings object](advanced_usage.html#customizing-the-settings-object)
 
 Some people prefer to put settings in a sub-folder so for each of the paths it will also search in a relative folder called `config/`.
 
-Dynaconf will stop searching on the first match and if no file is found it will **fail silently** unless `SILENT_ERRORS_FOR_DYNACONF=false` is exported.
+And for each file dynaconf will also try to load a `.local.` file, for example, if you have a `settings.toml` after loading it Dynaconf will also try to find a `settings.local.toml` if exists.
+
+Dynaconf will stop searching on the first match for each file and if no file is found it will **fail silently** unless `SILENT_ERRORS_FOR_DYNACONF=false` is exported.
 
 ### Illustrative Example
 
@@ -101,12 +108,15 @@ If your program has the following structure:
    |_ config
       |_ settings.toml
          # [default]
-         # name = "Oscar Wilde"
+         # name = "Jon Doe"
+   |_ settings.local.toml
+      # [default]
+      # name = "Oscar Wilde"
    |_ .env
-         # DYNACONF_FOO='BAR'
+      # DYNACONF_FOO='BAR'
    |_ .secrets.toml
-         # [default]
-         # password = "Utopi@"
+      # [default]
+      # password = "Utopi@"
 ```
 
 And you call it from `myprogram` working dir.
@@ -146,7 +156,9 @@ What happens is:
     - It will load all the values defined in `.secrets.toml` (if filename is `*.secret.*` values are hidden on logs)
     - It will continue to look all the other files e.g: .secrets.json, .secrets.ini, .secrets.yaml etc.
     - Then
-    - It will execute **external loaders** like `Redis` or `Vault` if configured.
+    - It will iterate the list of loaded files containing `[settings.toml, .secrets.toml]` and for each of them it will also try to find a `settings.local.toml` (**found in myprogram/settings.local.toml**) and a `.secrets.local.toml` using the same search tree until it is found or it will skip if not found.
+    - Then
+    - It will execute **external loaders** like `Redis` and `Vault` if enabled.
     - It will execute **custom loaders** if configured.
     - Then finally
     - It will read all **environment variables** prefixed with `DYNACONF_` and load its values, in our example it loads `FOO='BAR'` from `.env` file.
@@ -155,7 +167,7 @@ What happens is:
 
     - All the loaders, loaded files, config options and vars are now **cached** no loading has been executed.
     - Only if `settings.get_fresh('PASSWORD')` is used, dynaconf will force a re-load of everything to ensure the fresh value.
-    - Also if `settings.using_env` or `ENV_FOR_DYNACONF` switched, e.g: from `[development]` to `[staging]`, then re-load happens.
+    - Also if `settings.using_env|from_env` or `ENV_FOR_DYNACONF` switched, e.g: from `[development]` to `[staging]`, then re-load happens.
     - It is also possible to explicitly force a `load` or `reload`.
 
 4. Complete program output is:
@@ -172,18 +184,99 @@ BAR
 
 Dynaconf loads file in a overriding cascade loading order using the predefined order:
 
-1. First the `.env` file to read for [configuration](configuration.html) options
+1. First the environment variables (and `.env` file) to read for [configuration](configuration.html) options
 2. Then the files defined in `SETTINGS_FILE_FOR_DYNACONF` using the loaders defined in `CORE_LOADERS_FOR_DYNACONF`
-3. Then the external loaders like **Redis** or **Vault** if defined
+    - Files containing `.local.` in its name will be loaded at the end. e.g: `settings.local.yaml`
+3. Then contents of `SECRETS_FOR_DYNACONF` envvar filename if defined (useful for jenkins and other CI)
 4. Then the loaders defined in `LOADERS_FOR_DYNACONF` 
-    - Custom loaders
-    - Environment variables loader (envvars prefixed with `DYNACONF_`)
-5. Then contents of `SECRETS_FOR_DYNACONF` filename if defined (useful for jenkins and other CI)
+    - Redis if enabled by `REDIS_FOR_DYNACONF=1`
+    - Vault if enabled by `Vault_FOR_DYNACONF=1`
+    - Custom loaders if any added
+    - Environment variables loader will be the last always
+5. If there is any `DYNACONF_INCLUDE` key found or `INCLUDES_FOR_DYNACONF` env vars this will be loaded.
 
 The order can be changed by overriding the `SETTINGS_FILE_FOR_DYNACONF` the `CORE_LOADERS_FOR_DYNACONF` and `LOADERS_FOR_DYNACONF` variables.
 
 > **NOTE**: Dynaconf works in an **layered override** mode based on the above order, so if you have multiple file formats with conflicting keys defined, the precedence will be based on the loading order.
 > If you dont want to have values like `lists` and `dicts` overwritten take a look on how to [merge existing values](usage.html#merging-existing-values)
+
+## Local configuration files and merging to existing data
+
+This feature is useful for maintaining a shared set of config files for a team, while still allowing for local configuration.
+
+Any file matched by the glob `*.local.*` will be read at the end of file loading order. So it is possible to have local settings files that are for example not committed to the version controlled repository. (e:g add `**/*.local*` to your `.gitignore`)
+
+So if you have `settings.toml` Dynaconf will load it and after all will also try to load a file named `settings.local.toml` if it does exist. And the same applies to all the other supported extensions `settings.local.{py,json,yaml,toml,ini,cfg}`
+
+Example:
+
+```ini
+# settings.toml        # <-- 1st loaded
+[default]
+colors = ["green", "blue"]
+parameters = {enabled=true, number=42}
+
+# .secrets.toml        # <-- 2nd loaded  (overrides previous existing vars)
+[default]
+password = 1234
+
+# settings.local.yaml  # <-- 3rd loaded  (overrides previous existing vars)
+[default]
+colors = ["pink"]
+parameters = {enabled=false}
+password = 9999
+```
+
+So with above the values will be:
+
+```python
+settings.COLORS == ["pink"]
+settings.PARAMETERS == {"enabled": False}
+settings.PASSWORD == 9999
+```
+
+For each loaded file dynaconf will `override` previous existing keys so if you want to `append` new values to existing variables you can use 3 strategies.
+
+### dynaconf merge token
+
+```ini
+# settings.local.yaml
+[default]
+names = ["Karla", "dynaconf_merge"]
+parameters = {enabled=false, dynaconf_merge=true}
+```
+
+By adding `dynaconf_merge` to a `list` or `dict` marks it as a merge candidate.
+
+And then the values will be updated in to existing data structures.
+
+```python
+settings.COLORS == ["pink", "green", "blue"]
+settings.PARAMETERS == {"enabled": False, "number": 42}
+settings.PASSWORD == 9999
+```
+
+### Dunder merging for nested structures
+
+For nested structures the recommendation is to use dunder mergin because it it easier to read and also it has no limitations in terms of nesting levels.
+
+```ini
+# settings.local.yaml
+[default]
+parameters__enabled = false
+```
+
+The use of `__` to denote nested level will ensure the key is merged with existing values read more in [merging existing values](#merging-existing-values).
+
+### Global merge
+
+```bash
+export MERGE_ENABLED_FOR_DYNACONF=true
+```
+
+or put it in your `.env` file then Dynaconf will automatically merge all existing variables.
+
+> **BEWARE**: Using `MERGE_ENABLED_FOR_DYNACONF` can lead to unexpected results because you do not have granular control of what is being merged or overwritten so the recommendation is to use other options.
 
 ## Settings File Formats
 
@@ -480,6 +573,17 @@ settings.SCRIPTS == ['install.sh', 'dev.sh', 'test.sh', 'deploy.sh', 'run.sh']
 ### Known caveats
 
 The **dynaconf_merge** functionality works only for the first level keys, it will not merge subdicts or nested lists (yet).
+
+
+### Global merge
+
+```bash
+export MERGE_ENABLED_FOR_DYNACONF=true
+```
+
+or put it in your `.env` file then Dynaconf will automatically merge all existing variables.
+
+> **BEWARE**: Using `MERGE_ENABLED_FOR_DYNACONF` can lead to unexpected results because you do not have granular control of what is being merged or overwritten so the recommendation is to use other options.
 
 ## More examples
 

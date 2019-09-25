@@ -10,6 +10,7 @@ from dynaconf.utils import missing
 from dynaconf.utils import object_merge
 from dynaconf.utils import trimmed_split
 from dynaconf.utils.files import find_file
+from dynaconf.utils.files import get_local_filename
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import unparse_conf_data
 
@@ -213,3 +214,9 @@ def test_ensure_a_list():
 
     # other types get wrapped in a list
     assert ensure_a_list(1) == [1]
+
+
+def test_get_local_filename():
+    settings_path = os.path.join("foo", "b", "conf.toml")
+    local_path = os.path.join("foo", "b", "conf.local.toml")
+    assert get_local_filename(settings_path) == local_path

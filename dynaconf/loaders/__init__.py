@@ -10,6 +10,7 @@ from dynaconf.loaders import yaml_loader
 from dynaconf.utils import deduplicate
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils.files import get_local_filename
 from dynaconf.utils.parse_conf import false_values
 
 
@@ -95,6 +96,15 @@ def settings_loader(
             modules_names.append(item)
 
     enabled_core_loaders = obj.get("CORE_LOADERS_FOR_DYNACONF")
+
+    # add `.local.` to found_files list to search for local files.
+    found_files.extend(
+        [
+            get_local_filename(item)
+            for item in found_files
+            if ".local." not in str(item)
+        ]
+    )
 
     for mod_file in modules_names + found_files:
         # can be set to multiple files settings.py,settings.yaml,...
