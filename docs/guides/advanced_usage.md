@@ -22,6 +22,27 @@ config = LazySettings(ENVVAR_PREFIX_FOR_DYNACONF="MYPROGRAM")
 
 Now you can use `export MYPROGRAM_FOO=bar` instead of `DYNACONF_FOO=bar`
 
+## Module impersonation
+
+In some cases you may need to impersonate your legacy `settings` module for example you already have a program that does.
+
+```python
+from myprogram import settings
+```
+
+and now you want to use dynaconf without the need to change your whole codebase.
+
+Go to your `myprogram/settings.py` and apply the module impersonation.
+
+```python
+import sys
+from dynaconf import LazySettings
+
+sys.modules[__name__] = LazySettings()
+```
+
+the last line of above code will make the module to replace itself with a dynaconf instance in the first time it is imported.
+
 ## Switching working environments
 
 You can switch between existing environments using:

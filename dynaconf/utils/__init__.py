@@ -166,14 +166,6 @@ def deduplicate(list_object):
 
 
 def warn_deprecations(data):
-    if data.get("MERGE_ENABLED_FOR_DYNACONF"):
-        warnings.warn(
-            "MERGE_ENABLED_FOR_DYNACONF is deprecated "
-            "instead it is preferred to use the local merge feature "
-            "see: https://dynaconf.readthedocs.io/en/latest/guides/usage.html"
-            "#merging-existing-values",
-            DeprecationWarning,
-        )
     for old, new in RENAMED_VARS.items():
         if old in data:
             warnings.warn(

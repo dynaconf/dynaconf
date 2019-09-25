@@ -134,23 +134,6 @@ def test_extra_yaml():
     assert settings.HELLOEXAMPLE == "world"
 
 
-# def test_multi_extra_yaml():
-#     """Test loading extra yaml file"""
-#     load(settings, filename=YAMLS)
-#     yaml = """
-#     example:
-#        helloexample: world
-#     """
-#     yaml2 = """
-#     example:
-#        foo: bar
-#     """
-#     settings.set('YAML', [yaml, yaml2])
-#     settings.execute_loaders(env='EXAMPLE')
-#     assert settings.HELLOEXAMPLE == 'world'
-#     assert settings.FOO == 'bar'
-
-
 def test_empty_value():
     load(settings, filename="")
 
@@ -202,3 +185,96 @@ def test_load_dunder():
     load(settings, filename=yaml, env="FOO")
     assert settings.COLORS.black.code == "#000000"
     assert settings.COLORS.black.name == "Black"
+
+
+def test_local_files(tmpdir):
+
+    settings_file_yaml = """
+    default:
+      name: Bruno
+      colors:
+        - green
+        - blue
+      data:
+        link: brunorocha.org
+      other:
+        foo: bar
+      MUSIC:
+        CURRENT:
+          VOLUME: 10
+          TITLE: The Beatles - Strawberry Fields
+    """
+    tmpdir.join("settings.yaml").write(settings_file_yaml)
+
+    local_file_yaml = """
+    default:
+      name: Bruno Rocha
+      colors:
+        - red
+        - dynaconf_merge
+      data:
+        city: Guarulhos
+        dynaconf_merge: true
+      other:
+        baz: zaz
+      MUSIC__current__volume: 100
+      MUSIC__current__title: Led Zeppelin - Immigrant Song
+    """
+    tmpdir.join("settings.local.yaml").write(local_file_yaml)
+
+    conf = LazySettings()
+    assert conf.NAME == "Bruno Rocha"
+    assert set(conf.COLORS) == set(["red", "green", "blue"])
+    assert conf.DATA.link == "brunorocha.org"
+    assert conf.DATA.city == "Guarulhos"
+    assert conf.OTHER == {"baz": "zaz"}
+    assert conf.MUSIC.current.volume == 100
+    assert conf.MUSIC.current.title == "Led Zeppelin - Immigrant Song"
+
+
+def test_explicit_local_files(tmpdir):
+
+    settings_file_yaml = """
+    default:
+      name: Bruno
+      colors:
+        - green
+        - blue
+      data:
+        link: brunorocha.org
+      other:
+        foo: bar
+      MUSIC:
+        CURRENT:
+          VOLUME: 10
+          TITLE: The Beatles - Strawberry Fields
+    """
+    tmpdir.join("foo.yaml").write(settings_file_yaml)
+
+    local_file_yaml = """
+    default:
+      name: Bruno Rocha
+      colors:
+        - red
+        - dynaconf_merge
+      data:
+        city: Guarulhos
+        dynaconf_merge: true
+      other:
+        baz: zaz
+      MUSIC__current__volume: 100
+      MUSIC__current__title: Led Zeppelin - Immigrant Song
+    """
+    tmpdir.join("foo.local.yaml").write(local_file_yaml)
+
+    conf = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=["foo.yaml", "foo.local.yaml"]
+    )
+
+    assert conf.NAME == "Bruno Rocha"
+    assert set(conf.COLORS) == set(["red", "green", "blue"])
+    assert conf.DATA.link == "brunorocha.org"
+    assert conf.DATA.city == "Guarulhos"
+    assert conf.OTHER == {"baz": "zaz"}
+    assert conf.MUSIC.current.volume == 100
+    assert conf.MUSIC.current.title == "Led Zeppelin - Immigrant Song"
