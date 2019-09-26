@@ -9,6 +9,7 @@ from dynaconf.utils import Missing
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
 from dynaconf.utils import trimmed_split
+from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import get_local_filename
 from dynaconf.utils.parse_conf import parse_conf_data
@@ -220,3 +221,14 @@ def test_get_local_filename():
     settings_path = os.path.join("foo", "b", "conf.toml")
     local_path = os.path.join("foo", "b", "conf.local.toml")
     assert get_local_filename(settings_path) == local_path
+
+
+def test_upperfy():
+    assert upperfy("foo") == "FOO"
+    assert upperfy("foo__bar") == "FOO__bar"
+    assert upperfy("foo__bar__ZAZ") == "FOO__bar__ZAZ"
+    assert (
+        upperfy("foo__bar__ZAZ__naz__TAZ_ZAZ") == "FOO__bar__ZAZ__naz__TAZ_ZAZ"
+    )
+    assert upperfy("foo_bar") == "FOO_BAR"
+    assert upperfy("foo_BAR") == "FOO_BAR"

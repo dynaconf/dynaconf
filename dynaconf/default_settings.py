@@ -5,6 +5,7 @@ import warnings
 
 from dynaconf.utils import raw_logger
 from dynaconf.utils import RENAMED_VARS
+from dynaconf.utils import upperfy
 from dynaconf.utils import warn_deprecations
 from dynaconf.utils.files import find_file
 from dynaconf.utils.parse_conf import parse_conf_data
@@ -30,7 +31,7 @@ def try_renamed(key, value, older_key, current_key):
 
 
 def get(key, default=None):
-    value = os.environ.get(key.upper())
+    value = os.environ.get(upperfy(key))
 
     # compatibility with renamed variables
     for old, new in RENAMED_VARS.items():

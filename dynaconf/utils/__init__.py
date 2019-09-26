@@ -229,3 +229,29 @@ def build_env_list(obj, env):
 
     # loaders are responsible to change to lower/upper cases
     return [env.lower() for env in env_list]
+
+
+def upperfy(key):
+    """Receive a string key and returns its upper version.
+
+    Example:
+
+      input: foo
+      output: FOO
+
+      input: foo_bar
+      output: FOO_BAR
+
+      input: foo__bar__ZAZ
+      output: FOO__bar__ZAZ
+
+    Arguments:
+        key {str} -- A string key that may contain dunders `__`
+
+    Returns:
+        The key as upper case but keeping the nested elements.
+    """
+    if "__" in key:
+        parts = key.split("__")
+        return "__".join([parts[0].upper()] + parts[1:])
+    return key.upper()

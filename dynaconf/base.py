@@ -19,6 +19,7 @@ from dynaconf.utils import missing
 from dynaconf.utils import object_merge
 from dynaconf.utils import raw_logger
 from dynaconf.utils import RENAMED_VARS
+from dynaconf.utils import upperfy
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import find_file
 from dynaconf.utils.functional import empty
@@ -295,7 +296,7 @@ class Settings(object):
                 dotted_key=key, default=default, cast=cast, fresh=fresh
             )
 
-        key = key.upper()
+        key = upperfy(key)
         if key in self._deleted:
             return default
 
@@ -320,7 +321,7 @@ class Settings(object):
         :param fresh: if key should be taken from source direclty
         :return: Boolean
         """
-        key = key.upper()
+        key = upperfy(key)
         if key in self._deleted:
             return False
         return self.get(key, fresh=fresh, default=missing) is not missing
@@ -345,7 +346,7 @@ class Settings(object):
          or cast must be true to use cast inference
         :return: The value if found, default or None
         """
-        key = key.upper()
+        key = upperfy(key)
         data = self.environ.get(key, default)
         if data:
             if cast in converters:
@@ -356,7 +357,7 @@ class Settings(object):
 
     def exists_in_environ(self, key):
         """Return True if env variable is exported"""
-        return key.upper() in self.environ
+        return upperfy(key) in self.environ
 
     def as_bool(self, key):
         """Partial method for get with bool cast"""
@@ -603,7 +604,7 @@ class Settings(object):
         :param key: The key to be unset
         :param force: Bypass default checks and force unset
         """
-        key = key.strip().upper()
+        key = upperfy(key.strip())
         if (
             key not in dir(default_settings)
             and key not in self._defaults
@@ -687,7 +688,7 @@ class Settings(object):
             )
 
         value = parse_conf_data(value, tomlfy=tomlfy)
-        key = key.strip().upper()
+        key = upperfy(key.strip())
         existing = getattr(self, key, None)
 
         if getattr(value, "dynaconf_del", None):
@@ -1009,7 +1010,7 @@ class Settings(object):
         """
         keys = keys or self.keys()
         for key in keys:
-            key = key.upper()
+            key = upperfy(key)
             if ignore and key in ignore:
                 continue
             value = self.get(key, empty)
