@@ -623,10 +623,11 @@ class Settings(object):
         for key in keys:
             self.unset(key, force=force)
 
-    def _dotted_set(
-        self, dotted_key, value, tomlfy=False, merge=True, **kwargs
-    ):
+    def _dotted_set(self, dotted_key, value, tomlfy=False, **kwargs):
         """Sets dotted keys as nested dictionaries.
+
+        Dotted set will always merge existing data, to avoid merging the
+        @reset token should be used.
 
         Arguments:
             dotted_key {str} -- A traversal name e.g: foo.bar.zaz
@@ -634,11 +635,10 @@ class Settings(object):
 
         Keyword Arguments:
             tomlfy {bool} -- Perform toml parsing (default: {False})
-            merge {bool} -- Merge existing dictionaries (default: {True})
         """
 
         split_keys = dotted_key.split(".")
-        existing_data = self.get(split_keys[0], {}) if merge else {}
+        existing_data = self.get(split_keys[0], {})
         new_data = DynaBox(default_box=True)
 
         tree = new_data
@@ -648,7 +648,7 @@ class Settings(object):
         value = parse_conf_data(value, tomlfy=tomlfy)
         tree[split_keys[-1]] = value
 
-        if existing_data and merge:
+        if existing_data:
             object_merge({split_keys[0]: existing_data}, new_data)
 
         self.update(data=new_data, tomlfy=tomlfy, **kwargs)
@@ -661,7 +661,7 @@ class Settings(object):
         tomlfy=False,
         dotted_lookup=True,
         is_secret=False,
-        merge=True,
+        merge=False,
     ):
         """Set a value storing references for the loader
 
@@ -670,7 +670,7 @@ class Settings(object):
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param is_secret: Bool define if secret values is hidden on logs.
-        :param merge: Bool define if existing nested/dotted will be merged.
+        :param merge: Bool define if existing nested data will be merged.
         """
 
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
@@ -680,11 +680,7 @@ class Settings(object):
 
         if "." in key and dotted_lookup is True:
             return self._dotted_set(
-                key,
-                value,
-                loader_identifier=loader_identifier,
-                tomlfy=tomlfy,
-                merge=merge,
+                key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
             )
 
         value = parse_conf_data(value, tomlfy=tomlfy)
@@ -699,8 +695,36 @@ class Settings(object):
             # just in case someone use a `@reset` in a first level var.
             value = value.value
 
+        if getattr(value, "dynaconf_merge", False):
+            # just in case someone use a `@merge` in a first level var
+
+            if isinstance(value.value, (int, float, bool)):
+                # @merge 1, @merge 1.1, @merge False
+                value.value = [value.value]
+            elif isinstance(value.value, str):
+                if "=" in value.value:
+                    # @merge foo=bar
+                    k, v = value.value.split("=")
+                    value.value = {k: v}
+                elif "," in value.value:
+                    # @merge foo,bar
+                    value.value = value.value.split(",")
+                else:
+                    # @merge foo
+                    value.value = [value.value]
+
+            if existing:
+                object_merge(existing, value.value)
+
+            value = value.value
+
         if existing is not None and existing != value:
-            value = self._merge_before_set(key, existing, value, is_secret)
+            # `dynaconf_merge` used in file root `merge=True`
+            if merge:
+                object_merge(existing, value)
+            else:
+                # `dynaconf_merge` may be used within the key structure
+                value = self._merge_before_set(key, existing, value, is_secret)
 
         if isinstance(value, dict):
             value = DynaBox(value, box_it_up=True)
@@ -725,6 +749,7 @@ class Settings(object):
         loader_identifier=None,
         tomlfy=False,
         is_secret=False,
+        merge=False,
         **kwargs
     ):
         """
@@ -742,6 +767,7 @@ class Settings(object):
         :param data: Data to be updated
         :param loader_identifier: Only to be used by custom loaders
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
+        :param merge: Bool define if existing nested data will be merged.
         :param kwargs: extra values to update
         :return: None
         """
@@ -754,6 +780,7 @@ class Settings(object):
                 loader_identifier=loader_identifier,
                 tomlfy=tomlfy,
                 is_secret=is_secret,
+                merge=merge,
             )
 
     def _merge_before_set(self, key, existing, value, is_secret):
@@ -773,6 +800,10 @@ class Settings(object):
             local_merge = value.pop(
                 "dynaconf_merge", value.pop("dynaconf_merge_unique", None)
             )
+            if local_merge not in (True, False, None) and not value:
+                # In case `dynaconf_merge:` holds value not boolean - ref #241
+                value = local_merge
+
             if global_merge or local_merge:
                 safe_value = {k: "***" for k in value} if is_secret else value
                 _log_before_merging(safe_value)

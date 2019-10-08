@@ -1,0 +1,6 @@
+default:
+  dynaconf_merge: true
+  files:
+    - settings.local.yaml
+  person:
+    phone: 123-456

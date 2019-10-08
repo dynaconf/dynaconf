@@ -1,0 +1,7 @@
+dynaconf_merge = true
+
+[default]
+files = ['settings.local.toml']
+
+[default.person]
+email = "bruno@example.com"

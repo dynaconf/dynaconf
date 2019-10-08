@@ -1,0 +1,7 @@
+dynaconf_merge = true
+
+[default]
+files = ['settings.toml']
+
+[default.person]
+age = 36

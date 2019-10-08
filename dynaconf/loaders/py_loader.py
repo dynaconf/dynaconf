@@ -32,6 +32,9 @@ def load(obj, settings_module, identifier="py", silent=False, key=None):
 def load_from_python_object(
     obj, mod, settings_module, key=None, identifier=None
 ):
+    file_merge = getattr(mod, "dynaconf_merge", False) or getattr(
+        mod, "DYNACONF_MERGE", False
+    )
     for setting in dir(mod):
         # at least 3 first chars should be upper to be considered a setting var
         if setting[:3].isupper():
@@ -43,7 +46,12 @@ def load_from_python_object(
                     "*****" if "secret" in settings_module else setting_value,
                     identifier,
                 )
-                obj.set(setting, setting_value, loader_identifier=identifier)
+                obj.set(
+                    setting,
+                    setting_value,
+                    loader_identifier=identifier,
+                    merge=file_merge,
+                )
     obj._loaded_files.append(mod.__file__)
 
 

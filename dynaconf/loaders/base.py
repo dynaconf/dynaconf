@@ -104,6 +104,9 @@ class BaseLoader(object):
                 k.lower(): value for k, value in source_data.items()
             }
 
+            # is there a `dynaconf_merge` on top level of file?
+            file_merge = source_data.get("dynaconf_merge")
+
             # all lower case for comparison
             base_envs = [
                 # DYNACONF or MYPROGRAM
@@ -157,9 +160,15 @@ class BaseLoader(object):
                     )
                 )
 
+                # is there a `dynaconf_merge` inside an `[env]`?
+                file_merge = file_merge or data.pop("DYNACONF_MERGE", False)
+
                 if not key:
                     self.obj.update(
-                        data, loader_identifier=identifier, is_secret=is_secret
+                        data,
+                        loader_identifier=identifier,
+                        is_secret=is_secret,
+                        merge=file_merge,
                     )
                 elif key in data:
                     self.obj.set(
@@ -167,4 +176,5 @@ class BaseLoader(object):
                         data.get(key),
                         loader_identifier=identifier,
                         is_secret=is_secret,
+                        merge=file_merge,
                     )

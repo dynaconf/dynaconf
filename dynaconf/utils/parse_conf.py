@@ -36,6 +36,12 @@ class Del(MetaValue):
     dynaconf_del = True
 
 
+class Merge(MetaValue):
+    """Triggers an existing key to be merged"""
+
+    dynaconf_merge = True
+
+
 converters = {
     "@int": int,
     "@float": float,
@@ -46,6 +52,7 @@ converters = {
     # Meta Values to trigger pre assignment actions
     "@reset": lambda value: Reset(value),
     "@del": lambda value: Del(value),
+    "@merge": lambda value: Merge(value),
     # Special markers to be used as placeholders e.g: in prefilled forms
     # will always return None when evaluated
     "@note": lambda value: None,

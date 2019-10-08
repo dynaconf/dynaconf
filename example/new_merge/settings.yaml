@@ -1,0 +1,6 @@
+dynaconf_merge: true
+default:
+  files:
+    - settings.yaml
+  person:
+    city: Guarulhos

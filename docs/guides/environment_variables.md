@@ -223,11 +223,32 @@ database = {host="server.com", user="default"}
 database = {user="dev_user", dynaconf_merge=true}
 ```
 
-In an environment variable:
+or
+
+> New in **2.2.0**
+
+```cfg
+[default]
+database = {host="server.com", user="default"}
+
+[development.database]
+dynaconf_merge = {user="dev_user"}
+```
+
+In an environment variable use `@merge` token:
+
+> **New in 2.2.0**
 
 ```bash
 # Toml formatted envvar
-export DYNACONF_DATABASE='{password=1234, dynaconf_merge=true}'
+export DYNACONF_DATABASE='@merge {password=1234}'
+```
+
+or `dunder` (recommended)
+
+```bash
+# Toml formatted envvar
+export DYNACONF_DATABASE__PASSWORD=1234
 ```
 
 The end result will be on `[development]` env:

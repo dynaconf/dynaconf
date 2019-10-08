@@ -202,6 +202,8 @@ The order can be changed by overriding the `SETTINGS_FILE_FOR_DYNACONF` the `COR
 
 ## Local configuration files and merging to existing data
 
+> New in **2.2.0**
+
 This feature is useful for maintaining a shared set of config files for a team, while still allowing for local configuration.
 
 Any file matched by the glob `*.local.*` will be read at the end of file loading order. So it is possible to have local settings files that are for example not committed to the version controlled repository. (e:g add `**/*.local*` to your `.gitignore`)
@@ -220,7 +222,7 @@ parameters = {enabled=true, number=42}
 [default]
 password = 1234
 
-# settings.local.yaml  # <-- 3rd loaded  (overrides previous existing vars)
+# settings.local.toml  # <-- 3rd loaded  (overrides previous existing vars)
 [default]
 colors = ["pink"]
 parameters = {enabled=false}
@@ -237,12 +239,44 @@ settings.PASSWORD == 9999
 
 For each loaded file dynaconf will `override` previous existing keys so if you want to `append` new values to existing variables you can use 3 strategies.
 
+### Mark the local file to be entirely merged
+
+> New in **2.2.0**
+
+```ini
+# settings.local.toml
+dynaconf_merge = true
+[default]
+colors = ["pink"]
+parameters = {enabled=false}
+```
+
+By adding `dynaconf_merge` to the top root of the file mark entire file to be merged.
+
+And then the values will be updated in to existing data structures.
+
+```python
+settings.COLORS == ["pink", "green", "blue"]
+settings.PARAMETERS == {"enabled": False, "number": 42}
+settings.PASSWORD == 9999
+```
+
+You can also mark a single `env` like `[development]` to be merged.
+
+```ini
+# settings.local.toml
+[development]
+dynaconf_merge = true
+colors = ["pink"]
+parameters = {enabled=false}
+```
+
 ### dynaconf merge token
 
 ```ini
-# settings.local.yaml
+# settings.local.toml
 [default]
-names = ["Karla", "dynaconf_merge"]
+colors = ["pink", "dynaconf_merge"]
 parameters = {enabled=false, dynaconf_merge=true}
 ```
 
@@ -256,9 +290,22 @@ settings.PARAMETERS == {"enabled": False, "number": 42}
 settings.PASSWORD == 9999
 ```
 
+> New in **2.2.0**
+
+And it also works having `dynaconf_merge` as dict keys holding the value to be merged.
+
+```ini
+# settings.local.toml
+[default.colors]
+dynaconf_merge = ["pink"]  # <-- value ["pink"] will be merged in to existing colors
+
+[default.parameters]
+dynaconf_merge = {enabled=false}
+```
+
 ### Dunder merging for nested structures
 
-For nested structures the recommendation is to use dunder mergin because it it easier to read and also it has no limitations in terms of nesting levels.
+For nested structures the recommendation is to use dunder merging because it it easier to read and also it has no limitations in terms of nesting levels.
 
 ```ini
 # settings.local.yaml
@@ -462,7 +509,7 @@ For **dict** value:
 
 Your main settings file (e.g `settings.toml`) has an existing `DATABASE` dict setting on `[default]` env.
 
-Now you want to contribute to the same `DATABASE` key by addind new keys, so you can use `dynaconf_merge` at the end of your dict:
+Now you want to contribute to the same `DATABASE` key by adding new keys, so you can use `dynaconf_merge` at the end of your dict:
 
 In specific `[envs]`
 
@@ -477,14 +524,36 @@ database = {user="dev_user", dynaconf_merge=true}
 database = {user="prod_user", dynaconf_merge=true}
 ```
 
+also allowed the alternative short format
+
+```cfg
+[default]
+database = {host="server.com", user="default"}
+
+[development.database]
+dynaconf_merge = {user="dev_user"}
+
+[production.database]
+dynaconf_merge = {user="prod_user"}
+```
+
 In an environment variable:
+
+Using `@merge` mark
 
 ```bash
 # Toml formatted envvar
-export DYNACONF_DATABASE='{password=1234, dynaconf_merge=true}'
+export DYNACONF_DATABASE='@merge {password=1234}'
 ```
 
-It is also possible to use nested  `dunder` traversal like:
+or `@merge` mark short format
+
+```bash
+# Toml formatted envvar
+export DYNACONF_DATABASE='@merge password=1234'
+```
+
+It is also possible to use nested `dunder` traversal like:
 
 ```bash
 export DYNACONF_DATABASE__password=1234
@@ -503,6 +572,13 @@ DATABASE = {'password': 1234, 'user': 'admin', 'ARGS': {'timeout': 30, 'retries'
 
 > **IMPORTANT** lower case keys are respected only on *nix systems, unfortunately Windows environment variables are case insensitive and Python reads it as all upper cases, that means that if you are running on Windows the dictionary can have only upper case keys.
 
+You can also export a toml dictionary.
+
+```bash
+# Toml formatted envvar
+export DYNACONF_DATABASE='{password=1234, dynaconf_merge=true}'
+```
+
 Or in an additional file (e.g `settings.yaml, .secrets.yaml, etc`) by using `dynaconf_merge` token:
 
 ```yaml
@@ -510,6 +586,15 @@ default:
   database:
     password: 1234
     dynaconf_merge: true
+```
+
+or
+
+```yaml
+default:
+  database:
+    dynaconf_merge:
+      password: 1234
 ```
 
 The `dynaconf_merge` token will mark that object to be merged with existing values (of course `dynaconf_merge` key will not be added to the final settings it is just a mark)
@@ -532,7 +617,37 @@ plugins = ["core"]
 plugins = ["debug_toolbar", "dynaconf_merge"]
 ```
 
+or
+
+```cfg
+[default]
+plugins = ["core"]
+
+[development.plugins]
+dynaconf_merge = ["debug_toolbar"]
+```
+
 And in environment variable
+
+using `@merge` token
+
+```bash
+export DYNACONF_PLUGINS='@merge ["ci_plugin"]'
+```
+
+or short version
+
+```bash
+export DYNACONF_PLUGINS='@merge ci_plugin'
+```
+
+comma separated values also supported:
+
+```bash
+export DYNACONF_PLUGINS='@merge ci_plugin,other_plugin'
+```
+
+or explicitly
 
 ```bash
 export DYNACONF_PLUGINS='["ci_plugin", "dynaconf_merge"]'
@@ -542,6 +657,16 @@ Then the end result on `[development]` is:
 
 ```python
 settings.PLUGINS == ["ci_plugin", "debug_toolbar", "core"]
+```
+
+If your value is a dictionary:
+
+```bash
+export DYNACONF_DATA="@merge {foo='bar'}"
+
+# or the short
+
+export DYNACONF_DATA="@merge foo=bar"
 ```
 
 ### Avoiding duplications on lists
@@ -572,8 +697,9 @@ settings.SCRIPTS == ['install.sh', 'dev.sh', 'test.sh', 'deploy.sh', 'run.sh']
 
 ### Known caveats
 
-The **dynaconf_merge** functionality works only for the first level keys, it will not merge subdicts or nested lists (yet).
+The **dynaconf_merge** and **@merge** functionalities works only for the first level keys, it will not merge subdicts or nested lists (yet).
 
+For deeper nested objects use [dunder merge](environment_variables.html#nested-keys-in-dictionaries-via-environment-variables).
 
 ### Global merge
 
