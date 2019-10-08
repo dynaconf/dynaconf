@@ -122,7 +122,7 @@ class BaseLoader(object):
                 env = env.lower()  # lower for better comparison
                 data = {}
                 try:
-                    data = source_data[env]
+                    data = source_data[env] or {}
                 except KeyError:
                     if env not in base_envs:
                         message = "%s_loader: %s env not defined in %s" % (

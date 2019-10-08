@@ -280,3 +280,13 @@ def test_explicit_local_files(tmpdir):
     assert conf.MUSIC.current.volume == 100
     assert conf.MUSIC.current.title == "Led Zeppelin - Immigrant Song"
     assert conf.get("music.current.even.inner.element") is True
+
+
+def test_empty_env(tmpdir):
+    """Assert empty env is not crashing on load."""
+    settings_file_yaml = """
+    default: ~
+    """
+    tmpdir.join("settings.yaml").write(settings_file_yaml)
+    settings = LazySettings()
+    settings.reload()
