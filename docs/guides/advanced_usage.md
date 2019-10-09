@@ -276,3 +276,21 @@ data = settings.as_dict(env='development')
 # can be .yaml, .toml, .ini, .json, .py
 loaders.write('/path/to/file.yaml', DynaBox(data).to_dict(), merge=False, env='development')
 ```
+
+
+## Preloading files
+
+> New in **2.2.0**
+
+Useful for plugin based apps.
+
+```py
+from dynaconf import LazySettings
+
+settings = LazySettings(
+  PRELOAD_FOR_DYNACONF=["/path/*", "other/settings.toml"],                # <-- Loaded first
+  SETTINGS_FILE_FOR_DYNACONF="/etc/foo/settings.py",                      # <-- Loaded second (the main file)
+  INCLUDES_FOR_DYNACONF=["other.module.settings", "other/settings.yaml"]  # <-- Loaded at the end
+)
+
+```

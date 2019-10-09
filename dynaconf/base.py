@@ -878,6 +878,7 @@ class Settings(object):
             default_loader(self, self._defaults)
         env = (env or self.current_env).upper()
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
+        self.pre_load(env, silent=silent, key=key)
         settings_loader(
             self, env=env, silent=silent, key=key, filename=filename
         )
@@ -888,6 +889,13 @@ class Settings(object):
             loader.load(self, env, silent=silent, key=key)
         self.load_includes(env, silent=silent, key=key)
         self.logger.debug("Loaded Files: %s", deduplicate(self._loaded_files))
+
+    def pre_load(self, env, silent, key):
+        """Do we have any file to pre-load before main settings file?"""
+        preloads = self.get("PRELOAD_FOR_DYNACONF", [])
+        if preloads:
+            self.logger.debug("Processing preloads %s", preloads)
+            self.load_file(path=preloads, env=env, silent=silent, key=key)
 
     def load_includes(self, env, silent, key):
         """Do we have any nested includes we need to process?"""

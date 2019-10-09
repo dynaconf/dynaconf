@@ -209,6 +209,9 @@ SECRETS_FOR_DYNACONF = get("SECRETS_FOR_DYNACONF", None)
 # To include extra paths based on envvar
 INCLUDES_FOR_DYNACONF = get("INCLUDES_FOR_DYNACONF", [])
 
+# To pre-load extra paths based on envvar
+PRELOAD_FOR_DYNACONF = get("PRELOAD_FOR_DYNACONF", [])
+
 # Files to skip if found on search tree
 SKIP_FILES_FOR_DYNACONF = get("SKIP_FILES_FOR_DYNACONF", [])
 

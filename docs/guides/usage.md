@@ -185,15 +185,16 @@ BAR
 Dynaconf loads file in a overriding cascade loading order using the predefined order:
 
 1. First the environment variables (and `.env` file) to read for [configuration](configuration.html) options
-2. Then the files defined in `SETTINGS_FILE_FOR_DYNACONF` using the loaders defined in `CORE_LOADERS_FOR_DYNACONF`
+2. Then the paths provided in `PRELOAD_FOR_DYNACONF` using all enabled loaders.
+3. Then the files defined in `SETTINGS_FILE_FOR_DYNACONF` using all enabled loaders.
     - Files containing `.local.` in its name will be loaded at the end. e.g: `settings.local.yaml`
-3. Then contents of `SECRETS_FOR_DYNACONF` envvar filename if defined (useful for jenkins and other CI)
-4. Then the loaders defined in `LOADERS_FOR_DYNACONF` 
+4. Then contents of `SECRETS_FOR_DYNACONF` envvar filename if defined (useful for jenkins and other CI)
+5. Then the loaders defined in `LOADERS_FOR_DYNACONF` 
     - Redis if enabled by `REDIS_FOR_DYNACONF=1`
     - Vault if enabled by `Vault_FOR_DYNACONF=1`
     - Custom loaders if any added
     - Environment variables loader will be the last always
-5. If there is any `DYNACONF_INCLUDE` key found or `INCLUDES_FOR_DYNACONF` env vars this will be loaded.
+6. If there is any `DYNACONF_INCLUDE` key found or `INCLUDES_FOR_DYNACONF` env vars this will be loaded.
 
 The order can be changed by overriding the `SETTINGS_FILE_FOR_DYNACONF` the `CORE_LOADERS_FOR_DYNACONF` and `LOADERS_FOR_DYNACONF` variables.
 
