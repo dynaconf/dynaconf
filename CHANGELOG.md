@@ -2,6 +2,62 @@ Changelog
 =========
 
 
+2.2.0 (2019-10-09)
+------------------
+- Release version 2.2.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (5):
+            Release version 2.1.1
+            Fix #236 added .local. files loading and module impersonation docs (#239)
+            Replace key.upper with `upperfy` function that keeps `__` attributes (#240)
+            Fix #241 new merge standards (#243)
+            Add support for PRELOAD_ setting. (#244)
+
+      Kedar Kulkarni (1):
+            Fixing how filename.local.* files are loaded (#238)
+
+      paskozdilar (1):
+            fix crash on empty settings (#242)
+- Add support for PRELOAD_ setting. (#244) [Bruno Rocha]
+- Fix #241 new merge standards (#243) [Bruno Rocha]
+
+  Adds dynaconf_merge and @merge for better merge standards. ref #241
+- Fix crash on empty settings (#242) [paskozdilar]
+
+  * fix crash on empty settings
+
+  * add test for empty environment
+
+  * fix PEP 8 issue (expected 2 blank lines, found 1)
+- Replace key.upper with `upperfy` function that keeps `__` attributes
+  (#240) [Bruno Rocha]
+- Fix #236 added .local. files loading and module impersonation docs
+  (#239) [Bruno Rocha]
+
+  also MERGE_ENABLED is no more deprecated.
+- Fixing how filename.local.* files are loaded (#238) [Kedar Kulkarni]
+- Release version 2.1.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (7):
+            Release version 2.1.0
+            Improve validators to use `from_env` method (#225)
+            Add info about dunder envvars on django.md docs guide (#226)
+            Fix #228 add `ignore` argument to Django explicit mode. (#229)
+            Improvement to close #230 - do not throw error for base envs. (#231)
+            dynaconf init will not write all possible envs, only [default] (#233)
+            When both enabled, Vault has the priority over Redis for overriding (#234)
+
+      Dave Barnow (1):
+            Fix typo in CLI init (#227)
+
+      Kedar Kulkarni (1):
+            Fixing self._root_path to fall back to os.getcwd() only when `settings.load_file` is called directly or from includes (#232)
+
+
 2.1.1 (2019-09-16)
 ------------------
 - Release version 2.1.1. [Bruno Rocha]
