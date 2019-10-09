@@ -280,6 +280,193 @@ def test_local_set_merge_list_unique(settings):
     assert settings.SCRIPTS == ["install.sh", "dev.sh", "test.sh", "deploy.sh"]
 
 
+def test_set_explicit_merge_token(tmpdir):
+    data = {
+        "default": {
+            "a_list": [1, 2],
+            "b_list": [1],
+            "a_dict": {"name": "Bruno"},
+        }
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
+    settings = LazySettings()
+    assert settings.A_LIST == [1, 2]
+    assert settings.B_LIST == [1]
+    assert settings.A_DICT == {"name": "Bruno"}
+    assert settings.A_DICT.name == "Bruno"
+
+    settings.set("a_list", [3], merge=True)
+    assert settings.A_LIST == [1, 2, 3]
+
+    settings.set("b_list", "@merge [2]")
+    assert settings.B_LIST == [1, 2]
+
+    settings.set("b_list", "@merge [3, 4]")
+    assert settings.B_LIST == [1, 2, 3, 4]
+
+    settings.set("b_list", "@merge 5")
+    assert settings.B_LIST == [1, 2, 3, 4, 5]
+
+    settings.set("b_list", "@merge 6.6")
+    assert settings.B_LIST == [1, 2, 3, 4, 5, 6.6]
+
+    settings.set("b_list", "@merge false")
+    assert settings.B_LIST == [1, 2, 3, 4, 5, 6.6, False]
+
+    settings.set("b_list", "@merge foo,bar")
+    assert settings.B_LIST == [1, 2, 3, 4, 5, 6.6, False, "foo", "bar"]
+
+    settings.set("b_list", "@merge zaz")
+    assert settings.B_LIST == [1, 2, 3, 4, 5, 6.6, False, "foo", "bar", "zaz"]
+
+    settings.set("a_dict", "@merge {city='Guarulhos'}")
+    assert settings.A_DICT.name == "Bruno"
+    assert settings.A_DICT.city == "Guarulhos"
+
+    settings.set("a_dict", "@merge country=Brasil")
+    assert settings.A_DICT.name == "Bruno"
+    assert settings.A_DICT.city == "Guarulhos"
+    assert settings.A_DICT.country == "Brasil"
+
+    settings.set("new_key", "@merge foo=bar")
+    assert settings.NEW_KEY == {"foo": "bar"}
+
+
+def test_set_new_merge_issue_241_1(tmpdir):
+    data = {
+        "default": {
+            "name": "Bruno",
+            "colors": ["red", "green"],
+            "data": {
+                "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
+            },
+        }
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
+    settings = LazySettings()
+    assert settings.NAME == "Bruno"
+    assert settings.COLORS == ["red", "green"]
+    assert settings.DATA.links == {
+        "twitter": "rochacbruno",
+        "site": "brunorocha.org",
+    }
+
+
+def test_set_new_merge_issue_241_2(tmpdir):
+    data = {
+        "default": {
+            "name": "Bruno",
+            "colors": ["red", "green"],
+            "data": {
+                "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
+            },
+        }
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
+
+    data = {
+        "dynaconf_merge": True,
+        "default": {
+            "colors": ["blue"],
+            "data": {"links": {"github": "rochacbruno.github.io"}},
+        },
+    }
+    toml_loader.write(
+        str(tmpdir.join("settings.local.toml")), data, merge=False
+    )
+
+    settings = LazySettings()
+    assert settings.NAME == "Bruno"
+    assert settings.COLORS == ["red", "green", "blue"]
+    assert settings.DATA.links == {
+        "twitter": "rochacbruno",
+        "site": "brunorocha.org",
+        "github": "rochacbruno.github.io",
+    }
+
+
+def test_set_new_merge_issue_241_3(tmpdir):
+    data = {
+        "default": {
+            "name": "Bruno",
+            "colors": ["red", "green"],
+            "data": {
+                "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
+            },
+        }
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
+
+    data = {
+        "default": {
+            "name": "Tommy Shelby",
+            "colors": {"dynaconf_merge": ["yellow", "pink"]},
+            "data": {"links": {"site": "pb.com"}},
+        }
+    }
+    toml_loader.write(
+        str(tmpdir.join("settings.local.toml")), data, merge=False
+    )
+
+    settings = LazySettings()
+    assert settings.NAME == "Tommy Shelby"
+    assert settings.COLORS == ["red", "green", "yellow", "pink"]
+    assert settings.DATA.links == {"site": "pb.com"}
+
+
+def test_set_new_merge_issue_241_4(tmpdir):
+    data = {
+        "default": {
+            "name": "Bruno",
+            "colors": ["red", "green"],
+            "data": {
+                "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
+            },
+        }
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
+
+    data = {"default": {"data__links__telegram": "t.me/rochacbruno"}}
+    toml_loader.write(
+        str(tmpdir.join("settings.local.toml")), data, merge=False
+    )
+
+    settings = LazySettings()
+    assert settings.NAME == "Bruno"
+    assert settings.COLORS == ["red", "green"]
+    assert settings.DATA.links == {
+        "twitter": "rochacbruno",
+        "site": "brunorocha.org",
+        "telegram": "t.me/rochacbruno",
+    }
+
+
+def test_set_new_merge_issue_241_5(tmpdir):
+    data = {
+        "default": {
+            "name": "Bruno",
+            "colors": ["red", "green"],
+            "data": {
+                "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
+            },
+        }
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
+
+    data = {"default": {"colors": "@merge ['blue']"}}
+    toml_loader.write(
+        str(tmpdir.join("settings.local.toml")), data, merge=False
+    )
+
+    settings = LazySettings()
+    assert settings.NAME == "Bruno"
+    assert settings.COLORS == ["red", "green", "blue"]
+    assert settings.DATA.links == {
+        "twitter": "rochacbruno",
+        "site": "brunorocha.org",
+    }
+
+
 def test_exists(settings):
     settings.set("BOOK", "TAOCP")
     assert settings.exists("BOOK") is True
@@ -374,20 +561,6 @@ def test_dotted_set(settings):
     assert settings.get("nested_1").to_dict() == {
         "nested_2": {"nested_3": {"nested_4": "Updated Secret"}},
         "nested_2_0": "Hello",
-    }
-    settings.set(
-        "nested_1.nested_2.nested_3.nested_4", "New Stuff", merge=False
-    )
-    assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "New Stuff"
-    assert settings.NESTED_1.NESTED_2.NESTED_3 == {"nested_4": "New Stuff"}
-    assert settings.NESTED_1.NESTED_2 == {
-        "nested_3": {"nested_4": "New Stuff"}
-    }
-    assert settings.NESTED_1 == {
-        "nested_2": {"nested_3": {"nested_4": "New Stuff"}}
-    }
-    assert settings.get("nested_1").to_dict() == {
-        "nested_2": {"nested_3": {"nested_4": "New Stuff"}}
     }
 
 

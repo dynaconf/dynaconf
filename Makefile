@@ -15,7 +15,8 @@ test_examples:
 	cd example/app;pwd;python app.py
 	cd example/dunder;pwd;python app.py
 	cd example/app_with_dotenv;pwd;python app.py
-	cd example/merge_configs;pwd;python app.py
+	cd example/merge_enabled;pwd;python app.py
+	cd example/new_merge;pwd;python app.py
 	cd example/dynaconf_merge;pwd;python app.py
 	cd example/multiple_sources;pwd;python app.py
 	cd example/multiple_folders;pwd;python app.py
@@ -51,7 +52,7 @@ test_examples:
 	python example/compat.py
 	python example/app/app.py
 	python example/app_with_dotenv/app.py
-	python example/merge_configs/app.py
+	python example/merge_enabled/app.py
 	python example/dynaconf_merge/app.py
 	python example/multiple_sources/app.py
 	python example/multiple_folders/app.py
