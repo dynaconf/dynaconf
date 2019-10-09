@@ -689,3 +689,43 @@ def test_from_env_method(clean_env, tmpdir):
     assert new_other_settings.ONLY_IN_OTHER is True
     assert new_other_settings.ONLY_IN_DEVELOPMENT is True
     assert settings.A_DEFAULT == "From default env"
+
+
+def test_preload(tmpdir):
+    data = {
+        "default": {
+            "data": {
+                "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
+            }
+        }
+    }
+    toml_loader.write(str(tmpdir.join("preload.toml")), data, merge=False)
+
+    data = {
+        "dynaconf_merge": True,
+        "default": {"data": {"links": {"github": "rochacbruno.github.io"}}},
+    }
+    toml_loader.write(
+        str(tmpdir.join("main_settings.toml")), data, merge=False
+    )
+
+    data = {
+        "dynaconf_merge": True,
+        "default": {
+            "data": {"links": {"mastodon": "mastodon.social/@rochacbruno"}}
+        },
+    }
+    toml_loader.write(str(tmpdir.join("included.toml")), data, merge=False)
+
+    settings = LazySettings(
+        PRELOAD_FOR_DYNACONF=["preload.toml"],
+        SETTINGS_FILE_FOR_DYNACONF="main_settings.toml",
+        INCLUDES_FOR_DYNACONF=["included.toml"],
+    )
+
+    assert settings.DATA.links == {
+        "twitter": "rochacbruno",
+        "site": "brunorocha.org",
+        "github": "rochacbruno.github.io",
+        "mastodon": "mastodon.social/@rochacbruno",
+    }

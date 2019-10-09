@@ -44,11 +44,12 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     ENVVAR | str | The envvar which holds the list of settings files. | ‘SETTINGS_FILE_FOR_DYNACONF’ | ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS
     ENVVAR_PREFIX | str | Prefix for exporting parameters as env vars. Example: If your program is called *MYPROGRAM* you may want users to use *MYPROGRAM_FOO=bar* instead of *DYNACONF_FOO=bar* on envvars. | “DYNACONF” | ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM (loads MYPROGRAM_VAR) ENVVAR_PREFIX_FOR_DYNACONF=’’ (loads _VAR) ENVVAR_PREFIX_FOR_DYNACONF=false (loads VAR)
     FRESH_VARS | list | A list of vars to be re-loaded on every access. | [] | FRESH_VARS_FOR_DYNACONF=[“HOST”, “PORT”]
-    INCLUDES | list | A list of paths or a glob to load can be a toml-like list, or sep by , or ; | [] | INCLUDES_FOR_DYNACONF=”[‘path1.ext’, ‘folder/’]” INCLUDES_FOR_DYNACONF=”path1.toml;path2.toml” INCLUDES_FOR_DYNACONF=”path1.toml,path2.toml” INCLUDES_FOR_DYNACONF=”single_path.toml” INCLUDES_FOR_DYNACONF=”single_path/glob/.toml”
+    INCLUDES | list | A list of paths or a glob to load can be a toml-like list, or sep by , or ; | [] | INCLUDES_FOR_DYNACONF=”[‘path1.ext’, ‘folder/*’]” INCLUDES_FOR_DYNACONF=”path1.toml;path2.toml” INCLUDES_FOR_DYNACONF=”path1.toml,path2.toml” INCLUDES_FOR_DYNACONF=”single_path.toml” INCLUDES_FOR_DYNACONF=”single_path/glob/.toml”
     INSTANCE **used only by** *$dynaconf** *cli*. | str | Custom instance of LazySettings Must be an importable Python module. | None | INSTANCE_FOR_DYNACONF=myapp.settings
     LOADERS | list | A list of enabled external loaders. |	[‘dynaconf.loaders.env_loader’] | LOADERS_FOR_DYNACONF=’[‘module.mycustomloader’, …]’
     MERGE_ENABLED | bool | A bool to activate the global merge feature | False | MERGE_ENABLED_FOR_DYNACONF=1
     NESTED_SEPARATOR | str | Separator for nested assignment like `export DYNACONF_DATABASES__NAME='foo'` | `__` double underline | NESTED_SEPARATOR_FOR_DYNACONF='___'
+    PRELOAD | list | A list of paths or glob to be pre-loaded before main settings file. | [] | PRELOAD_FOR_DYNACONF="['path1.ext', 'folder/*']"
     REDIS_DB | int | Redis DB. | 0 | REDIS_DB_FOR_DYNACONF=1
     REDIS_ENABLED | bool | Redis loader is enabled. | false | REDIS_ENABLED_FOR_DYNACONF=true
     REDIS_HOST | str | Redis server address. | localhost | REDIS_HOST_FOR_DYNACONF=”localhost”
