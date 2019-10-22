@@ -1,6 +1,7 @@
 from os import environ
 
 from dotenv import cli as dotenv_cli
+from six import string_types
 
 from dynaconf.utils.parse_conf import parse_conf_data
 
@@ -60,4 +61,11 @@ def load_from_env(identifier, key, env, obj, silent):
 def write(settings_path, settings_data, **kwargs):
     """Write data to .env file"""
     for key, value in settings_data.items():
-        dotenv_cli.set_key(str(settings_path), key, str(value))
+        dotenv_cli.set_key(
+            str(settings_path),
+            key,
+            str(value),
+            quote_mode="always"
+            if isinstance(value, string_types)
+            else "not_always",
+        )
