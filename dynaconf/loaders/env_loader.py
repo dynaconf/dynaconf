@@ -60,9 +60,13 @@ def load_from_env(identifier, key, env, obj, silent):
 def write(settings_path, settings_data, **kwargs):
     """Write data to .env file"""
     for key, value in settings_data.items():
+        quote_mode = (
+            isinstance(value, str)
+            and (value.startswith("'") or value.startswith('"'))
+        ) or isinstance(value, (list, dict))
         dotenv_cli.set_key(
             str(settings_path),
             key,
             str(value),
-            quote_mode="always" if isinstance(value, str) else "not_always",
+            quote_mode="always" if quote_mode else "none",
         )
