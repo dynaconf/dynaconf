@@ -49,7 +49,7 @@ def go_to_tmpdir(request):
 
     # Get the fixture dynamically by its name.
     tmpdir = request.getfixturevalue("tmpdir")
-    tmpdir.join(".env").write("DYNACONF_TESTING=true")
+    tmpdir.join(".env").write("DYNACONF_TESTING=true\n")
     # ensure local test created packages can be imported
     sys.path.insert(0, str(tmpdir))
 
