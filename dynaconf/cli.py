@@ -25,7 +25,7 @@ from dynaconf.validator import Validator
 
 CWD = Path.cwd()
 EXTS = ["ini", "toml", "yaml", "json", "py", "env"]
-WRITERS = ["ini", "toml", "yaml", "json", "py", "redis", "vault", "env"]
+WRITERS = ["ini", "toml", "yaml", "json", "py", "redis", "vault", "env", "ssm"]
 
 ENC = default_settings.ENCODING_FOR_DYNACONF
 
