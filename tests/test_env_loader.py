@@ -46,7 +46,7 @@ SETTINGS_DATA["DYNACONF_ARRAY"] = [1, 2, 3]
 SETTINGS_DATA["DYNACONF_ARRAY2"] = [1.1, 2.2, 3.3]
 SETTINGS_DATA["DYNACONF_ARRAY3"] = ["a", "b", "c"]
 # Dictionaries
-SETTINGS_DATA["DYNACONF_DICT"] = {"key": "abc", "val": 123}
+SETTINGS_DATA["DYNACONF_DICT"] = {"val": 123}
 
 SETTINGS_DATA_GROUND_TRUTH = """DYNACONF_TESTING=true
 DYNACONF_INTEGER=42
@@ -60,20 +60,18 @@ DYNACONF_STRING22="true"
 DYNACONF_ARRAY="[1, 2, 3]"
 DYNACONF_ARRAY2="[1.1, 2.2, 3.3]"
 DYNACONF_ARRAY3="[\'a\', \'b\', \'c\']"
-DYNACONF_DICT="{\'key\': \'abc\', \'val\': 123}"
+DYNACONF_DICT="{\'val\': 123}"
 """
 
 
 def test_write(tmpdir):
-    # settings
-
     settings_path = tmpdir.join(".env")
 
     write(settings_path, SETTINGS_DATA)
 
     ground_truth = SETTINGS_DATA_GROUND_TRUTH.split("\n")
 
-    with open(settings_path, "r") as fp:
+    with open(str(settings_path), "r") as fp:
         lines = fp.readlines()
         for idx, line in enumerate(lines):
             line = line.strip()
