@@ -96,6 +96,7 @@ Who is using Dynaconf?
 - Quokka CMS - Flask
 - iNNOVO Cloud GmbH
 - Teraki
+- ARA Records Ansible - Django
 
 Are you using Dynaconf? Please `give feedback`_
 
