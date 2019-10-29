@@ -256,26 +256,34 @@ class Settings(object):
 
     to_dict = as_dict  # backwards compatibility
 
-    def _dotted_get(self, dotted_key, default=None, **kwargs):
+    def _dotted_get(self, dotted_key, default=None, parent=None, **kwargs):
         """
         Perform dotted key lookups and keep track of where we are.
+        :param key: The name of the setting value, will always be upper case
+        :param default: In case of not found it will be returned
+        :param parent: Is there a pre-loaded parent in a nested data?
         """
         split_key = dotted_key.split(".")
         name, keys = split_key[0], split_key[1:]
-        result = self.get(name, default=default, **kwargs)
-        self._memoized = result
+        result = self.get(name, default=default, parent=parent, **kwargs)
 
-        # If we've reached the end, then return result and clear the
-        # memoized data.
-        if not keys or result is default:
-            self._memoized = None
+        # If we've reached the end, or parent key not found, then return result
+        if not keys or result == default:
             return result
 
         # If we've still got key elements to traverse, let's do that.
-        return self._dotted_get(".".join(keys), default=default, **kwargs)
+        return self._dotted_get(
+            ".".join(keys), default=default, parent=result, **kwargs
+        )
 
     def get(
-        self, key, default=None, cast=None, fresh=False, dotted_lookup=True
+        self,
+        key,
+        default=None,
+        cast=None,
+        fresh=False,
+        dotted_lookup=True,
+        parent=None,
     ):
         """
         Get a value from settings store, this is the prefered way to access::
@@ -288,12 +296,17 @@ class Settings(object):
         :param cast: Should cast in to @int, @float, @bool or @json ?
         :param fresh: Should reload from loaders store before access?
         :param dotted_lookup: Should perform dotted-path lookup?
+        :param parent: Is there a pre-loaded parent in a nested data?
         :return: The value if found, default or None
         """
 
         if "." in key and dotted_lookup:
             return self._dotted_get(
-                dotted_key=key, default=default, cast=cast, fresh=fresh
+                dotted_key=key,
+                default=default,
+                cast=cast,
+                fresh=fresh,
+                parent=parent,
             )
 
         key = upperfy(key)
@@ -308,8 +321,7 @@ class Settings(object):
             self.unset(key)
             self.execute_loaders(key=key)
 
-        store = self._memoized or self.store
-        data = store.get(key, default)
+        data = (parent or self.store).get(key, default)
         if cast:
             data = converters.get(cast)(data)
         return data
