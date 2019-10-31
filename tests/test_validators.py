@@ -177,3 +177,42 @@ def test_no_reload_on_single_env(tmpdir, mocker):
     settings.validators.validate()
     using_env.assert_any_call("production")
     assert using_env.call_count == 1
+
+
+def test_equality():
+    validator1 = Validator("VERSION", "AGE", "NAME", must_exist=True)
+    validator2 = Validator("VERSION", "AGE", "NAME", must_exist=True)
+
+    assert validator1 == validator2
+    assert validator1 is not validator2
+
+    validator3 = (
+        Validator("IMAGE_1", when=Validator("BASE_IMAGE", must_exist=True),),
+    )
+    validator4 = (
+        Validator("IMAGE_1", when=Validator("MYSQL_HOST", must_exist=True),),
+    )
+
+    assert validator3 != validator4
+
+
+def test_ignoring_duplicate_validators(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
+
+    settings = LazySettings(
+        ENV_FOR_DYNACONF="EXAMPLE",
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
+        silent=True,
+    )
+
+    validator1 = Validator("VERSION", "AGE", "NAME", must_exist=True)
+    settings.validators.register(
+        validator1, Validator("VERSION", "AGE", "NAME", must_exist=True),
+    )
+
+    assert len(settings.validators) == 1
+
+    settings.validators.register(validator1)
+
+    assert len(settings.validators) == 1
