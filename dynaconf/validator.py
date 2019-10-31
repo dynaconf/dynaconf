@@ -83,6 +83,26 @@ class Validator(object):
         else:
             self.envs = None
 
+    def __eq__(self, other):
+        if self is other:
+            return True
+
+        identical_attrs = (
+            getattr(self, attr) == getattr(other, attr)
+            for attr in (
+                "names",
+                "must_exist",
+                "when",
+                "condition",
+                "operations",
+                "envs",
+            )
+        )
+        if all(identical_attrs):
+            return True
+
+        return False
+
     def validate(self, settings):
         """Raise ValidationError if invalid"""
 
@@ -160,7 +180,9 @@ class ValidatorList(list):
         self.settings = settings
 
     def register(self, *args):
-        self.extend(args)
+        for validator in args:
+            if validator not in self:
+                self.append(validator)
 
     def validate(self):
         for validator in self:
