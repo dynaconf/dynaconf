@@ -94,7 +94,7 @@ Dynaconf can handle this via `SECRETS_FOR_DYNACONF` environment variable.
 ex:
 
 ```bash
-export SECRETS_FOR_DYNACONF=/path/to/settings.toml{json|py|ini|yaml}
+export SECRETS_FOR_DYNACONF=/path/to/secrets.toml{json|py|ini|yaml}
 ```
 
 If that variable exists in your environment then Dynaconf will also load it.
