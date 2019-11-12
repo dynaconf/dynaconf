@@ -137,6 +137,9 @@ default_redis = {
     "db": int(get("REDIS_DB_FOR_DYNACONF", 0)),
     "decode_responses": get("REDIS_DECODE_FOR_DYNACONF", True),
 }
+redis_password = get("REDIS_AUTH_FOR_DYNACONF", None)
+if redis_password is not None:
+    default_redis['password'] = redis_password
 REDIS_FOR_DYNACONF = get("REDIS_FOR_DYNACONF", default_redis)
 REDIS_ENABLED_FOR_DYNACONF = get("REDIS_ENABLED_FOR_DYNACONF", False)
 
