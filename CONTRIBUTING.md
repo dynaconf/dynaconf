@@ -28,7 +28,7 @@ Please note we have a code of conduct, please follow it in all your interactions
 git clone git@github.com:{$USER}/dynaconf.git
 
 # Add the upstream remote
-git remote add upstream git@github.com:rochacbruno/dynaconf.git
+git remote add upstream https://github.com/rochacbruno/dynaconf.git
 
 # Activate your Python Environment
 python3.7 -m venv venv
