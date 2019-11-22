@@ -66,3 +66,18 @@ def clean_env(request):
             del os.environ[key]
     yield
     os.environ.update(backup)
+
+
+@pytest.fixture(scope="session")
+def docker_compose_files(pytestconfig):
+    """Get the docker-compose.yml absolute path.
+    Override this fixture in your tests if you need a custom location.
+    """
+    return [
+        os.path.join("./", "tests", "docker-compose.yml"),
+    ]
+
+
+@pytest.fixture(scope="session")
+def docker_services_project_name():
+    return "tests"
