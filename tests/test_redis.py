@@ -10,14 +10,10 @@ from dynaconf.loaders.redis_loader import write
 
 
 def custom_checker(ip_address, port):
+    # This function should be check if the redis server is online and ready
+    # write(settings, {"SECRET": "redis_works"})
+    # return load(settings, key="SECRET")
     return True
-
-
-@pytest.fixture(scope="module")
-def redis_conf():
-    os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
-    os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
-    os.environ["REDIS_PORT_FOR_DYNACONF"] = "6379"
 
 
 @pytest.fixture(scope="module")
@@ -30,25 +26,43 @@ def docker_redis(docker_services):
     return url
 
 
-def test_write_to_redis(redis_conf, docker_redis):
-
-    # os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
-    # os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
-    # os.environ["REDIS_PORT_FOR_DYNACONF"] = "6379"
+def test_write_to_redis(docker_redis):
+    os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
+    os.environ["REDIS_PORT_FOR_DYNACONF"] = "6379"
     settings = LazySettings()
-    write(settings, {"SECRET": "redis_works"})
-    assert settings.get("SECRET") == "redis_works"
+
+    write(settings, {"SECRET": "redis_works_with_docker"})
+    load(settings, key="SECRET")
+    assert settings.get("SECRET") == "redis_works_with_docker"
 
 
-def test_load_from_redis(redis_conf, docker_redis):
+def test_load_from_redis_with_key(docker_redis):
+    os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
+    os.environ["REDIS_PORT_FOR_DYNACONF"] = "6379"
     settings = LazySettings()
+    load(settings, key="SECRET")
+    assert settings.get("SECRET") == "redis_works_with_docker"
+
+
+def test_write_and_load_from_redis_without_key(docker_redis):
+    os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
+    os.environ["REDIS_PORT_FOR_DYNACONF"] = "6379"
+    settings = LazySettings()
+    write(settings, {"SECRET": "redis_works_perfectly"})
     load(settings)
+    assert settings.get("SECRET") == "redis_works_perfectly"
 
-    assert settings.get("SECRET") == "redis_works"
 
-
-def test_delete_from_redis(redis_conf, docker_redis):
+def test_delete_from_redis(docker_redis):
+    os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
+    os.environ["REDIS_PORT_FOR_DYNACONF"] = "6379"
     settings = LazySettings()
-    delete(settings, key="SECRET")
-
-    assert settings.get("SECRET") is None
+    write(settings, {"OTHER_SECRET": "redis_works"})
+    load(settings)
+    assert settings.get("OTHER_SECRET") == "redis_works"
+    delete(settings, key="OTHER_SECRET")
+    assert load(settings, key="OTHER_SECRET") is None
