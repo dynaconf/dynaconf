@@ -1,4 +1,3 @@
-import io
 import os
 
 import pytest
@@ -26,6 +25,26 @@ def docker_redis(docker_services):
     return url
 
 
+@pytest.mark.integration
+def test_redis_not_configured():
+    with pytest.raises(RuntimeError) as excinfo:
+        settings = LazySettings()
+        write(settings, {"OTHER_SECRET": "redis_works"})
+    assert "export REDIS_ENABLED_FOR_DYNACONF=true" in str(excinfo.value)
+
+
+@pytest.mark.integration
+def test_write_redis_without_data(docker_redis):
+    os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
+    os.environ["REDIS_PORT_FOR_DYNACONF"] = "6379"
+    settings = LazySettings()
+    with pytest.raises(AttributeError) as excinfo:
+        write(settings)
+    assert "Data must be provided" in str(excinfo.value)
+
+
+@pytest.mark.integration
 def test_write_to_redis(docker_redis):
     os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
@@ -37,6 +56,7 @@ def test_write_to_redis(docker_redis):
     assert settings.get("SECRET") == "redis_works_with_docker"
 
 
+@pytest.mark.integration
 def test_load_from_redis_with_key(docker_redis):
     os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
@@ -46,6 +66,7 @@ def test_load_from_redis_with_key(docker_redis):
     assert settings.get("SECRET") == "redis_works_with_docker"
 
 
+@pytest.mark.integration
 def test_write_and_load_from_redis_without_key(docker_redis):
     os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
@@ -56,6 +77,7 @@ def test_write_and_load_from_redis_without_key(docker_redis):
     assert settings.get("SECRET") == "redis_works_perfectly"
 
 
+@pytest.mark.integration
 def test_delete_from_redis(docker_redis):
     os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
@@ -65,4 +87,11 @@ def test_delete_from_redis(docker_redis):
     load(settings)
     assert settings.get("OTHER_SECRET") == "redis_works"
     delete(settings, key="OTHER_SECRET")
+    assert load(settings, key="OTHER_SECRET") is None
+
+
+@pytest.mark.integration
+def test_delete_all_from_redis(docker_redis):
+    settings = LazySettings()
+    delete(settings)
     assert load(settings, key="OTHER_SECRET") is None
