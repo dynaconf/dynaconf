@@ -11,15 +11,14 @@ Please note we have a code of conduct, please follow it in all your interactions
 ## Pull Request Process
 
 1. Ensure your local environment is set.
-   1. Clone your own fork of this repo
-   2. Activate a python3.6+ virtualenv
-   3. Code
+    1. Clone your own fork of this repo
+    2. Activate a python3.6+ virtualenv
+    3. Code
 2. Update the `docs/guides/` related to your changes.
 3. Update `example/` (editing or adding a new one related to your changes)
 4. Ensure tests are passing (see below `make all`)
-   1. This project uses `pre-commit` and `Black` for code styling and adequacy tests.
+    1. This project uses `pre-commit` and `Black` for code styling and adequacy tests.
 5. Commit, Push and make a Pull Request!
-
 
 ### Common Workflow:
 
@@ -36,6 +35,18 @@ source venv/bin/activate
 
 # Install dynaconf for development
 make all
+
+# If you want run integration tests, make sure you have docker installed
+
+# To install docker run
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+<output truncated>
+
+sudo usermod -aG docker {$USER}
+
+# Run integration tests
+make test_integration
 
 # Checkout to a working branch
 git checkout -b my_feature
@@ -79,22 +90,22 @@ orientation.
 Examples of behavior that contributes to creating a positive environment
 include:
 
-* Using welcoming and inclusive language
-* Being respectful of differing viewpoints and experiences
-* Gracefully accepting constructive criticism
-* Focusing on what is best for the community
-* Showing empathy towards other community members
+-   Using welcoming and inclusive language
+-   Being respectful of differing viewpoints and experiences
+-   Gracefully accepting constructive criticism
+-   Focusing on what is best for the community
+-   Showing empathy towards other community members
 
 Examples of unacceptable behavior by participants include:
 
-* The use of sexualized language or imagery and unwelcome sexual attention or
-advances
-* Trolling, insulting/derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others' private information, such as a physical or electronic
-  address, without explicit permission
-* Other conduct which could reasonably be considered inappropriate in a
-  professional setting
+-   The use of sexualized language or imagery and unwelcome sexual attention or
+    advances
+-   Trolling, insulting/derogatory comments, and personal or political attacks
+-   Public or private harassment
+-   Publishing others' private information, such as a physical or electronic
+    address, without explicit permission
+-   Other conduct which could reasonably be considered inappropriate in a
+    professional setting
 
 ### Our Responsibilities
 
