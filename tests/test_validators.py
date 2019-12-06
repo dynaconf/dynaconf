@@ -187,10 +187,10 @@ def test_equality():
     assert validator1 is not validator2
 
     validator3 = (
-        Validator("IMAGE_1", when=Validator("BASE_IMAGE", must_exist=True),),
+        Validator("IMAGE_1", when=Validator("BASE_IMAGE", must_exist=True)),
     )
     validator4 = (
-        Validator("IMAGE_1", when=Validator("MYSQL_HOST", must_exist=True),),
+        Validator("IMAGE_1", when=Validator("MYSQL_HOST", must_exist=True)),
     )
 
     assert validator3 != validator4
@@ -208,7 +208,7 @@ def test_ignoring_duplicate_validators(tmpdir):
 
     validator1 = Validator("VERSION", "AGE", "NAME", must_exist=True)
     settings.validators.register(
-        validator1, Validator("VERSION", "AGE", "NAME", must_exist=True),
+        validator1, Validator("VERSION", "AGE", "NAME", must_exist=True)
     )
 
     assert len(settings.validators) == 1
@@ -216,3 +216,9 @@ def test_ignoring_duplicate_validators(tmpdir):
     settings.validators.register(validator1)
 
     assert len(settings.validators) == 1
+
+
+def test_validator_equality_by_identity():
+    validator1 = Validator("FOO", must_exist=True)
+    validator2 = validator1
+    assert validator1 == validator2
