@@ -36,18 +36,6 @@ source venv/bin/activate
 # Install dynaconf for development
 make all
 
-# If you want run integration tests, make sure you have docker installed
-
-# To install docker run
-curl -fsSL https://get.docker.com -o get-docker.sh
-sudo sh get-docker.sh
-<output truncated>
-
-sudo usermod -aG docker {$USER}
-
-# Run integration tests
-make test_integration
-
 # Checkout to a working branch
 git checkout -b my_feature
 
@@ -72,6 +60,30 @@ git commit -am "Changed XPTO to fix #issue_number"
 git push -u origin HEAD
 
 # Open github.com/rochacbruno/dynaconf and send a Pull Request.
+```
+
+### Run integration tests
+
+```bash
+
+# "make all" not run integration tests for Redis and Vault.
+# If you want to run integration tests, make sure you have docker installed
+
+# To install docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+<output truncated>
+
+# To permit your user run docker commands without sudo
+sudo usermod -aG docker {$USER}
+
+# Run complete integration tests
+make test_integration
+
+# or Run example tests individually
+make test_redis
+make test_vault
+
 ```
 
 ## Code of Conduct
