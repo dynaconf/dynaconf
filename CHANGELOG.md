@@ -2,6 +2,82 @@ Changelog
 =========
 
 
+2.2.1 (2019-12-06)
+------------------
+
+Fix
+~~~
+- Env_loader.write: quote_mode for non-string values. [Oliver Lehmann]
+
+Other
+~~~~~
+- Release version 2.2.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 2.2.0
+            Fix #251 recursive call was using mutable memoized data (#254)
+            Fix #266 created new variable FORCE_ENV to override ENV_FOR_DYNACONF
+            Fix coverage for validators
+
+      David Moreau Simard (1):
+            Add ara as a user of dynaconf (#252)
+
+      Emmanuel Nosa Evbuomwan (1):
+            Update sensitive_secrets.md
+
+      Hildeberto (1):
+            Adjust remote upstream URL
+
+      Jan Willhaus (1):
+            Add support for detecting duplicate validators being added (and ignore them) (#256)
+
+      Oliver Lehmann (5):
+            fix: env_loader.write: quote_mode for non-string values
+            : added line break
+            fix str comparison
+            changing quote logic
+            fix open error @py3.5
+- Fix coverage for validators. [Bruno Rocha]
+- Fix #266 created new variable FORCE_ENV to override ENV_FOR_DYNACONF.
+  [Bruno Rocha]
+- Adjust remote upstream URL. [Hildeberto]
+- Update sensitive_secrets.md. [Emmanuel Nosa Evbuomwan]
+
+  Updated the file reference from `settings`.toml{json|py|ini|yaml} to the convention used thus far; `secrets`.toml{json|py|ini|yaml}. This can help alleviate the slightest chance of the information becoming misleading or confusing. This can also be ignored if Dynaconf can be set to search for secrets in files other than `secrets.<ext>`
+- Fix open error @py3.5. [Oliver Lehmann]
+- Changing quote logic. [Oliver Lehmann]
+- Fix str comparison. [Oliver Lehmann]
+- : added line break. [Oliver Lehmann]
+- Add support for detecting duplicate validators being added (and ignore
+  them) (#256) [Jan Willhaus]
+- Fix #251 recursive call was using mutable memoized data (#254) [Bruno
+  Rocha]
+
+  replaced with recursive passing of parent data.
+
+  NOTE to SELF: Never! use a mutable memoized data
+                Always use `==` to compare when you dont know the types
+- Add ara as a user of dynaconf (#252) [David Moreau Simard]
+- Release version 2.2.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (5):
+            Release version 2.1.1
+            Fix #236 added .local. files loading and module impersonation docs (#239)
+            Replace key.upper with `upperfy` function that keeps `__` attributes (#240)
+            Fix #241 new merge standards (#243)
+            Add support for PRELOAD_ setting. (#244)
+
+      Kedar Kulkarni (1):
+            Fixing how filename.local.* files are loaded (#238)
+
+      paskozdilar (1):
+            fix crash on empty settings (#242)
+
+
 2.2.0 (2019-10-09)
 ------------------
 - Release version 2.2.0. [Bruno Rocha]
