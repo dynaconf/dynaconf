@@ -1,0 +1,8 @@
+[default]
+somekey = "test"
+
+[development]
+thisis = "development"
+
+[production]
+thisis = "production"
