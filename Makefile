@@ -85,7 +85,8 @@ test_examples:
 	cd example/issues/194_flask_config;pwd;python app.py
 	cd example/issues/228_nested_toml_bool/python_app;pwd;python app.py
 	cd example/issues/228_nested_toml_bool/django_app;pwd;python manage.py test
-
+	cd example/issues/251_dotted_unexistent;pwd;python app.py
+	cd example/issues/266_envvar_from_env_override;pwd;python app.py
 test_vault:
 	# @cd example/vault;pwd;python write.py
 	# docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
