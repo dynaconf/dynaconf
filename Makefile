@@ -89,25 +89,33 @@ test_examples:
 	cd example/issues/266_envvar_from_env_override;pwd;python app.py
 test_vault:
 	# @cd example/vault;pwd;python write.py
-	# docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+	docker run --rm --name dynaconf_with_vault -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+	@sleep 5
 	@cd example/vault;pwd;dynaconf write vault -s SECRET=vault_works_in_default -s FOO=foo_is_default
 	@cd example/vault;pwd;dynaconf write vault -e dev -s SECRET=vault_works_in_dev
 	@cd example/vault;pwd;dynaconf write vault -e prod -s SECRET=vault_works_in_prod
-	@sleep 5
+	@sleep 2
 	@cd example/vault;pwd;python vault_example.py
+	docker stop dynaconf_with_vault
 
 test_redis:
 	# @cd example/redis_example;pwd;python write.py
-	# docker run -d -p 6379:6379 redis
+	docker run --rm --name dynaconf_with_redis -d -p 6379:6379 redis:alpine
+	@sleep 2
 	@cd example/redis_example;pwd;dynaconf write redis -s FOO=foo_is_default
 	@cd example/redis_example;pwd;dynaconf write redis -s SECRET=redis_works_in_default
 	@cd example/redis_example;pwd;dynaconf write redis -e development -s SECRET=redis_works_in_development
 	@cd example/redis_example;pwd;dynaconf write redis -e production -s SECRET=redis_works_in_production
-	@sleep 5
+	@sleep 2
 	@cd example/redis_example;pwd;python redis_example.py
+	docker stop dynaconf_with_redis
 
 test_only:
-	py.test -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
+	py.test -m "not integration" -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
+	coverage xml
+
+test_integration:
+	py.test -m integration -v --cov-config .coveragerc --cov=dynaconf --cov-append -l --tb=short --maxfail=1 tests/
 	coverage xml
 
 coverage-report:

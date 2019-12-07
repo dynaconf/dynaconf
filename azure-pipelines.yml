@@ -143,8 +143,9 @@ jobs:
       architecture: 'x64'
 
   - script: |
-      docker pull redis
-      docker run -d -p 6379:6379 redis
+      docker pull redis:alpine
+      # Let tests run the container
+      # docker run -d -p 6379:6379 redis
       docker ps -a
     displayName:  'Run Redis Container'
 
@@ -176,7 +177,8 @@ jobs:
 
   - script: |
       docker pull vault
-      docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+      # Let tests run the container
+      # docker run -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
       docker ps -a
     displayName:  'Run Vault Container'
 
@@ -205,7 +207,7 @@ jobs:
   - script: |
       python -m pip install --upgrade pip
       python -m pip install -r requirements_dev.txt
-      py.test -v -l tests --junitxml=junit/test-results.xml
+      py.test -v -l tests --junitxml=junit/test-results.xml -m "not integration"
     displayName: Test
 
   - task: PublishTestResults@2
