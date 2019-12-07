@@ -63,6 +63,30 @@ git push -u origin HEAD
 # Open github.com/rochacbruno/dynaconf and send a Pull Request.
 ```
 
+### Run integration tests
+
+* "make all" do not run integration tests for Redis and Vault.
+* If you want to run integration tests, make sure you have docker installed
+
+```bash
+
+# To install docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+<output truncated>
+
+# To permit your user run docker commands without sudo
+sudo usermod -aG docker {$USER}
+
+# Run complete integration tests
+make test_integration
+
+# or Run functional example tests individually
+make test_redis
+make test_vault
+
+```
+
 ## Code of Conduct
 
 ### Our Pledge
