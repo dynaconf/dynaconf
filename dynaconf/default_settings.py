@@ -105,6 +105,9 @@ ENV_SWITCHER_FOR_DYNACONF = get(
 # this value is used only when reading files like .toml|yaml|ini|json
 ENV_FOR_DYNACONF = get(ENV_SWITCHER_FOR_DYNACONF, "DEVELOPMENT")
 
+# This variable exists to support `from_env` method
+FORCE_ENV_FOR_DYNACONF = get("FORCE_ENV_FOR_DYNACONF", None)
+
 # Default values is taken from DEFAULT pseudo env
 # this value is used only when reading files like .toml|yaml|ini|json
 DEFAULT_ENV_FOR_DYNACONF = get("DEFAULT_ENV_FOR_DYNACONF", "DEFAULT")

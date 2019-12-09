@@ -40,6 +40,7 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     DOTENV_PATH | str | Defines where to look for *.env* file. | PROJECT_ROOT | DOTENV_PATH_FOR_DYNACONF=”/tmp/.env”
     ENCODING | str | Encoding to read settings files. | utf-8 | ENCODING_FOR_DYNACONF=”cp1252”
     ENV | str | Working environment. | “development” | ENV_FOR_DYNACONF=production
+    *FORCE_ENV | str | Force the working environment | None | FORCE_ENV_FOR_DYNACONF=other
     ENV_SWITCHER | str | Variable used to change working env. | ENV_FOR_DYNACONF | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV
     ENVVAR | str | The envvar which holds the list of settings files. | ‘SETTINGS_FILE_FOR_DYNACONF’ | ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS
     ENVVAR_PREFIX | str | Prefix for exporting parameters as env vars. Example: If your program is called *MYPROGRAM* you may want users to use *MYPROGRAM_FOO=bar* instead of *DYNACONF_FOO=bar* on envvars. | “DYNACONF” | ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM (loads MYPROGRAM_VAR) ENVVAR_PREFIX_FOR_DYNACONF=’’ (loads _VAR) ENVVAR_PREFIX_FOR_DYNACONF=false (loads VAR)
@@ -75,6 +76,10 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     VAULT_VERIFY | bool | Vault should verify. | None | VAULT_VERIFY_FOR_DYNACONF=true
     YAML_LOADER | str | yaml method name {safe,full,unsafe}_load. | full_load | YAML_LOADER_FOR_DYNACONF=unsafe_load
 ```
+
+## Internal use variables
+
+- FORCE_ENV_FOR_DYNACONF:  This variable exists to support the `from_env` method, you are not encouraged to override it manually.
 
 ## Deprecated options
 

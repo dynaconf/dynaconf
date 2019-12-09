@@ -462,8 +462,7 @@ class Settings(object):
             )
 
         new_data.update(kwargs)
-        new_data["ENV_FOR_DYNACONF"] = env
-
+        new_data["FORCE_ENV_FOR_DYNACONF"] = env
         new_settings = LazySettings(**new_data)
         self.logger.debug("New settings instance in env: %s", env)
         self._env_cache[cache_key] = new_settings
@@ -536,6 +535,9 @@ class Settings(object):
     @property
     def current_env(self):
         """Return the current active env"""
+        if self.FORCE_ENV_FOR_DYNACONF is not None:
+            return self.FORCE_ENV_FOR_DYNACONF
+
         try:
             return self.loaded_envs[-1]
         except IndexError:
