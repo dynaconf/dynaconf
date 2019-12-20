@@ -625,6 +625,9 @@ def validate(path):  # pragma: no cover
 
     if success:
         click.echo(click.style("Validation success!", fg="white", bg="green"))
+    else:
+        click.echo(click.style("Validation error!", fg="white", bg="red"))
+        sys.exit(1)
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -1,5 +1,5 @@
 [default]
-version = {must_exist=true}
+version = {must_exist=true, messages={must_exist_true = "This variable {name} must exist in {env}"}}
 name = {must_exist=true}
 password = {must_exist=false}
 

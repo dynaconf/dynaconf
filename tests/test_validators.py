@@ -1,3 +1,5 @@
+from types import MappingProxyType
+
 import pytest
 
 from dynaconf import LazySettings
@@ -222,3 +224,96 @@ def test_validator_equality_by_identity():
     validator1 = Validator("FOO", must_exist=True)
     validator2 = validator1
     assert validator1 == validator2
+
+
+def test_validator_custom_message(tmpdir):
+    """Assert custom message is being processed by validator."""
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
+
+    settings = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+    )
+
+    custom_msg = "You cannot set {name} to {value} in env {env}"
+    settings.validators.register(
+        Validator("MYSQL_HOST", eq="development.com", env="DEVELOPMENT"),
+        Validator("MYSQL_HOST", ne="development.com", env="PRODUCTION"),
+        Validator("VERSION", ne=1, messages={"operations": custom_msg}),
+    )
+
+    with pytest.raises(ValidationError) as error:
+        settings.validators.validate()
+
+    assert custom_msg.format(
+        name="VERSION", value="1", env="DEVELOPMENT"
+    ) in str(error)
+
+
+def test_validator_subclass_messages(tmpdir):
+    """Assert message can be customized via class attributes"""
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
+
+    settings = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+    )
+
+    class MyValidator(Validator):
+        default_messages = MappingProxyType(
+            {
+                "must_exist_true": "{name} should exist in {env}",
+                "must_exist_false": "{name} CANNOT BE THERE IN {env}",
+                "condition": (
+                    "{name} BROKE THE {function}({value}) IN env {env}"
+                ),
+                "operations": (
+                    "{name} SHOULD BE {operation} {op_value} "
+                    "BUT YOU HAVE {value} IN ENV {env}, PAY ATTENTION!"
+                ),
+            }
+        )
+
+    with pytest.raises(ValidationError) as error_custom_message:
+        custom_msg = "You cannot set {name} to {value} in env {env}"
+        MyValidator(
+            "VERSION", ne=1, messages={"operations": custom_msg}
+        ).validate(settings)
+
+    assert custom_msg.format(
+        name="VERSION", value="1", env="DEVELOPMENT"
+    ) in str(error_custom_message)
+
+    with pytest.raises(ValidationError) as error_operations:
+        MyValidator("VERSION", ne=1).validate(settings)
+
+    assert (
+        "VERSION SHOULD BE ne 1 "
+        "BUT YOU HAVE 1 IN ENV DEVELOPMENT, "
+        "PAY ATTENTION!"
+    ) in str(error_operations)
+
+    with pytest.raises(ValidationError) as error_conditions:
+        MyValidator("VERSION", condition=lambda value: False).validate(
+            settings
+        )
+
+    assert ("VERSION BROKE THE <lambda>(1) IN env DEVELOPMENT") in str(
+        error_conditions
+    )
+
+    with pytest.raises(ValidationError) as error_must_exist_false:
+        MyValidator("VERSION", must_exist=False).validate(settings)
+
+    assert ("VERSION CANNOT BE THERE IN DEVELOPMENT") in str(
+        error_must_exist_false
+    )
+
+    with pytest.raises(ValidationError) as error_must_exist_true:
+        MyValidator("BLARGVARGST_DONT_EXIST", must_exist=True).validate(
+            settings
+        )
+
+    assert ("BLARGVARGST_DONT_EXIST should exist in DEVELOPMENT") in str(
+        error_must_exist_true
+    )
