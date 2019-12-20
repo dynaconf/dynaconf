@@ -1,4 +1,6 @@
-from dynaconf import validator_conditions
+from types import MappingProxyType
+
+from dynaconf import validator_conditions  # noqa
 
 
 class ValidationError(Exception):
@@ -54,6 +56,18 @@ class Validator(object):
 
     """
 
+    default_messages = MappingProxyType(
+        {
+            "must_exist_true": "{name} is required in env {env}",
+            "must_exist_false": "{name} cannot exists in env {env}",
+            "condition": "{name} invalid for {function}({value}) in env {env}",
+            "operations": (
+                "{name} must {operation} {op_value} "
+                "but it is {value} in env {env}"
+            ),
+        }
+    )
+
     def __init__(
         self,
         *names,
@@ -61,8 +75,13 @@ class Validator(object):
         condition=None,
         when=None,
         env=None,
+        messages=None,
         **operations
     ):
+        # Copy immutable MappingProxyType as a mutable dict
+        self.messages = dict(self.default_messages)
+        if messages:
+            self.messages.update(messages)
 
         if when is not None and not isinstance(when, Validator):
             raise TypeError("when must be Validator instance")
@@ -139,11 +158,13 @@ class Validator(object):
             # is name required but not exists?
             if self.must_exist is True and not exists:
                 raise ValidationError(
-                    "{0} is required in env {1}".format(name, env)
+                    self.messages["must_exist_true"].format(name=name, env=env)
                 )
             elif self.must_exist is False and exists:
                 raise ValidationError(
-                    "{0} cannot exists in env {1}".format(name, env)
+                    self.messages["must_exist_false"].format(
+                        name=name, env=env
+                    )
                 )
 
             # if not exists and not required cancel validation flow
@@ -156,9 +177,11 @@ class Validator(object):
             if self.condition is not None:
                 if not self.condition(value):
                     raise ValidationError(
-                        "{0} invalid for {1}({2}) "
-                        "in env {3}".format(
-                            name, self.condition.__name__, value, env
+                        self.messages["condition"].format(
+                            name=name,
+                            function=self.condition.__name__,
+                            value=value,
+                            env=env,
                         )
                     )
 
@@ -167,9 +190,12 @@ class Validator(object):
                 op_function = getattr(validator_conditions, op_name)
                 if not op_function(value, op_value):
                     raise ValidationError(
-                        "{0} must {1} {2} but it is {3} "
-                        "in env {4}".format(
-                            name, op_function.__name__, op_value, value, env
+                        self.messages["operations"].format(
+                            name=name,
+                            operation=op_function.__name__,
+                            op_value=op_value,
+                            value=value,
+                            env=env,
                         )
                     )
 
