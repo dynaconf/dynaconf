@@ -74,3 +74,5 @@ def test_get():
 def test_copy_no_cause_inf_recursion():
     box.__copy__()
     box.copy()
+
+# is python-box broken?
