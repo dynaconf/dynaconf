@@ -3,15 +3,17 @@ redis
 wheel
 twine
 PyYAML
-toml
 flask>=1.0
-python-box
-python-dotenv
 setuptools>=38.6.0
 configobj
 hvac
 django
 gitchangelog
+
+python-box<4.0.0
+python-dotenv<=0.10.3
+toml<=0.10.0
+click<=7.0
 
 # testing
 codecov
