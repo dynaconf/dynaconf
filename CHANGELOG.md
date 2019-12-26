@@ -2,6 +2,59 @@ Changelog
 =========
 
 
+2.2.2 (2019-12-26)
+------------------
+- Release version 2.2.2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (3):
+            Release version 2.2.1
+            Fix #258 custom message for validators
+            Pin python-box version because of a breaking release
+
+      Hildeberto (1):
+            Close #178. Included integration tests redis/vault
+- Pin python-box version because of a breaking release. [Bruno Rocha]
+
+  The release of python-box https://github.com/cdgriffith/Box/pull/116
+  is a breaking change.
+
+  So pinning this until this project addapts.
+
+  Also pinning other direct deps.
+- Fix #258 custom message for validators. [Bruno Rocha]
+- Close #178. Included integration tests redis/vault. [Hildeberto]
+- Release version 2.2.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 2.2.0
+            Fix #251 recursive call was using mutable memoized data (#254)
+            Fix #266 created new variable FORCE_ENV to override ENV_FOR_DYNACONF
+            Fix coverage for validators
+
+      David Moreau Simard (1):
+            Add ara as a user of dynaconf (#252)
+
+      Emmanuel Nosa Evbuomwan (1):
+            Update sensitive_secrets.md
+
+      Hildeberto (1):
+            Adjust remote upstream URL
+
+      Jan Willhaus (1):
+            Add support for detecting duplicate validators being added (and ignore them) (#256)
+
+      Oliver Lehmann (5):
+            fix: env_loader.write: quote_mode for non-string values
+            : added line break
+            fix str comparison
+            changing quote logic
+            fix open error @py3.5
+
+
 2.2.1 (2019-12-06)
 ------------------
 
