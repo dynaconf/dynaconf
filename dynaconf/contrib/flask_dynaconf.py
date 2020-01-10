@@ -7,6 +7,7 @@ except ImportError:  # pragma: no cover
     Config = object
 
 
+from importlib import import_module
 from dynaconf import LazySettings
 
 
@@ -113,7 +114,10 @@ class FlaskDynaconf(object):
         if self.dynaconf_instance:
             self.settings.update(self.kwargs)
         return DynaconfConfig(
-            root_path=root_path, defaults=app.config, _settings=self.settings
+            root_path=root_path,
+            defaults=app.config,
+            _settings=self.settings,
+            _app=app,
         )
 
 
@@ -127,17 +131,12 @@ class DynaconfConfig(Config):
     - Update with data in environmente vars `ENV_FOR_DYNACONF_`
     """
 
-    def get(self, key, default=None):
-        """Gets config from dynaconf variables
-        if variables does not exists in dynaconf try getting from
-        `app.config` to support runtime settings."""
-        return self._settings.get(key, Config.get(self, key, default))
-
-    def __init__(self, _settings, *args, **kwargs):
+    def __init__(self, _settings, _app, *args, **kwargs):
         """perform the initial load"""
         super(DynaconfConfig, self).__init__(*args, **kwargs)
         Config.update(self, _settings.store)
         self._settings = _settings
+        self._app = _app
 
     def __getitem__(self, key):
         """
@@ -162,3 +161,20 @@ class DynaconfConfig(Config):
 
     def __call__(self, name, *args, **kwargs):
         return self.get(name, *args, **kwargs)
+
+    def get(self, key, default=None):
+        """Gets config from dynaconf variables
+        if variables does not exists in dynaconf try getting from
+        `app.config` to support runtime settings."""
+        return self._settings.get(key, Config.get(self, key, default))
+
+    def load_extensions(self, key="EXTENSIONS", app=None):
+        """Loads flask extensions dynamically."""
+        app = app or self._app
+        for extension in app.config[key]:
+            # Split data in form `extension.path:factory_function`
+            module_name, factory = extension.split(":")
+            # Dynamically import extension module.
+            ext = import_module(module_name)
+            # Invoke factory passing app.
+            getattr(ext, factory)(app)
