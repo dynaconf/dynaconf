@@ -98,3 +98,65 @@ FlaskDynaconf(
 ```
 
 Then the working environment can now be switched using `export PROJECTNAME_ENV=production`
+
+## Loading Flask Extensions Dynamically
+
+You can tell Dynaconf to load your Flask Extensions dynamically as long as the extensions follows the Pattens of Flask extensions.
+
+The only requirement is that the extension must be a `callable` that accepts `app` as first argument. e.g: `flask_admin:Admin` or `custom_extension.module:init_app` and of course the extension must be in Python namespace to be imported.
+
+For extensions initialized just use the class or function path like: "flask_admin:Admin" or "extension.module:init_app"
+
+having a `settings.toml`
+
+```toml
+[default]
+EXTENSIONS = [
+  "flask_admin:Admin",
+  "flask_bootstrap:Bootstrap",
+  "custom_extension.module:init_app"
+]
+```
+
+Considering an `app.py` like:
+
+```py
+from flask import Flask
+from dynaconf import FlaskDynaconf
+
+app = Flask(__name__)
+flask_dynaconf = FlaskDynaconf(app)
+
+app.config.load_extensions()
+```
+
+Optionally you can pass `load_extensions(key="OTHER_NAME")` pointing to your list of extensions.
+
+It is also possible to use environment variables to set the extensions to be loaded.
+
+```bash
+# .env
+export FLASK_EXTENSIONS="['flask_admin:Admin']"
+```
+
+The extensions will be loaded in order.
+
+
+### Develoment extensions
+
+It is also possible to habe extensions that loads only in development environment .
+
+```toml
+[default]
+EXTENSIONS = [
+  "flask_admin:Admin",
+  "flask_bootstrap:Bootstrap",
+  "custom_extension.module:init_app"
+]
+
+[development]
+EXTENSIONS = [
+  "dynaconf_merge",
+  "flask_debugtoolbar:DebugToolbar"
+]
+```

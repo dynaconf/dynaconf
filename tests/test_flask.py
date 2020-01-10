@@ -4,6 +4,18 @@ from dynaconf.contrib import FlaskDynaconf
 from example.flask_with_dotenv.app import app as flask_app
 
 
+def test_dynamic_load_exts(settings):
+    """Assert that a config based extensions are loaded"""
+    app = Flask(__name__)
+    app.config["EXTENSIONS"] = ["example.dummy_flask_extension.dummy:init_app"]
+    FlaskDynaconf(app, dynaconf_instance=settings)
+    app.config.load_extensions()
+    assert app.config.EXTENSIONS == [
+        "example.dummy_flask_extension.dummy:init_app"
+    ]
+    assert app.is_dummy_loaded is True
+
+
 def test_flask_dynaconf(settings):
     """
     Test Flask app wrapped with FlaskDynaconf
