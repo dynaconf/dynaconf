@@ -165,6 +165,16 @@ def test_merge_existing_dict():
     assert new == {"host": "localhost", "port": 666, "user": "admin"}
 
 
+def test_merge_dict_with_meta_values():
+    existing = {"A": 1, "B": 2, "C": 3}
+    new = {
+        "B": parse_conf_data("@del", tomlfy=True),
+        "C": parse_conf_data("@reset 4", tomlfy=True)
+    }
+    object_merge(existing, new)
+    assert new == {"A": 1, "C": 4}
+
+
 def test_trimmed_split():
     # No sep
     assert trimmed_split("hello") == ["hello"]
