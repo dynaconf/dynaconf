@@ -40,7 +40,7 @@ def object_merge(old, new, unique=False):
                 object_merge(value, new[key])
 
         # Cleanup of MetaValues on New dict
-        for key, value in new.items():
+        for key, value in list(new.items()):
             if getattr(new[key], "dynaconf_reset", False):
                 # new Reset triggers cleanup of existing data
                 new[key] = new[key].value
