@@ -18,6 +18,7 @@ test_examples:
 	cd example/app_with_dotenv;pwd;python app.py
 	cd example/merge_enabled;pwd;python app.py
 	cd example/new_merge;pwd;python app.py
+	cd example/overriding;pwd;python app.py
 	cd example/dynaconf_merge;pwd;python app.py
 	cd example/multiple_sources;pwd;python app.py
 	cd example/multiple_folders;pwd;python app.py
