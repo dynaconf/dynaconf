@@ -64,6 +64,11 @@ Release v\ |version|. (`Installation`_)
     :alt: Code Style Black
     :target: https://github.com/ambv/black
 
+.. image:: https://img.shields.io/badge/chat-t.me/dynaconf-blue.svg?logo=telegram
+    :alt: Telegram
+    :target: https://t.me/dynaconf
+
+
 Dynaconf - Easy and Powerful Settings Configuration for Python
 --------------------------------------------------------------
 
