@@ -14,6 +14,7 @@ test_examples:
 	cd example/;pwd;python compat.py
 	cd example/app;pwd;python app.py
 	cd example/dunder;pwd;python app.py
+	cd example/format;pwd;python app.py
 	cd example/app_with_dotenv;pwd;python app.py
 	cd example/merge_enabled;pwd;python app.py
 	cd example/new_merge;pwd;python app.py

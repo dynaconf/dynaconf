@@ -1,0 +1,6 @@
+[default]
+database_name = 'my_database.db'
+
+[development]
+database_path = '@format /home/{env[USERNAME]}/databases/{this[database_name]}'
+database_path_jinja = '@jinja /home/{{env.USERNAME}}/{{this.current_env | lower}}/{{this["database_name"] }}'

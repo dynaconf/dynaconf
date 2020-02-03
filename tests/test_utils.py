@@ -12,6 +12,9 @@ from dynaconf.utils import trimmed_split
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import get_local_filename
+from dynaconf.utils.parse_conf import evaluate_lazy_format
+from dynaconf.utils.parse_conf import jinja_formatter
+from dynaconf.utils.parse_conf import LazyFormat
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import unparse_conf_data
 
@@ -242,3 +245,59 @@ def test_upperfy():
     )
     assert upperfy("foo_bar") == "FOO_BAR"
     assert upperfy("foo_BAR") == "FOO_BAR"
+
+
+def test_lazy_format_class():
+    value = LazyFormat("{this[FOO]}/bar")
+    settings = {"FOO": "foo"}
+    assert value(settings) == "foo/bar"
+
+
+def test_evaluate_lazy_format_decorator():
+    class Settings:
+        FOO = "foo"
+
+        @evaluate_lazy_format
+        def get(self):
+            return parse_conf_data("@format {this.FOO}/bar")
+
+    settings = Settings()
+    assert settings.get() == "foo/bar"
+
+
+def test_lazy_format_on_settings(settings):
+    os.environ["ENV_THING"] = "LazyFormat"
+    settings.set("set_1", "really")
+    settings.set("lazy", "@format {env[ENV_THING]}/{this[set_1]}/{this.SET_2}")
+    settings.set("set_2", "works")
+
+    assert settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
+
+
+def test_lazy_format_class_jinja():
+    value = LazyFormat("{{this['FOO']}}/bar", formatter=jinja_formatter)
+    settings = {"FOO": "foo"}
+    assert value(settings) == "foo/bar"
+
+
+def test_evaluate_lazy_format_decorator_jinja():
+    class Settings:
+        FOO = "foo"
+
+        @evaluate_lazy_format
+        def get(self):
+            return parse_conf_data("@jinja {{this.FOO}}/bar")
+
+    settings = Settings()
+    assert settings.get() == "foo/bar"
+
+
+def test_lazy_format_on_settings_jinja(settings):
+    os.environ["ENV_THING"] = "LazyFormat"
+    settings.set("set_1", "really")
+    settings.set(
+        "lazy", "@jinja {{env.ENV_THING}}/{{this['set_1']}}/{{this.SET_2}}"
+    )
+    settings.set("set_2", "works")
+
+    assert settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"

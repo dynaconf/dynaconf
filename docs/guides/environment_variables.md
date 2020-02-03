@@ -54,6 +54,14 @@ DYNACONF_NONE='@none None'
 
 # toml syntax does not allow mixed type arrays so use @json
 DYNACONF_ARRAY='@json [42, 3.14, "hello", true, ["otherarray"], {"foo": "bar"}]'
+
+# Lazily formatted string can access env vars and settings variables.
+
+# using str.format
+DYNACONF_DATABASE_PATH="@format {env[HOME]}/.config/databases/{this.DB_NAME}"
+
+# using jinja2
+DYNACONF_DATABASE_PATH="@jinja {{env.HOME}}/.config/databases/{{this.DB_NAME}}"
 ```
 
 > **NOTE**: Older versions of Dynaconf used the `@casting` prefixes for env vars like `export DYNACONF_INTEGER='@int 123'` still works but this casting is deprecated in favor of using TOML syntax described above. To disable the `@casting` do `export AUTO_CAST_FOR_DYNACONF=false`

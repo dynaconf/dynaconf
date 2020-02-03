@@ -1,10 +1,20 @@
 import json
 import os
+from functools import wraps
 
 import toml
 from box import BoxKeyError
 
 from dynaconf.utils.boxing import DynaBox
+
+try:
+    from jinja2 import Environment
+
+    jinja_env = Environment()
+    for p_method in ("abspath", "realpath", "relpath", "dirname", "basename"):
+        jinja_env.filters[p_method] = getattr(os.path, p_method)
+except ImportError:  # pragma: no cover
+    jinja_env = None
 
 true_values = ("t", "true", "enabled", "1", "on", "yes", "True")
 false_values = ("f", "false", "disabled", "0", "off", "no", "False", "")
@@ -42,13 +52,55 @@ class Merge(MetaValue):
     dynaconf_merge = True
 
 
+class LazyFormat:
+    """Holds data to format lazily."""
+
+    dynaconf_lazy_format = True
+
+    def __init__(self, value, formatter=str.format):
+        self.value = value
+        self.formatter = formatter
+
+    @property
+    def context(self):
+        """Builds a context for formatting."""
+        return {"env": os.environ, "this": self.settings}
+
+    def __call__(self, settings):
+        """LazyValue triggers format lazily."""
+        self.settings = settings
+        return self.formatter(self.value, **self.context)
+
+
+def evaluate_lazy_format(f):
+    """Marks a method on Settings instance to
+    lazily evaluate LazyFormat objects upon access."""
+
+    @wraps(f)
+    def evaluate(settings, *args, **kwargs):
+        value = f(settings, *args, **kwargs)
+        if getattr(value, "dynaconf_lazy_format", None):
+            return value(settings)
+        return value
+
+    return evaluate
+
+
+def jinja_formatter(value, **context):
+    if jinja_env is None:  # pragma: no cover
+        raise ImportError(
+            "jinja2 must be installed to enable '@jinja' settings in dynaconf"
+        )
+    return jinja_env.from_string(value).render(**context)
+
+
 converters = {
     "@int": int,
     "@float": float,
-    "@bool": (
-        lambda value: True if str(value).lower() in true_values else False
-    ),
+    "@bool": lambda value: str(value).lower() in true_values,
     "@json": json.loads,
+    "@format": lambda value: LazyFormat(value),
+    "@jinja": lambda value: LazyFormat(value, formatter=jinja_formatter),
     # Meta Values to trigger pre assignment actions
     "@reset": lambda value: Reset(value),
     "@del": lambda value: Del(value),
