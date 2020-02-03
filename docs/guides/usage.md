@@ -501,7 +501,85 @@ settings.load_file(path="/path/to/file.toml")  # list or `;/,` separated allowed
 
 > **NOTE**: programmatically loaded file is not persisted, once `env` is changed via `setenv|ugin_env`, or a `reload` or `configure` is invoked it will be cleaned, to persist it needs to go to `INCLUDES_FOR_DYNACONF` variable or you need to load it programmatically again.
 
-## Merging existing values
+## Template substitutions
+
+Dynaconf has 2 tokens to enable string substitutions `@format` and `@jinja`.
+
+### @format token
+
+Dynaconf allows template substitutions for strings values, by using the `@format` token prefix and including placeholders accepted by Python's `str.format` method Dynaconf will call
+it lazily upon access time.
+
+The call will be like:
+
+```py
+"<YOURVALUE>".format(env=os.environ, this=dynaconf.settings)
+```
+
+So in your string you can refer to environment variables via `env` object, and also to variables defined int the settings object itself via `this` reference. It is lazily evaluated on access it will use the final value for a settings regardless the order of load.
+
+Example:
+
+```bash
+export PROGRAM_NAME=calculator
+```
+
+settings.toml
+
+```toml
+[default]
+DB_NAME = "mydb.db"
+
+[development]
+DB_PATH = "@format {env[HOME]}/{this.current_env}/{env[PROGRAM_NAME]}/{this.DB_NAME}"
+```
+
+- `{env[HOME]}` is the same as `os.environ["HOME"]` or `$HOME` in the shell.
+- `{this.current_env}` is the same as `settings.current_env`
+- `{env[PROGRAM_NAME]}` is the same as `os.environ["PROGRAM_NAME"]` or `$PROGRAM_NAME` in the shell.
+- `{this.DB_NAME}` is the same as `settins.DB_NAME` or `settings["DB_NAME"]`
+
+so in your `program`
+
+```py
+from dynaconf import settings
+
+settings.DB_PATH == '~/DEVELOPMENT/calculator/mydb.db'
+```
+
+### @jinja token
+
+If `jinja2` package is installed then dynaconf will also allow the use jinja to render string values.
+
+Example:
+
+```bash
+export PROGRAM_NAME=calculator
+```
+
+settings.toml
+
+```toml
+[default]
+DB_NAME = "mydb.db"
+
+[development]
+DB_PATH = "@jinja {{env.HOME}}/{{this.current_env | lower}}/{{env['PROGRAM_NAME']}}/{{this.DB_NAME}}"
+```
+
+so in your `program`
+
+```py
+from dynaconf import settings
+
+settings.DB_PATH == '~/development/calculator/mydb.db'
+```
+
+The main difference is that Jinja allows some Python expressions to be avaluated such as `{% for, if, while %}` and also supports calling methods and has lots of filters like `| lower`.
+
+Jinja supports its built-in filters listed in [Builtin Filters Page](http://jinja.palletsprojects.com/en/master/templates/#builtin-filters) and Dynaconf includes aditional filters for `os.path` module: `abspath`. `realpath`, `relpath`, `basename` and `dirname` and usage is like: `VALUE = "@jinja {{this.FOO | abspath}}"`
+
+## Merging existing data structures
 
 If your settings has existing variables of types `list` ot `dict` and you want to `merge` instead of `override` then 
 the `dynaconf_merge` and `dynaconf_merge_unique` stanzas can mark that variable as a candidate for merging.

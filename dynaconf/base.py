@@ -25,6 +25,7 @@ from dynaconf.utils.files import find_file
 from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import converters
+from dynaconf.utils.parse_conf import evaluate_lazy_format
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidatorList
@@ -90,6 +91,7 @@ class LazySettings(LazyObject):
         self._kwargs = kwargs
         super(LazySettings, self).__init__()
 
+    @evaluate_lazy_format
     def __getattr__(self, name):
         """Allow getting keys from self.store using dot notation"""
         if self._wrapped is empty:
@@ -276,6 +278,7 @@ class Settings(object):
             ".".join(keys), default=default, parent=result, **kwargs
         )
 
+    @evaluate_lazy_format
     def get(
         self,
         key,
