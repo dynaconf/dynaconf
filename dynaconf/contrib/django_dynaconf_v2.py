@@ -64,6 +64,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     options.setdefault("ENVVAR_PREFIX_FOR_DYNACONF", "DJANGO")
     options.setdefault("ENV_SWITCHER_FOR_DYNACONF", "DJANGO_ENV")
     lazy_settings = dynaconf.LazySettings(**options)
+    dynaconf.settings = lazy_settings  # rebind the settings
 
     # 2) Set all settings back to django_settings_module for 'django check'
     lazy_settings.populate_obj(django_settings_module)
