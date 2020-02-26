@@ -1,0 +1,1 @@
+NULL_VALUE_PYTHON = None
