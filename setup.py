@@ -44,12 +44,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     platforms="any",
-    install_requires=[
-        "python-box<4.0.0",
-        "python-dotenv<0.11.1",
-        "toml<=0.10.0",
-        "click<=7.0",
-    ],
+    install_requires=["python-box<4.0.0", "python-dotenv", "toml", "click"],
     tests_require=[
         "pytest",
         "pytest-cov",
