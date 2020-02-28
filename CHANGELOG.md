@@ -2,6 +2,73 @@ Changelog
 =========
 
 
+2.2.3 (2020-02-28)
+------------------
+- Release version 2.2.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (7):
+            Release version 2.2.2
+            Fix #273 add Flask load extensions method.
+            add t.me badge fix #262
+            Fix #145 allow lazy format using os.environ and settings values.
+            Overriding strategy test
+            Fix #203 document the usage with pytest (with examples)
+            unpin dependencies
+
+      Hildeberto (2):
+            Fix pre-commit to run python3 rather than python3.7
+            Merge pull request #281 from hilam/fix_pre_commit
+
+      JSP (1):
+            fix object_merge issue #285 with  meta value
+
+      dependabot-preview[bot] (2):
+            Update python-dotenv requirement from <=0.10.3 to <0.10.6
+            Update python-dotenv requirement from <0.10.6 to <0.11.1
+- Unpin dependencies. [Bruno Rocha]
+- Update python-dotenv requirement from <0.10.6 to <0.11.1. [dependabot-
+  preview[bot]]
+
+  Updates the requirements on [python-dotenv](https://github.com/theskumar/python-dotenv) to permit the latest version.
+  - [Release notes](https://github.com/theskumar/python-dotenv/releases)
+  - [Changelog](https://github.com/theskumar/python-dotenv/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/theskumar/python-dotenv/compare/v0.1.1...v0.11.0)
+- Fix #203 document the usage with pytest (with examples) [Bruno Rocha]
+- Overriding strategy test. [Bruno Rocha]
+- Fix #145 allow lazy format using os.environ and settings values.
+  [Bruno Rocha]
+- Add t.me badge fix #262. [Bruno Rocha]
+- Fix #273 add Flask load extensions method. [Bruno Rocha]
+
+  - This commit adds a new method `load_extensions` to
+  `FlaskDynaconf` class.
+- Update python-dotenv requirement from <=0.10.3 to <0.10.6.
+  [dependabot-preview[bot]]
+
+  Updates the requirements on [python-dotenv](https://github.com/theskumar/python-dotenv) to permit the latest version.
+  - [Release notes](https://github.com/theskumar/python-dotenv/releases)
+  - [Changelog](https://github.com/theskumar/python-dotenv/blob/master/CHANGELOG.md)
+  - [Commits](https://github.com/theskumar/python-dotenv/compare/v0.1.1...v0.10.5)
+- Fix object_merge issue #285 with  meta value. [JSP]
+- Merge pull request #281 from hilam/fix_pre_commit. [Hildeberto]
+
+  Fix pre-commit to run python3 rather than python3.7
+- Fix pre-commit to run python3 rather than python3.7. [Hildeberto]
+- Release version 2.2.2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (3):
+            Release version 2.2.1
+            Fix #258 custom message for validators
+            Pin python-box version because of a breaking release
+
+      Hildeberto (1):
+            Close #178. Included integration tests redis/vault
+
+
 2.2.2 (2019-12-26)
 ------------------
 - Release version 2.2.2. [Bruno Rocha]
