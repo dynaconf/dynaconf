@@ -430,7 +430,10 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
     if not key:
         datalines = "\n".join(
             "%s: %s"
-            % (click.style(k, bg=color(k), fg="white"), pprint.pformat(v))
+            % (
+                click.style(k, bg=color(k), fg="white"),
+                pprint.pformat("{} -> {}".format(type(v).__name__, v)),
+            )
             for k, v in data.items()
         )
         (click.echo_via_pager if more else click.echo)(datalines)
