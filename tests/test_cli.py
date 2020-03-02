@@ -83,15 +83,15 @@ def test_list(testdir):
     """Test list command shows only user defined vars"""
 
     result = run(["list"], env={"ROOT_PATH_FOR_DYNACONF": testdir})
-    assert "DOTENV_STR: 'hello'" in result
-    assert "GLOBAL_ENV_FOR_DYNACONF: 'DYNACONF'" not in result
+    assert "DOTENV_STR<str> 'hello'" in result
+    assert "GLOBAL_ENV_FOR_DYNACONF<str> 'DYNACONF'" not in result
 
 
 def test_list_export_json(testdir):
     result = run(
         ["list", "-o", "sets.json"], env={"ROOT_PATH_FOR_DYNACONF": testdir}
     )
-    assert "DOTENV_STR: 'hello'" in result
+    assert "DOTENV_STR<str> 'hello'" in result
     assert "DOTENV_STR" in read_file("sets.json")
     assert (
         json.loads(read_file("sets.json"))["development"]["DOTENV_STR"]
@@ -106,8 +106,8 @@ def test_list_export_json(testdir):
 def test_list_with_all(testdir):
     """Test list command with --all includes interval vars"""
     result = run(["list", "-a"], env={"ROOT_PATH_FOR_DYNACONF": testdir})
-    assert "DOTENV_STR: 'hello'" in result
-    assert "GLOBAL_ENV_FOR_DYNACONF: 'DYNACONF'" in result
+    assert "DOTENV_STR<str> 'hello'" in result
+    assert "ENVVAR_PREFIX_FOR_DYNACONF<str> 'DYNACONF'" in result
 
 
 @pytest.mark.parametrize("loader", WRITERS)
@@ -127,14 +127,14 @@ settings = LazySettings(OPTION_FOR_TESTS=True)
 
 def test_list_with_instance():
     result = run(["-i", "tests.test_cli.settings", "list"])
-    assert "OPTION_FOR_TESTS: True" in result
+    assert "OPTION_FOR_TESTS<bool> True" in result
 
 
 def test_list_with_instance_from_env():
     result = run(
         ["list"], {"INSTANCE_FOR_DYNACONF": "tests.test_cli.settings"}
     )
-    assert "OPTION_FOR_TESTS: True" in result
+    assert "OPTION_FOR_TESTS<bool> True" in result
 
 
 def test_instance_attribute_error():
@@ -154,12 +154,12 @@ def test_instance_pypath_error():
 
 def test_list_with_key():
     result = run(["list", "-k", "DOTENV_STR"])
-    assert "DOTENV_STR: 'hello'" in result
+    assert "DOTENV_STR<str> 'hello'" in result
 
 
 def test_list_with_key_export_json(tmpdir):
     result = run(["list", "-k", "DOTENV_STR", "-o", "sets.json"])
-    assert "DOTENV_STR: 'hello'" in result
+    assert "DOTENV_STR<str> 'hello'" in result
     assert "DOTENV_STR" in read_file("sets.json")
     assert (
         json.loads(read_file("sets.json"))["development"]["DOTENV_STR"]

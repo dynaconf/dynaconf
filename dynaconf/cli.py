@@ -407,8 +407,8 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
         click.style(
             "Working in %s environment " % cur_env,
             bold=True,
-            bg="blue",
-            fg="bright_black",
+            bg="bright_blue",
+            fg="bright_white",
         )
     )
 
@@ -427,14 +427,20 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
             return "blue"
         return "green"
 
+    def format_setting(_k, _v):
+        return "{key}{data_type} {value}".format(
+            key=click.style(_k, bg=color(_k), fg="white"),
+            data_type=click.style(
+                "<{}>".format(type(_v).__name__), bg="bright_black", fg="white"
+            ),
+            value=pprint.pformat(_v),
+        )
+
     if not key:
         datalines = "\n".join(
-            "%s: %s"
-            % (
-                click.style(k, bg=color(k), fg="white"),
-                pprint.pformat("{} -> {}".format(type(v).__name__, v)),
-            )
+            format_setting(k, v)
             for k, v in data.items()
+            if k not in data.get("RENAMED_VARS", [])
         )
         (click.echo_via_pager if more else click.echo)(datalines)
         if output:
@@ -445,17 +451,9 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
         if not value:
             click.echo(click.style("Key not found", bg="red", fg="white"))
             return
-        click.echo(
-            "%s: %s"
-            % (
-                click.style(upperfy(key), bg=color(key), fg="white"),
-                pprint.pformat(value),
-            )
-        )
+        click.echo(format_setting(key, value))
         if output:
-            loaders.write(
-                output, {upperfy(key): value}, env=not flat and cur_env
-            )
+            loaders.write(output, {key: value}, env=not flat and cur_env)
 
     if env:
         settings.setenv()
