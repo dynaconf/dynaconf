@@ -1,9 +1,11 @@
 import io
+import json
 import os
 
 import pytest
 
 from dynaconf import default_settings
+from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import Missing
 from dynaconf.utils import missing
@@ -13,9 +15,10 @@ from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import get_local_filename
 from dynaconf.utils.parse_conf import evaluate_lazy_format
-from dynaconf.utils.parse_conf import jinja_formatter
-from dynaconf.utils.parse_conf import LazyFormat
+from dynaconf.utils.parse_conf import Formatters
+from dynaconf.utils.parse_conf import Lazy
 from dynaconf.utils.parse_conf import parse_conf_data
+from dynaconf.utils.parse_conf import try_to_encode
 from dynaconf.utils.parse_conf import unparse_conf_data
 
 
@@ -29,6 +32,7 @@ def test_unparse():
     assert unparse_conf_data(["a", "b"]) == '@json ["a", "b"]'
     assert unparse_conf_data({"name": "Bruno"}) == '@json {"name": "Bruno"}'
     assert unparse_conf_data(None) == "@none "
+    assert unparse_conf_data(Lazy("{foo}")) == "@format {foo}"
 
 
 def test_cast_bool(settings):
@@ -129,12 +133,12 @@ def test_missing_sentinel():
 def test_meta_values():
     reset = parse_conf_data("@reset [1, 2]", tomlfy=True)
     assert reset.value == [1, 2]
-    assert reset.dynaconf_reset is True
+    assert reset._dynaconf_reset is True
     assert "Reset([1, 2])" in repr(reset)
 
     _del = parse_conf_data("@del", tomlfy=True)
     assert _del.value == ""
-    assert _del.dynaconf_del is True
+    assert _del._dynaconf_del is True
     assert "Del()" in repr(_del)
 
 
@@ -248,9 +252,13 @@ def test_upperfy():
 
 
 def test_lazy_format_class():
-    value = LazyFormat("{this[FOO]}/bar")
+    value = Lazy("{this[FOO]}/bar")
     settings = {"FOO": "foo"}
     assert value(settings) == "foo/bar"
+    assert str(value) == value.value
+    assert repr(value) == "'@{value.formatter} {value.value}'".format(
+        value=value
+    )
 
 
 def test_evaluate_lazy_format_decorator():
@@ -275,7 +283,7 @@ def test_lazy_format_on_settings(settings):
 
 
 def test_lazy_format_class_jinja():
-    value = LazyFormat("{{this['FOO']}}/bar", formatter=jinja_formatter)
+    value = Lazy("{{this['FOO']}}/bar", formatter=Formatters.jinja_formatter)
     settings = {"FOO": "foo"}
     assert value(settings) == "foo/bar"
 
@@ -301,3 +309,16 @@ def test_lazy_format_on_settings_jinja(settings):
     settings.set("set_2", "works")
 
     assert settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
+
+
+def test_lazy_format_is_json_serializable():
+    value = Lazy("{this[FOO]}/bar")
+    assert (
+        json.dumps({"val": value}, cls=DynaconfEncoder)
+        == '{"val": "@format {this[FOO]}/bar"}'
+    )
+
+
+def test_try_to_encode():
+    value = Lazy("{this[FOO]}/bar")
+    assert try_to_encode(value) == "@format {this[FOO]}/bar"

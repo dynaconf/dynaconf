@@ -196,7 +196,7 @@ DOTENV_OVERRIDE_FOR_DYNACONF = get("DOTENV_OVERRIDE_FOR_DYNACONF", False)
 INSTANCE_FOR_DYNACONF = get("INSTANCE_FOR_DYNACONF", None)
 
 # https://msg.pyyaml.org/load
-YAML_LOADER_FOR_DYNACONF = get("YAML_LOADER_FOR_DYNACONF", "full_load")
+YAML_LOADER_FOR_DYNACONF = get("YAML_LOADER_FOR_DYNACONF", "safe_load")
 
 # Use commentjson? https://commentjson.readthedocs.io/en/latest/
 COMMENTJSON_ENABLED_FOR_DYNACONF = get(

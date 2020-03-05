@@ -41,10 +41,10 @@ def object_merge(old, new, unique=False):
 
         # Cleanup of MetaValues on New dict
         for key, value in list(new.items()):
-            if getattr(new[key], "dynaconf_reset", False):
+            if getattr(new[key], "_dynaconf_reset", False):
                 # new Reset triggers cleanup of existing data
                 new[key] = new[key].value
-            elif getattr(new[key], "dynaconf_del", False):
+            elif getattr(new[key], "_dynaconf_del", False):
                 # new Del triggers deletion of existing data
                 new.pop(key, None)
 
