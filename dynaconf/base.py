@@ -704,15 +704,15 @@ class Settings(object):
         key = upperfy(key.strip())
         existing = getattr(self, key, None)
 
-        if getattr(value, "dynaconf_del", None):
+        if getattr(value, "_dynaconf_del", None):
             self.unset(key, force=True)
             return
 
-        if getattr(value, "dynaconf_reset", False):
+        if getattr(value, "_dynaconf_reset", False):
             # just in case someone use a `@reset` in a first level var.
             value = value.value
 
-        if getattr(value, "dynaconf_merge", False):
+        if getattr(value, "_dynaconf_merge", False):
             # just in case someone use a `@merge` in a first level var
 
             if isinstance(value.value, (int, float, bool)):

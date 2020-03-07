@@ -1,7 +1,11 @@
+import json
+
 import pytest
 
 from dynaconf import LazySettings
+from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.loaders.json_loader import load
+
 
 settings = LazySettings(ENV_FOR_DYNACONF="PRODUCTION")
 
@@ -178,3 +182,20 @@ def test_load_dunder():
     load(settings, filename=_JSON, env="FOO")
     assert settings.COLORS.yellow.code == "#FFCC00"
     assert settings.COLORS.yellow.name == "Yellow"
+
+
+def test_dynaconf_encoder():
+    class Dummy:
+        def _dynaconf_encode(self):
+            return "Dummy"
+
+    class DummyNotSerializable:
+        _dynaconf_encode = 42
+
+    data = {"dummy": Dummy()}
+    data_error = {"dummy": DummyNotSerializable()}
+
+    assert json.dumps(data, cls=DynaconfEncoder) == '{"dummy": "Dummy"}'
+
+    with pytest.raises(TypeError):
+        json.dumps(data_error, cls=DynaconfEncoder)

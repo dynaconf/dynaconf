@@ -6,6 +6,7 @@ from dynaconf import default_settings
 from dynaconf.constants import JSON_EXTENSIONS
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.utils import object_merge
+from dynaconf.utils.parse_conf import try_to_encode
 
 try:  # pragma: no cover
     import commentjson
@@ -63,4 +64,11 @@ def write(settings_path, settings_data, merge=True):
         "w",
         encoding=default_settings.ENCODING_FOR_DYNACONF,
     ) as open_file:
-        json.dump(settings_data, open_file)
+        json.dump(settings_data, open_file, cls=DynaconfEncoder)
+
+
+class DynaconfEncoder(json.JSONEncoder):
+    """Transform Dynaconf custom types instances to json representation"""
+
+    def default(self, o):
+        return try_to_encode(o, callback=super().default)

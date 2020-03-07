@@ -74,12 +74,12 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     VAULT_TOKEN | str | Vault token. | None | VAULT_TOKEN_FOR_DYNACONF=”myroot”
     VAULT_URL | str | Vault URL. | http:// localhost :8200 | VAULT_URL_FOR_DYNACONF=”http://server/8200”
     VAULT_VERIFY | bool | Vault should verify. | None | VAULT_VERIFY_FOR_DYNACONF=true
-    YAML_LOADER | str | yaml method name {safe,full,unsafe}_load. | full_load | YAML_LOADER_FOR_DYNACONF=unsafe_load
+    YAML_LOADER | str | yaml method name {safe,full,unsafe}_load. | safe_load | YAML_LOADER_FOR_DYNACONF=unsafe_load
 ```
 
 ## Internal use variables
 
-- FORCE_ENV_FOR_DYNACONF:  This variable exists to support the `from_env` method, you are not encouraged to override it manually.
+- FORCE_ENV_FOR_DYNACONF:  This variable exists to support the `from_env` method, the crontib extensions and to use for testing.
 
 ## Deprecated options
 

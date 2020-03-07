@@ -23,7 +23,7 @@ false_values = ("f", "false", "disabled", "0", "off", "no", "False", "")
 class MetaValue:
     """A Marker to trigger specific actions on `set` and `object_merge`"""
 
-    meta_value = True
+    _meta_value = True
 
     def __init__(self, value):
         self.value = parse_conf_data(value, tomlfy=True)
@@ -37,27 +37,54 @@ class MetaValue:
 class Reset(MetaValue):
     """Triggers an existing key to be reset to its value"""
 
-    dynaconf_reset = True
+    _dynaconf_reset = True
 
 
 class Del(MetaValue):
     """Triggers an existing key to be deleted"""
 
-    dynaconf_del = True
+    _dynaconf_del = True
 
 
 class Merge(MetaValue):
     """Triggers an existing key to be merged"""
 
-    dynaconf_merge = True
+    _dynaconf_merge = True
 
 
-class LazyFormat:
+class BaseFormatter:
+    def __init__(self, function, token):
+        self.function = function
+        self.token = token
+
+    def __call__(self, value, **context):
+        return self.function(value, **context)
+
+    def __str__(self):
+        return str(self.token)
+
+
+def _jinja_formatter(value, **context):
+    if jinja_env is None:  # pragma: no cover
+        raise ImportError(
+            "jinja2 must be installed to enable '@jinja' settings in dynaconf"
+        )
+    return jinja_env.from_string(value).render(**context)
+
+
+class Formatters:
+    """Dynaconf builtin formatters"""
+
+    python_formatter = BaseFormatter(str.format, "format")
+    jinja_formatter = BaseFormatter(_jinja_formatter, "jinja")
+
+
+class Lazy:
     """Holds data to format lazily."""
 
-    dynaconf_lazy_format = True
+    _dynaconf_lazy_format = True
 
-    def __init__(self, value, formatter=str.format):
+    def __init__(self, value, formatter=Formatters.python_formatter):
         self.value = value
         self.formatter = formatter
 
@@ -71,6 +98,26 @@ class LazyFormat:
         self.settings = settings
         return self.formatter(self.value, **self.context)
 
+    def __str__(self):
+        """Gives string representation for the object."""
+        return str(self.value)
+
+    def __repr__(self):
+        """Give the quoted str representation"""
+        return "'@{self.formatter} {self.value}'".format(self=self)
+
+    def _dynaconf_encode(self):
+        """Encodes this object values to be serializable to json"""
+        return "@{self.formatter} {self.value}".format(self=self)
+
+
+def try_to_encode(value, callback=str):
+    """Tries to encode a value by verifying existence of `_dynaconf_encode`"""
+    try:
+        return value._dynaconf_encode()
+    except (AttributeError, TypeError) as e:
+        return callback(value)
+
 
 def evaluate_lazy_format(f):
     """Marks a method on Settings instance to
@@ -79,19 +126,11 @@ def evaluate_lazy_format(f):
     @wraps(f)
     def evaluate(settings, *args, **kwargs):
         value = f(settings, *args, **kwargs)
-        if getattr(value, "dynaconf_lazy_format", None):
+        if getattr(value, "_dynaconf_lazy_format", None):
             return value(settings)
         return value
 
     return evaluate
-
-
-def jinja_formatter(value, **context):
-    if jinja_env is None:  # pragma: no cover
-        raise ImportError(
-            "jinja2 must be installed to enable '@jinja' settings in dynaconf"
-        )
-    return jinja_env.from_string(value).render(**context)
 
 
 converters = {
@@ -99,8 +138,8 @@ converters = {
     "@float": float,
     "@bool": lambda value: str(value).lower() in true_values,
     "@json": json.loads,
-    "@format": lambda value: LazyFormat(value),
-    "@jinja": lambda value: LazyFormat(value, formatter=jinja_formatter),
+    "@format": lambda value: Lazy(value),
+    "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
     "@reset": lambda value: Reset(value),
     "@del": lambda value: Del(value),
@@ -175,6 +214,8 @@ def unparse_conf_data(value):
         return "@float %s" % value
     elif isinstance(value, (list, dict)):
         return "@json %s" % json.dumps(value)
+    elif isinstance(value, Lazy):
+        return try_to_encode(value)
     elif value is None:
         return "@none "
     else:
