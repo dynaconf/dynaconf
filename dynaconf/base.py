@@ -219,9 +219,9 @@ class Settings(object):
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
-        value = self.get(item)
-        if value is None:
-            raise KeyError("{0} does not exists".format(item))
+        value = self.get(item, default=empty)
+        if value is empty:
+            raise KeyError("{0} does not exist".format(item))
         return value
 
     def __setitem__(self, key, value):

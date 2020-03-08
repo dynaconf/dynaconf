@@ -57,4 +57,15 @@ def write(settings_path, settings_data, merge=True):
         "w",
         encoding=default_settings.ENCODING_FOR_DYNACONF,
     ) as open_file:
-        toml.dump(settings_data, open_file)
+        toml.dump(encode_nulls(settings_data), open_file)
+
+
+def encode_nulls(data):
+    """TOML does not support `None` so this function transforms to '@none '."""
+    if data is None:
+        return "@none "
+    if isinstance(data, dict):
+        return {key: encode_nulls(value) for key, value in data.items()}
+    elif isinstance(data, (list, tuple)):
+        return [encode_nulls(item) for item in data]
+    return data
