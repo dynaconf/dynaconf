@@ -196,7 +196,7 @@ def write(filename, data, env=None):
         raise IOError("{0} cannot be found.".format(loader_name))
 
     data = DynaBox(data).to_dict()
-    if env and env not in data:
+    if loader is not py_loader and env and env not in data:
         data = {env: data}
 
     loader.write(filename, data, merge=False)
