@@ -63,11 +63,11 @@ setup(
     extras_require={
         "redis": ["redis"],
         "vault": ["hvac"],
-        "yaml": ["PyYAML"],
+        "yaml": ["ruamel.yaml"],
         "toml": ["toml"],
         "ini": ["configobj"],
         "configobj": ["configobj"],
-        "all": ["redis", "PyYAML", "configobj", "hvac"],
+        "all": ["redis", "ruamel.yaml", "configobj", "hvac"],
     },
     entry_points={"console_scripts": ["dynaconf=dynaconf.cli:main"]},
     setup_requires=["setuptools>=38.6.0"]

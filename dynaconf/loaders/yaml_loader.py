@@ -8,17 +8,23 @@ from dynaconf.loaders.base import BaseLoader
 from dynaconf.utils import object_merge
 from dynaconf.utils.parse_conf import try_to_encode
 
-try:
-    import yaml
 
+try:
+    import ruamel.yaml as yaml
+except ImportError:  # pragma: no cover
+    try:
+        import yaml
+    except ImportError:  # pragma: no cover
+        yaml = None
+
+
+if yaml is not None:
     # Add support for Dynaconf Lazy values to YAML dumper
     yaml.SafeDumper.yaml_representers[
         None
     ] = lambda self, data: yaml.representer.SafeRepresenter.represent_str(
         self, try_to_encode(data)
     )
-except ImportError:  # pragma: no cover
-    yaml = None
 
 
 def load(obj, env=None, silent=True, key=None, filename=None):
@@ -84,4 +90,6 @@ def write(settings_path, settings_data, merge=True):
             open_file,
             Dumper=yaml.dumper.SafeDumper,
             explicit_start=True,
+            indent=2,
+            default_flow_style=False,
         )
