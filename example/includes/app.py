@@ -12,7 +12,7 @@ assert settings.MERGEABLE == {
     "plugin3": True,
     "plugin4": True,
     "settings": True,
-}
+}, settings.MERGEABLE
 assert settings.PLUGIN1_VAR is True
 assert settings.PLUGIN2_VAR is True
 assert settings.PLUGIN3_VAR is True

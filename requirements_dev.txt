@@ -2,7 +2,7 @@
 redis
 wheel
 twine
-PyYAML
+ruamel.yaml
 flask>=1.0
 setuptools>=38.6.0
 configobj
