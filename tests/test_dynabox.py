@@ -12,8 +12,7 @@ box = DynaBox(
                 "token": {"TYPE": 1, "value": 2},
             },
         }
-    },
-    box_it_up=True,
+    }
 )
 
 

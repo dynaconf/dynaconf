@@ -10,7 +10,7 @@ hvac
 django
 gitchangelog
 
-python-box<4.0.0
+python-box
 python-dotenv
 toml
 click

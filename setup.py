@@ -44,7 +44,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     platforms="any",
-    install_requires=["python-box<4.0.0", "python-dotenv", "toml", "click"],
+    install_requires=["python-box", "python-dotenv", "toml", "click"],
     tests_require=[
         "pytest",
         "pytest-cov",
@@ -84,7 +84,6 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Topic :: Utilities",

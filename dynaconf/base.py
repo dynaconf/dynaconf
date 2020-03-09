@@ -172,7 +172,7 @@ class Settings(object):
         self._loaded_envs = []
         self._loaded_files = []
         self._deleted = set()
-        self._store = DynaBox(box_it_up=True)
+        self._store = DynaBox()
         self._env_cache = {}
         self._loaded_by_loaders = {}
         self._loaders = []
@@ -656,7 +656,7 @@ class Settings(object):
 
         split_keys = dotted_key.split(".")
         existing_data = self.get(split_keys[0], {})
-        new_data = DynaBox(default_box=True)
+        new_data = DynaBox()
 
         tree = new_data
         for k in split_keys[:-1]:
@@ -744,7 +744,7 @@ class Settings(object):
                 value = self._merge_before_set(key, existing, value, is_secret)
 
         if isinstance(value, dict):
-            value = DynaBox(value, box_it_up=True)
+            value = DynaBox(value)
 
         setattr(self, key, value)
         self.store[key] = value
