@@ -138,10 +138,17 @@ DATABASES = {
 }
 ```
 
-and you can also pass a `toml` like dictionary to be merged with existing `ARGS` key.
+and you can also pass a `toml` like dictionary to be merged with existing `ARGS` key using `@merge` token.
+
+> **new in 3.0.0**
 
 ```bash
-export DYNACONF_DATABASES__default__ARGS='{timeout=50, size=1}'
+# as a toml (recommended)
+export DYNACONF_DATABASES__default__ARGS='@merge {timeout=50, size=1}'
+# OR as a json
+export DYNACONF_DATABASES__default__ARGS='@merge {"timeout": 50, "size": 1}'
+# OR as plain key pair
+export DYNACONF_DATABASES__default__ARGS='@merge timeout=50,size=1'
 ```
 
 will result in
@@ -156,10 +163,11 @@ DATABASES = {
 }
 ```
 
-Now if you want to clean an existing nested attribute you can use the `@reset` token on exported env var.
+Now if you want to clean an existing nested attribute you can just assign the new value.
 
 ```bash
-export DYNACONF_DATABASES__default__ARGS='@reset {}'
+# As a TOML empty dictionary `"{}"`
+export DYNACONF_DATABASES__default__ARGS='{}'
 ```
 
 This will result in
@@ -174,12 +182,9 @@ DATABASES = {
 }
 ```
 
-And also you can do a `@reset` followed by a re-assignment
-
-> Dynaconf env vars are parsed using `toml` so the format for dictionaries is a bit different.
-
 ```bash
-export DYNACONF_DATABASES__default__ARGS='@reset {timeout=90}'
+# As a TOML  dictionary (recommended)
+export DYNACONF_DATABASES__default__ARGS='{timeout=90}'
 ```
 
 This will result in

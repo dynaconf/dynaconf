@@ -1,10 +1,14 @@
 import json
 import os
+import re
+import warnings
 from functools import wraps
 
 import toml
 from box import BoxKeyError
 
+from dynaconf.utils import extract_json_objects
+from dynaconf.utils import multi_replace
 from dynaconf.utils.boxing import DynaBox
 
 try:
@@ -20,6 +24,14 @@ true_values = ("t", "true", "enabled", "1", "on", "yes", "True")
 false_values = ("f", "false", "disabled", "0", "off", "no", "False", "")
 
 
+KV_PATTERN = re.compile(r"([a-zA-Z0-9 ]*=[a-zA-Z0-9\- :]*)")
+"""matches `a=b, c=d, e=f` used on `VALUE='@merge foo=bar'` variables."""
+
+
+class DynaconfParseError(Exception):
+    """Error to raise when parsing @casts"""
+
+
 class MetaValue:
     """A Marker to trigger specific actions on `set` and `object_merge`"""
 
@@ -33,11 +45,20 @@ class MetaValue:
             _class=self.__class__.__name__, value=self.value, _id=id(self)
         )
 
+    def unwrap(self):
+        return self.value
+
 
 class Reset(MetaValue):
-    """Triggers an existing key to be reset to its value"""
+    """Triggers an existing key to be reset to its value
+    NOTE: DEPRECATED on v3.0.0
+    """
 
     _dynaconf_reset = True
+
+    def __init__(self, value):
+        self.value = parse_conf_data(value, tomlfy=True)
+        warnings.warn(f"{self.value} does not need `@reset` anymore.")
 
 
 class Del(MetaValue):
@@ -45,11 +66,59 @@ class Del(MetaValue):
 
     _dynaconf_del = True
 
+    def unwrap(self):
+        raise ValueError("Del object has no value")
+
 
 class Merge(MetaValue):
     """Triggers an existing key to be merged"""
 
     _dynaconf_merge = True
+
+    def __init__(self, value, unique=False):
+
+        self.value = parse_conf_data(value, tomlfy=True)
+
+        if isinstance(self.value, (int, float, bool)):
+            # @merge 1, @merge 1.1, @merge False
+            self.value = [self.value]
+        elif isinstance(self.value, str):
+            # @merge {"valid": "json"}
+            json_object = list(
+                extract_json_objects(
+                    multi_replace(
+                        self.value,
+                        {
+                            ": True": ": true",
+                            ":True": ": true",
+                            ": False": ": false",
+                            ":False": ": false",
+                            ": None": ": null",
+                            ":None": ": null",
+                        },
+                    )
+                )
+            )
+            if len(json_object) == 1:
+                self.value = json_object[0]
+            else:
+                matches = KV_PATTERN.findall(self.value)
+                # a=b, c=d
+                if matches:
+                    self.value = {
+                        k.strip(): parse_conf_data(v, tomlfy=True)
+                        for k, v in (
+                            match.strip().split("=") for match in matches
+                        )
+                    }
+                elif "," in self.value:
+                    # @merge foo,bar
+                    self.value = self.value.split(",")
+                else:
+                    # @merge foo
+                    self.value = [self.value]
+
+        self.unique = unique
 
 
 class BaseFormatter:
@@ -141,9 +210,10 @@ converters = {
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
-    "@reset": lambda value: Reset(value),
+    "@reset": lambda value: Reset(value),  # @reset is DEPRECATED on v3.0.0
     "@del": lambda value: Del(value),
     "@merge": lambda value: Merge(value),
+    "@merge_unique": lambda value: Merge(value, unique=True),
     # Special markers to be used as placeholders e.g: in prefilled forms
     # will always return None when evaluated
     "@note": lambda value: None,

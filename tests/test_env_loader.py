@@ -238,7 +238,7 @@ def test_load_dunder(clean_env):
 
     # add to ARGS
     clean_environ("DYNACONF_DATABASES")
-    environ["DYNACONF_DATABASES__default__ARGS"] = "{retries=10}"
+    environ["DYNACONF_DATABASES__default__ARGS"] = "@merge {retries=10}"
     load_from_env(
         identifier="env_global",
         key=None,
@@ -265,7 +265,7 @@ def test_load_dunder(clean_env):
 
     # Clean args
     clean_environ("DYNACONF_DATABASES")
-    environ["DYNACONF_DATABASES__default__ARGS"] = "@reset {timeout=8}"
+    environ["DYNACONF_DATABASES__default__ARGS"] = "{timeout=8}"
     load_from_env(
         identifier="env_global",
         key=None,
@@ -277,7 +277,7 @@ def test_load_dunder(clean_env):
 
     # Make args empty
     clean_environ("DYNACONF_DATABASES")
-    environ["DYNACONF_DATABASES__default__ARGS"] = "@reset {}"
+    environ["DYNACONF_DATABASES__default__ARGS"] = "{}"
     load_from_env(
         identifier="env_global",
         key=None,
@@ -301,7 +301,7 @@ def test_load_dunder(clean_env):
 
     # add to existing PORTS
     clean_environ("DYNACONF_DATABASES")
-    environ["DYNACONF_DATABASES__default__PORTS"] = "[789, 101112]"
+    environ["DYNACONF_DATABASES__default__PORTS"] = "@merge [789, 101112]"
     load_from_env(
         identifier="env_global",
         key=None,
@@ -314,7 +314,7 @@ def test_load_dunder(clean_env):
 
     # reset PORTS
     clean_environ("DYNACONF_DATABASES")
-    environ["DYNACONF_DATABASES__default__PORTS"] = "@reset [789, 101112]"
+    environ["DYNACONF_DATABASES__default__PORTS"] = "[789, 101112]"
     load_from_env(
         identifier="env_global",
         key=None,
@@ -340,7 +340,7 @@ def test_load_dunder(clean_env):
 
     # reset default key
     clean_environ("DYNACONF_DATABASES")
-    environ["DYNACONF_DATABASES__default"] = "@reset {}"
+    environ["DYNACONF_DATABASES__default"] = "{}"
     load_from_env(
         identifier="env_global",
         key=None,
@@ -388,7 +388,7 @@ def test_load_dunder(clean_env):
 
     # also reset databases
     clean_environ("DYNACONF_DATABASES")
-    environ["DYNACONF_DATABASES"] = "@reset {yes='no'}"
+    environ["DYNACONF_DATABASES"] = "{yes='no'}"
     load_from_env(
         identifier="env_global",
         key=None,

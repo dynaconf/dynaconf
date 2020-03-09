@@ -1,3 +1,3 @@
-FILES__all = ["py"]
-FILES__last = "@reset ['py']"
-FILES__loaded__TYPES = {"py": True}
+FILES__all = '@merge ["py"]'
+FILES__last = ["py"]
+FILES__loaded__TYPES = '@merge {"py": True}'

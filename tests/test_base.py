@@ -586,30 +586,40 @@ def test_dotted_set_with_merge(settings):
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     settings.DATABASES.default.NAME == "bladb"
 
-    # Add new item to the list
+    # Replace items on a list
     assert settings.DATABASES.default.PARAMS == ["a", "b", "c"]
     settings.set("DATABASES.default.PARAMS", ["d", "e"])
     assert settings.DATABASES != start_data
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
-    assert settings.DATABASES.default.PARAMS == ["a", "b", "c", "d", "e"]
+    assert settings.DATABASES.default.PARAMS == ["d", "e"]
 
-    # Add new item to the dict
+    # Add new items to the list
+    settings.set("DATABASES.default.PARAMS", '@merge ["e", "f", "g"]')
+    assert settings.DATABASES != start_data
+    assert settings.DATABASES["default"].keys() == start_data["default"].keys()
+    assert settings.DATABASES.default.PARAMS == ["d", "e", "e", "f", "g"]
+
+    # Replace a dict
     assert settings.DATABASES.default.ATTRS == {"a": 1, "b": 2}
     settings.set("DATABASES.default.ATTRS", {"c": 3})
     assert settings.DATABASES != start_data
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
-    assert settings.DATABASES.default.ATTRS == {"a": 1, "b": 2, "c": 3}
+    assert settings.DATABASES.default.ATTRS == {"c": 3}
+
+    # Add new item to the dict
+    settings.set("DATABASES.default.ATTRS", '@merge {"b": 2, "d": 4}')
+    assert settings.DATABASES != start_data
+    assert settings.DATABASES["default"].keys() == start_data["default"].keys()
+    assert settings.DATABASES.default.ATTRS == {"b": 2, "c": 3, "d": 4}
 
     # Replace the entire list
-    settings.set(
-        "DATABASES.default.PARAMS", '@reset ["x", "y", "z"]', tomlfy=True
-    )
+    settings.set("DATABASES.default.PARAMS", ["x", "y", "z"], tomlfy=True)
     assert settings.DATABASES != start_data
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     assert settings.DATABASES.default.PARAMS == ["x", "y", "z"]
 
     # Replace the entire dict
-    settings.set("DATABASES.default.ATTRS", "@reset {x=26}", tomlfy=True)
+    settings.set("DATABASES.default.ATTRS", "{x=26}", tomlfy=True)
     assert settings.DATABASES != start_data
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     assert settings.DATABASES.default.ATTRS == {"x": 26}

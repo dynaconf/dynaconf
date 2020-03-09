@@ -49,6 +49,7 @@ def load_from_env(identifier, key, env, obj, silent):
                     "env_loader: loading: %s (%s:%s)", data, identifier, env
                 )
                 obj.update(data, loader_identifier=identifier)
+    # box.exceptions.BoxKeyError
     except Exception as e:  # pragma: no cover
         e.message = ("env_loader: Error ({0})").format(str(e))
         if silent:

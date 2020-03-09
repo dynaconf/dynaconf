@@ -1,10 +1,12 @@
+from pprint import pprint
+
 from dynaconf import settings
 
 settings.FILES
 
 keys = ["default", "env", "py"]
 
-print(settings.FILES)
+pprint(settings.FILES)
 for key in keys:
     assert settings.FILES.loaded.TYPES[key] is True
     assert settings.FILES.loaded["TYPES"][key] is True
