@@ -31,7 +31,8 @@ test_examples:
 	cd example/flask_with_json;pwd;flask routes | grep -c flask_with_json || exit 1
 	cd example/flask_with_commentjson;pwd;flask routes | grep -c flask_with_commentjson || exit 1
 	cd example/flask_with_ini;pwd;flask routes | grep -c flask_with_ini || exit 1
-	cd example/pytest_example/app;pwd;pytest tests
+	cd example/pytest_example/app;pwd;python app.py
+	cd example/pytest_example/app;pwd;pytest tests/
 	cd example/pytest_example/flask;pwd;pytest tests
 	cd example/validators/with_python/;pwd;python app.py
 	cd example/validators/with_toml/;pwd;dynaconf validate
@@ -175,5 +176,5 @@ docs:
 	@cd docs;make html
 
 run-tox:
-	tox -r
+	tox --recreate
 	rm -rf .tox
