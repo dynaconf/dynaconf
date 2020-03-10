@@ -1,6 +1,7 @@
 import functools
 import os
 import warnings
+from json import JSONDecoder
 
 
 BANNER = """
@@ -17,13 +18,16 @@ if os.name == "nt":  # pragma: no cover
     BANNER = "DYNACONF"
 
 
-def object_merge(old, new, unique=False):
+def object_merge(old, new, unique=False, tail=None):
     """
-    Recursively merge two data structures.
+    Recursively merge two data structures, new is mutated in-place.
 
+    :param old: The existing data.
+    :param new: The new data to get old values merged in to.
     :param unique: When set to True existing list items are not set.
+    :param tail: Indicates the last element of a tree.
     """
-    if old == new:
+    if old == new or old is None or new is None:
         # Nothing to merge
         return
 
@@ -32,21 +36,37 @@ def object_merge(old, new, unique=False):
             if unique and item in new:
                 continue
             new.insert(0, item)
+
     if isinstance(old, dict) and isinstance(new, dict):
         for key, value in old.items():
+            if key == tail:
+                continue
             if key not in new:
                 new[key] = value
             else:
-                object_merge(value, new[key])
+                object_merge(value, new[key], tail=tail)
 
-        # Cleanup of MetaValues on New dict
-        for key, value in list(new.items()):
-            if getattr(new[key], "_dynaconf_reset", False):
-                # new Reset triggers cleanup of existing data
-                new[key] = new[key].value
-            elif getattr(new[key], "_dynaconf_del", False):
-                # new Del triggers deletion of existing data
-                new.pop(key, None)
+        handle_metavalues(old, new)
+
+
+def handle_metavalues(old, new):
+    """Cleanup of MetaValues on new dict"""
+    for key in list(new.keys()):
+        if getattr(new[key], "_dynaconf_reset", False):  # pragma: no cover
+            # a Reset on new triggers reasign of existing data
+            # @reset is deprecated on v3.0.0
+            new[key] = new[key].unwrap()
+
+        if getattr(new[key], "_dynaconf_merge", False):
+            # a Merge on new triggers merge with existing data
+            unique = new[key].unique
+            new[key] = new[key].unwrap()
+            object_merge(old.get(key), new[key], unique=unique)
+
+        if getattr(new[key], "_dynaconf_del", False):
+            # a Del on new triggers deletion of existing data
+            new.pop(key, None)
+            old.pop(key, None)
 
 
 class DynaconfDict(dict):
@@ -255,3 +275,38 @@ def upperfy(key):
         parts = key.split("__")
         return "__".join([parts[0].upper()] + parts[1:])
     return key.upper()
+
+
+def multi_replace(text, patterns):
+    """Replaces multiple pairs in a string
+
+    Arguments:
+        text {str} -- A "string text"
+        patterns {dict} -- A dict of {"old text": "new text"}
+
+    Returns:
+        text -- str
+    """
+    for old, new in patterns.items():
+        text = text.replace(old, new)
+    return text
+
+
+def extract_json_objects(text, decoder=JSONDecoder()):
+    """Find JSON objects in text, and yield the decoded JSON data
+
+    Does not attempt to look for JSON arrays, text, or other JSON types outside
+    of a parent JSON object.
+
+    """
+    pos = 0
+    while True:
+        match = text.find("{", pos)
+        if match == -1:
+            break
+        try:
+            result, index = decoder.raw_decode(text[match:])
+            yield result
+            pos = match + index
+        except ValueError:
+            pos = match + 1

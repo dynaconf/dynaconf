@@ -92,6 +92,7 @@ test_examples:
 	cd example/issues/251_dotted_unexistent;pwd;python app.py
 	cd example/issues/266_envvar_from_env_override;pwd;python app.py
 	cd example/issues/288_null_values;pwd;python app.py
+	cd example/issues/306_merge_replace;pwd;python app.py
 test_vault:
 	# @cd example/vault;pwd;python write.py
 	docker run --rm --name dynaconf_with_vault -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
@@ -158,6 +159,7 @@ publish:
 
 clean:
 	@find ./ -name '*.pyc' -exec rm -f {} \;
+	@find ./ -name '__pycache__' -exec rm -rf {} \;
 	@find ./ -name 'Thumbs.db' -exec rm -f {} \;
 	@find ./ -name '*~' -exec rm -f {} \;
 	rm -rf .cache

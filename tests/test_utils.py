@@ -7,6 +7,7 @@ import pytest
 from dynaconf import default_settings
 from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.utils import ensure_a_list
+from dynaconf.utils import extract_json_objects
 from dynaconf.utils import Missing
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
@@ -132,6 +133,7 @@ def test_missing_sentinel():
 
 def test_meta_values():
     reset = parse_conf_data("@reset [1, 2]", tomlfy=True)
+    # @reset is DEPRECATED in v3.0.0 but kept for backwards compatibility
     assert reset.value == [1, 2]
     assert reset._dynaconf_reset is True
     assert "Reset([1, 2])" in repr(reset)
@@ -176,7 +178,7 @@ def test_merge_dict_with_meta_values():
     existing = {"A": 1, "B": 2, "C": 3}
     new = {
         "B": parse_conf_data("@del", tomlfy=True),
-        "C": parse_conf_data("@reset 4", tomlfy=True),
+        "C": parse_conf_data("4", tomlfy=True),
     }
     object_merge(existing, new)
     assert new == {"A": 1, "C": 4}
@@ -322,3 +324,16 @@ def test_lazy_format_is_json_serializable():
 def test_try_to_encode():
     value = Lazy("{this[FOO]}/bar")
     assert try_to_encode(value) == "@format {this[FOO]}/bar"
+
+
+def test_del_raises_on_unwrap():
+    value = parse_conf_data("@del ")
+    with pytest.raises(ValueError):
+        value.unwrap()
+
+
+def test_extract_json():
+    assert list(extract_json_objects("foo bar")) == []
+    assert list(extract_json_objects('foo bar {"a": 1}')) == [{"a": 1}]
+    assert list(extract_json_objects("foo bar {'a': 2{")) == []
+    assert list(extract_json_objects('{{{"x": {}}}}')) == [{"x": {}}]

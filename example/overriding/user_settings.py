@@ -2,7 +2,10 @@
 # This works
 # https://dynaconf.readthedocs.io/en/latest/guides/environment_variables.html#merging-new-data-to-existing-variables
 
-REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES = "@reset ['rest_framework.authentication.SessionAuthentication','rest_framework.authentication.BasicAuthentication']"  # noqa
+REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES = [
+    "rest_framework.authentication.SessionAuthentication",
+    "rest_framework.authentication.BasicAuthentication",
+]  # noqa
 
 
 # Alternative 2 (NOT IMPLEMENTED YET)

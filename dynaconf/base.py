@@ -643,8 +643,7 @@ class Settings(object):
     def _dotted_set(self, dotted_key, value, tomlfy=False, **kwargs):
         """Sets dotted keys as nested dictionaries.
 
-        Dotted set will always merge existing data, to avoid merging the
-        @reset token should be used.
+        Dotted set will always reassign the value, to merge use `@merge` token
 
         Arguments:
             dotted_key {str} -- A traversal name e.g: foo.bar.zaz
@@ -666,7 +665,11 @@ class Settings(object):
         tree[split_keys[-1]] = value
 
         if existing_data:
-            object_merge({split_keys[0]: existing_data}, new_data)
+            object_merge(
+                old={split_keys[0]: existing_data},
+                new=new_data,
+                tail=split_keys[-1],
+            )
 
         self.update(data=new_data, tomlfy=tomlfy, **kwargs)
 
@@ -689,7 +692,6 @@ class Settings(object):
         :param is_secret: Bool define if secret values is hidden on logs.
         :param merge: Bool define if existing nested data will be merged.
         """
-
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
         if nested_sep and nested_sep in key:
             # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
@@ -705,35 +707,20 @@ class Settings(object):
         existing = getattr(self, key, None)
 
         if getattr(value, "_dynaconf_del", None):
+            # just in case someone use a `@del` in a first level var.
             self.unset(key, force=True)
             return
 
-        if getattr(value, "_dynaconf_reset", False):
+        if getattr(value, "_dynaconf_reset", False):  # pragma: no cover
             # just in case someone use a `@reset` in a first level var.
-            value = value.value
+            # NOTE: @reset/Reset is deprecated in v3.0.0
+            value = value.unwrap()
 
         if getattr(value, "_dynaconf_merge", False):
             # just in case someone use a `@merge` in a first level var
-
-            if isinstance(value.value, (int, float, bool)):
-                # @merge 1, @merge 1.1, @merge False
-                value.value = [value.value]
-            elif isinstance(value.value, str):
-                if "=" in value.value:
-                    # @merge foo=bar
-                    k, v = value.value.split("=")
-                    value.value = {k: v}
-                elif "," in value.value:
-                    # @merge foo,bar
-                    value.value = value.value.split(",")
-                else:
-                    # @merge foo
-                    value.value = [value.value]
-
             if existing:
-                object_merge(existing, value.value)
-
-            value = value.value
+                object_merge(existing, value.unwrap())
+            value = value.unwrap()
 
         if existing is not None and existing != value:
             # `dynaconf_merge` used in file root `merge=True`
