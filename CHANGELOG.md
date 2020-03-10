@@ -2,6 +2,83 @@ Changelog
 =========
 
 
+(unreleased)
+------------
+- Release version 3.0.0rc1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (8):
+            Release version 2.2.3
+            Changed text format and fixed tests
+            Merge branch '304-ShowDataTypeListCli'
+            Fix issue #305 - printing and exporting LazyFormat (#312)
+            Fix #288 - Nullable values (#300)
+            Default to ruamel.yaml when it is available. (#313)
+            Fix #306 - does not defaults to merge, deprecated reset - [Breaking Change] (#315)
+            HOTFIX - tox.ini drops 3.5
+
+      Tiago Cordeiro (1):
+            Added OSX builds to the Azure Pipeline (#307)
+
+      Vicente Marçal (1):
+            Changed CLI list to show data type of the envvars to fix #304
+
+      dependabot-preview[bot] (1):
+            Unpinning python-box, removing box_it_up and default_box arguments (#279)
+- HOTFIX - tox.ini drops 3.5. [Bruno Rocha]
+- Fix #306 - does not defaults to merge, deprecated reset - [Breaking
+  Change] (#315) [Bruno Rocha]
+
+  - Don't default to `merge` for `__` variables
+  - Made `@merge` more explicit and smart
+  - Deprecated `@reset`
+- Unpinning python-box, removing box_it_up and default_box arguments
+  (#279) [Bruno Rocha, dependabot-preview[bot]]
+- Default to ruamel.yaml when it is available. (#313) [Bruno Rocha]
+- Fix #288 - Nullable values (#300) [Bruno Rocha]
+
+  * Attempt to fix #288 (needs more debugging)
+
+  * Fixing bug on DynaBox.get
+- Fix issue #305 - printing and exporting LazyFormat (#312) [Bruno
+  Rocha]
+- Merge branch '304-ShowDataTypeListCli' [Bruno Rocha]
+- Changed text format and fixed tests. [Bruno Rocha]
+- Changed CLI list to show data type of the envvars to fix #304.
+  [Vicente Marçal]
+- Added OSX builds to the Azure Pipeline (#307) [Tiago Cordeiro]
+
+  * Added OSX builds to the Azure Pipeline
+
+  * Added OSX builds to the Azure Pipeline
+
+  * skip docker tests on macOS
+- Release version 2.2.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (7):
+            Release version 2.2.2
+            Fix #273 add Flask load extensions method.
+            add t.me badge fix #262
+            Fix #145 allow lazy format using os.environ and settings values.
+            Overriding strategy test
+            Fix #203 document the usage with pytest (with examples)
+            unpin dependencies
+
+      Hildeberto (2):
+            Fix pre-commit to run python3 rather than python3.7
+            Merge pull request #281 from hilam/fix_pre_commit
+
+      JSP (1):
+            fix object_merge issue #285 with  meta value
+
+      dependabot-preview[bot] (2):
+            Update python-dotenv requirement from <=0.10.3 to <0.10.6
+            Update python-dotenv requirement from <0.10.6 to <0.11.1
+
+
 2.2.3 (2020-02-28)
 ------------------
 - Release version 2.2.3. [Bruno Rocha]
