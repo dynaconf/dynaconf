@@ -118,6 +118,13 @@ def raw_logger(level=None):
     return _logger(level)
 
 
+def get_logger(obj):
+    try:
+        return obj.logger
+    except AttributeError:
+        return raw_logger()
+
+
 RENAMED_VARS = {
     # old: new
     "DYNACONF_NAMESPACE": "ENV_FOR_DYNACONF",
@@ -271,6 +278,7 @@ def upperfy(key):
     Returns:
         The key as upper case but keeping the nested elements.
     """
+    key = str(key)
     if "__" in key:
         parts = key.split("__")
         return "__".join([parts[0].upper()] + parts[1:])
