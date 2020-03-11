@@ -112,8 +112,6 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
     if not filename.endswith(".py"):
         filename = "{0}.py".format(filename)
 
-    if filename in default_settings.SETTINGS_FILE_FOR_DYNACONF:
-        silent = True
     mod = types.ModuleType(filename.rstrip(".py"))
     mod.__file__ = filename
     mod._is_error = False
@@ -124,6 +122,8 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
         ) as config_file:
             exec(compile(config_file.read(), filename, "exec"), mod.__dict__)
     except IOError as e:
+        if not silent:
+            raise
         e.strerror = ("py_loader: error loading file (%s %s)\n") % (
             e.strerror,
             filename,
