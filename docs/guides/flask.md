@@ -144,7 +144,7 @@ The extensions will be loaded in order.
 
 ### Develoment extensions
 
-It is also possible to habe extensions that loads only in development environment .
+It is also possible to have extensions that loads only in development environment.
 
 ```toml
 [default]
