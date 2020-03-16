@@ -89,8 +89,8 @@ class FlaskDynaconf(object):
 
         kwargs.setdefault("ENVVAR_PREFIX_FOR_DYNACONF", "FLASK")
 
-        env_prefix = "{0}_ENV".format(
-            kwargs["ENVVAR_PREFIX_FOR_DYNACONF"]
+        env_prefix = f"{kwargs["ENVVAR_PREFIX_FOR_DYNACONF"]}_ENV".format(
+
         )  # FLASK_ENV
 
         kwargs.setdefault("ENV_SWITCHER_FOR_DYNACONF", env_prefix)

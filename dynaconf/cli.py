@@ -92,7 +92,7 @@ def import_settings(dotted_path):
         module, name = dotted_path.rsplit(".", 1)
     else:
         raise click.UsageError(
-            "invalid path to settings instance: {}".format(dotted_path)
+            f"invalid path to settings instance: {dotted_path}"
         )
     try:
         module = importlib.import_module(module)
@@ -136,7 +136,7 @@ def open_docs(ctx, param, value):  # pragma: no cover
         return
     url = "http://dynaconf.readthedocs.io/"
     webbrowser.open(url, new=2)
-    click.echo("{} opened in browser".format(url))
+    click.echo(f"{url} opened in browser")
     ctx.exit()
 
 
@@ -240,7 +240,7 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     env = env or settings.current_env.lower()
 
     loader = importlib.import_module(
-        "dynaconf.loaders.{}_loader".format(fileformat)
+        f"dynaconf.loaders.{fileformat}_loader"
     )
     # Turn foo=bar=zaz in {'foo': 'bar=zaz'}
     env_data = split_vars(_vars)
@@ -262,7 +262,7 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
         constants.ALL_EXTENSIONS + ("py",)
     ):  # pragma: no cover  # noqa
         settings_path = path
-        secrets_path = path.parent / ".secrets.{}".format(fileformat)
+        secrets_path = path.parent / f".secrets.{fileformat}"
         dotenv_path = path.parent / ".env"
         gitignore_path = path.parent / ".gitignore"
     else:
@@ -278,8 +278,8 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
             Path.touch(settings_path)
             secrets_path = None
         else:
-            settings_path = path / "settings.{}".format(fileformat)
-            secrets_path = path / ".secrets.{}".format(fileformat)
+            settings_path = path / f"settings.{fileformat}"
+            secrets_path = path / f".secrets.{fileformat}"
         dotenv_path = path / ".env"
         gitignore_path = path / ".gitignore"
 
@@ -290,13 +290,13 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
 
     if not y and settings_path and settings_path.exists():  # pragma: no cover
         click.confirm(
-            "{} exists do you want to overwrite it?".format(settings_path),
+            f"{settings_path} exists do you want to overwrite it?",
             abort=True,
         )
 
     if not y and secrets_path and secrets_path.exists():  # pragma: no cover
         click.confirm(
-            "{} exists do you want to overwrite it?".format(secrets_path),
+            f"{secrets_path} exists do you want to overwrite it?",
             abort=True,
         )
 
@@ -312,9 +312,7 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
         dotenv_cli.set_key(str(dotenv_path), "ENV_FOR_DYNACONF", env.upper())
     else:  # pragma: no cover
         click.echo(
-            ".env already exists please set ENV_FOR_DYNACONF={}".format(
-                env.upper()
-            )
+            f".env already exists please set ENV_FOR_DYNACONF={env.upper()}"
         )
 
     if wg:
@@ -338,7 +336,7 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
         dj_filename = dj_module.__file__
         if Path(dj_filename).exists():
             click.confirm(
-                "{} is found do you want to add dynaconf?".format(dj_filename),
+                f"{dj_filename} is found do you want to add dynaconf?",
                 abort=True,
             )
             with open(dj_filename, "a") as dj_file:
@@ -415,7 +413,7 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
     if not loader:
         data = settings.as_dict(env=env, internal=_all)
     else:
-        identifier = "{}_{}".format(loader, cur_env)
+        identifier = f"{loader}_{cur_env}"
         data = settings._loaded_by_loaders.get(identifier, {})
         data = data or settings._loaded_by_loaders.get(loader, {})
 
@@ -428,13 +426,12 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
         return "green"
 
     def format_setting(_k, _v):
-        return "{key}{data_type} {value}".format(
-            key=click.style(_k, bg=color(_k), fg="white"),
-            data_type=click.style(
-                "<{}>".format(type(_v).__name__), bg="bright_black", fg="white"
-            ),
-            value=pprint.pformat(_v),
+        key = click.style(_k, bg=color(_k), fg="white")
+        data_type = click.style(
+            "<{}>".format(type(_v).__name__), bg="bright_black", fg="white"
         )
+        value = pprint.pformat(_v)
+        return f"{key}{data_type} {value}"
 
     if not key:
         datalines = "\n".join(
@@ -505,7 +502,7 @@ def write(to, _vars, _secrets, path, env, y):
     """Writes data to specific source"""
     _vars = split_vars(_vars)
     _secrets = split_vars(_secrets)
-    loader = importlib.import_module("dynaconf.loaders.{}_loader".format(to))
+    loader = importlib.import_module(f"dynaconf.loaders.{to}_loader")
 
     if to in EXTS:
 
@@ -514,7 +511,7 @@ def write(to, _vars, _secrets, path, env, y):
 
         if str(path).endswith(constants.ALL_EXTENSIONS + ("py",)):
             settings_path = path
-            secrets_path = path.parent / ".secrets.{}".format(to)
+            secrets_path = path.parent / f".secrets.{to}"
         else:
             if to == "env":
                 if str(path) in (".env", "./.env"):  # pragma: no cover
@@ -529,14 +526,14 @@ def write(to, _vars, _secrets, path, env, y):
                 secrets_path = None
                 _vars.update(_secrets)
             else:
-                settings_path = path / "settings.{}".format(to)
-                secrets_path = path / ".secrets.{}".format(to)
+                settings_path = path / f"settings.{to}"
+                secrets_path = path / f".secrets.{to}"
 
         if (
             _vars and not y and settings_path and settings_path.exists()
         ):  # pragma: no cover  # noqa
             click.confirm(
-                "{} exists do you want to overwrite it?".format(settings_path),
+                f"{settings_path} exists do you want to overwrite it?",
                 abort=True,
             )
 
@@ -544,7 +541,7 @@ def write(to, _vars, _secrets, path, env, y):
             _secrets and not y and secrets_path and secrets_path.exists()
         ):  # pragma: no cover  # noqa
             click.confirm(
-                "{} exists do you want to overwrite it?".format(secrets_path),
+                f"{secrets_path} exists do you want to overwrite it?",
                 abort=True,
             )
 
@@ -556,18 +553,18 @@ def write(to, _vars, _secrets, path, env, y):
 
         if _vars and settings_path:
             loader.write(settings_path, _vars, merge=True)
-            click.echo("Data successful written to {}".format(settings_path))
+            click.echo(f"Data successful written to {settings_path}")
 
         if _secrets and secrets_path:
             loader.write(secrets_path, _secrets, merge=True)
-            click.echo("Data successful written to {}".format(secrets_path))
+            click.echo(f"Data successful written to {secrets_path}")
 
     else:  # pragma: no cover
         # lets write to external source
         with settings.using_env(env):
             # make sure we're in the correct environment
             loader.write(settings, _vars, **_secrets)
-        click.echo("Data successful written to {}".format(to))
+        click.echo(f"Data successful written to {to}")
 
 
 @main.command()
@@ -588,7 +585,7 @@ def validate(path):  # pragma: no cover
 
     if not path.exists():  # pragma: no cover  # noqa
         click.echo(
-            click.style("{} not found".format(path), fg="white", bg="red")
+            click.style(f"{path} not found", fg="white", bg="red")
         )
         sys.exit(1)
 
@@ -600,7 +597,7 @@ def validate(path):  # pragma: no cover
             if not isinstance(data, dict):  # pragma: no cover
                 click.echo(
                     click.style(
-                        "Invalid rule for parameter '{}'".format(name),
+                        f"Invalid rule for parameter '{name}'",
                         fg="white",
                         bg="yellow",
                     )
@@ -609,7 +606,7 @@ def validate(path):  # pragma: no cover
                 data.setdefault("env", env)
                 click.echo(
                     click.style(
-                        "Validating '{}' with '{}'".format(name, data),
+                        f"Validating '{name}' with '{data}'",
                         fg="white",
                         bg="blue",
                     )
@@ -619,7 +616,7 @@ def validate(path):  # pragma: no cover
                 except ValidationError as e:
                     click.echo(
                         click.style(
-                            "Error: {}".format(e), fg="white", bg="red"
+                            f"Error: {e}", fg="white", bg="red"
                         )
                     )
                     success = False

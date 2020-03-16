@@ -221,7 +221,7 @@ class Settings(object):
         """Allow getting variables as dict keys `settings['KEY']`"""
         value = self.get(item, default=empty)
         if value is empty:
-            raise KeyError("{0} does not exist".format(item))
+            raise KeyError(f"{item} does not exist")
         return value
 
     def __setitem__(self, key, value):
@@ -443,7 +443,7 @@ class Settings(object):
             keep {bool} -- Keep pre-existing values (default: {False})
             kwargs {dict} -- Passed directly to new instance.
         """
-        cache_key = "{}_{}_{}".format(env, keep, kwargs)
+        cache_key = f"{env}_{keep}_{kwargs}"
         if cache_key in self._env_cache:
             self.logger.debug("Settings instance in env: %s from cache", env)
             return self._env_cache[cache_key]

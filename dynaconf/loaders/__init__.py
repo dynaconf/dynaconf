@@ -160,7 +160,7 @@ def settings_loader(
         py_loader.load(
             obj,
             env_mod_file,
-            identifier="py_{0}".format(env.upper()),
+            identifier=f"py_{env.upper()}",
             silent=True,
             key=key,
         )
@@ -177,7 +177,7 @@ def enable_external_loaders(obj):
     """
     for name, loader in ct.EXTERNAL_LOADERS.items():
         enabled = getattr(
-            obj, "{}_ENABLED_FOR_DYNACONF".format(name.upper()), False
+            obj, f"{name.upper()}_ENABLED_FOR_DYNACONF", False
         )
         if (
             enabled
@@ -193,7 +193,7 @@ def write(filename, data, env=None):
     loader_name = "{0}_loader".format(filename.rpartition(".")[-1])
     loader = globals().get(loader_name)
     if not loader:
-        raise IOError("{0} cannot be found.".format(loader_name))
+        raise IOError(f"{loader_name} cannot be found.")
 
     data = DynaBox(data).to_dict()
     if loader is not py_loader and env and env not in data:
