@@ -428,7 +428,7 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
     def format_setting(_k, _v):
         key = click.style(_k, bg=color(_k), fg="white")
         data_type = click.style(
-            "<{}>".format(type(_v).__name__), bg="bright_black", fg="white"
+            f"<{type(_v).__name__}>", bg="bright_black", fg="white"
         )
         value = pprint.pformat(_v)
         return f"{key}{data_type} {value}"

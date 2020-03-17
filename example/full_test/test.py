@@ -50,7 +50,7 @@ EXPECTED = {
 
 for k, v in EXPECTED.items():
     current = settings.get(k)
-    assert current == v, "{0} is {1} expected {2}".format(k, current, v)
+    assert current == v, f"{k} is {current} expected {v}"
 
 print("store:", settings.store)
 print("loaders:", settings.loaded_by_loaders)

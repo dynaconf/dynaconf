@@ -44,7 +44,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         obj.logger.debug("Sff loader: %s:%s", key, value)
         obj.set(key, value)
     else:
-        obj.logger.debug("Sff loader: loading: {0}".format(data))
+        obj.logger.debug(f"Sff loader: loading: {data}")
         obj.update(data)
 
     obj._loaded_files.append(found_file)

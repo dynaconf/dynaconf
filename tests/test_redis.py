@@ -21,7 +21,7 @@ def docker_redis(docker_services):
     public_port = docker_services.wait_for_service(
         "redis", 6379, check_server=custom_checker
     )
-    url = "http://{docker_services.docker_ip}:{public_port}".format(**locals())
+    url = f"http://{docker_services.docker_ip}:{public_port}"
     return url
 
 

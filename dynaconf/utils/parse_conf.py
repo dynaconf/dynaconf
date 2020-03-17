@@ -41,9 +41,7 @@ class MetaValue:
         self.value = parse_conf_data(value, tomlfy=True)
 
     def __repr__(self):
-        return "{_class}({value}) on {_id}".format(
-            _class=self.__class__.__name__, value=self.value, _id=id(self)
-        )
+        return f"{self.__class__.__name__}({self.value}) on {id(self)}"
 
     def unwrap(self):
         return self.value
@@ -173,11 +171,11 @@ class Lazy:
 
     def __repr__(self):
         """Give the quoted str representation"""
-        return "'@{self.formatter} {self.value}'".format(self=self)
+        return f"'@{self.formatter} {self.value}'"
 
     def _dynaconf_encode(self):
         """Encodes this object values to be serializable to json"""
-        return "@{self.formatter} {self.value}".format(self=self)
+        return f"@{self.formatter} {self.value}"
 
 
 def try_to_encode(value, callback=str):
@@ -226,7 +224,7 @@ converters = {
 def parse_with_toml(data):
     """Uses TOML syntax to parse data"""
     try:
-        return toml.loads("key={}".format(data), DynaBox).key
+        return toml.loads(f"key={data}", DynaBox).key
     except (toml.TomlDecodeError, BoxKeyError):
         return data
 

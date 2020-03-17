@@ -83,7 +83,7 @@ class BaseLoader(object):
                     ) as open_file:
                         source_data = self.file_reader(open_file)
                     self.obj.logger.debug(
-                        "{}_loader: {}".format(self.identifier, source_file)
+                        f"{self.identifier}_loader: {source_file}"
                     )
                 except IOError:
                     self.obj.logger.debug(

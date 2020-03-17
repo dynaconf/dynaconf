@@ -20,7 +20,7 @@ for key, value in assertions.items():
     assert found == getattr(settings, key)
     assert (
         found == value
-    ), "expected: {key}: [{value}] found: [{found}]".format(**locals())
+    ), f"expected: {key}: [{value}] found: [{found}]"
 
 
 assertions = {"SERVER": "fromenv.com", "USERNAME": "foo"}
@@ -30,7 +30,7 @@ for key, value in assertions.items():
     assert found == getattr(settings.from_env("development"), key)
     assert (
         found == value
-    ), "expected: {key}: [{value}] found: [{found}]".format(**locals())
+    ), f"expected: {key}: [{value}] found: [{found}]"
 
 assertions = {
     "SERVER": "fromenv.com",
@@ -43,4 +43,4 @@ for key, value in assertions.items():
     assert found == getattr(settings.from_env("development", keep=True), key)
     assert (
         found == value
-    ), "expected: {key}: [{value}] found: [{found}]".format(**locals())
+    ), f"expected: {key}: [{value}] found: [{found}]"

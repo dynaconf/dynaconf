@@ -101,11 +101,11 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
     if filename in [item.filename for item in inspect.stack()]:
         raise ImportError(
             "Looks like you are loading dynaconf "
-            "from inside the {} file and then it is trying "
+            f"from inside the {filename} file and then it is trying "
             "to load itself entering in a circular reference "
             "problem. To solve it you have to "
             "invoke your program from another root folder "
-            "or rename your program file.".format(filename)
+            "or rename your program file."
         )
 
     _find_file = getattr(obj, "find_file", find_file)

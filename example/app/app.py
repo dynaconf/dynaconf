@@ -18,4 +18,4 @@ for key, value in assertions.items():
     assert found == getattr(settings, key)
     assert (
         found == value
-    ), "expected: {key}: [{value}] found: [{found}]".format(**locals())
+    ), f"expected: {key}: [{value}] found: [{found}]"

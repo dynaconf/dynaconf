@@ -154,8 +154,8 @@ def settings_loader(
             global_filename = tmpl.format("global", filename, extension)
             global_mod_file = os.path.join(dirname, global_filename)
         else:
-            env_mod_file = "{0}_{1}".format(env.lower(), mod_file)
-            global_mod_file = "{0}_{1}".format("global", mod_file)
+            env_mod_file = f"{env.lower()}_{mod_file}"
+            global_mod_file = f"global_{mod_file}"
 
         py_loader.load(
             obj,
@@ -190,7 +190,7 @@ def enable_external_loaders(obj):
 
 def write(filename, data, env=None):
     """Writes `data` to `filename` infers format by file extension."""
-    loader_name = "{0}_loader".format(filename.rpartition(".")[-1])
+    loader_name = f"{filename.rpartition('.')[-1]}_loader"
     loader = globals().get(loader_name)
     if not loader:
         raise IOError(f"{loader_name} cannot be found.")
