@@ -19,7 +19,7 @@ def load(obj, settings_module, identifier="py", silent=False, key=None):
     mod, loaded_from = get_module(obj, settings_module, silent)
 
     if mod and loaded_from:
-        obj.logger.debug("py_loader: {}".format(mod))
+        obj.logger.debug(f"py_loader: {mod}")
     else:
         obj.logger.debug(
             "py_loader: %s (Ignoring, Not Found)", settings_module
@@ -110,7 +110,7 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
 
     _find_file = getattr(obj, "find_file", find_file)
     if not filename.endswith(".py"):
-        filename = "{0}.py".format(filename)
+        filename = f"{filename}.py"
 
     if filename in default_settings.SETTINGS_FILE_FOR_DYNACONF:
         silent = True
@@ -154,7 +154,7 @@ def write(settings_path, settings_data, merge=True):
     ) as f:
         f.writelines(
             [
-                "{} = {}\n".format(upperfy(k), repr(v))
+                f"{upperfy(k)} = {repr(v)}\n"
                 for k, v in settings_data.items()
             ]
         )

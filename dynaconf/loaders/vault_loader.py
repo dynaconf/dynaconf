@@ -128,6 +128,6 @@ def list_envs(obj, path=""):
     client = get_client(obj)
     path = path or obj.get("VAULT_PATH_FOR_DYNACONF")
     try:
-        return client.list("/secret/metadata/{}".format(path))["data"]["keys"]
+        return client.list(f"/secret/metadata/{path}")["data"]["keys"]
     except TypeError:
         return []

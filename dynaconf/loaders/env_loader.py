@@ -24,10 +24,10 @@ def load_from_env(identifier, key, env, obj, silent):
     env_ = ""
     if env is not False:
         env = env.upper()
-        env_ = "{0}_".format(env)
+        env_ = f"{env}_"
     try:
         if key:
-            value = environ.get("{0}{1}".format(env_, key))
+            value = environ.get(f"{env_}{key}")
             if value:
                 obj.logger.debug(
                     "env_loader: loading by key: %s:%s (%s:%s)",
@@ -51,7 +51,7 @@ def load_from_env(identifier, key, env, obj, silent):
                 obj.update(data, loader_identifier=identifier)
     # box.exceptions.BoxKeyError
     except Exception as e:  # pragma: no cover
-        e.message = ("env_loader: Error ({0})").format(str(e))
+        e.message = (f"env_loader: Error ({str(e)})")
         if silent:
             obj.logger.error(str(e))
         else:
