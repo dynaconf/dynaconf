@@ -2,7 +2,8 @@ from dynaconf import settings
 
 
 print(
-    f"# 1 all values in {settings.DEFAULT_ENV_FOR_DYNACONF} + {settings.current_env}: env of yaml file:"
+    f"# 1 all values in {settings.DEFAULT_ENV_FOR_DYNACONF}"
+    f"{settings.current_env}: env of yaml file:"
 )
 assert settings.current_env == "DEVELOPMENT"
 print("HOST::", settings.HOST)
