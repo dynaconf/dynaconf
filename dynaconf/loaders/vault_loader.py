@@ -65,19 +65,14 @@ def load(obj, env=None, silent=None, key=None):
                 value = parse_conf_data(data.get(key), tomlfy=True)
                 if value:
                     obj.logger.debug(
-                        "vault_loader: loading by key: %s:%s (%s:%s)",
-                        key,
-                        "****",
-                        IDENTIFIER,
-                        path,
+                        f"vault_loader: loading by key: {key}:****"
+                        f"({IDENTIFIER}:{path})"
                     )
                     obj.set(key, value)
             elif data:
                 obj.logger.debug(
-                    "vault_loader: loading: %s (%s:%s)",
-                    list(data.keys()),
-                    IDENTIFIER,
-                    path,
+                    f"vault_loader: loading: {list(data.keys())} "
+                    f"({IDENTIFIER}:{path})",
                 )
                 obj.update(data, loader_identifier=IDENTIFIER, tomlfy=True)
         except Exception as e:

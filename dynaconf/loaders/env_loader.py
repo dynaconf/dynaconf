@@ -30,11 +30,8 @@ def load_from_env(identifier, key, env, obj, silent):
             value = environ.get(f"{env_}{key}")
             if value:
                 obj.logger.debug(
-                    "env_loader: loading by key: %s:%s (%s:%s)",
-                    key,
-                    value,
-                    identifier,
-                    env,
+                    f"env_loader: loading by key: {key}:{value} "
+                    f"({identifier}:{env})"
                 )
                 obj.set(key, value, loader_identifier=identifier, tomlfy=True)
         else:
@@ -46,7 +43,7 @@ def load_from_env(identifier, key, env, obj, silent):
             }
             if data:
                 obj.logger.debug(
-                    "env_loader: loading: %s (%s:%s)", data, identifier, env
+                    f"env_loader: loading: {data} ({identifier}:{env})"
                 )
                 obj.update(data, loader_identifier=identifier)
     # box.exceptions.BoxKeyError

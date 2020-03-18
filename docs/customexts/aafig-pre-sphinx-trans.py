@@ -44,7 +44,7 @@ def get_basename(text, options, prefix='aafig'):
         del options['format']
     hashkey = text.encode('utf-8') + str(options)
     id = sha(hashkey).hexdigest()
-    return '%s-%s' % (prefix, id)
+    return f'{prefix}-{id}'
 
 
 class AafigError(SphinxError):
@@ -135,7 +135,7 @@ def render_aafigure(self, text, options):
     """
 
     fname = get_basename(text, options)
-    fname = '%s.%s' % (get_basename(text, options), options['format'])
+    fname = f"{get_basename(text, options)}.{options['format']}"
     if True: #TODO: hasattr(self.builder, 'imgpath'):
         # HTML
         #TODO relfn = posixpath.join(self.builder.imgpath, fname)
@@ -146,7 +146,7 @@ def render_aafigure(self, text, options):
         # LaTeX
         relfn = fname
         outfn = path.join(self.builder.outdir, fname)
-    metadata_fname = '%s.aafig' % outfn
+    metadata_fname = f'{outfn}.aafig'
 
     try:
         if path.isfile(outfn):
@@ -196,13 +196,11 @@ def render_html(self, node, text, options, imgcls=None):
     if fname is None:
         self.body.append(self.encode(text))
     else:
-        imgcss = imgcls and 'class="%s"' % imgcls or ''
+        imgcss = imgcls and f'class="{imgcls}"' or ''
         if options['format'].lower() == 'svg':
-            self.body.append('<object type="image/svg+xml" data="%s" %s %s />'
-                    % (fname, extra, imgcss))
+            self.body.append(f'<object type="image/svg+xml" data="{fname}" {extra} {imgcss} />')
         else:
-            self.body.append('<img src="%s" alt="%s" %s/>\n' %
-                    (fname, self.encode(text).strip(), imgcss))
+            self.body.append(f'<img src="{fname}" alt="{self.encode(text).strip()}" {imgcss}/>\n')
     self.body.append('</p>\n')
     raise nodes.SkipNode
 
@@ -235,7 +233,7 @@ def render_latex(self, node, text, options):
         raise nodes.SkipNode
 
     if fname is not None:
-        self.body.append('\\includegraphics[]{%s}' % fname)
+        self.body.append(f'\\includegraphics[]{{fname}}')
     raise nodes.SkipNode
 
 

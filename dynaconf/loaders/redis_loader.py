@@ -35,12 +35,8 @@ def load(obj, env=None, silent=True, key=None):
                 value = redis.hget(holder.upper(), key)
                 if value:
                     obj.logger.debug(
-                        "redis_loader: loading by key: %s:%s (%s:%s)",
-                        key,
-                        value,
-                        IDENTIFIER,
-                        holder,
-                    )
+                        f"redis_loader: loading by key: {key}:{value} "
+                        f"({IDENTIFIER}:{holder})")
                 if value:
                     parsed_value = parse_conf_data(value, tomlfy=True)
                     if parsed_value:
@@ -52,10 +48,8 @@ def load(obj, env=None, silent=True, key=None):
                 }
                 if data:
                     obj.logger.debug(
-                        "redis_loader: loading: %s (%s:%s)",
-                        data,
-                        IDENTIFIER,
-                        holder,
+                        f"redis_loader: loading: {data} ({IDENTIFIER}:"
+                        f"{holder})"
                     )
                     obj.update(data, loader_identifier=IDENTIFIER)
         except Exception as e:

@@ -21,9 +21,7 @@ def load(obj, settings_module, identifier="py", silent=False, key=None):
     if mod and loaded_from:
         obj.logger.debug(f"py_loader: {mod}")
     else:
-        obj.logger.debug(
-            "py_loader: %s (Ignoring, Not Found)", settings_module
-        )
+        obj.logger.debug(f"py_loader: {settings_module} (Ignoring, Not Found)")
         return
 
     load_from_python_object(obj, mod, settings_module, key, identifier)
@@ -40,11 +38,11 @@ def load_from_python_object(
         if setting[:3].isupper():
             if key is None or key == setting:
                 setting_value = getattr(mod, setting)
+                secret = ("*****"
+                          if "secret" in settings_module
+                          else setting_value)
                 obj.logger.debug(
-                    "py_loader: loading %s: %s (%s)",
-                    setting,
-                    "*****" if "secret" in settings_module else setting_value,
-                    identifier,
+                    f"py_loader: loading {setting}: {secret} ({identifier})",
                 )
                 obj.set(
                     setting,
@@ -82,11 +80,11 @@ def try_to_load_from_py_module_name(
 def get_module(obj, filename, silent=False):
     logger = raw_logger()
     try:
-        logger.debug("Trying to import %s", filename)
+        logger.debug(f"Trying to import {filename}")
         mod = importlib.import_module(filename)
         loaded_from = "module"
     except (ImportError, TypeError):
-        logger.debug("Cant import %s trying to load from file", filename)
+        logger.debug(f"Cant import {filename} trying to load from file")
         mod = import_from_filename(obj, filename, silent=silent)
         if mod and not mod._is_error:
             loaded_from = "filename"
@@ -124,10 +122,8 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
         ) as config_file:
             exec(compile(config_file.read(), filename, "exec"), mod.__dict__)
     except IOError as e:
-        e.strerror = ("py_loader: error loading file (%s %s)\n") % (
-            e.strerror,
-            filename,
-        )
+        e.strerror = (f"py_loader: error loading file "
+                      f"({e.strerror} {filename})\n")
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return
         raw_logger().debug(e.strerror)

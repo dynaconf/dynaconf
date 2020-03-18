@@ -31,7 +31,7 @@ def default_loader(obj, defaults=None):
     for key in all_keys:
         if not obj.exists(key):
             value = defaults.get(key, default_settings_values.get(key))
-            obj.logger.debug("loading: %s:%s", key, value)
+            obj.logger.debug(f"loading: {key}:{value}")
             obj.set(key, value)
 
     # start dotenv to get default env vars from there
@@ -54,7 +54,7 @@ def default_loader(obj, defaults=None):
         )
 
         if env_value != "_not_found":
-            obj.logger.debug("overriding from envvar: %s:%s", key, env_value)
+            obj.logger.debug(f"overriding from envvar: {key}:{env_value}")
             obj.set(key, env_value, tomlfy=True)
 
 
@@ -184,7 +184,7 @@ def enable_external_loaders(obj):
             and enabled not in false_values
             and loader not in obj.LOADERS_FOR_DYNACONF
         ):  # noqa
-            obj.logger.debug("loaders: Enabling %s", loader)
+            obj.logger.debug(f"loaders: Enabling {loader}")
             obj.LOADERS_FOR_DYNACONF.insert(0, loader)
 
 

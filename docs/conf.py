@@ -58,7 +58,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'dynaconf'
-copyright = '2015-%s, Bruno Rocha' % datetime.date.today().year
+copyright = f'2015-{datetime.date.today().year}, Bruno Rocha'
 author = 'Bruno Rocha'
 
 # The version info for the project you're documenting, acts as replacement for

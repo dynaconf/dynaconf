@@ -37,9 +37,8 @@ class BaseLoader(object):
     def warn_not_installed(obj, identifier):  # pragma: no cover
         if identifier not in obj._not_installed_warnings:
             logger.warning(
-                "%(ident)s support is not installed in your environment. "
-                "`pip install dynaconf[%(ident)s]`",
-                {"ident": identifier},
+                f"{identifier} support is not installed in your environment. "
+                f"`pip install dynaconf[{identifier}]`"
             )
         obj._not_installed_warnings.append(identifier)
 
@@ -87,7 +86,8 @@ class BaseLoader(object):
                     )
                 except IOError:
                     self.obj.logger.debug(
-                        f"{self.identifier}_loader: {source_file} (Ignored, file not Found)"
+                        f"{self.identifier}_loader: {source_file} "
+                        "(Ignored, file not Found)"
                     )
                     source_data = None
             else:
@@ -126,11 +126,8 @@ class BaseLoader(object):
                     data = source_data[env] or {}
                 except KeyError:
                     if env not in base_envs:
-                        message = "%s_loader: %s env not defined in %s" % (
-                            self.identifier,
-                            env,
-                            source_file,
-                        )
+                        message = (f"{self.identifier}_loader: {env} env not"
+                                   f"defined in {source_file}")
                         if silent:
                             self.obj.logger.warning(message)
                         else:

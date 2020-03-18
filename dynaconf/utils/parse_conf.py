@@ -275,13 +275,13 @@ def parse_conf_data(data, tomlfy=False):
 
 def unparse_conf_data(value):
     if isinstance(value, bool):
-        return "@bool %s" % value
+        return f"@bool {value}"
     elif isinstance(value, int):
-        return "@int %s" % value
+        return f"@int {value}"
     elif isinstance(value, float):
-        return "@float %s" % value
+        return f"@float {value}"
     elif isinstance(value, (list, dict)):
-        return "@json %s" % json.dumps(value)
+        return f"@json {json.dumps(value)}"
     elif isinstance(value, Lazy):
         return try_to_encode(value)
     elif value is None:

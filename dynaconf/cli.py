@@ -403,7 +403,7 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
 
     click.echo(
         click.style(
-            "Working in %s environment " % cur_env,
+            f"Working in {cur_env} environment ",
             bold=True,
             bg="bright_blue",
             fg="bright_white",
