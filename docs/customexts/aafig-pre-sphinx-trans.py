@@ -198,11 +198,14 @@ def render_html(self, node, text, options, imgcls=None):
     else:
         imgcss = imgcls and f'class="{imgcls}"' or ''
         if options['format'].lower() == 'svg':
-            self.body.append(f'<object type="image/svg+xml" data="{fname}" {extra} {imgcss} />')
+            self.body.append(f'<object type="image/svg+xml" data="{fname}"'
+                             f' {extra} {imgcss} />')
         else:
-            self.body.append(f'<img src="{fname}" alt="{self.encode(text).strip()}" {imgcss}/>\n')
+            self.body.append(f'<img src="{fname}" '
+                             f'alt="{self.encode(text).strip()}" {imgcss}/>\n')
     self.body.append('</p>\n')
     raise nodes.SkipNode
+
 
 def html_visit(self, node):
     #print node.attributes
@@ -221,8 +224,10 @@ def html_visit(self, node):
     image_node['src'] = fname # FIXME: no lo está tomando =/
     # TODO: improve image_node['alt']
 
+
 def html_depart(self, node):
     pass
+
 
 def render_latex(self, node, text, options):
     try:

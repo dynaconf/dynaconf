@@ -98,8 +98,7 @@ class LazySettings(LazyObject):
             self._setup()
         if name in self._wrapped._deleted:  # noqa
             raise AttributeError(
-               f"Attribute {name} was deleted, "
-               "or belongs to different env"
+                f"Attribute {name} was deleted, " "or belongs to different env"
             )
         if (
             name.isupper()
@@ -754,7 +753,7 @@ class Settings(object):
         tomlfy=False,
         is_secret=False,
         merge=False,
-        **kwargs
+        **kwargs,
     ):
         """
         Update values in the current settings object without saving in stores::
@@ -791,7 +790,9 @@ class Settings(object):
         """Merge the new value being set with the existing value before set"""
 
         def _log_before_merging(_value):
-            self.logger.debug(f"Merging existing {key}: {existing} with new: {_value}")
+            self.logger.debug(
+                f"Merging existing {key}: " f"{existing} with new: {_value}"
+            )
 
         def _log_after_merge(_value):
             self.logger.debug(f"{key} merged to {_value}")
@@ -961,7 +962,9 @@ class Settings(object):
                     )
                     already_loaded.add(path)
             if not already_loaded:
-                self.logger.warning(f"Not able to locate the files {files} to load")
+                self.logger.warning(
+                    f"Not able to locate the files {files} " "to load"
+                )
 
     @property
     def _root_path(self):

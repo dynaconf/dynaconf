@@ -167,9 +167,11 @@ def render_html(self, node, text, options, imgcls=None):
     else:
         imgcss = imgcls and f'class="{imgcls}"' or ''
         if options['format'].lower() == 'svg':
-            self.body.append(f'<object type="image/svg+xml" data="{fname}" {extra} {imgcss} />')
+            self.body.append(f'<object type="image/svg+xml" data="{fname}"'
+                             f' {extra} {imgcss} />')
         else:
-            self.body.append(f'<img src="{fname}" alt="{self.encode(text).strip()}" {imgcss}/>\n')
+            self.body.append(f'<img src="{fname}" '
+                             f'alt="{self.encode(text).strip()}" {imgcss}/>\n')
     self.body.append('</p>\n')
     raise nodes.SkipNode
 

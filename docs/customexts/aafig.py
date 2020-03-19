@@ -126,9 +126,10 @@ def render_aafig_images(app, doctree):
         if format in format_map:
             options['format'] = format_map[format]
         else:
-            app.builder.warn(f'unsupported builder format "{format}", please '
-                    'add a custom entry in aafig_format config option '
-                    'for this builder')
+            app.builder.warn(
+                f'unsupported builder format "{format}", please '
+                'add a custom entry in aafig_format config option '
+                'for this builder')
             img.replace_self(nodes.literal_block(text, text))
             continue
         if options['format'] is None:
@@ -168,10 +169,12 @@ def render_aafigure(app, text, options):
     else:
         # Non-HTML
         if app.builder.format != 'latex':
-            app.builder.warn(f'aafig: the builder format {app.builder.format} is not officially '
-                    'supported, aafigure images could not work. Please report '
-                    'problems and working builder to avoid this warning in '
-                    'the future')
+            app.builder.warn(
+                f'aafig: the builder format {app.builder.format} '
+                'is not officially supported, aafigure images '
+                'could not work. Please report '
+                'problems and working builder to avoid this warning in '
+                'the future')
         relfn = fname
         outfn = path.join(app.builder.outdir, fname)
     metadata_fname = f'{outfn}.aafig'
