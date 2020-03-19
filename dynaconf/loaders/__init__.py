@@ -176,9 +176,7 @@ def enable_external_loaders(obj):
     looks forenv variables like `REDIS_ENABLED_FOR_DYNACONF`
     """
     for name, loader in ct.EXTERNAL_LOADERS.items():
-        enabled = getattr(
-            obj, f"{name.upper()}_ENABLED_FOR_DYNACONF", False
-        )
+        enabled = getattr(obj, f"{name.upper()}_ENABLED_FOR_DYNACONF", False)
         if (
             enabled
             and enabled not in false_values

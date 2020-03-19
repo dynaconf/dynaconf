@@ -126,8 +126,10 @@ class BaseLoader(object):
                     data = source_data[env] or {}
                 except KeyError:
                     if env not in base_envs:
-                        message = (f"{self.identifier}_loader: {env} env not"
-                                   f"defined in {source_file}")
+                        message = (
+                            f"{self.identifier}_loader: {env} env not"
+                            f"defined in {source_file}"
+                        )
                         if silent:
                             self.obj.logger.warning(message)
                         else:
@@ -145,7 +147,7 @@ class BaseLoader(object):
                     key = upperfy(key)
 
                 is_secret = "secret" in source_file
-                _keys = list(data.keys()) if is_secret else data,
+                _keys = (list(data.keys()) if is_secret else data,)
                 _path = os.path.split(source_file)[-1]
 
                 self.obj.logger.debug(

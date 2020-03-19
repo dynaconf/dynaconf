@@ -239,9 +239,7 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
 
     env = env or settings.current_env.lower()
 
-    loader = importlib.import_module(
-        f"dynaconf.loaders.{fileformat}_loader"
-    )
+    loader = importlib.import_module(f"dynaconf.loaders.{fileformat}_loader")
     # Turn foo=bar=zaz in {'foo': 'bar=zaz'}
     env_data = split_vars(_vars)
     _secrets = split_vars(_secrets)
@@ -290,14 +288,12 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
 
     if not y and settings_path and settings_path.exists():  # pragma: no cover
         click.confirm(
-            f"{settings_path} exists do you want to overwrite it?",
-            abort=True,
+            f"{settings_path} exists do you want to overwrite it?", abort=True,
         )
 
     if not y and secrets_path and secrets_path.exists():  # pragma: no cover
         click.confirm(
-            f"{secrets_path} exists do you want to overwrite it?",
-            abort=True,
+            f"{secrets_path} exists do you want to overwrite it?", abort=True,
         )
 
     if settings_path and settings_data:
@@ -584,9 +580,7 @@ def validate(path):  # pragma: no cover
         path = path / "dynaconf_validators.toml"
 
     if not path.exists():  # pragma: no cover  # noqa
-        click.echo(
-            click.style(f"{path} not found", fg="white", bg="red")
-        )
+        click.echo(click.style(f"{path} not found", fg="white", bg="red"))
         sys.exit(1)
 
     validation_data = toml.load(open(str(path)))
@@ -615,9 +609,7 @@ def validate(path):  # pragma: no cover
                     Validator(name, **data).validate(settings)
                 except ValidationError as e:
                     click.echo(
-                        click.style(
-                            f"Error: {e}", fg="white", bg="red"
-                        )
+                        click.style(f"Error: {e}", fg="white", bg="red")
                     )
                     success = False
 

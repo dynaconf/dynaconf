@@ -104,11 +104,10 @@ def get_local_filename(filename):
     Returns:
         [str] -- The same name or path with `.local.` added.
     """
-    name, _, extension = os.path.\
-        basename(str(filename)).\
-        rpartition(os.path.extsep)
+    name, _, extension = os.path.basename(str(filename)).rpartition(
+        os.path.extsep
+    )
 
     return os.path.join(
-        os.path.dirname(str(filename)),
-        f"{name}.local.{extension}"
+        os.path.dirname(str(filename)), f"{name}.local.{extension}"
     )

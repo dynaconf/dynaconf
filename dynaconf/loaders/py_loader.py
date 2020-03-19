@@ -38,9 +38,9 @@ def load_from_python_object(
         if setting[:3].isupper():
             if key is None or key == setting:
                 setting_value = getattr(mod, setting)
-                secret = ("*****"
-                          if "secret" in settings_module
-                          else setting_value)
+                secret = (
+                    "*****" if "secret" in settings_module else setting_value
+                )
                 obj.logger.debug(
                     f"py_loader: loading {setting}: {secret} ({identifier})",
                 )
@@ -122,8 +122,9 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
         ) as config_file:
             exec(compile(config_file.read(), filename, "exec"), mod.__dict__)
     except IOError as e:
-        e.strerror = (f"py_loader: error loading file "
-                      f"({e.strerror} {filename})\n")
+        e.strerror = (
+            f"py_loader: error loading file " f"({e.strerror} {filename})\n"
+        )
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return
         raw_logger().debug(e.strerror)
@@ -149,8 +150,5 @@ def write(settings_path, settings_data, merge=True):
         encoding=default_settings.ENCODING_FOR_DYNACONF,
     ) as f:
         f.writelines(
-            [
-                f"{upperfy(k)} = {repr(v)}\n"
-                for k, v in settings_data.items()
-            ]
+            [f"{upperfy(k)} = {repr(v)}\n" for k, v in settings_data.items()]
         )

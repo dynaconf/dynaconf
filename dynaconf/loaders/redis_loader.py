@@ -36,7 +36,8 @@ def load(obj, env=None, silent=True, key=None):
                 if value:
                     obj.logger.debug(
                         f"redis_loader: loading by key: {key}:{value} "
-                        f"({IDENTIFIER}:{holder})")
+                        f"({IDENTIFIER}:{holder})"
+                    )
                 if value:
                     parsed_value = parse_conf_data(value, tomlfy=True)
                     if parsed_value:

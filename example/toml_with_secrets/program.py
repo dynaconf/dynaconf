@@ -18,9 +18,7 @@ assertions = {
 for key, value in assertions.items():
     found = settings.get(key)
     assert found == getattr(settings, key)
-    assert (
-        found == value
-    ), f"expected: {key}: [{value}] found: [{found}]"
+    assert found == value, f"expected: {key}: [{value}] found: [{found}]"
 
 
 assertions = {"SERVER": "fromenv.com", "USERNAME": "foo"}
@@ -28,9 +26,7 @@ assertions = {"SERVER": "fromenv.com", "USERNAME": "foo"}
 for key, value in assertions.items():
     found = settings.from_env("development").get(key)
     assert found == getattr(settings.from_env("development"), key)
-    assert (
-        found == value
-    ), f"expected: {key}: [{value}] found: [{found}]"
+    assert found == value, f"expected: {key}: [{value}] found: [{found}]"
 
 assertions = {
     "SERVER": "fromenv.com",
@@ -41,6 +37,4 @@ assertions = {
 for key, value in assertions.items():
     found = settings.from_env("development", keep=True).get(key)
     assert found == getattr(settings.from_env("development", keep=True), key)
-    assert (
-        found == value
-    ), f"expected: {key}: [{value}] found: [{found}]"
+    assert found == value, f"expected: {key}: [{value}] found: [{found}]"

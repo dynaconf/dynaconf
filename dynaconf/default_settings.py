@@ -49,8 +49,9 @@ def start_dotenv(obj=None, root_path=None):
         or getattr(obj, "_root_path", None)
         or get("ROOT_PATH_FOR_DYNACONF")
     )
-    raw_logger().debug("Starting Dynaconf Dotenv for "
-                       f"{root_path if root_path else 'Base'}")
+    raw_logger().debug(
+        "Starting Dynaconf Dotenv for " f"{root_path if root_path else 'Base'}"
+    )
 
     dotenv_path = (
         obj.get("DOTENV_PATH_FOR_DYNACONF")

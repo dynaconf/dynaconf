@@ -78,6 +78,4 @@ assertions = {
 for key, value in assertions.items():
     found = settings.get(key)
     assert found == getattr(settings, key)
-    assert (
-        found == value
-    ), f"expected: {key}: [{value}] found: [{found}]"
+    assert found == value, f"expected: {key}: [{value}] found: [{found}]"

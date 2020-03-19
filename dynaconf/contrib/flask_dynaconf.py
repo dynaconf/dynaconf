@@ -77,7 +77,7 @@ class FlaskDynaconf(object):
         app=None,
         instance_relative_config=False,
         dynaconf_instance=None,
-        **kwargs
+        **kwargs,
     ):
         """kwargs holds initial dynaconf configuration"""
         if not flask_installed:  # pragma: no cover
