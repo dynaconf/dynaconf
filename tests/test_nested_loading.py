@@ -245,7 +245,7 @@ def test_load_nested_different_types(ext, tmpdir):
     )
 
     assert settings.DEBUG is False
-    assert settings.DATABASE_URI == "f{ext}.example.com"
+    assert settings.DATABASE_URI == f"{ext}.example.com"
     assert settings.PORT == 8080
     assert settings.SERVER == "toml.example.com"
     assert settings.PLUGIN_NAME == "testing"
