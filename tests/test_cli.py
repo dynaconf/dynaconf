@@ -41,19 +41,19 @@ def test_init_with_path(fileformat, tmpdir):
         path = tmpdir.join(".env")
         secs_path = None
     else:
-        path = tmpdir.join("settings.{}".format(fileformat))
-        secs_path = tmpdir.join("/.secrets.{}".format(fileformat))
+        path = tmpdir.join(f"settings.{fileformat}")
+        secs_path = tmpdir.join(f"/.secrets.{fileformat}")
 
     for _ in (1, 2):
         run(
             [
                 "init",
-                "--format={}".format(fileformat),
+                f"--format={fileformat}",
                 "-v",
                 "name=bruno",
                 "-s",
                 "token=secret for",
-                "--path={}".format(str(tmpdir)),
+                f"--path={str(tmpdir)}",
                 "-y",
             ]
         )
@@ -119,7 +119,7 @@ def test_list_with_loader(loader):
 @pytest.mark.parametrize("env", ["default", "development"])
 def test_list_with_env(env):
     result = run(["list", "-e", env])
-    assert "Working in {} environment".format(env) in result
+    assert f"Working in {env} environment" in result
 
 
 settings = LazySettings(OPTION_FOR_TESTS=True)
@@ -181,10 +181,10 @@ def test_write(writer, env, onlydir, tmpdir):
     if onlydir is True:
         tmpfile = tmpdir
     else:
-        tmpfile = tmpdir.join("settings.{}".format(writer))
+        tmpfile = tmpdir.join(f"settings.{writer}")
 
-    settingspath = tmpdir.join("settings.{}".format(writer))
-    secretfile = tmpdir.join(".secrets.{}".format(writer))
+    settingspath = tmpdir.join(f"settings.{writer}")
+    secretfile = tmpdir.join(f".secrets.{writer}")
     env_file = tmpdir.join(".env")
 
     result = run(
@@ -203,7 +203,7 @@ def test_write(writer, env, onlydir, tmpdir):
         ]
     )
     if writer != "env":
-        assert "Data successful written to {}".format(settingspath) in result
+        assert f"Data successful written to {settingspath}" in result
         assert "TESTVALUE" in read_file(
             str(settingspath), encoding=default_settings.ENCODING_FOR_DYNACONF
         )
@@ -211,7 +211,7 @@ def test_write(writer, env, onlydir, tmpdir):
             str(secretfile), encoding=default_settings.ENCODING_FOR_DYNACONF
         )
     else:
-        assert "Data successful written to {}".format(env_file) in result
+        assert f"Data successful written to {env_file}" in result
         assert "TESTVALUE" in read_file(
             str(env_file), encoding=default_settings.ENCODING_FOR_DYNACONF
         )
@@ -238,7 +238,7 @@ def test_write_dotenv(path, tmpdir):
         ]
     )
 
-    assert "Data successful written to {}".format(env_file) in result
+    assert f"Data successful written to {env_file}" in result
     assert "TESTVALUE" in read_file(
         str(env_file), encoding=default_settings.ENCODING_FOR_DYNACONF
     )

@@ -17,7 +17,7 @@ for key in dir(django_settings):
 
 dj.setdefault("ENVVAR_PREFIX_FOR_DYNACONF", "DJANGO")
 
-env_prefix = "{0}_ENV".format(dj["ENVVAR_PREFIX_FOR_DYNACONF"])  # DJANGO_ENV
+env_prefix = f"{dj['ENVVAR_PREFIX_FOR_DYNACONF']}_ENV"  # DJANGO_ENV
 
 dj.setdefault(
     "ENV_FOR_DYNACONF", os.environ.get(env_prefix, "DEVELOPMENT").upper()

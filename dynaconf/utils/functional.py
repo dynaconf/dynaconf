@@ -44,7 +44,7 @@ class LazyObject:
 
     def __delattr__(self, name):
         if name in ["_wrapped", "_kwargs"]:
-            raise TypeError("can't delete %s." % name)
+            raise TypeError(f"can't delete {name}.")
         if self._wrapped is empty:
             self._setup()
         delattr(self._wrapped, name)

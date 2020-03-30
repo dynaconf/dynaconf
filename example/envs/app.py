@@ -2,9 +2,8 @@ from dynaconf import settings
 
 
 print(
-    "# 1 all values in {} + {}: env of yaml file:".format(
-        settings.DEFAULT_ENV_FOR_DYNACONF, settings.current_env
-    )
+    f"# 1 all values in {settings.DEFAULT_ENV_FOR_DYNACONF}"
+    f"{settings.current_env}: env of yaml file:"
 )
 assert settings.current_env == "DEVELOPMENT"
 print("HOST::", settings.HOST)
@@ -20,7 +19,7 @@ print("ENVIRONMENT:", settings.get("ENVIRONMENT"))
 print("WORKS:", settings.WORKS)
 
 with settings.using_env("TESTING"):
-    print("# 2 using {}: env values for context:".format(settings.current_env))
+    print(f"# 2 using {settings.current_env}: env values for context:")
     assert settings.current_env == "TESTING"
     print("HOST::", settings.HOST)
     print("PORT:", settings.PORT)
@@ -34,7 +33,7 @@ with settings.using_env("TESTING"):
     print("ENVIRONMENT:", settings.get("ENVIRONMENT"))
     print("WORKS:", settings.WORKS)
 
-print("# 3 back to default {}: env:".format(settings.current_env))
+print(f"# 3 back to default {settings.current_env}: env:")
 assert settings.current_env == "DEVELOPMENT"
 print("HOST::", settings.HOST)
 print("PORT:", settings.PORT)
@@ -49,7 +48,7 @@ print("ENVIRONMENT:", settings.get("ENVIRONMENT"))
 print("WORKS:", settings.WORKS)
 
 settings.setenv("testing")
-print("# 4 Set to {}: env:".format(settings.current_env))
+print(f"# 4 Set to {settings.current_env}: env:")
 assert settings.current_env == "TESTING"
 print("HOST::", settings.HOST)
 print("PORT:", settings.PORT)
@@ -64,7 +63,7 @@ print("ENVIRONMENT:", settings.get("ENVIRONMENT"))
 print("WORKS:", settings.WORKS)
 
 settings.setenv()
-print("# 5 back to default {}: env:".format(settings.current_env))
+print(f"# 5 back to default {settings.current_env}: env:")
 assert settings.current_env == "DEVELOPMENT"
 print("HOST::", settings.HOST)
 print("PORT:", settings.PORT)
@@ -80,7 +79,7 @@ print("WORKS:", settings.WORKS)
 
 
 with settings.using_env("staging"):
-    print("# 6 using {}: env values for context:".format(settings.current_env))
+    print(f"# 6 using {settings.current_env}: env values for context:")
     assert settings.current_env == "STAGING"
     print("HOST::", settings.HOST)
     print("PORT:", settings.PORT)
@@ -94,7 +93,7 @@ with settings.using_env("staging"):
     print("ENVIRONMENT:", settings.get("ENVIRONMENT"))
     print("WORKS:", settings.WORKS)
 
-print("# 7 back to default {}: env:".format(settings.current_env))
+print(f"# 7 back to default {settings.current_env}: env:")
 assert settings.current_env == "DEVELOPMENT"
 print("HOST::", settings.HOST)
 print("PORT:", settings.PORT)
@@ -110,7 +109,7 @@ print("WORKS:", settings.WORKS)
 
 settings.setenv("staging")
 assert settings.current_env == "STAGING"
-print("# 8 Set to {}: env:".format(settings.current_env))
+print(f"# 8 Set to {settings.current_env}: env:")
 print("HOST::", settings.HOST)
 print("PORT:", settings.PORT)
 print("USERNAME:", settings.USERNAME)
@@ -124,7 +123,7 @@ print("ENVIRONMENT:", settings.get("ENVIRONMENT"))
 print("WORKS:", settings.WORKS)
 
 settings.setenv()
-print("# 9 back to default {}: env:".format(settings.current_env))
+print(f"# 9 back to default {settings.current_env}: env:")
 print("HOST::", settings.HOST)
 print("PORT:", settings.PORT)
 print("USERNAME:", settings.USERNAME)

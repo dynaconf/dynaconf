@@ -59,7 +59,7 @@ def get_basename(text, options, prefix='aafig'):
         del options['format']
     hashkey = str(text.encode('utf-8')) + str(options)
     id = sha(hashkey.encode()).hexdigest()
-    return '%s-%s' % (prefix, id)
+    return f'{prefix}-{id}'
 
 
 class AafigError(SphinxError):
@@ -126,9 +126,10 @@ def render_aafig_images(app, doctree):
         if format in format_map:
             options['format'] = format_map[format]
         else:
-            app.builder.warn('unsupported builder format "%s", please '
-                    'add a custom entry in aafig_format config option '
-                    'for this builder' % format)
+            app.builder.warn(
+                f'unsupported builder format "{format}", please '
+                'add a custom entry in aafig_format config option '
+                'for this builder')
             img.replace_self(nodes.literal_block(text, text))
             continue
         if options['format'] is None:
@@ -159,7 +160,7 @@ def render_aafigure(app, text, options):
         raise AafigError('aafigure module not installed')
 
     fname = get_basename(text, options)
-    fname = '%s.%s' % (get_basename(text, options), options['format'])
+    fname = f"{get_basename(text, options)}.{options['format']}"
     if app.builder.format == 'html':
         # HTML
         imgpath = relative_uri(app.builder.env.docname, '_images')
@@ -168,13 +169,15 @@ def render_aafigure(app, text, options):
     else:
         # Non-HTML
         if app.builder.format != 'latex':
-            app.builder.warn('aafig: the builder format %s is not officially '
-                    'supported, aafigure images could not work. Please report '
-                    'problems and working builder to avoid this warning in '
-                    'the future' % app.builder.format)
+            app.builder.warn(
+                f'aafig: the builder format {app.builder.format} '
+                'is not officially supported, aafigure images '
+                'could not work. Please report '
+                'problems and working builder to avoid this warning in '
+                'the future')
         relfn = fname
         outfn = path.join(app.builder.outdir, fname)
-    metadata_fname = '%s.aafig' % outfn
+    metadata_fname = f'{outfn}.aafig'
 
     try:
         if path.isfile(outfn):

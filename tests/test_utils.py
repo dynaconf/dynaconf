@@ -258,9 +258,7 @@ def test_lazy_format_class():
     settings = {"FOO": "foo"}
     assert value(settings) == "foo/bar"
     assert str(value) == value.value
-    assert repr(value) == "'@{value.formatter} {value.value}'".format(
-        value=value
-    )
+    assert repr(value) == f"'@{value.formatter} {value.value}'"
 
 
 def test_evaluate_lazy_format_decorator():

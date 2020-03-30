@@ -22,7 +22,8 @@ def docker_vault(docker_services):
     public_port = docker_services.wait_for_service(
         "vault", 8200, check_server=custom_checker
     )
-    url = "http://{docker_services.docker_ip}:{public_port}".format(**locals())
+    url = f"http://{docker_services.docker_ip}:{public_port}"
+
     sleep(3)
     return url
 

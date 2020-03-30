@@ -12,16 +12,16 @@ def settings():
     """Settings fixture with some defaults"""
     mode = "TRAVIS" if os.environ.get("TRAVIS") else "TEST"
     loaders = ["dynaconf.loaders.env_loader"]
-    os.environ["DYNA%s_HOSTNAME" % mode] = "host.com"
-    os.environ["DYNA%s_PORT" % mode] = "@int 5000"
-    os.environ["DYNA%s_VALUE" % mode] = "@float 42.1"
-    os.environ["DYNA%s_ALIST" % mode] = '@json ["item1", "item2", "item3"]'
-    os.environ["DYNA%s_ADICT" % mode] = '@json {"key": "value"}'
-    os.environ["DYNA%s_DEBUG" % mode] = "@bool true"
-    os.environ["DYNA%s_TODELETE" % mode] = "@bool true"
+    os.environ[f"DYNA{mode}_HOSTNAME"] = "host.com"
+    os.environ[f"DYNA{mode}_PORT"] = "@int 5000"
+    os.environ[f"DYNA{mode}_VALUE"] = "@float 42.1"
+    os.environ[f"DYNA{mode}_ALIST"] = '@json ["item1", "item2", "item3"]'
+    os.environ[f"DYNA{mode}_ADICT"] = '@json {"key": "value"}'
+    os.environ[f"DYNA{mode}_DEBUG"] = "@bool true"
+    os.environ[f"DYNA{mode}_TODELETE"] = "@bool true"
     sets = LazySettings(
         LOADERS_FOR_DYNACONF=loaders,
-        ENVVAR_PREFIX_FOR_DYNACONF="DYNA%s" % mode,
+        ENVVAR_PREFIX_FOR_DYNACONF=f"DYNA{mode}",
         ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
         boxed_data={
             "HOST": "server.com",

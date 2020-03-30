@@ -37,9 +37,8 @@ class BaseLoader(object):
     def warn_not_installed(obj, identifier):  # pragma: no cover
         if identifier not in obj._not_installed_warnings:
             logger.warning(
-                "%(ident)s support is not installed in your environment. "
-                "`pip install dynaconf[%(ident)s]`",
-                {"ident": identifier},
+                f"{identifier} support is not installed in your environment. "
+                f"`pip install dynaconf[{identifier}]`"
             )
         obj._not_installed_warnings.append(identifier)
 
@@ -83,13 +82,12 @@ class BaseLoader(object):
                     ) as open_file:
                         source_data = self.file_reader(open_file)
                     self.obj.logger.debug(
-                        "{}_loader: {}".format(self.identifier, source_file)
+                        f"{self.identifier}_loader: {source_file}"
                     )
                 except IOError:
                     self.obj.logger.debug(
-                        "{}_loader: {} (Ignored, file not Found)".format(
-                            self.identifier, source_file
-                        )
+                        f"{self.identifier}_loader: {source_file} "
+                        "(Ignored, file not Found)"
                     )
                     source_data = None
             else:
@@ -128,10 +126,9 @@ class BaseLoader(object):
                     data = source_data[env] or {}
                 except KeyError:
                     if env not in base_envs:
-                        message = "%s_loader: %s env not defined in %s" % (
-                            self.identifier,
-                            env,
-                            source_file,
+                        message = (
+                            f"{self.identifier}_loader: {env} env not"
+                            f"defined in {source_file}"
                         )
                         if silent:
                             self.obj.logger.warning(message)
@@ -140,7 +137,7 @@ class BaseLoader(object):
                     continue
 
                 if env != self.obj.get("DEFAULT_ENV_FOR_DYNACONF").lower():
-                    identifier = "{0}_{1}".format(self.identifier, env)
+                    identifier = f"{self.identifier}_{env}"
                 else:
                     identifier = self.identifier
 
@@ -150,14 +147,11 @@ class BaseLoader(object):
                     key = upperfy(key)
 
                 is_secret = "secret" in source_file
+                _keys = (list(data.keys()) if is_secret else data,)
+                _path = os.path.split(source_file)[-1]
 
                 self.obj.logger.debug(
-                    "{}_loader: {}[{}]{}".format(
-                        self.identifier,
-                        os.path.split(source_file)[-1],
-                        env,
-                        list(data.keys()) if is_secret else data,
-                    )
+                    f"{self.identifier}_loader: {_path}[{env}]{_keys}"
                 )
 
                 # is there a `dynaconf_merge` inside an `[env]`?
