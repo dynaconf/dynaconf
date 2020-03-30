@@ -17,9 +17,7 @@ all_secrets = []
 
 for env in available_envs:
     env_settings = settings.from_env(env)
-    assert env_settings.from_env(env).SECRET == "vault_works_in_{0}".format(
-        env
-    )
+    assert env_settings.from_env(env).SECRET == f"vault_works_in_{env}"
     assert env_settings.FOO == "foo_is_default"
     all_secrets.append(env_settings.SECRET)
 

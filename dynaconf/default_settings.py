@@ -21,9 +21,7 @@ def try_renamed(key, value, older_key, current_key):
         if key == current_key:
             if older_key in os.environ:
                 warnings.warn(
-                    "{0} is deprecated please use {1}".format(
-                        older_key, current_key
-                    ),
+                    f"{older_key} is deprecated please use {current_key}",
                     DeprecationWarning,
                 )
                 value = os.environ[older_key]
@@ -52,8 +50,7 @@ def start_dotenv(obj=None, root_path=None):
         or get("ROOT_PATH_FOR_DYNACONF")
     )
     raw_logger().debug(
-        "Starting Dynaconf Dotenv %s",
-        "for {0}".format(root_path) if root_path else "Base",
+        "Starting Dynaconf Dotenv for " f"{root_path if root_path else 'Base'}"
     )
 
     dotenv_path = (
@@ -150,7 +147,7 @@ vault_port = get("VAULT_PORT_FOR_DYNACONF", "8200")
 default_vault = {
     "url": get(
         "VAULT_URL_FOR_DYNACONF",
-        "{}://{}:{}".format(vault_scheme, vault_host, vault_port),
+        f"{vault_scheme}://{vault_host}:{vault_port}",
     ),
     "token": get("VAULT_TOKEN_FOR_DYNACONF", None),
     "cert": get("VAULT_CERT_FOR_DYNACONF", None),

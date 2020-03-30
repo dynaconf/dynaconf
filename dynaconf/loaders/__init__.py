@@ -31,7 +31,7 @@ def default_loader(obj, defaults=None):
     for key in all_keys:
         if not obj.exists(key):
             value = defaults.get(key, default_settings_values.get(key))
-            obj.logger.debug("loading: %s:%s", key, value)
+            obj.logger.debug(f"loading: {key}:{value}")
             obj.set(key, value)
 
     # start dotenv to get default env vars from there
@@ -54,7 +54,7 @@ def default_loader(obj, defaults=None):
         )
 
         if env_value != "_not_found":
-            obj.logger.debug("overriding from envvar: %s:%s", key, env_value)
+            obj.logger.debug(f"overriding from envvar: {key}:{env_value}")
             obj.set(key, env_value, tomlfy=True)
 
 
@@ -154,13 +154,13 @@ def settings_loader(
             global_filename = tmpl.format("global", filename, extension)
             global_mod_file = os.path.join(dirname, global_filename)
         else:
-            env_mod_file = "{0}_{1}".format(env.lower(), mod_file)
-            global_mod_file = "{0}_{1}".format("global", mod_file)
+            env_mod_file = f"{env.lower()}_{mod_file}"
+            global_mod_file = f"global_{mod_file}"
 
         py_loader.load(
             obj,
             env_mod_file,
-            identifier="py_{0}".format(env.upper()),
+            identifier=f"py_{env.upper()}",
             silent=True,
             key=key,
         )
@@ -176,24 +176,22 @@ def enable_external_loaders(obj):
     looks forenv variables like `REDIS_ENABLED_FOR_DYNACONF`
     """
     for name, loader in ct.EXTERNAL_LOADERS.items():
-        enabled = getattr(
-            obj, "{}_ENABLED_FOR_DYNACONF".format(name.upper()), False
-        )
+        enabled = getattr(obj, f"{name.upper()}_ENABLED_FOR_DYNACONF", False)
         if (
             enabled
             and enabled not in false_values
             and loader not in obj.LOADERS_FOR_DYNACONF
         ):  # noqa
-            obj.logger.debug("loaders: Enabling %s", loader)
+            obj.logger.debug(f"loaders: Enabling {loader}")
             obj.LOADERS_FOR_DYNACONF.insert(0, loader)
 
 
 def write(filename, data, env=None):
     """Writes `data` to `filename` infers format by file extension."""
-    loader_name = "{0}_loader".format(filename.rpartition(".")[-1])
+    loader_name = f"{filename.rpartition('.')[-1]}_loader"
     loader = globals().get(loader_name)
     if not loader:
-        raise IOError("{0} cannot be found.".format(loader_name))
+        raise IOError(f"{loader_name} cannot be found.")
 
     data = DynaBox(data).to_dict()
     if loader is not py_loader and env and env not in data:

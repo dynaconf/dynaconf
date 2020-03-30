@@ -81,7 +81,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
             and (key != "SETTINGS_MODULE")
             and key not in lazy_settings.store
         ):
-            lazy_settings.logger.debug("Django default setting: %s", key)
+            lazy_settings.logger.debug(f"Django default setting: {key}")
             dj[key] = getattr(django_settings, key, None)
         dj["ORIGINAL_SETTINGS_MODULE"] = django_settings.SETTINGS_MODULE
 

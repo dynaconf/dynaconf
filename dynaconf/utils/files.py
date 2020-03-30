@@ -26,7 +26,7 @@ def _walk_to_root(path, break_at=None):
         paths.append(current_dir)
         paths.append(os.path.join(current_dir, "config"))
         if break_at and current_dir == os.path.abspath(break_at):  # noqa
-            logger.debug("Reached the %s directory, breaking.", break_at)
+            logger.debug(f"Reached the {break_at} directory, breaking.")
             break
         parent_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
         last_dir, current_dir = current_dir, parent_dir
@@ -54,9 +54,9 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
     skip_files = skip_files or []
 
     if project_root is None:
-        logger.debug("No root_path for %s", filename)
+        logger.debug(f"No root_path for {filename}")
     else:
-        logger.debug("Got root_path %s for %s", project_root, filename)
+        logger.debug(f"Got root_path {project_root} for {filename}")
         search_tree.extend(_walk_to_root(project_root, break_at=work_dir))
 
     script_dir = os.path.dirname(os.path.abspath(inspect.stack()[-1].filename))
@@ -71,17 +71,17 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
     search_tree = deduplicate(search_tree)
 
     global SEARCHTREE
-    SEARCHTREE != search_tree and logger.debug("Search Tree: %s", search_tree)
+    SEARCHTREE != search_tree and logger.debug(f"Search Tree: {search_tree}")
     SEARCHTREE = search_tree
 
-    logger.debug("Searching for %s", filename)
+    logger.debug(f"Searching for {filename}")
 
     for dirname in search_tree:
         check_path = os.path.join(dirname, filename)
         if check_path in skip_files:
             continue
         if os.path.exists(check_path):
-            logger.debug("Found: %s", os.path.abspath(check_path))
+            logger.debug(f"Found: {os.path.abspath(check_path)}")
             return check_path  # First found will return
 
     # return empty string if not found so it can still be joined in os.path
@@ -104,9 +104,10 @@ def get_local_filename(filename):
     Returns:
         [str] -- The same name or path with `.local.` added.
     """
+    name, _, extension = os.path.basename(str(filename)).rpartition(
+        os.path.extsep
+    )
+
     return os.path.join(
-        os.path.dirname(str(filename)),
-        "{0}.local.{2}".format(
-            *os.path.basename(str(filename)).rpartition(os.path.extsep)
-        ),
+        os.path.dirname(str(filename)), f"{name}.local.{extension}"
     )
