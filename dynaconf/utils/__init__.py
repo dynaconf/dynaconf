@@ -189,8 +189,8 @@ def warn_deprecations(data):
     for old, new in RENAMED_VARS.items():
         if old in data:
             warnings.warn(
-                "You are using %s which is a deprecated settings "
-                "replace it with %s" % (old, new),
+                f"You are using {old} which is a deprecated settings "
+                f"replace it with {new}",
                 DeprecationWarning,
             )
 

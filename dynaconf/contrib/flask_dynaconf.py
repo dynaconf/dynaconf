@@ -77,7 +77,7 @@ class FlaskDynaconf(object):
         app=None,
         instance_relative_config=False,
         dynaconf_instance=None,
-        **kwargs
+        **kwargs,
     ):
         """kwargs holds initial dynaconf configuration"""
         if not flask_installed:  # pragma: no cover
@@ -89,9 +89,7 @@ class FlaskDynaconf(object):
 
         kwargs.setdefault("ENVVAR_PREFIX_FOR_DYNACONF", "FLASK")
 
-        env_prefix = "{0}_ENV".format(
-            kwargs["ENVVAR_PREFIX_FOR_DYNACONF"]
-        )  # FLASK_ENV
+        env_prefix = f"{kwargs['ENVVAR_PREFIX_FOR_DYNACONF']}_ENV"  # FLASK_ENV
 
         kwargs.setdefault("ENV_SWITCHER_FOR_DYNACONF", env_prefix)
 

@@ -233,7 +233,7 @@ def test_load_nested_different_types(ext, tmpdir):
     toml_plugin_file = tmpdir.join("plugin1.toml")
     toml_plugin_file.write(TOML_PLUGIN)
 
-    json_plugin_file = tmpdir.join("plugin2.{0}".format(ext))
+    json_plugin_file = tmpdir.join(f"plugin2.{ext}")
     json_plugin_file.write(PLUGIN_TEXT[ext])
 
     settings = LazySettings(
@@ -245,7 +245,7 @@ def test_load_nested_different_types(ext, tmpdir):
     )
 
     assert settings.DEBUG is False
-    assert settings.DATABASE_URI == "{0}.example.com".format(ext)
+    assert settings.DATABASE_URI == f"{ext}.example.com"
     assert settings.PORT == 8080
     assert settings.SERVER == "toml.example.com"
     assert settings.PLUGIN_NAME == "testing"
@@ -261,7 +261,7 @@ def test_load_nested_different_types_with_merge(tmpdir):
     toml_plugin_file.write(TOML_PLUGIN)
 
     for ext in ["toml", "json", "yaml", "ini", "py"]:
-        json_plugin_file = tmpdir.join("plugin2.{0}".format(ext))
+        json_plugin_file = tmpdir.join(f"plugin2.{ext}")
         json_plugin_file.write(PLUGIN_TEXT[ext])
 
     settings = LazySettings(
@@ -274,7 +274,7 @@ def test_load_nested_different_types_with_merge(tmpdir):
     )
 
     assert settings.DEBUG is False
-    assert settings.DATABASE_URI == "{0}.example.com".format(ext)
+    assert settings.DATABASE_URI == f"{ext}.example.com"
     assert settings.PORT == 8080
     assert settings.SERVER == "toml.example.com"
     assert settings.PLUGIN_NAME == "testing"

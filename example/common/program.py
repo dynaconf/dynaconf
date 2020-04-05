@@ -4,10 +4,10 @@
 def connect(server, port, username, password):
     """This function might be something coming from your ORM"""
     print("-" * 79)
-    print("Connecting to: {}".format(server))
-    print("At port: {}".format(port))
-    print("Using username: {}".format(username))
-    print("Using password: {}".format(password))
+    print(f"Connecting to: {server}")
+    print(f"At port: {port}")
+    print(f"Using username: {username}")
+    print(f"Using password: {password}")
     print("-" * 79)
     # imagine it connects here...
 
