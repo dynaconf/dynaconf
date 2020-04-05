@@ -4,6 +4,9 @@ Dynaconf provides a drop in replacement for `app.config`.
 
 As Flask encourages the composition by overriding the `config_class` attribute this extension follows the [patterns of Flask](http://flask.pocoo.org/docs/0.12/patterns/subclassing/) and turns your Flask's `app.config` in to a `dynaconf` instance.
 
+NOTICE: If you have a .env file on your project you must use the environment variable FLASK_SKIP_DOTENV to skip the flask automated dotenv load. `export FLASK_SKIP_DOTENV=1`.
+For more information [Link 1](https://github.com/pallets/flask/blob/024f0d384cf5bb65c76ac59f8ddce464b2dc2ca1/docs/cli.rst#disable-dotenv)
+
 ## Initialize the extension
 
 Initialize the **FlaskDynaconf** extension in your `app`
