@@ -54,7 +54,7 @@ def is_not_in(value, other):
     return value not in other
 
 
-def contd(value, other):
+def cont(value, other):
     """Contains"""
     return other in value
 

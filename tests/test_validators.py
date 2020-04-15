@@ -99,7 +99,7 @@ def test_validators(tmpdir):
         Validator("ZERO", is_type_of=int, eq=0),
         Validator("FALSE", is_type_of=bool, eq=False),
         Validator("NAME", len_min=3, len_max=125),
-        Validator("DEV_SERVERS", contd='localhost'),
+        Validator("DEV_SERVERS", cont="localhost"),
         Validator("PORT", len_eq=4),
         Validator("PROJECT", len_ne=0),
     )
