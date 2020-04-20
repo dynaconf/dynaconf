@@ -9,6 +9,8 @@ Lets say you have `settings.toml`
 version = "1.0.0"
 age = 35
 name = "Bruno"
+DEV_SERVERS = ['127.0.0.1', 'localhost', 'development.com']
+PORT = 8001
 
 [production]
 PROJECT = "This is not hello_world"
@@ -35,6 +37,17 @@ settings.validators.register(
 
     # validate a value is eq in specific env
     Validator('PROJECT', eq='hello_world', env='production'),
+
+    # Ensure some parameter (string) meets a condition
+    # conditions: (len_eq, len_ne, len_min, len_max, cont)
+    # Determines the minimum and maximum length for the value
+    Validator("NAME", len_min=3, len_max=125),
+
+    # Signifies the presence of the value in a set, text or word
+    Validator("DEV_SERVERS", cont='localhost'),
+    
+    # Checks whether the length is the same as defined.
+    Validator("PORT", len_eq=4),
 )
 
 # Fire the validator

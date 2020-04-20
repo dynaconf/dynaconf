@@ -34,6 +34,11 @@ class Validator(object):
         is_in:  value in sequence
         is_not_in: value not in sequence
         identity: value is other
+        cont: contain value in
+        len_eq: len(value) == other
+        len_ne: len(value) != other
+        len_min: len(value) > other
+        len_max: len(value) < other
 
     `env` is which env to be checked, can be a list or
     default is used.

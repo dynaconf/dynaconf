@@ -52,3 +52,28 @@ def is_in(value, other):
 def is_not_in(value, other):
     """Inexistence"""
     return value not in other
+
+
+def cont(value, other):
+    """Contains"""
+    return other in value
+
+
+def len_eq(value, other):
+    """Length Equal"""
+    return len(str(value)) == other
+
+
+def len_ne(value, other):
+    """Length Not equal"""
+    return len(str(value)) != other
+
+
+def len_min(value, other):
+    """Minimum length"""
+    return len(str(value)) > other
+
+
+def len_max(value, other):
+    """Maximum lenght"""
+    return len(str(value)) < other
