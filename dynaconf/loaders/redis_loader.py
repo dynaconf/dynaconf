@@ -1,4 +1,5 @@
 from dynaconf.utils import build_env_list
+from dynaconf.utils import get_logger
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import unparse_conf_data

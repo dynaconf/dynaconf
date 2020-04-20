@@ -2,7 +2,10 @@ from os import environ
 
 from dotenv import cli as dotenv_cli
 
+from dynaconf.utils import get_logger
+from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
+
 
 IDENTIFIER = "env"
 
@@ -12,47 +15,59 @@ def load(obj, env=None, silent=True, key=None):
 
     `DYNACONF_` (default global) or `$(ENVVAR_PREFIX_FOR_DYNACONF)_`
     """
-    global_env = obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
-    if global_env is False or global_env.upper() != "DYNACONF":
-        load_from_env(IDENTIFIER + "_global", key, "DYNACONF", obj, silent)
+    global_prefix = obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
+    if global_prefix is False or global_prefix.upper() != "DYNACONF":
+        load_from_env(obj, "DYNACONF", key, silent, IDENTIFIER + "_global")
 
     # Load the global env if exists and overwrite everything
-    load_from_env(IDENTIFIER + "_global", key, global_env, obj, silent)
+    load_from_env(obj, global_prefix, key, silent, IDENTIFIER + "_global")
 
 
-def load_from_env(identifier, key, env, obj, silent):
+def load_from_env(
+    obj,
+    prefix=False,
+    key=None,
+    silent=False,
+    identifier=IDENTIFIER,
+    env=False,  # backwards compatibility bc renamed param
+):
+    if prefix is False and env is not False:
+        prefix = env
+
     env_ = ""
-    if env is not False:
-        env = env.upper()
-        env_ = f"{env}_"
-    try:
-        if key:
-            value = environ.get(f"{env_}{key}")
-            if value:
-                obj.logger.debug(
-                    f"env_loader: loading by key: {key}:{value} "
-                    f"({identifier}:{env})"
-                )
+    if prefix is not False:
+        if not isinstance(prefix, str):
+            raise TypeError("`prefix/env` must be str or False")
+
+        prefix = prefix.upper()
+        env_ = f"{prefix}_"
+
+    logger = get_logger(obj)
+
+    if key:
+        key = upperfy(key)
+        value = environ.get(f"{env_}{key}")
+        if value:
+            logger.debug(
+                f"env_loader: loading by key: "
+                f"{key}:{value} ({identifier}:{prefix})"
+            )
+            try:  # obj is a Settings
                 obj.set(key, value, loader_identifier=identifier, tomlfy=True)
-        else:
-            trim_len = len(env_)
-            data = {
-                key[trim_len:]: parse_conf_data(data, tomlfy=True)
-                for key, data in environ.items()
-                if key.startswith(env_)
-            }
-            if data:
-                obj.logger.debug(
-                    f"env_loader: loading: {data} ({identifier}:{env})"
-                )
-                obj.update(data, loader_identifier=identifier)
-    # box.exceptions.BoxKeyError
-    except Exception as e:  # pragma: no cover
-        e.message = f"env_loader: Error ({str(e)})"
-        if silent:
-            obj.logger.error(str(e))
-        else:
-            raise
+            except AttributeError:  # obj is a dict
+                obj[key] = parse_conf_data(value, tomlfy=True)
+    else:
+        trim_len = len(env_)
+        data = {
+            key[trim_len:]: parse_conf_data(data, tomlfy=True)
+            for key, data in environ.items()
+            if key.startswith(env_)
+        }
+        if data:
+            logger.debug(
+                f"env_loader: loading: {data} ({identifier}:{prefix})"
+            )
+            obj.update(data, loader_identifier=identifier)
 
 
 def write(settings_path, settings_data, **kwargs):
