@@ -56,8 +56,8 @@ class LazySettings(LazyObject):
     in a file `proj/conf.py`::
 
         >>> from dynaconf import LazySettings
-        >>> config = LazySettings(ENV_FOR_DYNACONF='PROJ',
-        ...                       LOADERS_FOR_DYNACONF=[
+        >>> config = LazySettings(ENV='PROJ',
+        ...                       LOADERS=[
         ...                             'dynaconf.loaders.env_loader',
         ...                             'dynaconf.loaders.redis_loader'
         ...                       ])
@@ -87,9 +87,26 @@ class LazySettings(LazyObject):
 
         :param kwargs: values that overrides default_settings
         """
+        self.resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
         self._kwargs = kwargs
         super(LazySettings, self).__init__()
+
+    def resolve_config_aliases(self, kwargs):
+        """takes aliases for _FOR_DYNACONF configurations
+
+        e.g: ROOT_PATH='/' is transformed into `ROOT_PATH_FOR_DYNACONF`
+        """
+        for_dynaconf_keys = {
+            key
+            for key in dir(default_settings)
+            if key.endswith("_FOR_DYNACONF")
+        }
+        aliases = {
+            key for key in kwargs if f"{key}_FOR_DYNACONF" in for_dynaconf_keys
+        }
+        for alias in aliases:
+            kwargs[f"{alias}_FOR_DYNACONF"] = kwargs.pop(alias)
 
     @evaluate_lazy_format
     def __getattr__(self, name):
