@@ -63,8 +63,8 @@ class FlaskDynaconf(object):
         app = Flask(__name__)
         FlaskDynaconf(
             app,
-            ENV_FOR_DYNACONF='MYSITE',
-            SETTINGS_FILE_FOR_DYNACONF='settings.yml',
+            ENV='MYSITE',
+            SETTINGS_FILE='settings.yml',
             EXTRA_VALUE='You can add aditional config vars here'
         )
 
@@ -87,11 +87,9 @@ class FlaskDynaconf(object):
             )
         self.kwargs = kwargs
 
-        kwargs.setdefault("ENVVAR_PREFIX_FOR_DYNACONF", "FLASK")
-
-        env_prefix = f"{kwargs['ENVVAR_PREFIX_FOR_DYNACONF']}_ENV"  # FLASK_ENV
-
-        kwargs.setdefault("ENV_SWITCHER_FOR_DYNACONF", env_prefix)
+        kwargs.setdefault("ENVVAR_PREFIX", "FLASK")
+        env_prefix = f"{kwargs['ENVVAR_PREFIX']}_ENV"  # FLASK_ENV
+        kwargs.setdefault("ENV_SWITCHER", env_prefix)
 
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config

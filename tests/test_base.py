@@ -739,3 +739,38 @@ def test_preload(tmpdir):
         "github": "rochacbruno.github.io",
         "mastodon": "mastodon.social/@rochacbruno",
     }
+
+
+def test_config_aliases(tmpdir):
+    data = {
+        "hello": {"name": "Bruno", "passwd": 1234},
+        "awesome": {"passwd": 5678},
+    }
+    toml_loader.write(str(tmpdir.join("blarg.toml")), data, merge=False)
+
+    settings = LazySettings(
+        ENVVAR_PREFIX="BRUCE",
+        CORE_LOADERS=["TOML"],
+        LOADERS=["dynaconf.loaders.env_loader"],
+        DEFAULT_ENV="hello",
+        ENV_SWITCHER="BRUCE_ENV",
+        PRELOAD=[],
+        SETTINGS_FILE=["blarg.toml"],
+        INCLUDES=[],
+        ENV="awesome",
+    )
+
+    assert settings.NAME == "Bruno"
+    assert settings.PASSWD == 5678
+
+    assert settings.ENVVAR_PREFIX_FOR_DYNACONF == "BRUCE"
+    assert settings.CORE_LOADERS_FOR_DYNACONF == ["TOML"]
+    assert settings.LOADERS_FOR_DYNACONF == ["dynaconf.loaders.env_loader"]
+    assert len(settings._loaders) == 1
+    assert settings.DEFAULT_ENV_FOR_DYNACONF == "hello"
+    assert settings.ENV_SWITCHER_FOR_DYNACONF == "BRUCE_ENV"
+    assert settings.PRELOAD_FOR_DYNACONF == []
+    assert settings.SETTINGS_FILE_FOR_DYNACONF == ["blarg.toml"]
+    assert settings.INCLUDES_FOR_DYNACONF == []
+    assert settings.ENV_FOR_DYNACONF == "awesome"
+    assert settings.current_env == "awesome"

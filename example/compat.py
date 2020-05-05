@@ -72,9 +72,9 @@ print(settings.FRESH_VARS_FOR_DYNACONF)
 
 
 settings = LazySettings(
-    NAMESPACE_FOR_DYNACONF="FOO",
+    NAMESPACE="FOO",
     SETTINGS_MODULE="foo.py",
-    PROJECT_ROOT_FOR_DYNACONF="/tmp",
+    PROJECT_ROOT="/tmp",
     DYNACONF_SILENT_ERRORS=True,
     DYNACONF_ALWAYS_FRESH_VARS=["BAR"],
 )
