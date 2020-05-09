@@ -209,7 +209,7 @@ That means that `export PROJECTNAME_FOO=1` will be loaded to `duanconf.settings.
 On command line it is possible to check it with `dynaconf list -k foo`"""
 
 ENV_SWITCHER_FOR_DYNACONF='PROJECTNAME_ENV'
-"""By default it is DYNACONF_ENV, this is the envvar used to switch from development to production
+"""By default it is ENV_FOR_DYNACONF, this is the envvar used to switch from development to production
 but with this settings your users can do `export PROJECT_ENV=production` (new in 2.0.0)"""
 
 
