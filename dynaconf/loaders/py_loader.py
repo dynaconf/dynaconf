@@ -42,7 +42,7 @@ def load_from_python_object(
                     "*****" if "secret" in settings_module else setting_value
                 )
                 obj.logger.debug(
-                    f"py_loader: loading {setting}: {secret} ({identifier})",
+                    f"py_loader: loading {setting}: {secret} ({identifier})"
                 )
                 obj.set(
                     setting,

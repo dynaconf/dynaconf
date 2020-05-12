@@ -288,12 +288,12 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
 
     if not y and settings_path and settings_path.exists():  # pragma: no cover
         click.confirm(
-            f"{settings_path} exists do you want to overwrite it?", abort=True,
+            f"{settings_path} exists do you want to overwrite it?", abort=True
         )
 
     if not y and secrets_path and secrets_path.exists():  # pragma: no cover
         click.confirm(
-            f"{secrets_path} exists do you want to overwrite it?", abort=True,
+            f"{secrets_path} exists do you want to overwrite it?", abort=True
         )
 
     if settings_path and settings_data:

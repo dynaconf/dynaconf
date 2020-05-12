@@ -72,7 +72,7 @@ def load(obj, env=None, silent=None, key=None):
             elif data:
                 obj.logger.debug(
                     f"vault_loader: loading: {list(data.keys())} "
-                    f"({IDENTIFIER}:{path})",
+                    f"({IDENTIFIER}:{path})"
                 )
                 obj.update(data, loader_identifier=IDENTIFIER, tomlfy=True)
         except Exception as e:

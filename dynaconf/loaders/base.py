@@ -65,12 +65,18 @@ class BaseLoader(object):
 
         self.obj._loaded_files.extend(files)
 
-        env_list = build_env_list(self.obj, self.env)
+        source_data = self.get_source_date(files)
 
-        # load all envs
-        self._read(files, env_list, silent, key)
+        if self.obj.get("ENVLESS_MODE_FOR_DYNACONF") is True:
+            self._envless_load(source_data, silent, key)
+        else:
+            self._load_all_envs(source_data, silent, key)
 
-    def _read(self, files, envs, silent=True, key=None):
+    def get_source_date(self, files):
+        """Reads each file and returns source data for each file
+        {"path/to/file.ext": {"key": "value"}}
+        """
+        data = {}
         for source_file in files:
             if source_file.endswith(self.extensions):
                 try:
@@ -80,30 +86,46 @@ class BaseLoader(object):
                             "ENCODING_FOR_DYNACONF", "utf-8"
                         ),
                     ) as open_file:
-                        source_data = self.file_reader(open_file)
-                    self.obj.logger.debug(
-                        f"{self.identifier}_loader: {source_file}"
-                    )
+                        content = self.file_reader(open_file)
+                        if content:
+                            data[source_file] = content
+                            self.obj.logger.debug(
+                                f"{self.identifier}_loader: {source_file}"
+                            )
+                        else:  # pragma: no cover
+                            self.obj.logger.debug(
+                                f"{self.identifier}_loader: {source_file}"
+                                " IS EMPTY"
+                            )
                 except IOError:
                     self.obj.logger.debug(
                         f"{self.identifier}_loader: {source_file} "
                         "(Ignored, file not Found)"
                     )
-                    source_data = None
             else:
                 # for tests it is possible to pass string
-                source_data = self.string_reader(source_file)
+                content = self.string_reader(source_file)
+                if content:
+                    data[source_file] = content
+        return data
 
-            if not source_data:
-                continue
+    def _envless_load(self, source_data, silent=True, key=None):
+        """Load all the keys from each file without env separation"""
+        for source_file, file_data in source_data.items():
+            self._set_data_to_obj(
+                file_data, self.identifier, source_file, key=key
+            )
+
+    def _load_all_envs(self, source_data, silent=True, key=None):
+        """Load configs from files separating by each environment"""
+
+        for source_file, file_data in source_data.items():
 
             # env name is checked in lower
-            source_data = {
-                k.lower(): value for k, value in source_data.items()
-            }
+            file_data = {k.lower(): value for k, value in file_data.items()}
 
             # is there a `dynaconf_merge` on top level of file?
-            file_merge = source_data.get("dynaconf_merge")
+            file_merge = file_data.get("dynaconf_merge")
 
             # all lower case for comparison
             base_envs = [
@@ -119,11 +141,11 @@ class BaseLoader(object):
                 "global",
             ]
 
-            for env in envs:
+            for env in build_env_list(self.obj, self.env):
                 env = env.lower()  # lower for better comparison
                 data = {}
                 try:
-                    data = source_data[env] or {}
+                    data = file_data[env] or {}
                 except KeyError:
                     if env not in base_envs:
                         message = (
@@ -141,34 +163,49 @@ class BaseLoader(object):
                 else:
                     identifier = self.identifier
 
-                # data 1st level keys should be transformed to upper case.
-                data = {upperfy(k): v for k, v in data.items()}
-                if key:
-                    key = upperfy(key)
-
-                is_secret = "secret" in source_file
-                _keys = (list(data.keys()) if is_secret else data,)
-                _path = os.path.split(source_file)[-1]
-
-                self.obj.logger.debug(
-                    f"{self.identifier}_loader: {_path}[{env}]{_keys}"
+                self._set_data_to_obj(
+                    data, identifier, source_file, file_merge, key, env
                 )
 
-                # is there a `dynaconf_merge` inside an `[env]`?
-                file_merge = file_merge or data.pop("DYNACONF_MERGE", False)
+    def _set_data_to_obj(
+        self,
+        data,
+        identifier,
+        source_file,
+        file_merge=None,
+        key=False,
+        env=False,
+    ):
+        """Calls setttings.set to add the keys"""
 
-                if not key:
-                    self.obj.update(
-                        data,
-                        loader_identifier=identifier,
-                        is_secret=is_secret,
-                        merge=file_merge,
-                    )
-                elif key in data:
-                    self.obj.set(
-                        key,
-                        data.get(key),
-                        loader_identifier=identifier,
-                        is_secret=is_secret,
-                        merge=file_merge,
-                    )
+        # data 1st level keys should be transformed to upper case.
+        data = {upperfy(k): v for k, v in data.items()}
+        if key:
+            key = upperfy(key)
+
+        is_secret = "secret" in source_file
+        _keys = (list(data.keys()) if is_secret else data,)
+        _path = os.path.split(source_file)[-1]
+
+        self.obj.logger.debug(
+            f"{self.identifier}_loader: {_path}[{env}]{_keys}"
+        )
+
+        # is there a `dynaconf_merge` inside an `[env]`?
+        file_merge = file_merge or data.pop("DYNACONF_MERGE", False)
+
+        if not key:
+            self.obj.update(
+                data,
+                loader_identifier=identifier,
+                is_secret=is_secret,
+                merge=file_merge,
+            )
+        elif key in data:
+            self.obj.set(
+                key,
+                data.get(key),
+                loader_identifier=identifier,
+                is_secret=is_secret,
+                merge=file_merge,
+            )

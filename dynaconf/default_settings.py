@@ -91,6 +91,13 @@ SETTINGS_FILE_FOR_DYNACONF = get("SETTINGS_FILE_FOR_DYNACONF", default_paths)
 # # ENV SETTINGS
 # # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`
 
+
+# If True Dynaconf will load all variables in the file
+ENVLESS_MODE_FOR_DYNACONF = get("ENVLESSMODE_FOR_DYNACONF", False)
+
+# If True dynaconf will allow access to first level settngs in lower case
+LOWERCASE_READ_FOR_DYNACONF = get("LOWERCASE_READ_FOR_DYNACONF", False)
+
 # The environment variable to switch current env
 ENV_SWITCHER_FOR_DYNACONF = get(
     "ENV_SWITCHER_FOR_DYNACONF", "ENV_FOR_DYNACONF"
@@ -146,8 +153,7 @@ vault_host = get("VAULT_HOST_FOR_DYNACONF", "localhost")
 vault_port = get("VAULT_PORT_FOR_DYNACONF", "8200")
 default_vault = {
     "url": get(
-        "VAULT_URL_FOR_DYNACONF",
-        f"{vault_scheme}://{vault_host}:{vault_port}",
+        "VAULT_URL_FOR_DYNACONF", f"{vault_scheme}://{vault_host}:{vault_port}"
     ),
     "token": get("VAULT_TOKEN_FOR_DYNACONF", None),
     "cert": get("VAULT_CERT_FOR_DYNACONF", None),
