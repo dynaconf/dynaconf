@@ -39,6 +39,7 @@ test_examples:
 	cd example/toml_with_secrets/;pwd;python program.py
 	cd example/envs;pwd;python app.py
 	cd example/envless_mode;pwd;python app.py
+	cd example/lower_read;pwd;python app.py
 	cd example/custom_loader;pwd;python app.py
 	cd example/get_fresh;pwd;python app.py
 	cd example/includes;pwd;python app.py

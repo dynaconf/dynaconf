@@ -63,8 +63,6 @@ class BaseLoader(object):
         else:  # it is already a list/tuple
             files = filename
 
-        self.obj._loaded_files.extend(files)
-
         source_data = self.get_source_date(files)
 
         if self.obj.get("ENVLESS_MODE_FOR_DYNACONF") is True:
@@ -87,6 +85,7 @@ class BaseLoader(object):
                         ),
                     ) as open_file:
                         content = self.file_reader(open_file)
+                        self.obj._loaded_files.append(source_file)
                         if content:
                             data[source_file] = content
                             self.obj.logger.debug(

@@ -791,3 +791,27 @@ def test_envless_mode(tmpdir):
     assert settings.HELLO == "world"
     assert settings.DEFAULT == 1
     assert settings.DATABASES.default.port == 8080
+
+
+def test_lowercase_read_mode(tmpdir):
+    data = {
+        "foo": "bar",
+        "hello": "world",
+        "default": 1,
+        "databases": {"default": {"port": 8080}},
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data)
+
+    settings = LazySettings(ENVLESS_MODE=True, lowercase_read=True)
+
+    assert settings.FOO == "bar"
+    assert settings.foo == "bar"
+    assert settings.HELLO == "world"
+    assert settings.hello == "world"
+    assert settings.DEFAULT == 1
+    assert settings.default == 1
+    assert settings.DATABASES.default.port == 8080
+    assert settings.Databases.default.port == 8080
+
+    assert "foo" in settings
+    assert "FOO" in settings

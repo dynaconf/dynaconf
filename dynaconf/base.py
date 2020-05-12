@@ -1,5 +1,6 @@
 import glob
 import importlib
+import inspect
 import os
 from contextlib import contextmanager
 from contextlib import suppress
@@ -87,12 +88,12 @@ class LazySettings(LazyObject):
 
         :param kwargs: values that overrides default_settings
         """
-        self.resolve_config_aliases(kwargs)
+        self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
         self._kwargs = kwargs
         super(LazySettings, self).__init__()
 
-    def resolve_config_aliases(self, kwargs):
+    def __resolve_config_aliases(self, kwargs):
         """takes aliases for _FOR_DYNACONF configurations
 
         e.g: ROOT_PATH='/' is transformed into `ROOT_PATH_FOR_DYNACONF`
@@ -103,10 +104,15 @@ class LazySettings(LazyObject):
             if key.endswith("_FOR_DYNACONF")
         }
         aliases = {
-            key for key in kwargs if f"{key}_FOR_DYNACONF" in for_dynaconf_keys
+            key.upper()
+            for key in kwargs
+            if f"{key.upper()}_FOR_DYNACONF" in for_dynaconf_keys
         }
         for alias in aliases:
-            kwargs[f"{alias}_FOR_DYNACONF"] = kwargs.pop(alias)
+            value = kwargs.pop(alias, empty)
+            if value is empty:
+                value = kwargs.pop(alias.lower())
+            kwargs[f"{alias}_FOR_DYNACONF"] = value
 
     @evaluate_lazy_format
     def __getattr__(self, name):
@@ -117,6 +123,15 @@ class LazySettings(LazyObject):
             raise AttributeError(
                 f"Attribute {name} was deleted, " "or belongs to different env"
             )
+
+        if name not in self.__reserved_attrs:
+            lowercase_mode = self._kwargs.get(
+                "LOWERCASE_READ_FOR_DYNACONF",
+                default_settings.LOWERCASE_READ_FOR_DYNACONF,
+            )
+            if lowercase_mode is True:
+                name = name.upper()
+
         if (
             name.isupper()
             and (
@@ -168,6 +183,38 @@ class LazySettings(LazyObject):
     def configured(self):
         """If wrapped is configured"""
         return self._wrapped is not empty
+
+    @property
+    def __reserved_attrs(self):
+        return (
+            [
+                item[0]
+                for item in inspect.getmembers(LazySettings)
+                if not item[0].startswith("__")
+            ]
+            + [
+                item[0]
+                for item in inspect.getmembers(Settings)
+                if not item[0].startswith("__")
+            ]
+            + [
+                "_kwargs",
+                "_logger",
+                "_fresh",
+                "_loaded_envs",
+                "_loaded_files",
+                "_deleted",
+                "_store",
+                "_env_cache",
+                "_loaded_by_loaders",
+                "_loaders",
+                "_defaults",
+                "environ",
+                "SETTINGS_MODULE",
+                "_not_installed_warnings",
+                "_memoized",
+            ]
+        )
 
 
 class Settings(object):
@@ -231,7 +278,7 @@ class Settings(object):
 
     def __contains__(self, item):
         "Respond to `item in settings`"
-        return item in self.store
+        return item.upper() in self.store or item.lower() in self.store
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
@@ -1078,3 +1125,12 @@ class Settings(object):
             value = self.get(key, empty)
             if value is not empty:
                 setattr(obj, key, value)
+
+    def dynaconf(self):  # pragma: no cover
+        """A proxy to access internal methods and attributes
+
+        Starting in 3.0.0 Dynaconf now allows first level lower case
+        keys that are not reserved keyword, so this is a proxy to
+        internal methods and attrs.
+        """
+        return  # TOBE IMPLEMENTED
