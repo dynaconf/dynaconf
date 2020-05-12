@@ -17,7 +17,7 @@ Now you want to use Dynaconf, open that `conf.py` or `conf/__init__.py` and do:
 # coding: utf-8
 from dynaconf import LazySettings
 
-config = LazySettings(ENVVAR_PREFIX_FOR_DYNACONF="MYPROGRAM")
+config = LazySettings(envvar_prefix="MYPROGRAM")
 ```
 
 Now you can use `export MYPROGRAM_FOO=bar` instead of `DYNACONF_FOO=bar`
@@ -250,9 +250,9 @@ The environment variables wins precedence over all!
 
 # load dynaconf
 settings = LazySettings(
-    ENVVAR_PREFIX_FOR_DYNACONF=ENVVAR_PREFIX_FOR_DYNACONF,
-    ENVVAR_FOR_DYNACONF=ENVVAR_FOR_DYNACONF,
-    ENV_SWITCHER_FOR_DYNACONF=ENV_SWITCHER_FOR_DYNACONF
+    envvar_prefix=ENVVAR_PREFIX_FOR_DYNACONF,
+    envvar=ENVVAR_FOR_DYNACONF,
+    env_switcher=ENV_SWITCHER_FOR_DYNACONF
 )
 ```
 
@@ -288,9 +288,9 @@ Useful for plugin based apps.
 from dynaconf import LazySettings
 
 settings = LazySettings(
-  PRELOAD_FOR_DYNACONF=["/path/*", "other/settings.toml"],                # <-- Loaded first
-  SETTINGS_FILE_FOR_DYNACONF="/etc/foo/settings.py",                      # <-- Loaded second (the main file)
-  INCLUDES_FOR_DYNACONF=["other.module.settings", "other/settings.yaml"]  # <-- Loaded at the end
+  preload=["/path/*", "other/settings.toml"],                # <-- Loaded first
+  settings_file="/etc/foo/settings.py",                      # <-- Loaded second (the main file)
+  includes=["other.module.settings", "other/settings.yaml"]  # <-- Loaded at the end
 )
 
 ```

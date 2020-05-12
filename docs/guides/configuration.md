@@ -14,9 +14,9 @@ Or when using your own Dynaconf instance you can pass as parameters directly:
 ```py
 from dynaconf import LazySettings
 settings = LazySettings(
-    DEBUG_LEVEL_FOR_DYNACONF='DEBUG',
-    ENVVAR_PREFIX_FOR_DYNACONF='MYPROGRAM',
-    ENVVAR_FOR_DYNACONF='MYPROGRAM_SETTINGS',
+    debug_level='DEBUG',
+    envvar_prefix='MYPROGRAM',
+    envvar='MYPROGRAM_SETTINGS',
 )
 ```
 
@@ -42,13 +42,14 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     ENV | str | Working environment. | “development” | ENV_FOR_DYNACONF=production
     *FORCE_ENV | str | Force the working environment | None | FORCE_ENV_FOR_DYNACONF=other
     ENV_SWITCHER | str | Variable used to change working env. | ENV_FOR_DYNACONF | ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV
-    ENVLESS_MODE | str | Ignore env layering and load everything from file. | ENVLESS_MODE | ENVLESS_MODE_FOR_DYNACONF=true
+    ENVLESS_MODE | bool | Ignore env layering and load everything from file. | False | ENVLESS_MODE_FOR_DYNACONF=true
     ENVVAR | str | The envvar which holds the list of settings files. | ‘SETTINGS_FILE_FOR_DYNACONF’ | ENVVAR_FOR_DYNACONF=MYPROGRAM_SETTINGS
     ENVVAR_PREFIX | str | Prefix for exporting parameters as env vars. Example: If your program is called *MYPROGRAM* you may want users to use *MYPROGRAM_FOO=bar* instead of *DYNACONF_FOO=bar* on envvars. | “DYNACONF” | ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM (loads MYPROGRAM_VAR) ENVVAR_PREFIX_FOR_DYNACONF=’’ (loads _VAR) ENVVAR_PREFIX_FOR_DYNACONF=false (loads VAR)
     FRESH_VARS | list | A list of vars to be re-loaded on every access. | [] | FRESH_VARS_FOR_DYNACONF=[“HOST”, “PORT”]
     INCLUDES | list | A list of paths or a glob to load can be a toml-like list, or sep by , or ; | [] | INCLUDES_FOR_DYNACONF=”[‘path1.ext’, ‘folder/*’]” INCLUDES_FOR_DYNACONF=”path1.toml;path2.toml” INCLUDES_FOR_DYNACONF=”path1.toml,path2.toml” INCLUDES_FOR_DYNACONF=”single_path.toml” INCLUDES_FOR_DYNACONF=”single_path/glob/.toml”
     INSTANCE **used only by** *$dynaconf** *cli*. | str | Custom instance of LazySettings Must be an importable Python module. | None | INSTANCE_FOR_DYNACONF=myapp.settings
     LOADERS | list | A list of enabled external loaders. |	[‘dynaconf.loaders.env_loader’] | LOADERS_FOR_DYNACONF=’[‘module.mycustomloader’, …]’
+    LOWERCASE_READ | bool | If True first level keys can be accessed via lower case attrs |	False | LOWERCASE_READ_FOR_DYNACONF=true
     MERGE_ENABLED | bool | A bool to activate the global merge feature | False | MERGE_ENABLED_FOR_DYNACONF=1
     NESTED_SEPARATOR | str | Separator for nested assignment like `export DYNACONF_DATABASES__NAME='foo'` | `__` double underline | NESTED_SEPARATOR_FOR_DYNACONF='___'
     PRELOAD | list | A list of paths or glob to be pre-loaded before main settings file. | [] | PRELOAD_FOR_DYNACONF="['path1.ext', 'folder/*']"
