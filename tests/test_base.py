@@ -774,3 +774,20 @@ def test_config_aliases(tmpdir):
     assert settings.INCLUDES_FOR_DYNACONF == []
     assert settings.ENV_FOR_DYNACONF == "awesome"
     assert settings.current_env == "awesome"
+
+
+def test_envless_mode(tmpdir):
+    data = {
+        "foo": "bar",
+        "hello": "world",
+        "default": 1,
+        "databases": {"default": {"port": 8080}},
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data)
+
+    settings = LazySettings(ENVLESS_MODE=True)
+
+    assert settings.FOO == "bar"
+    assert settings.HELLO == "world"
+    assert settings.DEFAULT == 1
+    assert settings.DATABASES.default.port == 8080

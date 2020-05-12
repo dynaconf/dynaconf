@@ -68,6 +68,22 @@ ENV_FOR_DYNACONF=staging python yourapp.py
 
 > **NOTE:** When using [Flask Extension](flask.html) the environment can be changed via `FLASK_ENV` variable and for [Django Extension](django.html) you can use `DJANGO_ENV`.
 
+## Disabling Working environments
+
+In some cases you might want to disable the layered environment separation and just load everything from a file use:
+
+```bash
+export ENVLESS_MODE_FOR_DYNACONF=true
+```
+
+or pass this setting to your own Dynaconf instance
+
+```py
+from dynaconf import LazySettings
+
+settings = LazySettings(ENVLESS_MODE=True)
+```
+
 ## The settings files
 
 > **NOTE:** The settings files are optional. If it is not present, only the values from **environment variables** and enabled external loaders are used (**.env** file is also supported).

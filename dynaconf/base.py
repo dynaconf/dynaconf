@@ -431,7 +431,7 @@ class Settings(object):
         """Gets the internal mapping of LOADER -> values"""
         return self._loaded_by_loaders
 
-    def from_env(self, env, keep=False, **kwargs):
+    def from_env(self, env="", keep=False, **kwargs):
         """Return a new isolated settings object pointing to specified env.
 
         Example of settings.toml::
@@ -554,6 +554,9 @@ class Settings(object):
     @property
     def current_env(self):
         """Return the current active env"""
+
+        if self.ENVLESS_MODE_FOR_DYNACONF is True:
+            return "envless_mode"
         if self.FORCE_ENV_FOR_DYNACONF is not None:
             return self.FORCE_ENV_FOR_DYNACONF
 

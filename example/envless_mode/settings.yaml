@@ -1,0 +1,8 @@
+---
+foo: bar
+hello: world
+databases:
+  default:
+    port: 8080
+number: 1
+lazy: "@format {env[HOME]}"
