@@ -811,7 +811,16 @@ def test_lowercase_read_mode(tmpdir):
     assert settings.DEFAULT == 1
     assert settings.default == 1
     assert settings.DATABASES.default.port == 8080
-    assert settings.Databases.default.port == 8080
+    assert settings.databases.default.port == 8080
 
     assert "foo" in settings
     assert "FOO" in settings
+
+    # test __dir__
+    results = dir(settings)
+    assert "foo" in results
+    assert "FOO" in results
+
+    results = dir(settings.databases)
+    assert "default" in results
+    assert "DEFAULT" in results

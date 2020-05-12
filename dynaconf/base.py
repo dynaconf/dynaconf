@@ -124,7 +124,7 @@ class LazySettings(LazyObject):
                 f"Attribute {name} was deleted, " "or belongs to different env"
             )
 
-        if name not in self.__reserved_attrs:
+        if name not in RESERVED_ATTRS:
             lowercase_mode = self._kwargs.get(
                 "LOWERCASE_READ_FOR_DYNACONF",
                 default_settings.LOWERCASE_READ_FOR_DYNACONF,
@@ -183,38 +183,6 @@ class LazySettings(LazyObject):
     def configured(self):
         """If wrapped is configured"""
         return self._wrapped is not empty
-
-    @property
-    def __reserved_attrs(self):
-        return (
-            [
-                item[0]
-                for item in inspect.getmembers(LazySettings)
-                if not item[0].startswith("__")
-            ]
-            + [
-                item[0]
-                for item in inspect.getmembers(Settings)
-                if not item[0].startswith("__")
-            ]
-            + [
-                "_kwargs",
-                "_logger",
-                "_fresh",
-                "_loaded_envs",
-                "_loaded_files",
-                "_deleted",
-                "_store",
-                "_env_cache",
-                "_loaded_by_loaders",
-                "_loaders",
-                "_defaults",
-                "environ",
-                "SETTINGS_MODULE",
-                "_not_installed_warnings",
-                "_memoized",
-            ]
-        )
 
 
 class Settings(object):
@@ -295,6 +263,14 @@ class Settings(object):
     def store(self):
         """Gets internal storage"""
         return self._store
+
+    def __dir__(self):
+        """Enable auto-complete for code editors"""
+        return (
+            RESERVED_ATTRS
+            + [k.lower() for k in self.keys()]
+            + list(self.keys())
+        )
 
     def keys(self):
         """Redirects to store object"""
@@ -1134,3 +1110,35 @@ class Settings(object):
         internal methods and attrs.
         """
         return  # TOBE IMPLEMENTED
+
+
+"""Attributes created on Settings before 3.0.0"""
+RESERVED_ATTRS = (
+    [
+        item[0]
+        for item in inspect.getmembers(LazySettings)
+        if not item[0].startswith("__")
+    ]
+    + [
+        item[0]
+        for item in inspect.getmembers(Settings)
+        if not item[0].startswith("__")
+    ]
+    + [
+        "_kwargs",
+        "_logger",
+        "_fresh",
+        "_loaded_envs",
+        "_loaded_files",
+        "_deleted",
+        "_store",
+        "_env_cache",
+        "_loaded_by_loaders",
+        "_loaders",
+        "_defaults",
+        "environ",
+        "SETTINGS_MODULE",
+        "_not_installed_warnings",
+        "_memoized",
+    ]
+)
