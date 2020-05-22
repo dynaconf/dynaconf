@@ -2,18 +2,12 @@
 redis
 wheel
 twine
-ruamel.yaml
 flask>=1.0
 setuptools>=38.6.0
 configobj
 hvac
 django
 gitchangelog
-
-python-box
-python-dotenv
-toml
-click
 
 # testing
 codecov
@@ -23,6 +17,7 @@ pytest-mock
 commentjson
 docker-compose
 lovely-pytest-docker
+tox
 
 # style check
 flake8
