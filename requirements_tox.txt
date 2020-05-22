@@ -1,0 +1,11 @@
+pytest
+codecov
+pytest-cov
+pytest-mock
+flask
+redis
+hvac
+configobj
+
+# dynaconf
+.
