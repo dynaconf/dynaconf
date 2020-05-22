@@ -12,5 +12,7 @@ flake8:  # Same as scanner.linter value. Other option is flake8
       - E401 # (multiple imports on one line)
       - F401 # (not used import)
       - E402 # (Imports not on top)
+    exclude:
+      - dynaconf/vendor
 
 # no_blank_comment: True  # If True, no comment is made on PR without any errors.

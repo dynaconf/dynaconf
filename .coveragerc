@@ -12,4 +12,5 @@ omit =
     dynaconf/loaders/vault_loader.py
     dynaconf/loaders/__init__.py
     dynaconf/example/*
+    dynaconf/vendor/*
     dynaconf/contrib/django_dynaconf/*

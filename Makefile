@@ -134,7 +134,6 @@ test: pep8 test_only
 
 install:
 	pip install --upgrade pip
-	python setup.py develop
 	pip install -r requirements_dev.txt
 	make setup-pre-commit
 
@@ -151,7 +150,7 @@ pep8:
 	#   F841 (local variable assigned but never used, useful for debugging on exception)
 	#   W504 (line break after binary operator, I prefer to put `and|or` at the end)
 	#   F403 (star import `from foo import *` often used in __init__ files)
-	flake8 dynaconf --ignore=F403,W504,W503,F841,E401,F401,E402
+	flake8 dynaconf --ignore=F403,W504,W503,F841,E401,F401,E402 --exclude=dynaconf/vendor
 
 dist: clean
 	@python setup.py sdist bdist_wheel
