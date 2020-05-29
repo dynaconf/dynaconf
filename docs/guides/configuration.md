@@ -67,6 +67,7 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     VAULT_ENABLED | bool | Vault server is enabled. | false | VAULT_ENABLED_FOR_DYNACONF=true
     VAULT_HOST | str | Vault host. | localhost | VAULT_HOST_FOR_DYNACONF=”server”
     VAULT_PATH | str | Vault path to the configuration. | None | VAULT_PATH_FOR_DYNACONF=”secret_data”
+    VAULT_MOUNT_POINT | str | Vault mount point to the configuration. | secret | VAULT_MOUNT_POINT_FOR_DYNACONF=”kv”
     VAULT_PORT | str | Vault port. | 8200 | VAULT_PORT_FOR_DYNACONF=”2800”
     VAULT_PROXIES | dict | Vault proxies. | None | VAULT_PROXIES_FOR_DYNACONF={http=”http:/localhost:3128/”}
     VAULT_ROLE_ID | str | Vault Role ID. | None | VAULT_ROLE_ID_FOR_DYNACONF=”some-role-id”
