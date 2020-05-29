@@ -51,8 +51,11 @@ def load(obj, env=None, silent=None, key=None):
     env_list = build_env_list(obj, env)
     for env in env_list:
         path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, env])
+        mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
         try:
-            data = client.secrets.kv.read_secret_version(path)
+            data = client.secrets.kv.read_secret_version(
+                path, mount_point=mount_point
+            )
         except InvalidPath:
             # If the path doesn't exist, ignore it and set data to None
             data = None
@@ -103,7 +106,10 @@ def write(obj, data=None, **kwargs):
         raise AttributeError("Data must be provided")
     client = get_client(obj)
     path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, obj.current_env.lower()])
-    client.secrets.kv.create_or_update_secret(path, secret=data)
+    mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
+    client.secrets.kv.create_or_update_secret(
+        path, secret=data, mount_point=mount_point
+    )
     load(obj)
 
 
