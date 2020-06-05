@@ -1,3 +1,4 @@
+from itertools import chain
 from types import MappingProxyType
 
 from dynaconf import validator_conditions  # noqa
@@ -70,6 +71,7 @@ class Validator(object):
                 "{name} must {operation} {op_value} "
                 "but it is {value} in env {env}"
             ),
+            "combined": "combined validators failed {errors}",
         }
     )
 
@@ -106,6 +108,12 @@ class Validator(object):
             self.envs = env
         else:
             self.envs = None
+
+    def __or__(self, other):
+        return OrValidator(self, other)
+
+    def __and__(self, other):
+        return AndValidator(self, other)
 
     def __eq__(self, other):
         if self is other:
@@ -205,14 +213,71 @@ class Validator(object):
                     )
 
 
+class CombinedValidator(Validator):
+    def __init__(self, validator_a, validator_b, *args, **kwargs):
+        """Takes 2 validators and combines the validation"""
+        self.validators = (validator_a, validator_b)
+        super().__init__(*args, **kwargs)
+
+    def validate(self, settings):  # pragma: no cover
+        raise NotImplementedError(
+            "subclasses OrValidator or AndValidator implements this method"
+        )
+
+
+class OrValidator(CombinedValidator):
+    """Evaluates on Validator() | Validator()"""
+
+    def validate(self, settings):
+        """Ensure at least one of the validators are valid"""
+        errors = []
+        for validator in self.validators:
+            try:
+                validator.validate(settings)
+            except ValidationError as e:
+                errors.append(e)
+                continue
+            else:
+                return
+        raise ValidationError(
+            self.messages["combined"].format(
+                errors=" or ".join(str(e) for e in errors)
+            )
+        )
+
+
+class AndValidator(CombinedValidator):
+    """Evaluates on Validator() & Validator()"""
+
+    def validate(self, settings):
+        """Ensure both the validators are valid"""
+        errors = []
+        for validator in self.validators:
+            try:
+                validator.validate(settings)
+            except ValidationError as e:
+                errors.append(e)
+                continue
+        if errors:
+            raise ValidationError(
+                self.messages["combined"].format(
+                    errors=" and ".join(str(e) for e in errors)
+                )
+            )
+
+
 class ValidatorList(list):
-    def __init__(self, settings, *args, **kwargs):
-        super(ValidatorList, self).__init__(*args, **kwargs)
+    def __init__(self, settings, validators=None, *args, **kwargs):
+        if isinstance(validators, (list, tuple)):
+            args = list(args) + list(validators)
+        super(ValidatorList, self).__init__(args, **kwargs)
         self.settings = settings
 
-    def register(self, *args):
-        for validator in args:
-            if validator not in self:
+    def register(self, *args, **kwargs):
+        validators = list(chain.from_iterable(kwargs.values()))
+        validators.extend(args)
+        for validator in validators:
+            if validator and validator not in self:
                 self.append(validator)
 
     def validate(self):

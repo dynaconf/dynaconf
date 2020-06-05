@@ -16,9 +16,14 @@ positive_conditions = [
     ("is_not_in", 42, [55, 34]),
     ("cont", "This word(s) contains in text", "in"),
     ("len_eq", "Length Equal", 12),
+    ("len_eq", [1, 2, 3], 3),
     ("len_ne", "Length Not equal", 0),
+    ("len_ne", [], 1),
     ("len_min", "Minimum length", 3),
+    ("len_min", [1, 2, 3, 4, 5], 3),
     ("len_max", "Maximum lenght", 15),
+    ("len_max", [1, 2, 3, 4, 5], 5),
+    ("startswith", "codeshow", "code"),
 ]
 
 

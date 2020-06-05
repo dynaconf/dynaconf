@@ -213,6 +213,10 @@ class Settings(object):
         self._not_installed_warnings = []
         self._memoized = None
 
+        self.validators = ValidatorList(
+            self, validators=kwargs.pop("validators", None)
+        )
+
         compat_kwargs(kwargs)
         if settings_module:
             self.set("SETTINGS_FILE_FOR_DYNACONF", settings_module)
@@ -1054,13 +1058,6 @@ class Settings(object):
         )
         return find_file(*args, **kwargs)
 
-    @property
-    def validators(self):
-        """Gets or creates validator wrapper"""
-        if not hasattr(self, "_validators"):
-            self._validators = ValidatorList(self)
-        return self._validators
-
     def flag(self, key, env=None):
         """Feature flagging system
         write flags to redis
@@ -1140,5 +1137,6 @@ RESERVED_ATTRS = (
         "SETTINGS_MODULE",
         "_not_installed_warnings",
         "_memoized",
+        "validators",
     ]
 )

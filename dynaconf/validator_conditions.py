@@ -61,19 +61,24 @@ def cont(value, other):
 
 def len_eq(value, other):
     """Length Equal"""
-    return len(str(value)) == other
+    return len(value) == other
 
 
 def len_ne(value, other):
     """Length Not equal"""
-    return len(str(value)) != other
+    return len(value) != other
 
 
 def len_min(value, other):
     """Minimum length"""
-    return len(str(value)) > other
+    return len(value) >= other
 
 
 def len_max(value, other):
     """Maximum lenght"""
-    return len(str(value)) < other
+    return len(value) <= other
+
+
+def startswith(value, term):
+    """returns value.startswith(term) result"""
+    return value.startswith(term)
