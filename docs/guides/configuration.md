@@ -14,9 +14,9 @@ Or when using your own Dynaconf instance you can pass as parameters directly:
 ```py
 from dynaconf import LazySettings
 settings = LazySettings(
-    debug_level='DEBUG',
-    envvar_prefix='MYPROGRAM',
-    envvar='MYPROGRAM_SETTINGS',
+    DEBUG_LEVEL_FOR_DYNACONF='DEBUG',
+    ENVVAR_PREFIX_FOR_DYNACONF='MYPROGRAM',
+    ENV_FOR_DYNACONF='MYPROGRAM_SETTINGS',
 )
 ```
 
