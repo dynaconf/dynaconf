@@ -40,13 +40,15 @@ DYNACONF_STRING="'42'"
 DYNACONF_STRING="'true'"
 
 # Arrays must be homogenous in toml syntax
-DYNACONF_ARRAY=[1, 2, 3]
-DYNACONF_ARRAY=[1.1, 2.2, 3.3]
-DYNACONF_ARRAY=['a', 'b', 'c']
+DYNACONF_ARRAY="[1, 2, 3]"
+DYNACONF_ARRAY="[1.1, 2.2, 3.3]"
+DYNACONF_ARRAY="['a', 'b', 'c']"
 
 # Dictionaries
-DYNACONF_DICT={key="abc",val=123}
+DYNACONF_DICT="{key='abc',val=123}"
 ```
+
+> **NOTE:** When exporting compose data types like arrays and dictionaries you must use quotes around the value e.g: `export VARIABLE="['a', 'b', 'c']"` instead of `export VARIABLE=['a', 'b', 'c']`
 
 ```python
 # toml syntax does not allow `None/null` values so use @none
