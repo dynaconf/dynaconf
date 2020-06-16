@@ -213,6 +213,10 @@ class Settings(object):
         self._not_installed_warnings = []
         self._memoized = None
 
+        self.validators = ValidatorList(
+            self, validators=kwargs.pop("validators", None)
+        )
+
         compat_kwargs(kwargs)
         if settings_module:
             self.set("SETTINGS_FILE_FOR_DYNACONF", settings_module)
@@ -222,6 +226,8 @@ class Settings(object):
         self._defaults = kwargs
         self.logger.debug(f"Initializing Dynaconf ({self._store})")
         self.execute_loaders()
+
+        self.validators.validate()
 
     def __call__(self, *args, **kwargs):
         """Allow direct call of `settings('val')`
@@ -1054,13 +1060,6 @@ class Settings(object):
         )
         return find_file(*args, **kwargs)
 
-    @property
-    def validators(self):
-        """Gets or creates validator wrapper"""
-        if not hasattr(self, "_validators"):
-            self._validators = ValidatorList(self)
-        return self._validators
-
     def flag(self, key, env=None):
         """Feature flagging system
         write flags to redis
@@ -1140,5 +1139,6 @@ RESERVED_ATTRS = (
         "SETTINGS_MODULE",
         "_not_installed_warnings",
         "_memoized",
+        "validators",
     ]
 )

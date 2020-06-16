@@ -48,6 +48,25 @@ TESTVALUE = "value"
 """
 
 
+def test_validators_on_init(tmpdir):
+    TOML = """
+    [default]
+    hostname = 'devserver.com'
+    username = 'admin'
+    """
+    tmpdir.join("settings.toml").write(TOML)
+
+    settings = LazySettings(
+        validators=(
+            Validator("hostname", eq="devserver.com"),
+            Validator("username", ne="admin"),
+        )
+    )
+
+    with pytest.raises(ValidationError):
+        settings.validators.validate()
+
+
 def test_validators(tmpdir):
 
     tmpfile = tmpdir.join("settings.toml")
@@ -100,7 +119,7 @@ def test_validators(tmpdir):
         Validator("FALSE", is_type_of=bool, eq=False),
         Validator("NAME", len_min=3, len_max=125),
         Validator("DEV_SERVERS", cont="localhost"),
-        Validator("PORT", len_eq=4),
+        Validator("PORT", condition=lambda value: len(str(value)) == 4),
         Validator("PROJECT", len_ne=0),
     )
 
@@ -321,3 +340,85 @@ def test_validator_subclass_messages(tmpdir):
     assert ("BLARGVARGST_DONT_EXIST should exist in DEVELOPMENT") in str(
         error_must_exist_true
     )
+
+
+def test_positive_combined_validators(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
+    settings = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+    )
+    settings.validators.register(
+        Validator("VERSION", ne=1) | Validator("VERSION", ne=2),
+        Validator("VERSION", ne=4) & Validator("VERSION", ne=2),
+    )
+    settings.validators.validate()
+
+
+def test_negative_combined_or_validators(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
+    settings = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+    )
+    settings.validators.register(
+        Validator("VERSION", ne=1) | Validator("VERSION", ne=1),
+    )
+    with pytest.raises(ValidationError):
+        settings.validators.validate()
+
+
+def test_negative_combined_and_validators(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
+    settings = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+    )
+    settings.validators.register(
+        Validator("VERSION", ne=1) & Validator("VERSION", ne=1),
+    )
+    with pytest.raises(ValidationError):
+        settings.validators.validate()
+
+
+def test_envless_and_combined_validators(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    TOML = """
+    value = true
+    version = 1
+    name = 'Bruno'
+    """
+    tmpfile.write(TOML)
+    settings = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True, envless_mode=True
+    )
+    settings.validators.register(
+        Validator("VERSION", ne=1) & Validator("value", ne=True),
+    )
+    with pytest.raises(ValidationError):
+        settings.validators.validate()
+
+
+def test_cast_before_validate(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    TOML = """
+    name = 'Bruno'
+    colors = ['red', 'green', 'blue']
+    """
+    tmpfile.write(TOML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        silent=True,
+        envless_mode=True,
+        lowercase_read=True,
+        validators=[
+            Validator("name", len_eq=5),
+            Validator("name", len_min=1),
+            Validator("name", len_max=5),
+            Validator("colors", len_eq=3),
+            Validator("colors", len_eq=3),
+            Validator("colors", len_eq=24, cast=str),
+        ],
+    )
+    assert settings.name == "Bruno"
+    assert settings.colors == ["red", "green", "blue"]

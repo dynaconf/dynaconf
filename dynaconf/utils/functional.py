@@ -1,7 +1,13 @@
 import copy
 import operator
 
-empty = object()
+
+class Empty:
+    def __str__(self):
+        return "EMPTY"
+
+
+empty = Empty()
 
 
 def new_method_proxy(func):

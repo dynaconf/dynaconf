@@ -75,6 +75,23 @@ settings.validators.register(
 settings.validators.validate()
 ```
 
+### Combining validators
+
+Validators can be combined using:
+
+
+#### `|` **or** operator.
+
+```py
+Validator('DATABASE.USER', must_exist=True) | Validator('DATABASE.KEY', must_exist=True)
+```
+
+#### `&` **and** operator.
+
+```py
+Validator('DATABASE.HOST', must_exist=True) & Validator('DATABASE.CONN', must_exist=True)
+```
+
 ## CLI and dynaconf_validators.toml
 
 > **NEW in 1.0.1**
