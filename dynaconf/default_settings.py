@@ -96,7 +96,7 @@ SETTINGS_FILE_FOR_DYNACONF = get("SETTINGS_FILE_FOR_DYNACONF", default_paths)
 ENVLESS_MODE_FOR_DYNACONF = get("ENVLESSMODE_FOR_DYNACONF", False)
 
 # If True dynaconf will allow access to first level settngs in lower case
-LOWERCASE_READ_FOR_DYNACONF = get("LOWERCASE_READ_FOR_DYNACONF", False)
+LOWERCASE_READ_FOR_DYNACONF = get("LOWERCASE_READ_FOR_DYNACONF", True)
 
 # The environment variable to switch current env
 ENV_SWITCHER_FOR_DYNACONF = get(
