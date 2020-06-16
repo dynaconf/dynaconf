@@ -18,12 +18,16 @@ def test_deleted_raise(settings):
     assert settings.get("TODELETE") is None
 
 
-def test_accepts_only_upper(settings):
-    """Only upper case names are allowed
+def test_accepts_only_upper():
+    """Only upper case names are allowed if lowercase_read=False
     lower case are converted"""
+
+    settings = LazySettings(debug=True, lowercase_read=False)
+
     assert settings.DEBUG is True
     assert settings.get("debug") is True
     assert settings.get("DEBUG") is True
+    assert settings.get("Debug") is True
     assert settings.exists("debug")
     with pytest.raises(AttributeError):
         # access in lower case is not allowed
@@ -794,6 +798,9 @@ def test_envless_mode(tmpdir):
 
 
 def test_lowercase_read_mode(tmpdir):
+    """
+    Starting on 3.0.0 lowercase keys are enabled by default
+    """
     data = {
         "foo": "bar",
         "hello": "world",
@@ -802,7 +809,7 @@ def test_lowercase_read_mode(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
-    settings = LazySettings(ENVLESS_MODE=True, lowercase_read=True)
+    settings = LazySettings(ENVLESS_MODE=True)
 
     assert settings.FOO == "bar"
     assert settings.foo == "bar"
