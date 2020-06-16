@@ -397,3 +397,28 @@ def test_envless_and_combined_validators(tmpdir):
     )
     with pytest.raises(ValidationError):
         settings.validators.validate()
+
+
+def test_cast_before_validate(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    TOML = """
+    name = 'Bruno'
+    colors = ['red', 'green', 'blue']
+    """
+    tmpfile.write(TOML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        silent=True,
+        envless_mode=True,
+        lowercase_read=True,
+        validators=[
+            Validator("name", len_eq=5),
+            Validator("name", len_min=1),
+            Validator("name", len_max=5),
+            Validator("colors", len_eq=3),
+            Validator("colors", len_eq=3),
+            Validator("colors", len_eq=24, cast=str),
+        ],
+    )
+    assert settings.name == "Bruno"
+    assert settings.colors == ["red", "green", "blue"]

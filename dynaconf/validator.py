@@ -2,6 +2,7 @@ from itertools import chain
 from types import MappingProxyType
 
 from dynaconf import validator_conditions  # noqa
+from dynaconf.utils.functional import empty
 
 
 class ValidationError(Exception):
@@ -83,6 +84,7 @@ class Validator(object):
         when=None,
         env=None,
         messages=None,
+        cast=None,
         **operations
     ):
         # Copy immutable MappingProxyType as a mutable dict
@@ -100,6 +102,7 @@ class Validator(object):
         self.must_exist = must_exist
         self.condition = condition
         self.when = when
+        self.cast = cast or (lambda value: value)
         self.operations = operations
 
         if isinstance(env, str):
@@ -179,12 +182,10 @@ class Validator(object):
                         name=name, env=env
                     )
                 )
-
-            # if not exists and not required cancel validation flow
-            if not exists:
+            elif self.must_exist is False and not exists:
                 return
 
-            value = settings[name]
+            value = self.cast(settings.get(name, empty))
 
             # is there a callable condition?
             if self.condition is not None:

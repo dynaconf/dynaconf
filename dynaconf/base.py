@@ -227,6 +227,8 @@ class Settings(object):
         self.logger.debug(f"Initializing Dynaconf ({self._store})")
         self.execute_loaders()
 
+        self.validators.validate()
+
     def __call__(self, *args, **kwargs):
         """Allow direct call of `settings('val')`
         in place of `settings.get('val')`
