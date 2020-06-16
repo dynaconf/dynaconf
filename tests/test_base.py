@@ -286,11 +286,9 @@ def test_local_set_merge_list_unique(settings):
 
 def test_set_explicit_merge_token(tmpdir):
     data = {
-        "default": {
-            "a_list": [1, 2],
-            "b_list": [1],
-            "a_dict": {"name": "Bruno"},
-        }
+        "a_list": [1, 2],
+        "b_list": [1],
+        "a_dict": {"name": "Bruno"},
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
     settings = LazySettings()
@@ -347,7 +345,7 @@ def test_set_new_merge_issue_241_1(tmpdir):
         }
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
-    settings = LazySettings()
+    settings = LazySettings(environments=True)
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green"]
     assert settings.DATA.links == {
@@ -379,7 +377,7 @@ def test_set_new_merge_issue_241_2(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings()
+    settings = LazySettings(environments=True)
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green", "blue"]
     assert settings.DATA.links == {
@@ -640,7 +638,7 @@ def test_from_env_method(clean_env, tmpdir):
     }
     toml_path = str(tmpdir.join("base_settings.toml"))
     toml_loader.write(toml_path, data, merge=False)
-    settings = LazySettings(SETTINGS_FILE_FOR_DYNACONF=toml_path)
+    settings = LazySettings(settings_file=toml_path, environments=True)
     settings.set("ARBITRARY_KEY", "arbitrary value")
 
     assert settings.VALUE == "From development env"
@@ -753,15 +751,16 @@ def test_config_aliases(tmpdir):
     toml_loader.write(str(tmpdir.join("blarg.toml")), data, merge=False)
 
     settings = LazySettings(
-        ENVVAR_PREFIX="BRUCE",
-        CORE_LOADERS=["TOML"],
-        LOADERS=["dynaconf.loaders.env_loader"],
-        DEFAULT_ENV="hello",
-        ENV_SWITCHER="BRUCE_ENV",
-        PRELOAD=[],
-        SETTINGS_FILE=["blarg.toml"],
-        INCLUDES=[],
+        envvar_prefix="BRUCE",
+        core_loaders=["TOML"],
+        loaders=["dynaconf.loaders.env_loader"],
+        default_env="hello",
+        env_switcher="BRUCE_ENV",
+        prelaod=[],
+        settings_file=["blarg.toml"],
+        includes=[],
         ENV="awesome",
+        environments=True,
     )
 
     assert settings.NAME == "Bruno"
@@ -789,8 +788,7 @@ def test_envless_mode(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
-    settings = LazySettings(ENVLESS_MODE=True)
-
+    settings = LazySettings()  # already the default
     assert settings.FOO == "bar"
     assert settings.HELLO == "world"
     assert settings.DEFAULT == 1

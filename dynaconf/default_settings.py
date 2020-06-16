@@ -92,10 +92,10 @@ SETTINGS_FILE_FOR_DYNACONF = get("SETTINGS_FILE_FOR_DYNACONF", default_paths)
 # # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`
 
 
-# If True Dynaconf will load all variables in the file
-ENVLESS_MODE_FOR_DYNACONF = get("ENVLESSMODE_FOR_DYNACONF", False)
+# If provided environments will be loaded separatelly
+ENVIRONMENTS_FOR_DYNACONF = get("ENVIRONMENTS_FOR_DYNACONF", False)
 
-# If True dynaconf will allow access to first level settngs in lower case
+# If False dynaconf will allow access to first level settings only in upper
 LOWERCASE_READ_FOR_DYNACONF = get("LOWERCASE_READ_FOR_DYNACONF", True)
 
 # The environment variable to switch current env

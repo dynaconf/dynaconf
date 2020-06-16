@@ -606,8 +606,9 @@ class Settings(object):
     def current_env(self):
         """Return the current active env"""
 
-        if self.ENVLESS_MODE_FOR_DYNACONF is True:
-            return "envless_mode"
+        if self.ENVIRONMENTS_FOR_DYNACONF is False:
+            return "main"
+
         if self.FORCE_ENV_FOR_DYNACONF is not None:
             return self.FORCE_ENV_FOR_DYNACONF
 
