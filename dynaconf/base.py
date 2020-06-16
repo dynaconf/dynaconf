@@ -2,6 +2,7 @@ import glob
 import importlib
 import inspect
 import os
+import warnings
 from contextlib import contextmanager
 from contextlib import suppress
 
@@ -35,15 +36,19 @@ from dynaconf.validator import ValidatorList
 class LazySettings(LazyObject):
     """When you do::
 
-        >>> from dynaconf import settings
+        >>> from dynaconf import Dynaconf
+        >>> settings = Dynaconf(*options)
 
-    a LazySettings is imported and is initialized with only default_settings.
+    a LazySettings is initialized with only default_settings and all the
+    parameters passed to *options.
 
     Then when you first access a value, this will be set up and loaders will
-    be executes looking for default config files or the file defined in
-    SETTINGS_FILE_FOR_DYNACONF variable::
+    be executed looking for defined config files or the file defined in
+    SETTINGS_FILE_FOR_DYNACONF environment variable::
 
-        >>> settings.SETTINGS_FILE_FOR_DYNACONF
+        $ export SETTINGS_FILE_FOR_DYNACONF=path
+
+        >>> settings.FOO
 
     Or when you call::
 
@@ -53,15 +58,18 @@ class LazySettings(LazyObject):
     from different stores. By default it will try environment variables
     starting with ENVVAR_PREFIX_FOR_DYNACONF (by defaulf `DYNACONF_`)
 
-    You can also import this directly and customize it.
-    in a file `proj/conf.py`::
+    You can also customize specific parameters.
 
-        >>> from dynaconf import LazySettings
-        >>> config = LazySettings(ENV='PROJ',
-        ...                       LOADERS=[
-        ...                             'dynaconf.loaders.env_loader',
-        ...                             'dynaconf.loaders.redis_loader'
-        ...                       ])
+    Exmaple: `proj/config.py`::
+
+        >>> from dynaconf import Dynaconf
+        >>> settings = Dynaconf(
+        ...    env='production',
+        ...    loaders=[
+        ...        'dynaconf.loaders.env_loader',
+        ...        'dynaconf.loaders.redis_loader'
+        ...    ]
+        ... )
 
     save common values in a settings file::
 
@@ -74,9 +82,9 @@ class LazySettings(LazyObject):
 
         $ export DYNACONF_SERVER_PASSWD='super_secret'
 
-        >>> # from proj.conf import config
-        >>> print config.SERVER_IP
-        >>> print config.SERVER_PASSWD
+        >>> # from proj.config import settings
+        >>> print settings.SERVER_IP
+        >>> print settings.SERVER_PASSWD
 
     and now it reads all variables starting with `DYNACONF_` from envvars
     and all values in a hash called DYNACONF_PROJ in redis
@@ -88,6 +96,11 @@ class LazySettings(LazyObject):
 
         :param kwargs: values that overrides default_settings
         """
+
+        self._warn_dynaconf_global_settings = kwargs.pop(
+            "warn_dynaconf_global_settings", None
+        )  # in 3.0.0 global settings is deprecated
+
         self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
         self._kwargs = kwargs
@@ -151,6 +164,15 @@ class LazySettings(LazyObject):
 
     def _setup(self):
         """Initial setup, run once."""
+
+        if self._warn_dynaconf_global_settings:
+            warnings.warn(
+                "Usage of `from dynaconf import settings` is now "
+                "DEPRECATED in 3.0.0+. You are encouraged to change it to "
+                "your own instance e.g: `settings = Dynaconf(*options)`",
+                DeprecationWarning,
+            )
+
         default_settings.reload()
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
@@ -1124,21 +1146,22 @@ RESERVED_ATTRS = (
         if not item[0].startswith("__")
     ]
     + [
-        "_kwargs",
-        "_logger",
+        "_defaults",
+        "_deleted",
+        "_env_cache",
         "_fresh",
+        "_kwargs",
+        "_loaded_by_loaders",
         "_loaded_envs",
         "_loaded_files",
-        "_deleted",
-        "_store",
-        "_env_cache",
-        "_loaded_by_loaders",
         "_loaders",
-        "_defaults",
+        "_logger",
+        "_memoized",
+        "_not_installed_warnings",
+        "_store",
+        "_warn_dynaconf_global_settings",
         "environ",
         "SETTINGS_MODULE",
-        "_not_installed_warnings",
-        "_memoized",
         "validators",
     ]
 )

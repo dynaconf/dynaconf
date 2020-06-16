@@ -9,11 +9,14 @@ from dynaconf.contrib import FlaskDynaconf  # noqa
 from dynaconf.validator import ValidationError  # noqa
 from dynaconf.validator import Validator  # noqa
 
-settings = LazySettings()
+"""This global settings is deprecated from 3.0.0+"""
+settings = LazySettings(warn_dynaconf_global_settings=True)
+
+
+"""This is the new recommended base class alias"""
 Dynaconf = LazySettings  # noqa
 
 __all__ = [
-    "settings",
     "Dynaconf",
     "LazySettings",
     "Validator",
