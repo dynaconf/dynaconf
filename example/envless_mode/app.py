@@ -2,7 +2,7 @@ import os
 
 from dynaconf import LazySettings
 
-settings = LazySettings(ENVLESS_MODE=True)
+settings = LazySettings()
 
 
 assert settings.FOO == "bar"

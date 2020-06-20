@@ -14,7 +14,7 @@ import sys
 
 from dynaconf import LazySettings
 
-settings = LazySettings()
+settings = LazySettings(environments=True)
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)

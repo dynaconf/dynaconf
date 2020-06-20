@@ -7,7 +7,7 @@ from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.loaders.json_loader import load
 
 
-settings = LazySettings(ENV_FOR_DYNACONF="PRODUCTION")
+settings = LazySettings(environments=True, ENV_FOR_DYNACONF="PRODUCTION")
 
 
 JSON = """
@@ -199,3 +199,16 @@ def test_dynaconf_encoder():
 
     with pytest.raises(TypeError):
         json.dumps(data_error, cls=DynaconfEncoder)
+
+
+def test_envless():
+    settings = LazySettings()
+    _json = """
+    {
+        "colors__yellow__code": "#FFCC00",
+        "COLORS__yellow__name": "Yellow"
+    }
+    """
+    load(settings, filename=_json)
+    assert settings.COLORS.yellow.code == "#FFCC00"
+    assert settings.COLORS.yellow.name == "Yellow"

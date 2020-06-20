@@ -20,7 +20,7 @@ def test_feature_flag(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 
-    settings = LazySettings(SETTINGS_FILE_FOR_DYNACONF=str(tmpfile))
+    settings = LazySettings(environments=True, settings_file=str(tmpfile))
 
     assert settings.flag("dashboard", "premiumuser") is True
     assert settings.flag("dashboard", "simpleuser") is False

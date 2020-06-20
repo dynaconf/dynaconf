@@ -389,22 +389,18 @@ def test_set_new_merge_issue_241_2(tmpdir):
 
 def test_set_new_merge_issue_241_3(tmpdir):
     data = {
-        "default": {
-            "name": "Bruno",
-            "colors": ["red", "green"],
-            "data": {
-                "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
-            },
-        }
+        "name": "Bruno",
+        "colors": ["red", "green"],
+        "data": {
+            "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
+        },
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
 
     data = {
-        "default": {
-            "name": "Tommy Shelby",
-            "colors": {"dynaconf_merge": ["yellow", "pink"]},
-            "data": {"links": {"site": "pb.com"}},
-        }
+        "name": "Tommy Shelby",
+        "colors": {"dynaconf_merge": ["yellow", "pink"]},
+        "data": {"links": {"site": "pb.com"}},
     }
     toml_loader.write(
         str(tmpdir.join("settings.local.toml")), data, merge=False
@@ -418,17 +414,15 @@ def test_set_new_merge_issue_241_3(tmpdir):
 
 def test_set_new_merge_issue_241_4(tmpdir):
     data = {
-        "default": {
-            "name": "Bruno",
-            "colors": ["red", "green"],
-            "data": {
-                "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
-            },
-        }
+        "name": "Bruno",
+        "colors": ["red", "green"],
+        "data": {
+            "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
+        },
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
 
-    data = {"default": {"data__links__telegram": "t.me/rochacbruno"}}
+    data = {"data__links__telegram": "t.me/rochacbruno"}
     toml_loader.write(
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
@@ -460,7 +454,7 @@ def test_set_new_merge_issue_241_5(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings()
+    settings = LazySettings(environments=True)
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green", "blue"]
     assert settings.DATA.links == {
@@ -705,17 +699,13 @@ def test_from_env_method(clean_env, tmpdir):
 
 def test_preload(tmpdir):
     data = {
-        "default": {
-            "data": {
-                "links": {"twitter": "rochacbruno", "site": "brunorocha.org"}
-            }
-        }
+        "data": {"links": {"twitter": "rochacbruno", "site": "brunorocha.org"}}
     }
     toml_loader.write(str(tmpdir.join("preload.toml")), data, merge=False)
 
     data = {
         "dynaconf_merge": True,
-        "default": {"data": {"links": {"github": "rochacbruno.github.io"}}},
+        "data": {"links": {"github": "rochacbruno.github.io"}},
     }
     toml_loader.write(
         str(tmpdir.join("main_settings.toml")), data, merge=False
@@ -723,9 +713,7 @@ def test_preload(tmpdir):
 
     data = {
         "dynaconf_merge": True,
-        "default": {
-            "data": {"links": {"mastodon": "mastodon.social/@rochacbruno"}}
-        },
+        "data": {"links": {"mastodon": "mastodon.social/@rochacbruno"}},
     }
     toml_loader.write(str(tmpdir.join("included.toml")), data, merge=False)
 

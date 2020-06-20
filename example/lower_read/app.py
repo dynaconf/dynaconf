@@ -1,6 +1,6 @@
 from dynaconf import LazySettings
 
-settings = LazySettings(envless_mode=True, lowercase_read=True)
+settings = LazySettings()
 
 assert settings.server == "foo.com"
 assert settings.SERVER == "foo.com"

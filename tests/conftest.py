@@ -23,6 +23,7 @@ def settings():
         LOADERS_FOR_DYNACONF=loaders,
         ENVVAR_PREFIX_FOR_DYNACONF=f"DYNA{mode}",
         ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
+        environments=True,
         boxed_data={
             "HOST": "server.com",
             "port": 8080,

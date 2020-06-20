@@ -19,8 +19,7 @@ def test_envvar_prefix_lazysettings(tmpdir):
     tmpfile.write(TOML)
 
     settings = LazySettings(
-        ENVVAR_PREFIX_FOR_DYNACONF=False,
-        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
+        environments=True, envvar_prefix=False, settings_file=str(tmpfile),
     )
 
     assert settings.VAR == "my value"
@@ -33,7 +32,7 @@ def test_envvar_prefix_false_from_envvar(tmpdir):
     tmpfile = tmpdir.mkdir("sub").join("test_no_envvar_prefix.toml")
     tmpfile.write(TOML)
 
-    settings = LazySettings(SETTINGS_FILE_FOR_DYNACONF=str(tmpfile))
+    settings = LazySettings(environments=True, settings_file=str(tmpfile))
 
     assert settings.VAR == "my value"
     assert settings.DYNACONF_PREFIXED_VAR == "this is prefixed"

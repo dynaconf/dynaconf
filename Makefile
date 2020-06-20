@@ -35,7 +35,7 @@ test_examples:
 	cd example/pytest_example/app;pwd;pytest tests/
 	cd example/pytest_example/flask;pwd;pytest tests
 	cd example/validators/with_python/;pwd;python app.py
-	cd example/validators/with_toml/;pwd;dynaconf validate
+	cd example/validators/with_toml/;pwd;PYTHONPATH=. dynaconf -i config.settings validate
 	cd example/toml_with_secrets/;pwd;python program.py
 	cd example/envs;pwd;python app.py
 	cd example/envless_mode;pwd;python app.py
@@ -118,6 +118,9 @@ test_redis:
 	@sleep 2
 	@cd example/redis_example;pwd;python redis_example.py
 	docker stop dynaconf_with_redis
+
+watch:
+	ls **/**.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/
 
 test_only:
 	py.test -m "not integration" -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/

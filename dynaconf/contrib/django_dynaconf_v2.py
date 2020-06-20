@@ -63,6 +63,8 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     options.setdefault("ROOT_PATH_FOR_DYNACONF", _root_path)
     options.setdefault("ENVVAR_PREFIX_FOR_DYNACONF", "DJANGO")
     options.setdefault("ENV_SWITCHER_FOR_DYNACONF", "DJANGO_ENV")
+    options.setdefault("ENVIRONMENTS_FOR_DYNACONF", True)
+
     lazy_settings = dynaconf.LazySettings(**options)
     dynaconf.settings = lazy_settings  # rebind the settings
 

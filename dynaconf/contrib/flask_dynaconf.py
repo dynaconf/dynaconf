@@ -90,6 +90,7 @@ class FlaskDynaconf(object):
         kwargs.setdefault("ENVVAR_PREFIX", "FLASK")
         env_prefix = f"{kwargs['ENVVAR_PREFIX']}_ENV"  # FLASK_ENV
         kwargs.setdefault("ENV_SWITCHER", env_prefix)
+        kwargs.setdefault("ENVIRONMENTS", True)
 
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config

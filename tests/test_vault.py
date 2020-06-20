@@ -31,7 +31,7 @@ def docker_vault(docker_services):
 @pytest.mark.integration
 def test_load_vault_not_configured():
     with pytest.raises(AssertionError) as excinfo:
-        settings = LazySettings()
+        settings = LazySettings(environments=True)
         load(settings, {"OTHER_SECRET": "vault_works"})
     assert "Vault authentication error" in str(excinfo.value)
 
@@ -39,7 +39,7 @@ def test_load_vault_not_configured():
 @pytest.mark.integration
 def test_write_vault_not_configured():
     with pytest.raises(RuntimeError) as excinfo:
-        settings = LazySettings()
+        settings = LazySettings(environments=True)
         write(settings, {"OTHER_SECRET": "vault_works"})
     assert "export VAULT_ENABLED_FOR_DYNACONF" in str(excinfo.value)
 
@@ -48,7 +48,7 @@ def test_write_vault_not_configured():
 def test_write_vault_without_data(docker_vault):
     os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
-    settings = LazySettings()
+    settings = LazySettings(environments=True)
     with pytest.raises(AttributeError) as excinfo:
         write(settings)
     assert "Data must be provided" in str(excinfo.value)
@@ -58,7 +58,7 @@ def test_write_vault_without_data(docker_vault):
 def test_list_envs_in_vault(docker_vault):
     os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
-    settings = LazySettings()
+    settings = LazySettings(environments=True)
     envs = list_envs(settings)
     assert envs == []
 
@@ -67,7 +67,7 @@ def test_list_envs_in_vault(docker_vault):
 def test_write_to_vault(docker_vault):
     os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
-    settings = LazySettings()
+    settings = LazySettings(environments=True)
     write(settings, {"SECRET": "vault_works_with_docker"})
     load(settings, key="SECRET")
     assert settings.get("SECRET") == "vault_works_with_docker"
@@ -77,7 +77,7 @@ def test_write_to_vault(docker_vault):
 def test_load_from_vault_with_key(docker_vault):
     os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
-    settings = LazySettings()
+    settings = LazySettings(environments=True)
     load(settings, key="SECRET")
     assert settings.get("SECRET") == "vault_works_with_docker"
 
@@ -86,7 +86,7 @@ def test_load_from_vault_with_key(docker_vault):
 def test_write_and_load_from_vault_without_key(docker_vault):
     os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
-    settings = LazySettings()
+    settings = LazySettings(environments=True)
     write(settings, {"SECRET": "vault_works_perfectly"})
     load(settings)
     assert settings.get("SECRET") == "vault_works_perfectly"

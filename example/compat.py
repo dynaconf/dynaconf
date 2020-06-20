@@ -3,7 +3,7 @@ from dynaconf.utils import RENAMED_VARS
 
 
 # 0 given a bare settings
-settings = LazySettings()
+settings = LazySettings(environments=True)
 
 # 1 Ensure all renamed vars exists in object
 for old, new in RENAMED_VARS.items():
@@ -18,6 +18,7 @@ for old, new in RENAMED_VARS.items():
 
 # 0 given a full old-style configured setting
 settings = LazySettings(
+    environments=True,
     DYNACONF_NAMESPACE="FOO",
     DYNACONF_SETTINGS_MODULE="/tmp/foo.toml",
     PROJECT_ROOT="/tmp/",
@@ -48,6 +49,7 @@ for old, new in RENAMED_VARS.items():
     )
 
 settings = LazySettings(
+    environments=True,
     DYNACONF_NAMESPACE="FOO",
     DYNACONF_SETTINGS_MODULE="foo.py",
     PROJECT_ROOT="/tmp",
@@ -72,6 +74,7 @@ print(settings.FRESH_VARS_FOR_DYNACONF)
 
 
 settings = LazySettings(
+    environments=True,
     NAMESPACE="FOO",
     SETTINGS_MODULE="foo.py",
     PROJECT_ROOT="/tmp",

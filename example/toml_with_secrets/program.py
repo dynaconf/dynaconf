@@ -1,7 +1,9 @@
 from dynaconf import LazySettings
 
 settings = LazySettings(
-    ENV_FOR_DYNACONF="example", ENVVAR_PREFIX_FOR_DYNACONF="PROGRAM"
+    environments=True,
+    ENV_FOR_DYNACONF="example",
+    ENVVAR_PREFIX_FOR_DYNACONF="PROGRAM",
 )
 
 print(settings.USERNAME)
