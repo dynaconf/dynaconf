@@ -173,7 +173,7 @@ class LazySettings(LazyObject):
                 DeprecationWarning,
             )
 
-        default_settings.reload()
+        default_settings.reload(self._kwargs.get("load_dotenv"))
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
@@ -191,7 +191,7 @@ class LazySettings(LazyObject):
         :param settings_module: defines the setttings file
         :param kwargs:  override default settings
         """
-        default_settings.reload()
+        default_settings.reload(self._kwargs.get("load_dotenv"))
         environment_var = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )

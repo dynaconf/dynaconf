@@ -247,9 +247,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     This command must run on the project's root folder or you must pass
     --path=/myproject/root/folder.
 
-    If you want to have a .env created with the ENV defined there e.g:
-    `ENV_FOR_DYNACONF=production` just pass --env=production and then .env
-    will also be created and the env defined to production.
+    The --env/-e is deprecated (kept for compatibility but unused)
     """
     click.echo("Configuring your Dynaconf environment")
     path = Path(path)
@@ -262,7 +260,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
         sys.path.append(str(path))
         set_settings(ctx, "config.settings")
 
-    env = env or settings.current_env.lower()
+    env = settings.current_env.lower()
 
     loader = importlib.import_module(f"dynaconf.loaders.{fileformat}_loader")
     # Turn foo=bar=zaz in {'foo': 'bar=zaz'}
@@ -284,7 +282,6 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     ):  # pragma: no cover  # noqa
         settings_path = path
         secrets_path = path.parent / f".secrets.{fileformat}"
-        dotenv_path = path.parent / ".env"
         gitignore_path = path.parent / ".gitignore"
     else:
         if fileformat == "env":
@@ -301,7 +298,6 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
         else:
             settings_path = path / f"settings.{fileformat}"
             secrets_path = path / f".secrets.{fileformat}"
-        dotenv_path = path / ".env"
         gitignore_path = path / ".gitignore"
 
     if fileformat in ["py", "env"]:
@@ -323,16 +319,6 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
         loader.write(settings_path, settings_data, merge=True)
     if secrets_path and secrets_data:
         loader.write(secrets_path, secrets_data, merge=True)
-
-    # write .env file
-    # if env not in ['default', 'development']:  # pragma: no cover
-    if not dotenv_path.exists():  # pragma: no cover
-        Path.touch(dotenv_path)
-        dotenv_cli.set_key(str(dotenv_path), "ENV_FOR_DYNACONF", env.upper())
-    else:  # pragma: no cover
-        click.echo(
-            f".env already exists please set ENV_FOR_DYNACONF={env.upper()}"
-        )
 
     if wg:
         # write .gitignore

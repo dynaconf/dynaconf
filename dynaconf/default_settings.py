@@ -68,8 +68,9 @@ def start_dotenv(obj=None, root_path=None):
     warn_deprecations(os.environ)
 
 
-def reload(*args, **kwargs):
-    start_dotenv(*args, **kwargs)
+def reload(load_dotenv=None, *args, **kwargs):
+    if load_dotenv:
+        start_dotenv(*args, **kwargs)
     importlib.reload(sys.modules[__name__])
 
 

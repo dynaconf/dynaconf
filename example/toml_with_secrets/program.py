@@ -4,6 +4,7 @@ settings = LazySettings(
     environments=True,
     ENV_FOR_DYNACONF="example",
     ENVVAR_PREFIX_FOR_DYNACONF="PROGRAM",
+    load_dotenv=True,
 )
 
 print(settings.USERNAME)
