@@ -16,6 +16,8 @@ test_examples:
 	cd example/dunder;pwd;python app.py
 	cd example/format;pwd;python app.py
 	cd example/app_with_dotenv;pwd;python app.py
+	cd example/dotenv_not_loaded_by_default;pwd;python app.py
+	cd example/dotenv_loaded_if_enabled;pwd;python app.py
 	cd example/merge_enabled;pwd;python app.py
 	cd example/new_merge;pwd;python app.py
 	cd example/overriding;pwd;python app.py

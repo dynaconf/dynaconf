@@ -11,7 +11,10 @@ from dynaconf.validator import Validator  # noqa
 
 """This global settings is deprecated from 3.0.0+"""
 settings = LazySettings(
-    warn_dynaconf_global_settings=True, environments=True, lowercase_read=False
+    warn_dynaconf_global_settings=True,
+    environments=True,
+    lowercase_read=False,
+    load_dotenv=True,
 )
 
 """This is the new recommended base class alias"""

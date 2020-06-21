@@ -1,7 +1,7 @@
 from dynaconf import LazySettings
 from dynaconf import Validator
 
-settings = LazySettings(environments=True, ENV="EXAMPLE")
+settings = LazySettings(environments=True, ENV="EXAMPLE", load_dotenv=True)
 
 settings.validators.register(
     Validator("VERSION", "AGE", "NAME", must_exist=True),
