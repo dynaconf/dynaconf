@@ -18,9 +18,9 @@ runner = CliRunner()
 settings = LazySettings(OPTION_FOR_TESTS=True, environments=True)
 
 
-def run(cmd, env=None):
+def run(cmd, env=None, attr="output"):
     result = runner.invoke(main, cmd, env=env, catch_exceptions=False)
-    return result.output
+    return getattr(result, attr)
 
 
 def test_version():
@@ -92,11 +92,6 @@ def test_list(testdir):
     )
     assert "DOTENV_STR<str> 'hello'" in result
     assert "GLOBAL_ENV_FOR_DYNACONF<str> 'DYNACONF'" not in result
-
-
-def test_fail_with_no_instance(testdir):
-    result = run(["list"])
-    assert "--instance/-i is required" in result
 
 
 def test_help_dont_require_instance(testdir):

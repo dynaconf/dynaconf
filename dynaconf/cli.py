@@ -3,6 +3,7 @@ import io
 import os
 import pprint
 import sys
+import warnings
 import webbrowser
 from contextlib import suppress
 from pathlib import Path
@@ -15,6 +16,7 @@ from dynaconf import constants
 from dynaconf import default_settings
 from dynaconf import LazySettings
 from dynaconf import loaders
+from dynaconf import settings as legacy_settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
@@ -77,11 +79,12 @@ def set_settings(ctx, instance=None):
         if instance is None and "--help" not in click.get_os_args():
             if ctx.invoked_subcommand and ctx.invoked_subcommand not in [
                 "init",
-                "write",
             ]:
-                raise click.MissingParameter(
-                    "--instance/-i is required.", param_type="option"
+                warnings.warn(
+                    "Starting on 3.x the param --instance/-i is now required. "
+                    "try passing it `dynaconf -i path.to.settings <cmd>`"
                 )
+                settings = legacy_settings
             else:
                 settings = LazySettings(create_new_settings=True)
         else:
