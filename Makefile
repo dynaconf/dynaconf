@@ -35,7 +35,7 @@ test_examples:
 	cd example/pytest_example/app;pwd;pytest tests/
 	cd example/pytest_example/flask;pwd;pytest tests
 	cd example/validators/with_python/;pwd;python app.py
-	cd example/validators/with_toml/;pwd;dynaconf validate
+	cd example/validators/with_toml/;pwd;PYTHONPATH=. dynaconf -i config.settings validate
 	cd example/toml_with_secrets/;pwd;python program.py
 	cd example/envs;pwd;python app.py
 	cd example/envless_mode;pwd;python app.py
@@ -100,9 +100,9 @@ test_vault:
 	# @cd example/vault;pwd;python write.py
 	docker run --rm --name dynaconf_with_vault -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
 	@sleep 5
-	@cd example/vault;pwd;dynaconf write vault -s SECRET=vault_works_in_default -s FOO=foo_is_default
-	@cd example/vault;pwd;dynaconf write vault -e dev -s SECRET=vault_works_in_dev
-	@cd example/vault;pwd;dynaconf write vault -e prod -s SECRET=vault_works_in_prod
+	@cd example/vault;pwd;dynaconf -i dynaconf.settings write vault -s SECRET=vault_works_in_default -s FOO=foo_is_default
+	@cd example/vault;pwd;dynaconf -i dynaconf.settings write vault -e dev -s SECRET=vault_works_in_dev
+	@cd example/vault;pwd;dynaconf -i dynaconf.settings write vault -e prod -s SECRET=vault_works_in_prod
 	@sleep 2
 	@cd example/vault;pwd;python vault_example.py
 	docker stop dynaconf_with_vault
@@ -111,13 +111,16 @@ test_redis:
 	# @cd example/redis_example;pwd;python write.py
 	docker run --rm --name dynaconf_with_redis -d -p 6379:6379 redis:alpine
 	@sleep 2
-	@cd example/redis_example;pwd;dynaconf write redis -s FOO=foo_is_default
-	@cd example/redis_example;pwd;dynaconf write redis -s SECRET=redis_works_in_default
-	@cd example/redis_example;pwd;dynaconf write redis -e development -s SECRET=redis_works_in_development
-	@cd example/redis_example;pwd;dynaconf write redis -e production -s SECRET=redis_works_in_production
+	@cd example/redis_example;pwd;dynaconf -i dynaconf.settings write redis -s FOO=foo_is_default
+	@cd example/redis_example;pwd;dynaconf -i dynaconf.settings write redis -s SECRET=redis_works_in_default
+	@cd example/redis_example;pwd;dynaconf -i dynaconf.settings write redis -e development -s SECRET=redis_works_in_development
+	@cd example/redis_example;pwd;dynaconf -i dynaconf.settings write redis -e production -s SECRET=redis_works_in_production
 	@sleep 2
 	@cd example/redis_example;pwd;python redis_example.py
 	docker stop dynaconf_with_redis
+
+watch:
+	ls **/**.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/
 
 test_only:
 	py.test -m "not integration" -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/

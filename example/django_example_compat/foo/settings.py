@@ -21,6 +21,7 @@ settings_location = os.path.join(
 
 settings = dynaconf.DjangoDynaconf(
     __name__,
+    ENVIRONMENTS_FOR_DYNACONF=True,
     GLOBAL_ENV_FOR_DYNACONF="MYWEBAPP",
     ENV_SWITCHER_FOR_DYNACONF="MYWEBAPP_ENV",
     SETTINGS_MODULE_FOR_DYNACONF=settings_location,

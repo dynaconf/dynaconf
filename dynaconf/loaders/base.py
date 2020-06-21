@@ -65,7 +65,7 @@ class BaseLoader(object):
 
         source_data = self.get_source_date(files)
 
-        if self.obj.get("ENVLESS_MODE_FOR_DYNACONF") is True:
+        if self.obj.get("ENVIRONMENTS_FOR_DYNACONF") is False:
             self._envless_load(source_data, silent, key)
         else:
             self._load_all_envs(source_data, silent, key)

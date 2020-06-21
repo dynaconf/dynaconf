@@ -57,10 +57,11 @@ def test_validators_on_init(tmpdir):
     tmpdir.join("settings.toml").write(TOML)
 
     settings = LazySettings(
+        environments=True,
         validators=(
             Validator("hostname", eq="devserver.com"),
             Validator("username", ne="admin"),
-        )
+        ),
     )
 
     with pytest.raises(ValidationError):
@@ -73,6 +74,7 @@ def test_validators(tmpdir):
     tmpfile.write(TOML)
 
     settings = LazySettings(
+        environments=True,
         ENV_FOR_DYNACONF="EXAMPLE",
         SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
         silent=True,
@@ -171,6 +173,7 @@ def test_validation_error(validator_instance, tmpdir):
     tmpfile.write(TOML)
 
     settings = LazySettings(
+        environments=True,
         ENV_FOR_DYNACONF="EXAMPLE",
         SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
         silent=True,
@@ -190,7 +193,9 @@ def test_no_reload_on_single_env(tmpdir, mocker):
     other_env_validator = Validator("NAME", must_exist=True, env="production")
 
     settings = LazySettings(
-        ENV_FOR_DYNACONF="DEVELOPMENt", SETTINGS_FILE_FOR_DYNACONF=str(tmpfile)
+        environments=True,
+        ENV_FOR_DYNACONF="DEVELOPMENt",
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
     )
     using_env = mocker.patch.object(settings, "from_env")
 
@@ -226,6 +231,7 @@ def test_ignoring_duplicate_validators(tmpdir):
     tmpfile.write(TOML)
 
     settings = LazySettings(
+        environments=True,
         ENV_FOR_DYNACONF="EXAMPLE",
         SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
         silent=True,
@@ -255,7 +261,7 @@ def test_validator_custom_message(tmpdir):
     tmpfile.write(TOML)
 
     settings = LazySettings(
-        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+        environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
 
     custom_msg = "You cannot set {name} to {value} in env {env}"
@@ -279,7 +285,7 @@ def test_validator_subclass_messages(tmpdir):
     tmpfile.write(TOML)
 
     settings = LazySettings(
-        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+        environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
 
     class MyValidator(Validator):
@@ -346,7 +352,7 @@ def test_positive_combined_validators(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
     settings = LazySettings(
-        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+        environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
     settings.validators.register(
         Validator("VERSION", ne=1) | Validator("VERSION", ne=2),
@@ -359,7 +365,7 @@ def test_negative_combined_or_validators(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
     settings = LazySettings(
-        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+        environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
     settings.validators.register(
         Validator("VERSION", ne=1) | Validator("VERSION", ne=1),
@@ -372,7 +378,7 @@ def test_negative_combined_and_validators(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
     settings = LazySettings(
-        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+        environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
     settings.validators.register(
         Validator("VERSION", ne=1) & Validator("VERSION", ne=1),
@@ -390,7 +396,7 @@ def test_envless_and_combined_validators(tmpdir):
     """
     tmpfile.write(TOML)
     settings = LazySettings(
-        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True, envless_mode=True
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
     settings.validators.register(
         Validator("VERSION", ne=1) & Validator("value", ne=True),
@@ -409,7 +415,6 @@ def test_cast_before_validate(tmpdir):
     settings = LazySettings(
         settings_file=str(tmpfile),
         silent=True,
-        envless_mode=True,
         lowercase_read=True,
         validators=[
             Validator("name", len_eq=5),

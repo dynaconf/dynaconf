@@ -3,7 +3,7 @@ import pytest
 from dynaconf import LazySettings
 from dynaconf.loaders.ini_loader import load
 
-settings = LazySettings(ENV_FOR_DYNACONF="PRODUCTION")
+settings = LazySettings(environments=True, ENV_FOR_DYNACONF="PRODUCTION")
 
 
 INI = """
@@ -174,5 +174,18 @@ def test_load_dunder():
     COLORS__white__name = 'white'
     """
     load(settings, filename=ini, env="FOO")
+    assert settings.COLORS.white.code == "#FFFFFF"
+    assert settings.COLORS.white.name == "white"
+
+
+def test_envless():
+    settings = LazySettings()
+    ini = """
+    a = "a,b"
+    colors__white__code = '#FFFFFF'
+    COLORS__white__name = 'white'
+    """
+    load(settings, filename=ini)
+    assert settings.a == "a,b"
     assert settings.COLORS.white.code == "#FFFFFF"
     assert settings.COLORS.white.name == "white"

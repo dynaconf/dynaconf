@@ -6,6 +6,7 @@ from dynaconf import LazySettings
 from dynaconf.loaders.yaml_loader import load
 
 settings = LazySettings(
+    environments=True,
     ENV_FOR_DYNACONF="PRODUCTION",
     ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
 )
@@ -222,7 +223,7 @@ def test_local_files(tmpdir):
     """
     tmpdir.join("settings.local.yaml").write(local_file_yaml)
 
-    conf = LazySettings()
+    conf = LazySettings(environments=True)
     assert conf.NAME == "Bruno Rocha"
     assert set(conf.COLORS) == set(["red", "green", "blue"])
     assert conf.DATA.link == "brunorocha.org"
@@ -269,7 +270,8 @@ def test_explicit_local_files(tmpdir):
     tmpdir.join("foo.local.yaml").write(local_file_yaml)
 
     conf = LazySettings(
-        SETTINGS_FILE_FOR_DYNACONF=["foo.yaml", "foo.local.yaml"]
+        environments=True,
+        SETTINGS_FILE_FOR_DYNACONF=["foo.yaml", "foo.local.yaml"],
     )
 
     assert conf.NAME == "Bruno Rocha"
@@ -288,5 +290,18 @@ def test_empty_env(tmpdir):
     default: ~
     """
     tmpdir.join("settings.yaml").write(settings_file_yaml)
-    settings = LazySettings()
+    settings = LazySettings(environments=True)
     settings.reload()
+
+
+def test_envless():
+    settings = LazySettings()
+    _yaml = """
+    a: a,b
+    colors__white__code: "#FFFFFF"
+    COLORS__white__name: "white"
+    """
+    load(settings, filename=_yaml)
+    assert settings.a == "a,b"
+    assert settings.COLORS.white.code == "#FFFFFF"
+    assert settings.COLORS.white.name == "white"

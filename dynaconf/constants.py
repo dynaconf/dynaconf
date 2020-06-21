@@ -21,3 +21,11 @@ import dynaconf  # noqa
 settings = dynaconf.DjangoDynaconf(__name__)  # noqa
 # HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
  """
+
+INSTANCE_TEMPLATE = """
+from dynaconf import Dynaconf
+
+settings = Dynaconf(
+    app_name="DYNACONF",
+)
+"""

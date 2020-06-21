@@ -182,6 +182,7 @@ def test_invalid_include_path(tmpdir):
     settings_file.write(TOML)
 
     settings = LazySettings(
+        environments=True,
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
@@ -206,6 +207,7 @@ def test_load_nested_toml(tmpdir):
     toml_plugin_file.write(TOML_PLUGIN_2)
 
     settings = LazySettings(
+        environments=True,
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
@@ -237,6 +239,7 @@ def test_load_nested_different_types(ext, tmpdir):
     json_plugin_file.write(PLUGIN_TEXT[ext])
 
     settings = LazySettings(
+        environments=True,
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
@@ -265,6 +268,7 @@ def test_load_nested_different_types_with_merge(tmpdir):
         json_plugin_file.write(PLUGIN_TEXT[ext])
 
     settings = LazySettings(
+        environments=True,
         ENV_FOR_DYNACONF="custom",
         silent=False,
         LOADERS_FOR_DYNACONF=False,
@@ -298,7 +302,9 @@ def test_programmatically_file_load(tmpdir):
     """
     )
 
-    settings = LazySettings(SETTINGS_FILE_FOR_DYNACONF=str(settings_file))
+    settings = LazySettings(
+        environments=True, SETTINGS_FILE_FOR_DYNACONF=str(settings_file)
+    )
     assert settings.DEFAULT_VAR == "default"
 
     toml_plugin_file = tmpdir.join("plugin1.toml")
@@ -336,6 +342,7 @@ def test_include_via_python_module_name(tmpdir):
     dummy_folder.join("__init__.py").write('print("initing dummy...")')
 
     settings = LazySettings(
+        environments=True,
         SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
         INCLUDES_FOR_DYNACONF=["dummy.dummy_module"],
     )
@@ -367,6 +374,7 @@ def test_include_via_python_module_name_and_others(tmpdir):
     )
 
     settings = LazySettings(
+        environments=True,
         SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
         INCLUDES_FOR_DYNACONF=["dummy.dummy_module", "otherfile.yaml"],
     )

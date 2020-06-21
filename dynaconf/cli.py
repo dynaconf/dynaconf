@@ -3,6 +3,7 @@ import io
 import os
 import pprint
 import sys
+import warnings
 import webbrowser
 from contextlib import suppress
 from pathlib import Path
@@ -15,6 +16,7 @@ from dynaconf import constants
 from dynaconf import default_settings
 from dynaconf import LazySettings
 from dynaconf import loaders
+from dynaconf import settings as legacy_settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
@@ -30,19 +32,15 @@ WRITERS = ["ini", "toml", "yaml", "json", "py", "redis", "vault", "env"]
 ENC = default_settings.ENCODING_FOR_DYNACONF
 
 
-def set_settings(instance=None):
+def set_settings(ctx, instance=None):
     """Pick correct settings instance and set it to a global variable."""
 
     global settings
 
     settings = None
 
-    if instance:
+    if instance is not None:
         settings = import_settings(instance)
-
-    elif "INSTANCE_FOR_DYNACONF" in os.environ:
-        settings = import_settings(os.environ["INSTANCE_FOR_DYNACONF"])
-
     elif "FLASK_APP" in os.environ:  # pragma: no cover
         with suppress(ImportError, click.UsageError):
             from flask.cli import ScriptInfo
@@ -54,7 +52,6 @@ def set_settings(instance=None):
                     "Flask app detected", fg="white", bg="bright_black"
                 )
             )
-
     elif "DJANGO_SETTINGS_MODULE" in os.environ:  # pragma: no cover
         sys.path.insert(0, os.path.abspath(os.getcwd()))
         try:
@@ -78,7 +75,20 @@ def set_settings(instance=None):
             )
 
     if settings is None:
-        settings = LazySettings()
+
+        if instance is None and "--help" not in click.get_os_args():
+            if ctx.invoked_subcommand and ctx.invoked_subcommand not in [
+                "init",
+            ]:
+                warnings.warn(
+                    "Starting on 3.x the param --instance/-i is now required. "
+                    "try passing it `dynaconf -i path.to.settings <cmd>`"
+                )
+                settings = legacy_settings
+            else:
+                settings = LazySettings(create_new_settings=True)
+        else:
+            settings = LazySettings()
 
 
 def import_settings(dotted_path):
@@ -144,7 +154,7 @@ def show_banner(ctx, param, value):
     """Shows dynaconf awesome banner"""
     if not value or ctx.resilient_parsing:
         return
-    set_settings()
+    set_settings(ctx)
     click.echo(settings.dynaconf_banner)
     click.echo("Learn more at: http://github.com/rochacbruno/dynaconf")
     ctx.exit()
@@ -176,13 +186,18 @@ def show_banner(ctx, param, value):
     help="Show awesome banner",
 )
 @click.option(
-    "--instance", "-i", default=None, help="Custom instance of LazySettings"
+    "--instance",
+    "-i",
+    default=None,
+    envvar="INSTANCE_FOR_DYNACONF",
+    help="Custom instance of LazySettings",
 )
-def main(instance):
+@click.pass_context
+def main(ctx, instance):
     """Dynaconf - Command Line Interface\n
     Documentation: http://dynaconf.readthedocs.io/
     """
-    set_settings(instance)
+    set_settings(ctx, instance)
 
 
 @main.command()
@@ -220,7 +235,8 @@ def main(instance):
 @click.option("--wg/--no-wg", default=True)
 @click.option("-y", default=False, is_flag=True)
 @click.option("--django", default=os.environ.get("DJANGO_SETTINGS_MODULE"))
-def init(fileformat, path, env, _vars, _secrets, wg, y, django):
+@click.pass_context
+def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     """Inits a dynaconf project
     By default it creates a settings.toml and a .secrets.toml
     for [default|development|staging|testing|production|global] envs.
@@ -236,6 +252,15 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     will also be created and the env defined to production.
     """
     click.echo("Configuring your Dynaconf environment")
+    path = Path(path)
+
+    if settings.get("create_new_settings") is True:
+        filename = Path("config.py")
+        if not filename.exists():
+            with open(filename, "w") as new_settings:
+                new_settings.write(constants.INSTANCE_TEMPLATE)
+        sys.path.append(str(path))
+        set_settings(ctx, "config.settings")
 
     env = env or settings.current_env.lower()
 
@@ -253,8 +278,6 @@ def init(fileformat, path, env, _vars, _secrets, wg, y, django):
     if _secrets:
         secrets_data[env] = _secrets
         secrets_data["default"] = {k: "default" for k in _secrets}
-
-    path = Path(path)
 
     if str(path).endswith(
         constants.ALL_EXTENSIONS + ("py",)
@@ -396,6 +419,9 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
         settings.setenv(env)
 
     cur_env = settings.current_env.lower()
+
+    if cur_env == "main":
+        flat = True
 
     click.echo(
         click.style(
