@@ -92,6 +92,9 @@ class FlaskDynaconf(object):
         kwargs.setdefault("ENV_SWITCHER", env_prefix)
         kwargs.setdefault("ENVIRONMENTS", True)
         kwargs.setdefault("load_dotenv", True)
+        kwargs.setdefault(
+            "default_settings_paths", dynaconf.DEFAULT_SETTINGS_FILES
+        )
 
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config

@@ -79,15 +79,12 @@ def reload(load_dotenv=None, *args, **kwargs):
 ROOT_PATH_FOR_DYNACONF = get("ROOT_PATH_FOR_DYNACONF", None)
 
 # Default settings file
-default_paths = (
-    "settings.py,.secrets.py,"
-    "settings.toml,settings.tml,.secrets.toml,.secrets.tml,"
-    "settings.yaml,settings.yml,.secrets.yaml,.secrets.yml,"
-    "settings.ini,settings.conf,settings.properties,"
-    ".secrets.ini,.secrets.conf,.secrets.properties,"
-    "settings.json,.secrets.json"
-)
-SETTINGS_FILE_FOR_DYNACONF = get("SETTINGS_FILE_FOR_DYNACONF", default_paths)
+SETTINGS_FILE_FOR_DYNACONF = get("SETTINGS_FILE_FOR_DYNACONF", [])
+
+# MISPELLS `FILES` when/if it happens
+mispelled_files = get("SETTINGS_FILES_FOR_DYNACONF", None)
+if not SETTINGS_FILE_FOR_DYNACONF and mispelled_files is not None:
+    SETTINGS_FILE_FOR_DYNACONF = mispelled_files
 
 # # ENV SETTINGS
 # # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`

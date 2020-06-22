@@ -111,6 +111,15 @@ class LazySettings(LazyObject):
 
         e.g: ROOT_PATH='/' is transformed into `ROOT_PATH_FOR_DYNACONF`
         """
+
+        mispells = {
+            "settings_files": "settings_file",
+            "SETTINGS_FILES": "SETTINGS_FILE",
+        }
+        for mispell, correct in mispells.items():
+            if mispell in kwargs:
+                kwargs[correct] = kwargs.pop(mispell)
+
         for_dynaconf_keys = {
             key
             for key in dir(default_settings)
@@ -521,6 +530,12 @@ class Settings(object):
             if key.isupper() and key not in RENAMED_VARS
         }
 
+        # This is here for backwards compatibility
+        # To be removed on 4.x.x
+        default_settings_paths = self.get("default_settings_paths")
+        if default_settings_paths:  # pragma: no cover
+            new_data["default_settings_paths"] = default_settings_paths
+
         if keep:
             # keep existing values from current env
             new_data.update(
@@ -631,6 +646,11 @@ class Settings(object):
         )
         if settings_module != getattr(self, "SETTINGS_MODULE", None):
             self.set("SETTINGS_MODULE", settings_module)
+
+        # This is for backewards compatibility, to be removed on 4.x.x
+        if not self.SETTINGS_MODULE and self.get("default_settings_paths"):
+            self.SETTINGS_MODULE = self.get("default_settings_paths")
+
         return self.SETTINGS_MODULE
 
     # Backwards compatibility see #169

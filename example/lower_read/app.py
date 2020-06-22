@@ -1,6 +1,6 @@
 from dynaconf import LazySettings
 
-settings = LazySettings()
+settings = LazySettings(settings_files="settings.yaml")
 
 assert settings.server == "foo.com"
 assert settings.SERVER == "foo.com"
