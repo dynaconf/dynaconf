@@ -26,7 +26,8 @@ INSTANCE_TEMPLATE = """
 from dynaconf import Dynaconf
 
 settings = Dynaconf(
-    app_name="DYNACONF",
+    envvar_prefix="DYNACONF",  # export envvars with `export DYNACONF_FOO=bar`.
+    settings_files={settings_files},  # Load this files in the order.
 )
 """
 

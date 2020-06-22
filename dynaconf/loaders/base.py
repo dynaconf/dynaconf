@@ -85,11 +85,12 @@ class BaseLoader(object):
                         self.obj._loaded_files.append(source_file)
                         if content:
                             data[source_file] = content
-                except IOError:
-                    warnings.warn(
-                        f"{self.identifier}_loader: {source_file} "
-                        "(Ignored, file not Found)"
-                    )
+                except IOError as e:
+                    if ".local." not in source_file:
+                        warnings.warn(
+                            f"{self.identifier}_loader: {source_file} "
+                            f":{str(e)}"
+                        )
             else:
                 # for tests it is possible to pass string
                 content = self.string_reader(source_file)

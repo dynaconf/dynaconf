@@ -40,6 +40,7 @@ def set_settings(ctx, instance=None):
     settings = None
 
     if instance is not None:
+        sys.path.insert(0, ".")
         settings = import_settings(instance)
     elif "FLASK_APP" in os.environ:  # pragma: no cover
         with suppress(ImportError, click.UsageError):
@@ -82,7 +83,8 @@ def set_settings(ctx, instance=None):
             ]:
                 warnings.warn(
                     "Starting on 3.x the param --instance/-i is now required. "
-                    "try passing it `dynaconf -i path.to.settings <cmd>`"
+                    "try passing it `dynaconf -i path.to.settings <cmd>` "
+                    "Example `dynaconf -i config.settings list` "
                 )
                 settings = legacy_settings
             else:
@@ -249,14 +251,37 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
 
     The --env/-e is deprecated (kept for compatibility but unused)
     """
-    click.echo("Configuring your Dynaconf environment")
+    click.echo("⚙️  Configuring your Dynaconf environment")
+    click.echo("-" * 40)
     path = Path(path)
 
     if settings.get("create_new_settings") is True:
         filename = Path("config.py")
         if not filename.exists():
             with open(filename, "w") as new_settings:
-                new_settings.write(constants.INSTANCE_TEMPLATE)
+                new_settings.write(
+                    constants.INSTANCE_TEMPLATE.format(
+                        settings_files=[
+                            f"settings.{fileformat}",
+                            f".secrets.{fileformat}",
+                        ]
+                    )
+                )
+            click.echo(
+                "🐍 The file `config.py` was generated.\n"
+                "  on your code now use `from config import settings`.\n"
+                "  (you must have `config` importable in your PYTHONPATH).\n"
+            )
+            click.echo("-" * 40)
+        else:
+            click.echo(
+                f"⁉️  You already have a {filename} so it is not going to be\n"
+                "  generated for you, you will need to create your own \n"
+                "  settings instance e.g: config.py \n"
+                "      from dynaconf import Dynaconf \n"
+                "      settings = Dynaconf(**options)\n"
+            )
+            click.echo("-" * 40)
         sys.path.append(str(path))
         set_settings(ctx, "config.settings")
 
@@ -272,10 +297,10 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     secrets_data = {}
     if env_data:
         settings_data[env] = env_data
-        settings_data["default"] = {k: "default" for k in env_data}
+        settings_data["default"] = {k: "a default value" for k in env_data}
     if _secrets:
         secrets_data[env] = _secrets
-        secrets_data["default"] = {k: "default" for k in _secrets}
+        secrets_data["default"] = {k: "a default value" for k in _secrets}
 
     if str(path).endswith(
         constants.ALL_EXTENSIONS + ("py",)
@@ -300,28 +325,33 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
             secrets_path = path / f".secrets.{fileformat}"
         gitignore_path = path / ".gitignore"
 
-    if fileformat in ["py", "env"]:
-        # for Python and .env files writes a single env
-        settings_data = settings_data[env]
-        secrets_data = secrets_data[env]
+    if fileformat in ["py", "env"] or env == "main":
+        # for Main env, Python and .env formats writes a single env
+        settings_data = settings_data.get(env, {})
+        secrets_data = secrets_data.get(env, {})
 
     if not y and settings_path and settings_path.exists():  # pragma: no cover
         click.confirm(
-            f"{settings_path} exists do you want to overwrite it?", abort=True
+            f"⁉  {settings_path} exists do you want to overwrite it?",
+            abort=True,
         )
 
     if not y and secrets_path and secrets_path.exists():  # pragma: no cover
         click.confirm(
-            f"{secrets_path} exists do you want to overwrite it?", abort=True
+            f"⁉  {secrets_path} exists do you want to overwrite it?",
+            abort=True,
         )
 
-    if settings_path and settings_data:
+    if settings_path:
         loader.write(settings_path, settings_data, merge=True)
-    if secrets_path and secrets_data:
-        loader.write(secrets_path, secrets_data, merge=True)
+        click.echo(
+            f"🎛️  {settings_path.name} created to hold your settings.\n"
+        )
+        click.echo("-" * 40)
 
-    if wg:
-        # write .gitignore
+    if secrets_path:
+        loader.write(secrets_path, secrets_data, merge=True)
+        click.echo(f"🔑 {secrets_path.name} created to hold your secrets.\n")
         ignore_line = ".secrets.*"
         comment = "\n# Ignore dynaconf secret files\n"
         if not gitignore_path.exists():
@@ -336,18 +366,32 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
                 with io.open(str(gitignore_path), "a+", encoding=ENC) as f:
                     f.writelines([comment, ignore_line, "\n"])
 
+        click.echo(
+            f"🙈 the {secrets_path.name} is also included in `.gitignore` \n"
+            "  beware to not push your secrets to a public repo \n"
+            "  or use dynaconf builtin support for Vault Servers."
+        )
+        click.echo("-" * 40)
+
     if django:  # pragma: no cover
         dj_module, loaded_from = get_module({}, django)
         dj_filename = dj_module.__file__
         if Path(dj_filename).exists():
             click.confirm(
-                f"{dj_filename} is found do you want to add dynaconf?",
+                f"⁉  {dj_filename} is found do you want to add dynaconf?",
                 abort=True,
             )
             with open(dj_filename, "a") as dj_file:
                 dj_file.write(constants.DJANGO_PATCH)
+            click.echo("🎠  Now your Django settings are managed by Dynaconf")
         else:
-            click.echo("Django settings file not written.")
+            click.echo("❌  Django settings file not written.")
+        click.echo("-" * 40)
+
+    click.echo(
+        "🎉 Dynaconf is configured! read more on https://dynaconf.com\n"
+        "  Use `dynaconf -i config.settings list` to see your settings\n"
+    )
 
 
 @main.command(name="list")
