@@ -87,7 +87,6 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
             and (key != "SETTINGS_MODULE")
             and key not in lazy_settings.store
         ):
-            lazy_settings.logger.debug(f"Django default setting: {key}")
             dj[key] = getattr(django_settings, key, None)
         dj["ORIGINAL_SETTINGS_MODULE"] = django_settings.SETTINGS_MODULE
 
@@ -117,7 +116,6 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         ):
             stack_item.frame.f_globals["settings"] = lazy_settings
 
-    lazy_settings.logger.debug("Django Dynaconf: Finished loading")
     return lazy_settings
 
 

@@ -194,8 +194,6 @@ Utopi@
 BAR
 ```
 
-> TIP: If you add `DEBUG_LEVEL_FOR_DYNACONF=DEBUG` on `.env` or export this variable then you can follow the dynaconf loading process.
-
 ## Loading order
 
 Dynaconf loads file in a overriding cascade loading order using the predefined order:

@@ -1,13 +1,10 @@
 import io
 import os
+import warnings
 
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
-from dynaconf.utils import raw_logger
 from dynaconf.utils import upperfy
-
-
-logger = raw_logger()
 
 
 class BaseLoader(object):
@@ -36,7 +33,7 @@ class BaseLoader(object):
     @staticmethod
     def warn_not_installed(obj, identifier):  # pragma: no cover
         if identifier not in obj._not_installed_warnings:
-            logger.warning(
+            warnings.warn(
                 f"{identifier} support is not installed in your environment. "
                 f"`pip install dynaconf[{identifier}]`"
             )
@@ -88,16 +85,8 @@ class BaseLoader(object):
                         self.obj._loaded_files.append(source_file)
                         if content:
                             data[source_file] = content
-                            self.obj.logger.debug(
-                                f"{self.identifier}_loader: {source_file}"
-                            )
-                        else:  # pragma: no cover
-                            self.obj.logger.debug(
-                                f"{self.identifier}_loader: {source_file}"
-                                " IS EMPTY"
-                            )
                 except IOError:
-                    self.obj.logger.debug(
+                    warnings.warn(
                         f"{self.identifier}_loader: {source_file} "
                         "(Ignored, file not Found)"
                     )
@@ -152,7 +141,7 @@ class BaseLoader(object):
                             f"defined in {source_file}"
                         )
                         if silent:
-                            self.obj.logger.warning(message)
+                            warnings.warn(message)
                         else:
                             raise KeyError(message)
                     continue
@@ -185,10 +174,6 @@ class BaseLoader(object):
         is_secret = "secret" in source_file
         _keys = (list(data.keys()) if is_secret else data,)
         _path = os.path.split(source_file)[-1]
-
-        self.obj.logger.debug(
-            f"{self.identifier}_loader: {_path}[{env}]{_keys}"
-        )
 
         # is there a `dynaconf_merge` inside an `[env]`?
         file_merge = file_merge or data.pop("DYNACONF_MERGE", False)

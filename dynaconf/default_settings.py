@@ -3,7 +3,6 @@ import os
 import sys
 import warnings
 
-from dynaconf.utils import raw_logger
 from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
 from dynaconf.utils import warn_deprecations
@@ -48,9 +47,6 @@ def start_dotenv(obj=None, root_path=None):
         root_path
         or getattr(obj, "_root_path", None)
         or get("ROOT_PATH_FOR_DYNACONF")
-    )
-    raw_logger().debug(
-        "Starting Dynaconf Dotenv for " f"{root_path if root_path else 'Base'}"
     )
 
     dotenv_path = (
@@ -186,9 +182,6 @@ SILENT_ERRORS_FOR_DYNACONF = get("SILENT_ERRORS_FOR_DYNACONF", True)
 
 # always fresh variables
 FRESH_VARS_FOR_DYNACONF = get("FRESH_VARS_FOR_DYNACONF", [])
-
-# debug
-DEBUG_LEVEL_FOR_DYNACONF = get("DEBUG_LEVEL_FOR_DYNACONF", "NOTSET")
 
 DOTENV_PATH_FOR_DYNACONF = get("DOTENV_PATH_FOR_DYNACONF", None)
 DOTENV_VERBOSE_FOR_DYNACONF = get("DOTENV_VERBOSE_FOR_DYNACONF", False)

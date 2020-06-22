@@ -28,7 +28,6 @@ EXPECTED = {
     "LOADERS_FOR_DYNACONF": ["dynaconf.loaders.env_loader"],
     "SILENT_ERRORS_FOR_DYNACONF": True,
     "FRESH_VARS_FOR_DYNACONF": [],
-    "DEBUG_LEVEL_FOR_DYNACONF": "DEBUG",
     "YAML": None,
     "TOML": None,
     "JSON": None,

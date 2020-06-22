@@ -3,10 +3,6 @@ import io
 import os
 
 from dynaconf.utils import deduplicate
-from dynaconf.utils import raw_logger
-
-
-logger = raw_logger()
 
 
 def _walk_to_root(path, break_at=None):
@@ -26,7 +22,6 @@ def _walk_to_root(path, break_at=None):
         paths.append(current_dir)
         paths.append(os.path.join(current_dir, "config"))
         if break_at and current_dir == os.path.abspath(break_at):  # noqa
-            logger.debug(f"Reached the {break_at} directory, breaking.")
             break
         parent_dir = os.path.abspath(os.path.join(current_dir, os.path.pardir))
         last_dir, current_dir = current_dir, parent_dir
@@ -53,10 +48,7 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
     work_dir = os.getcwd()
     skip_files = skip_files or []
 
-    if project_root is None:
-        logger.debug(f"No root_path for {filename}")
-    else:
-        logger.debug(f"Got root_path {project_root} for {filename}")
+    if project_root is not None:
         search_tree.extend(_walk_to_root(project_root, break_at=work_dir))
 
     script_dir = os.path.dirname(os.path.abspath(inspect.stack()[-1].filename))
@@ -71,17 +63,13 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
     search_tree = deduplicate(search_tree)
 
     global SEARCHTREE
-    SEARCHTREE != search_tree and logger.debug(f"Search Tree: {search_tree}")
     SEARCHTREE = search_tree
-
-    logger.debug(f"Searching for {filename}")
 
     for dirname in search_tree:
         check_path = os.path.join(dirname, filename)
         if check_path in skip_files:
             continue
         if os.path.exists(check_path):
-            logger.debug(f"Found: {os.path.abspath(check_path)}")
             return check_path  # First found will return
 
     # return empty string if not found so it can still be joined in os.path

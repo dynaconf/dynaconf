@@ -9,7 +9,6 @@ from pathlib import Path
 from dynaconf import default_settings
 from dynaconf.utils import DynaconfDict
 from dynaconf.utils import object_merge
-from dynaconf.utils import raw_logger
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 
@@ -17,13 +16,8 @@ from dynaconf.utils.files import find_file
 def load(obj, settings_module, identifier="py", silent=False, key=None):
     """Tries to import a python module"""
     mod, loaded_from = get_module(obj, settings_module, silent)
-
-    if mod and loaded_from:
-        obj.logger.debug(f"py_loader: {mod}")
-    else:
-        obj.logger.debug(f"py_loader: {settings_module} (Ignoring, Not Found)")
+    if not (mod and loaded_from):
         return
-
     load_from_python_object(obj, mod, settings_module, key, identifier)
 
 
@@ -40,9 +34,6 @@ def load_from_python_object(
                 setting_value = getattr(mod, setting)
                 secret = (
                     "*****" if "secret" in settings_module else setting_value
-                )
-                obj.logger.debug(
-                    f"py_loader: loading {setting}: {secret} ({identifier})"
                 )
                 obj.set(
                     setting,
@@ -78,13 +69,10 @@ def try_to_load_from_py_module_name(
 
 
 def get_module(obj, filename, silent=False):
-    logger = raw_logger()
     try:
-        logger.debug(f"Trying to import {filename}")
         mod = importlib.import_module(filename)
         loaded_from = "module"
     except (ImportError, TypeError):
-        logger.debug(f"Cant import {filename} trying to load from file")
         mod = import_from_filename(obj, filename, silent=silent)
         if mod and not mod._is_error:
             loaded_from = "filename"
@@ -127,7 +115,6 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
         )
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return
-        raw_logger().debug(e.strerror)
         mod._is_error = True
     return mod
 

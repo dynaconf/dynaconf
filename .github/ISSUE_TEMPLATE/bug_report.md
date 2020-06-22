@@ -80,19 +80,6 @@ $ python /path/src/app.py
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Debug output**
-
-<details>
-<summary> Debug Output </summary>
-
-```bash
-
-export `DEBUG_LEVEL_FOR_DYNACONF=DEBUG` reproduce your problem and paste the output here
-
-```
-
-</details>
-
 **Environment (please complete the following information):**
  - OS: [e.g. Linux/Fedora29, Windows/x.x.x, Linux/Ubuntu16.x]
  - Dynaconf Version [e.g. 2.0.0/source]

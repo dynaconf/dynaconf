@@ -14,7 +14,6 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     """
     # Load data from your custom data source (file, database, memory etc)
     # use `obj.set(key, value)` or `obj.update(dict)` to load data
-    # use `obj.logger.debug` to log your loader activities
     # use `obj.find_file('filename.ext')` to find the file in search tree
     # Return nothing
 
@@ -23,7 +22,6 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     values = []
     found_file = obj.find_file("settings.sff")
     if not found_file:
-        obj.logger.debug("Cannot find settings.sff")
         return
 
     with open(found_file) as settings_file:
@@ -41,10 +39,8 @@ def load(obj, env=None, silent=True, key=None, filename=None):
 
     if key:
         value = data.get(key.lower())  # sff format have lower case keys
-        obj.logger.debug(f"Sff loader: {key}:{value}")
         obj.set(key, value)
     else:
-        obj.logger.debug(f"Sff loader: loading: {data}")
         obj.update(data)
 
     obj._loaded_files.append(found_file)
