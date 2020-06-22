@@ -223,7 +223,7 @@ def test_local_files(tmpdir):
     """
     tmpdir.join("settings.local.yaml").write(local_file_yaml)
 
-    conf = LazySettings(environments=True)
+    conf = LazySettings(environments=True, settings_file="settings.yaml")
     assert conf.NAME == "Bruno Rocha"
     assert set(conf.COLORS) == set(["red", "green", "blue"])
     assert conf.DATA.link == "brunorocha.org"

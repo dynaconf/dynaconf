@@ -29,3 +29,18 @@ settings = Dynaconf(
     app_name="DYNACONF",
 )
 """
+
+EXTS = (
+    "py",
+    "toml",
+    "tml",
+    "yaml",
+    "yml",
+    "ini",
+    "conf",
+    "properties",
+    "json",
+)
+DEFAULT_SETTINGS_FILES = [f"settings.{ext}" for ext in EXTS] + [
+    f".secrets.{ext}" for ext in EXTS
+]

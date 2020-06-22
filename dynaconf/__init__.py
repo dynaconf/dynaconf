@@ -4,20 +4,24 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "vendor"))
 
 from dynaconf.base import LazySettings  # noqa
-from dynaconf.contrib import DjangoDynaconf  # noqav
+from dynaconf.constants import DEFAULT_SETTINGS_FILES
+from dynaconf.contrib import DjangoDynaconf  # noqa
 from dynaconf.contrib import FlaskDynaconf  # noqa
 from dynaconf.validator import ValidationError  # noqa
 from dynaconf.validator import Validator  # noqa
 
-"""This global settings is deprecated from 3.0.0+"""
 settings = LazySettings(
+    # This global `settings` is deprecated from v3.0.0+
+    # kept here for backwards compatibility
+    # To Be Removed in 4.0.x
     warn_dynaconf_global_settings=True,
     environments=True,
     lowercase_read=False,
     load_dotenv=True,
+    default_settings_paths=DEFAULT_SETTINGS_FILES,
 )
 
-"""This is the new recommended base class alias"""
+# This is the new recommended base class alias
 Dynaconf = LazySettings  # noqa
 
 __all__ = [

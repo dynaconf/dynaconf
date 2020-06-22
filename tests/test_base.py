@@ -291,7 +291,7 @@ def test_set_explicit_merge_token(tmpdir):
         "a_dict": {"name": "Bruno"},
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
-    settings = LazySettings()
+    settings = LazySettings(settings_file="settings.toml")
     assert settings.A_LIST == [1, 2]
     assert settings.B_LIST == [1]
     assert settings.A_DICT == {"name": "Bruno"}
@@ -345,7 +345,7 @@ def test_set_new_merge_issue_241_1(tmpdir):
         }
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
-    settings = LazySettings(environments=True)
+    settings = LazySettings(environments=True, settings_file="settings.toml")
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green"]
     assert settings.DATA.links == {
@@ -377,7 +377,7 @@ def test_set_new_merge_issue_241_2(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings(environments=True)
+    settings = LazySettings(environments=True, settings_file="settings.toml")
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green", "blue"]
     assert settings.DATA.links == {
@@ -406,7 +406,7 @@ def test_set_new_merge_issue_241_3(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings()
+    settings = LazySettings(settings_file="settings.toml")
     assert settings.NAME == "Tommy Shelby"
     assert settings.COLORS == ["red", "green", "yellow", "pink"]
     assert settings.DATA.links == {"site": "pb.com"}
@@ -427,7 +427,7 @@ def test_set_new_merge_issue_241_4(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings()
+    settings = LazySettings(settings_file="settings.toml")
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green"]
     assert settings.DATA.links == {
@@ -454,7 +454,7 @@ def test_set_new_merge_issue_241_5(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings(environments=True)
+    settings = LazySettings(environments=True, settings_file="settings.toml")
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green", "blue"]
     assert settings.DATA.links == {
@@ -776,7 +776,9 @@ def test_envless_mode(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
-    settings = LazySettings()  # already the default
+    settings = LazySettings(
+        settings_file="settings.toml"
+    )  # already the default
     assert settings.FOO == "bar"
     assert settings.HELLO == "world"
     assert settings.DEFAULT == 1
@@ -795,7 +797,8 @@ def test_lowercase_read_mode(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
-    settings = LazySettings(ENVLESS_MODE=True)
+    # settings_files mispelled.. should be `settings_file`
+    settings = LazySettings(settings_files="settings.toml")
 
     assert settings.FOO == "bar"
     assert settings.foo == "bar"
