@@ -4,6 +4,146 @@ Changelog
 
 (unreleased)
 ------------
+- Release version 3.0.0rc2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bernardo Gomes (2):
+            Adding f string (#319)
+            Added little information about how dev into this project. (#321)
+
+      Bruno Rocha (18):
+            Release version 3.0.0rc1
+            Better exception handling on env_loader (#316)
+            Add support for config aliases (#332)
+            Add ENVLESS_MODE (#337)
+            Fix #272 allow access of lowercase keys (#338)
+            Fix #298 allow auto complete for editors and console (#339)
+            Vendoring dependencies Fix #301 (#345)
+            Clean tox installation for local testing (#346)
+            Validator improvements on conditions (#353)
+            Add note about quoting in env vars (#347)
+            DEPRECATED global settings object.
+            DEPRECATED global settings object. (#356)
+            Lowecase read allowed by default (#357)
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            envless by default - breaking change ⚠️ (#358)
+            dotenv is no more loaded by default (#360)
+            No more loading of `settings.*` by default (#361)
+            NO more logger and debug messages (#362)
+
+      Douglas Maciel d'Auriol Souza (1):
+            Insert news validator conditions: (len_eq, len_ne, len_min, len_max, contd) (#328)
+
+      Jeff Wayne (1):
+            s/DYNACONF_ENV/ENV_FOR_DYNACONF (#335)
+
+      Marcos Benevides (1):
+            Fix minor typo in Flask extension docs (#318)
+
+      Nicholas Nadeau, Ph.D., P.Eng (1):
+            Fixed comma typo (#334)
+
+      sfunkhouser (1):
+            Add option to override default mount_point for vault (#349)
+- NO more logger and debug messages (#362) [Bruno Rocha]
+
+  * logger and DEBUG_LEVEL has gone.
+
+  * Add logger as a backwards compat method
+- No more loading of `settings.*` by default (#361) [Bruno Rocha]
+- Dotenv is no more loaded by default (#360) [Bruno Rocha]
+- Envless by default - breaking change ⚠️ (#358) [Bruno Rocha]
+
+  * ⚠️ Turning the default to be the envless mode (this is breaking change) ⚠️
+
+  ⚠️ THIS IS BREAKING CHANGE ⚠️
+
+  * envless by default is done
+
+  * Fix redis and vault tests
+
+  * CLI default to global instance with warnings
+- Merge branch 'master' of github.com:rochacbruno/dynaconf. [Bruno
+  Rocha]
+- Lowecase read allowed by default (#357) [Bruno Rocha]
+
+  * DEPRECATED global settings object.
+
+  No more `from dynaconf import settings`
+
+  * Lower case first level keys are now allowed by default
+- DEPRECATED global settings object. (#356) [Bruno Rocha]
+
+  No more `from dynaconf import settings`
+- DEPRECATED global settings object. [Bruno Rocha]
+
+  No more `from dynaconf import settings`
+- Add note about quoting in env vars (#347) [Bruno Rocha]
+- Validator improvements on conditions (#353) [Bruno Rocha]
+
+  * Validators improvements
+
+  * add cast argument to validators
+- Add option to override default mount_point for vault (#349)
+  [sfunkhouser]
+- Clean tox installation for local testing (#346) [Bruno Rocha]
+- Vendoring dependencies Fix #301 (#345) [Bruno Rocha]
+- Fix #298 allow auto complete for editors and console (#339) [Bruno
+  Rocha]
+
+  implemented `__dir__` on Settings and Dynabox
+- Fix #272 allow access of lowercase keys (#338) [Bruno Rocha]
+
+  - `settings.lowercase_key` is allowed
+  - `settings.dynaconf` is a proxy to internal methods
+  - `settings.__reserved_attributes` validates key names
+  - `LazySettings __init__ parameters can receive lower case configs`
+- Add ENVLESS_MODE (#337) [Bruno Rocha]
+- S/DYNACONF_ENV/ENV_FOR_DYNACONF (#335) [Jeff Wayne]
+- Fixed comma typo (#334) [Nicholas Nadeau, Ph.D., P.Eng]
+- Add support for config aliases (#332) [Bruno Rocha]
+
+  All _FOR_DYNACONF can now be aliased when passing to LazySettings.
+- Insert news validator conditions: (len_eq, len_ne, len_min, len_max,
+  contd) (#328) [Bruno Rocha, Douglas Maciel d'Auriol Souza]
+
+  * Insert news validator conditions: len_eq, len_ne, len_min, len_max, contd
+
+  * Insert news validator conditions: len_eq, len_ne, len_min, len_max, contd
+
+  * Update validator_conditions.py
+
+  * Update test_validators_conditions.py
+
+  * Checked: Flake8
+
+  * Black sugest
+
+  * Change of the term contd to cont, in order to avoid false interpretation.
+- Better exception handling on env_loader (#316) [Bruno Rocha]
+- Added little information about how dev into this project. (#321)
+  [Bernardo Gomes]
+- Adding f string (#319) [Bernardo Gomes]
+
+  * First test to change to f-string
+
+  * second change to f-string
+
+  * Removed 95% of .format(
+
+  * Removed % from code.
+
+  * forget format.
+
+  * Fixing flaked reports.
+
+  * Fixing flaked reports-v2.
+
+  * make run-pre-commit command executed.
+
+  * Little bugfix f of f-string inside of the string.
+- Fix minor typo in Flask extension docs (#318) [Marcos Benevides]
 - Release version 3.0.0rc1. [Bruno Rocha]
 
   Shortlog of commits since last release:
