@@ -1107,6 +1107,18 @@ class Settings(object):
         """
         return  # TOBE IMPLEMENTED
 
+    @property
+    def logger(self):  # pragma: no cover
+        """backwards compatibility with pre 3.0 loaders
+        In dynaconf 3.0.0 logger and debug messages has been removed.
+        """
+        warnings.warn(
+            "logger and DEBUG messages has been removed on dynaconf 3.0.0"
+        )
+        import logging  # noqa
+
+        return logging.getLogger("dynaconf")
+
 
 """Attributes created on Settings before 3.0.0"""
 RESERVED_ATTRS = (
