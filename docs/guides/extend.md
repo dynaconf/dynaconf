@@ -19,7 +19,6 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     """
     # Load data from your custom data source (file, database, memory etc)
     # use `obj.set(key, value)` or `obj.update(dict)` to load data
-    # use `obj.logger.debug` to log your loader activities
     # use `obj.find_file('filename.ext')` to find the file in search tree
     # Return nothing
 ```

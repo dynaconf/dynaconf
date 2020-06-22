@@ -77,10 +77,6 @@ class DynaconfDict(dict):
         self._loaded_files = []
         super(DynaconfDict, self).__init__(*args, **kwargs)
 
-    @property
-    def logger(self):
-        return raw_logger()
-
     def set(self, key, value, *args, **kwargs):
         self[key] = value
 
@@ -90,39 +86,6 @@ class DynaconfDict(dict):
 
     def exists(self, key, **kwargs):
         return self.get(key, missing) is not missing
-
-
-@functools.lru_cache()
-def _logger(level):
-    import logging
-
-    formatter = logging.Formatter(
-        fmt=(
-            "%(asctime)s,%(msecs)d %(levelname)-8s "
-            "[%(filename)s:%(lineno)d - %(funcName)s] %(message)s"
-        ),
-        datefmt="%Y-%m-%d:%H:%M:%S",
-    )
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
-
-    logger = logging.getLogger("dynaconf")
-    logger.addHandler(handler)
-    logger.setLevel(level=getattr(logging, level, "DEBUG"))
-    return logger
-
-
-def raw_logger(level=None):
-    """Get or create inner logger"""
-    level = level or os.environ.get("DEBUG_LEVEL_FOR_DYNACONF", "ERROR")
-    return _logger(level)
-
-
-def get_logger(obj):
-    try:
-        return obj.logger
-    except AttributeError:
-        return raw_logger()
 
 
 RENAMED_VARS = {

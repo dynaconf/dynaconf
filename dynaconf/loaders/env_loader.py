@@ -2,7 +2,6 @@ from os import environ
 
 from dotenv import cli as dotenv_cli
 
-from dynaconf.utils import get_logger
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
 
@@ -42,16 +41,10 @@ def load_from_env(
         prefix = prefix.upper()
         env_ = f"{prefix}_"
 
-    logger = get_logger(obj)
-
     if key:
         key = upperfy(key)
         value = environ.get(f"{env_}{key}")
         if value:
-            logger.debug(
-                f"env_loader: loading by key: "
-                f"{key}:{value} ({identifier}:{prefix})"
-            )
             try:  # obj is a Settings
                 obj.set(key, value, loader_identifier=identifier, tomlfy=True)
             except AttributeError:  # obj is a dict
@@ -64,9 +57,6 @@ def load_from_env(
             if key.startswith(env_)
         }
         if data:
-            logger.debug(
-                f"env_loader: loading: {data} ({identifier}:{prefix})"
-            )
             obj.update(data, loader_identifier=identifier)
 
 

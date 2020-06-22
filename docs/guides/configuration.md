@@ -5,7 +5,6 @@ Dynaconf can be configured through variables suffixed with `_FOR_DYNACONF` those
 Each config variable here can be exported to environment variables or wrote to `.env` file, example:
 
 ```bash
-export DEBUG_LEVEL_FOR_DYNACONF=DEBUG
 export ENV_FOR_DYNACONF=production
 ```
 
@@ -14,7 +13,6 @@ Or when using your own Dynaconf instance you can pass as parameters directly:
 ```py
 from dynaconf import LazySettings
 settings = LazySettings(
-    debug_level='DEBUG',
     envvar_prefix='MYPROGRAM',
     envvar='MYPROGRAM_SETTINGS',
 )
@@ -35,7 +33,6 @@ It can also be passed as parameters to extensions like `FlaskDynaconf` or set in
     AUTO_CAST | bool | *@casting* like *@int* is parsed. | true | AUTO_CAST_FOR_DYNACONF=false
     COMMENTJSON_ENABLED | bool | Enable comments in json files. | false (req:*pip install commentjson*) | COMMENTJSON_ENABLED_FOR_DYNACONF=true
     CORE_LOADERS | list | A list of enabled core loaders. | [‘YAML’, ‘TOML’, ‘INI’, ‘JSON’, ‘PY’] | CORE_LOADERS_FOR_DYNACONF=’[“YAML”, “JSON”]’ or ‘[]’
-    DEBUG_LEVEL | str | Upper case logging level. | NOTSET | DEBUG_LEVEL_FOR_DYNACONF=DEBUG
     DOTENV_OVERRIDE | bool | *.env* should override the exported envvars. | false | DOTENV_OVERRIDE_FOR_DYNACONF=true
     DOTENV_PATH | str | Defines where to look for *.env* file. | PROJECT_ROOT | DOTENV_PATH_FOR_DYNACONF=”/tmp/.env”
     ENCODING | str | Encoding to read settings files. | utf-8 | ENCODING_FOR_DYNACONF=”cp1252”

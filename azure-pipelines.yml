@@ -13,8 +13,6 @@ trigger:
 jobs:
 
 - job: 'Adequacy'
-  variables:
-    DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -34,8 +32,6 @@ jobs:
 
 - job: 'LinuxInstall'
   dependsOn: Adequacy
-  variables:
-      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -103,8 +99,6 @@ jobs:
 
 - job: 'LinuxFunctional'
   dependsOn: Adequacy
-  variables:
-      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -129,8 +123,6 @@ jobs:
 
 - job: 'MacOSInstall'
   dependsOn: Adequacy
-  variables:
-      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'macOS-latest'
   strategy:
@@ -198,8 +190,6 @@ jobs:
 
 - job: 'macOSFunctional'
   dependsOn: Adequacy
-  variables:
-      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'macOS-latest'
   strategy:
@@ -225,7 +215,6 @@ jobs:
   dependsOn: Adequacy
   variables:
     REDIS_ENABLED_FOR_DYNACONF: true
-    DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -258,7 +247,6 @@ jobs:
   variables:
     VAULT_ENABLED_FOR_DYNACONF: true
     VAULT_TOKEN_FOR_DYNACONF: myroot
-    DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: 'Ubuntu-16.04'
   strategy:
@@ -288,8 +276,6 @@ jobs:
 
 - job: 'WindowsUnit'
   dependsOn: Adequacy
-  variables:
-      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: vs2017-win2016
   strategy:
@@ -316,8 +302,6 @@ jobs:
 
 - job: 'WindowsInstall'
   dependsOn: Adequacy
-  variables:
-      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
   pool:
     vmImage: vs2017-win2016
   strategy:
@@ -342,7 +326,6 @@ jobs:
 - job: 'WindowsFunctional'
   dependsOn: Adequacy
   variables:
-      DEBUG_LEVEL_FOR_DYNACONF: DEBUG
       DJANGO_SETTINGS_MODULE: foo.settings
       PYTHONPATH: '.'
   pool:
