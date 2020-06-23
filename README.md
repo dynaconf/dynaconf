@@ -4,7 +4,7 @@
 
 [![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![PyPI](https://img.shields.io/pypi/pyversions/dynaconf.svg)]() ![PyPI - Downloads](https://img.shields.io/pypi/dm/dynaconf.svg?label=pip%20installs&logo=python) [![Build Status](https://dev.azure.com/rochacbruno/dynaconf/_apis/build/status/rochacbruno.dynaconf?branchName=master)](https://dev.azure.com/rochacbruno/dynaconf/_build/latest?definitionId=1&branchName=master) ![Azure DevOps builds (branch)](https://img.shields.io/azure-devops/build/rochacbruno/3e08a9d6-ea7f-43d7-9584-96152e542071/1/master.svg?label=windows%20build&logo=windows) ![Azure DevOps builds (branch)](https://img.shields.io/azure-devops/build/rochacbruno/3e08a9d6-ea7f-43d7-9584-96152e542071/1/master.svg?label=linux%20build&logo=linux) [![codecov](https://codecov.io/gh/rochacbruno/dynaconf/branch/master/graph/badge.svg)](https://codecov.io/gh/rochacbruno/dynaconf) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/5074f5d870a24ddea79def463453545b)](https://www.codacy.com/app/rochacbruno/dynaconf?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rochacbruno/dynaconf&amp;utm_campaign=Badge_Grade) ![GitHub issues](https://img.shields.io/github/issues/rochacbruno/dynaconf.svg) ![GitHub stars](https://img.shields.io/github/stars/rochacbruno/dynaconf.svg) ![GitHub Release Date](https://img.shields.io/github/release-date/rochacbruno/dynaconf.svg) ![GitHub commits since latest release](https://img.shields.io/github/commits-since/rochacbruno/dynaconf/latest.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/rochacbruno/dynaconf.svg) [![Code Style Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black/) [![Telegram](https://img.shields.io/badge/chat-t.me/dynaconf-blue.svg?logo=telegram)](https://t.me/dynaconf)
 
-# Features
+## Features
 
 - Inspired by the [12-factor application guide](https://12factor.net/config)
 - Settings management (default values, validation, parsing, templating)
@@ -17,15 +17,15 @@
 - CLI for common operations such as `init, list, write, validate, export`.
 - fuill docs on https://dynaconf.com
 
-# Quick start
+## Quick start
 
-## Install
+### Install
 
 ```bash
 $ pip install dynaconf
 ```
 
-### Initialize Dynaconf on project root directory
+#### Initialize Dynaconf on project root directory
 
 ```plain
 $ cd path/to/your/project/
@@ -48,7 +48,7 @@ $ dynaconf init -f toml
 
 > **TIP:** You can select `toml|yaml|json|ini|py` on `dynaconf init -f <fileformat>`  **toml** is the default and also the most recommended format for configuration.
 
-### Dynaconf init creates the following files
+#### Dynaconf init creates the following files
 
 ```plain
 .
@@ -71,13 +71,14 @@ settings = Dynaconf(
 > **TIP:** You can create the files yourself instead of using the `init` command as shown above and you can give any name you want instead of the default `config.py` (the file must be in your importable python path) - See more options that you can pass to `Dynaconf` class initializer on https://dynaconf.com
 
 
-## Using Dynaconf
+#### Using Dynaconf
 
 Put your settings on `settings.{toml|yaml|ini|json|py}`
 
 ```toml
 username = "admin"
 port = 5555
+database = {name='mydb', schema='main'}
 ```
 
 Put sensitive information on `.secrets.{toml|yaml|ini|json|py}`
@@ -108,6 +109,8 @@ settings.username == "admin"  # dot notation with multi nesting support
 settings.PORT == 9900  # case insensitive
 settings['password'] == "secret123"  # dict like access
 settings.get("nonexisting", "default value")  # Default values just like a dict
+settings.databases.name == "mydb"  # Nested key traversing
+settings['databases.schema'] == "main"  # Nested key traversing
 ```
 
 ## More
