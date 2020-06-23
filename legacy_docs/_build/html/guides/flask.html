@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>) &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="}" href="django.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="validation.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p># Flask Extension</p>
+<p>Dynaconf provides a drop in replacement for <cite>app.config</cite>.</p>
+<p>As Flask encourages the composition by overriding the <cite>config_class</cite> attribute this extension follows the [patterns of Flask](<a class="reference external" href="http://flask.pocoo.org/docs/0.12/patterns/subclassing/">http://flask.pocoo.org/docs/0.12/patterns/subclassing/</a>) and turns your Flask’s <cite>app.config</cite> in to a <cite>dynaconf</cite> instance.</p>
+<p>## Initialize the extension</p>
+<p>Initialize the <strong>FlaskDynaconf</strong> extension in your <cite>app</cite></p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+from flask import Flask
+from dynaconf import FlaskDynaconf</p>
+<p>app = Flask(__name__)
+FlaskDynaconf(app)
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>&gt; You can optionally use <cite>init_app</cite> as well.</p>
+<p>## Use <cite>FLASK_</cite> environment variables</p>
+<p>Then the <cite>app.config</cite> will work as a <cite>dynaconf.settings</cite> instance and <cite>FLASK_</cite> will be the global prefix for exporting environment variables.</p>
+<p>Example:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">FLASK_DEBUG=true</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">app.config.DEBUG</span>
+<span class="pre">export</span> <span class="pre">FLASK_INTVALUE=1</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">app.config['INTVALUE']</span>
+<span class="pre">export</span> <span class="pre">FLASK_MAIL_SERVER='host.com'</span>&#160; <span class="pre">#</span> <span class="pre">app.config.get('MAIL_SERVER')</span>
+<span class="pre">`</span></code></p>
+<p>## Settings files</p>
+<p>You can also have settings files for your Flask app, in the root directory (the same where you execute <cite>flask run</cite>) put your <cite>settings.toml</cite> and <cite>.secrets.toml</cite> files and then define your environments <cite>[default]</cite>, <cite>[development]</cite> and <cite>[production]</cite>.</p>
+<p>To switch the working environment the <cite>FLASK_ENV</cite> variable can be used, so <cite>FLASK_ENV=development</cite> to work
+in development mode or <cite>FLASK_ENV=production</cite> to switch to production.</p>
+<p>&gt; <strong>IMPORTANT</strong>: To use <cite>$ dynaconf</cite> CLI the <cite>FLASK_APP</cite> must be defined.</p>
+<p>IF you don’t want to manually create your config files take a look at the [CLI](cli.html)</p>
+<p>## Customizations</p>
+<p>It is possible to customize how your Flask project will load settings, example: You want your users to customize a settings file defined in <cite>export PROJECTNAME_SETTINGS=/path/to/settings.toml</cite> and you want environment variables to be loaded from <cite>PROJECTNAME_VARNAME</cite></p>
+<p>your flask <cite>app.py</cite> (or wherever you setup dynaconf)</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><cite>python
+ENVVAR_PREFIX_FOR_DYNACONF = “PROJECTNAME”
+“””This defines which environment variable global prefix dynaconf will load
+That means that `export PROJECTNAME_FOO=1</cite> will be loaded to <cite>app.config.FOO
+On command line it is possible to check it with `dynaconf list -k foo</cite>”””</p>
+<p>ENVVAR_FOR_DYNACONF = “PROJECTNAME_SETTINGS”
+“””This defines which path dynaconf will look to load config files
+example: export PROJECTNAME_SETTINGS=/path/to/settings.toml and the format can be
+.ini, .json, .yaml or .toml</p>
+<p>e.g:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">PROJECTNAME_SETTINGS</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">toml</span>
+<span class="p">[</span><span class="n">default</span><span class="p">]</span>
+<span class="n">FOO</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">[</span><span class="n">development</span><span class="p">]</span>
+<span class="n">FOO</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="p">[</span><span class="n">production</span><span class="p">]</span>
+<span class="n">FOO</span> <span class="o">=</span> <span class="mi">3</span>
+</pre></div>
+</div>
+<p>OR:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">PROJECTNAME_SETTINGS</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">yaml</span>
+<span class="n">default</span><span class="p">:</span>
+  <span class="n">foo</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">development</span><span class="p">:</span>
+  <span class="n">foo</span><span class="p">:</span> <span class="mi">2</span>
+<span class="n">production</span><span class="p">:</span>
+  <span class="n">foo</span><span class="p">:</span> <span class="mi">3</span>
+</pre></div>
+</div>
+<p>It is also possible to pass a list of files:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">PROJECTNAME_SETTINGS</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">toml</span><span class="p">,</span><span class="n">other_settings</span><span class="o">.</span><span class="n">yaml</span><span class="p">,</span><span class="n">another</span><span class="o">.</span><span class="n">json</span>
+</pre></div>
+</div>
+<p>The variables will be cascaded in the defined order (last wins the precedence)
+The environment variables wins precedence over all!
+“””</p>
+<p># load dynaconf
+app = Flask(__name__)
+FlaskDynaconf(</p>
+<blockquote>
+<div><p>app,
+ENVVAR_PREFIX_FOR_DYNACONF=ENVVAR_PREFIX_FOR_DYNACONF,
+ENVVAR_FOR_DYNACONF=ENVVAR_FOR_DYNACONF</p>
+</div></blockquote>
+<div class="section" id="id11">
+<h1>)<a class="headerlink" href="#id11" title="Permalink to this headline">¶</a></h1>
+<p>Then the working environment can now be switched using <cite>export PROJECTNAME_ENV=production</cite></p>
+<p>## Loading Flask Extensions Dynamically</p>
+<p>You can tell Dynaconf to load your Flask Extensions dynamically as long as the extensions follows the Pattens of Flask extensions.</p>
+<p>The only requirement is that the extension must be a <cite>callable</cite> that accepts <cite>app</cite> as first argument. e.g: <cite>flask_admin:Admin</cite> or <cite>custom_extension.module:init_app</cite> and of course the extension must be in Python namespace to be imported.</p>
+<p>For extensions initialized just use the class or function path like: “flask_admin:Admin” or “extension.module:init_app”</p>
+<p>having a <cite>settings.toml</cite></p>
+<p><a href="#id12"><span class="problematic" id="id13">``</span></a><a href="#id14"><span class="problematic" id="id15">`</span></a>toml
+[default]
+EXTENSIONS = [</p>
+<blockquote>
+<div><p>“flask_admin:Admin”,
+“flask_bootstrap:Bootstrap”,
+“custom_extension.module:init_app”</p>
+</div></blockquote>
+</div>
+<div class="section" id="id16">
+<h1>]<a class="headerlink" href="#id16" title="Permalink to this headline">¶</a></h1>
+<p>Considering an <cite>app.py</cite> like:</p>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>py
+from flask import Flask
+from dynaconf import FlaskDynaconf</p>
+<p>app = Flask(__name__)
+flask_dynaconf = FlaskDynaconf(app)</p>
+<p>app.config.load_extensions()
+<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>Optionally you can pass <cite>load_extensions(key=”OTHER_NAME”)</cite> pointing to your list of extensions.</p>
+<p>It is also possible to use environment variables to set the extensions to be loaded.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">#</span> <span class="pre">.env</span>
+<span class="pre">export</span> <span class="pre">FLASK_EXTENSIONS=&quot;['flask_admin:Admin']&quot;</span>
+<span class="pre">`</span></code></p>
+<p>The extensions will be loaded in order.</p>
+<p>### Develoment extensions</p>
+<p>It is also possible to have extensions that loads only in development environment.</p>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>toml
+[default]
+EXTENSIONS = [</p>
+<blockquote>
+<div><p>“flask_admin:Admin”,
+“flask_bootstrap:Bootstrap”,
+“custom_extension.module:init_app”</p>
+</div></blockquote>
+<p>]</p>
+<p>[development]
+EXTENSIONS = [</p>
+<blockquote>
+<div><p>“dynaconf_merge”,
+“flask_debugtoolbar:DebugToolbar”</p>
+</div></blockquote>
+</div>
+<div class="section" id="id29">
+<h1>]<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h1>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_usage.html">)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="validation.html" title="previous chapter">&lt;no title&gt;</a></li>
+      <li>Next: <a href="django.html" title="next chapter">}</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/guides/flask.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

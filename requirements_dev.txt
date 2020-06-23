@@ -38,5 +38,14 @@ recommonmark
 docutils>=0.14
 aafigure>=0.6
 
+# MKDOCS
+mkdocs
+mkdocs-material
+#mkdocs-versioning
+#mkdocs-new-features-notifier
+#mkdocs-multilang
+#mkdocs-nav-enhancements
+#mkdocs-git-revision-date-localized-plugin
+
 # editable dynaconf
 --editable .

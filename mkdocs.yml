@@ -1,0 +1,27 @@
+site_name: Dynaconf
+repo_name: rochacbruno/dynaconf
+repo_url: https://github.com/rochacbruno/dynaconf
+edit_uri: ''
+nav:
+    - Home: index.md
+    - About: about.md
+theme:
+    name: material
+    logo: img/logo_square.svg
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: true
+  - toc:
+      permalink: true
+extra:
+  disqus: dynaconf
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/rochacbruno/dynaconf
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/rochacbruno
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/in/rochacbruno
+    - icon: fontawesome/brands/twitch
+      link: https://twitch.tv/codeshow

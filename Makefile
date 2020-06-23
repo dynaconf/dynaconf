@@ -178,8 +178,8 @@ clean:
 	rm -rf docs/_build
 
 docs:
-	rm -rf docs/_build
-	@cd docs;make html
+	rm -rf legacy_docs/_build
+	@cd legacy_docs;make html
 
 run-tox:
 	tox --recreate

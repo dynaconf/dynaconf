@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>dynaconf.contrib.django_dynaconf &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dynaconf.contrib.django_dynaconf</h1><div class="highlight"><pre>
+<span></span><span class="c1"># WARNING: THIS EXTENSION IS DEPRECATED</span>
+<span class="c1"># Read more on how to integrate with django on</span>
+<span class="c1"># https://dynaconf.readthedocs.io/en/latest/guides/django.html</span>
+<span class="sd">&quot;&quot;&quot;Dynaconf django extension</span>
+
+<span class="sd">In the `django_project/settings.py` put as 1st app::</span>
+
+<span class="sd">    INSTALLED_APPS = [</span>
+<span class="sd">        &#39;dynaconf.contrib.django_dynaconf&#39;,</span>
+<span class="sd">        ...</span>
+<span class="sd">    ]</span>
+
+<span class="sd">It must be included as the first application on the INSTALLED_APPS list.</span>
+
+<span class="sd">Now in the root of your Django project</span>
+<span class="sd">(the same folder where manage.py is located)</span>
+
+<span class="sd">Put your config files `settings.{py|yaml|toml|ini|json}`</span>
+<span class="sd">and or `.secrets.{py|yaml|toml|ini|json}`</span>
+
+<span class="sd">On your projects root folder now you can start as::</span>
+
+<span class="sd">    DJANGO_DEBUG=&#39;@bool false&#39; \</span>
+<span class="sd">    DJANGO_ALLOWED_HOSTS=&#39;@json [&quot;localhost&quot;]&#39; \</span>
+<span class="sd">    python manage.py runserver</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">django</span> <span class="kn">import</span> <span class="n">conf</span>
+
+<span class="kn">from</span> <span class="nn">.dynaconf_django_conf</span> <span class="kn">import</span> <span class="n">settings</span>
+
+
+<span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+    <span class="s2">&quot;Django Integration for Dynaconf has been updated &quot;</span>
+    <span class="s2">&quot;you are still using the old style which is deprecated &quot;</span>
+    <span class="s2">&quot;please upgrade the django integration &quot;</span>
+    <span class="s2">&quot;read more in https://dynaconf.readthedocs.io/en/latest/guides/django.html&quot;</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="Wrapper"><a class="viewcode-back" href="../../../reference/dynaconf.contrib.html#dynaconf.contrib.django_dynaconf.Wrapper">[docs]</a><span class="k">class</span> <span class="nc">Wrapper</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__getattribute__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;settings&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">settings</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span></div>
+
+
+<span class="c1"># This implementation is recommended by Guido Van Rossum</span>
+<span class="c1"># https://mail.python.org/pipermail/python-ideas/2012-May/014969.html</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s2">&quot;django.conf&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Wrapper</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/examples.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

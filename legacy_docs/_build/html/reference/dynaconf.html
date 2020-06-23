@@ -1,0 +1,1429 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>dynaconf package &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="dynaconf.contrib package" href="dynaconf.contrib.html" />
+    <link rel="prev" title="dynaconf" href="modules.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="dynaconf-package">
+<h1>dynaconf package<a class="headerlink" href="#dynaconf-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dynaconf.contrib.html">dynaconf.contrib package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.contrib.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.contrib.html#module-dynaconf.contrib.flask_dynaconf">dynaconf.contrib.flask_dynaconf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.contrib.html#module-dynaconf.contrib.django_dynaconf">dynaconf.contrib.django_dynaconf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.contrib.html#module-dynaconf.contrib">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dynaconf.loaders.html">dynaconf.loaders package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders.env_loader">dynaconf.loaders.env_loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders.redis_loader">dynaconf.loaders.redis_loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders.vault_loader">dynaconf.loaders.vault_loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders.yaml_loader">dynaconf.loaders.yaml_loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders.toml_loader">dynaconf.loaders.toml_loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders.py_loader">dynaconf.loaders.py_loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders.json_loader">dynaconf.loaders.json_loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders.ini_loader">dynaconf.loaders.ini_loader module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders.base">dynaconf.loaders.base</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.loaders.html#module-dynaconf.loaders">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dynaconf.utils.html">dynaconf.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.utils.html#module-dynaconf.utils.boxing">dynaconf.utils.boxing module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.utils.html#module-dynaconf.utils.functional">dynaconf.utils.functional module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.utils.html#module-dynaconf.utils.parse_conf">dynaconf.utils.parse_conf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.utils.html#module-dynaconf.utils.files">dynaconf.utils.files module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynaconf.utils.html#module-dynaconf.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-dynaconf.base">
+<span id="dynaconf-base-module"></span><h2>dynaconf.base module<a class="headerlink" href="#module-dynaconf.base" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="dynaconf.base.LazySettings">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.base.</code><code class="sig-name descname">LazySettings</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#LazySettings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.LazySettings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="dynaconf.utils.html#dynaconf.utils.functional.LazyObject" title="dynaconf.utils.functional.LazyObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynaconf.utils.functional.LazyObject</span></code></a></p>
+<p>When you do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">Dynaconf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">settings</span> <span class="o">=</span> <span class="n">Dynaconf</span><span class="p">(</span><span class="o">*</span><span class="n">options</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>a LazySettings is initialized with only default_settings and all the
+parameters passed to <a href="#id1"><span class="problematic" id="id2">*</span></a>options.</p>
+<p>Then when you first access a value, this will be set up and loaders will
+be executed looking for defined config files or the file defined in
+SETTINGS_FILE_FOR_DYNACONF environment variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export SETTINGS_FILE_FOR_DYNACONF=path
+
+&gt;&gt;&gt; settings.FOO
+</pre></div>
+</div>
+<p>Or when you call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">settings</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">settings_module</span><span class="o">=</span><span class="s1">&#39;/tmp/settings.py&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can define in your settings module a list of loaders to get values
+from different stores. By default it will try environment variables
+starting with ENVVAR_PREFIX_FOR_DYNACONF (by defaulf <cite>DYNACONF_</cite>)</p>
+<p>You can also customize specific parameters.</p>
+<p>Exmaple: <cite>proj/config.py</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">Dynaconf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">settings</span> <span class="o">=</span> <span class="n">Dynaconf</span><span class="p">(</span>
+<span class="gp">... </span>   <span class="n">env</span><span class="o">=</span><span class="s1">&#39;production&#39;</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="n">loaders</span><span class="o">=</span><span class="p">[</span>
+<span class="gp">... </span>       <span class="s1">&#39;dynaconf.loaders.env_loader&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;dynaconf.loaders.redis_loader&#39;</span>
+<span class="gp">... </span>   <span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>save common values in a settings file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo &quot;SERVER_IP = &#39;10.10.10.10&#39;&quot; &gt; proj/settings.py
+</pre></div>
+</div>
+<p>or use <cite>.toml|.yaml|.ini|.json</cite></p>
+<p>save sensitive values in .secrets.{py|toml|yaml|ini|json}
+or export as DYNACONF global environment variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export DYNACONF_SERVER_PASSWD=&#39;super_secret&#39;
+
+&gt;&gt;&gt; # from proj.config import settings
+&gt;&gt;&gt; print settings.SERVER_IP
+&gt;&gt;&gt; print settings.SERVER_PASSWD
+</pre></div>
+</div>
+<p>and now it reads all variables starting with <cite>DYNACONF_</cite> from envvars
+and all values in a hash called DYNACONF_PROJ in redis</p>
+<dl class="py method">
+<dt id="dynaconf.base.LazySettings.configure">
+<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings_module</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#LazySettings.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.LazySettings.configure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows user to reconfigure settings object passing a new settings
+module or separated kwargs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>settings_module</strong> – defines the setttings file</p></li>
+<li><p><strong>kwargs</strong> – override default settings</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.LazySettings.configured">
+<em class="property">property </em><code class="sig-name descname">configured</code><a class="headerlink" href="#dynaconf.base.LazySettings.configured" title="Permalink to this definition">¶</a></dt>
+<dd><p>If wrapped is configured</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynaconf.base.Settings">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.base.</code><code class="sig-name descname">Settings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings_module</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Common logic for settings whether set by a module or by the user.</p>
+<dl class="py method">
+<dt id="dynaconf.base.Settings.as_bool">
+<code class="sig-name descname">as_bool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.as_bool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.as_bool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Partial method for get with bool cast</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.as_dict">
+<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">internal</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary with set key and values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> – Str env name, default self.current_env <cite>DEVELOPMENT</cite></p></li>
+<li><p><strong>internal</strong> – bool - should include dynaconf internal vars?</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.as_float">
+<code class="sig-name descname">as_float</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.as_float"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.as_float" title="Permalink to this definition">¶</a></dt>
+<dd><p>Partial method for get with float cast</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.as_int">
+<code class="sig-name descname">as_int</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.as_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.as_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Partial method for get with int cast</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.as_json">
+<code class="sig-name descname">as_json</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.as_json"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.as_json" title="Permalink to this definition">¶</a></dt>
+<dd><p>Partial method for get with json cast</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.clean">
+<code class="sig-name descname">clean</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.clean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.clean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean all loaded values to reload when switching envs</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.current_env">
+<em class="property">property </em><code class="sig-name descname">current_env</code><a class="headerlink" href="#dynaconf.base.Settings.current_env" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the current active env</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.current_namespace">
+<em class="property">property </em><code class="sig-name descname">current_namespace</code><a class="headerlink" href="#dynaconf.base.Settings.current_namespace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the current active env</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.dynaconf">
+<code class="sig-name descname">dynaconf</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.dynaconf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.dynaconf" title="Permalink to this definition">¶</a></dt>
+<dd><p>A proxy to access internal methods and attributes</p>
+<p>Starting in 3.0.0 Dynaconf now allows first level lower case
+keys that are not reserved keyword, so this is a proxy to
+internal methods and attrs.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dynaconf.base.Settings.dynaconf_banner">
+<code class="sig-name descname">dynaconf_banner</code><em class="property"> = '\n██████╗ ██╗   ██╗███╗   ██╗ █████╗  ██████╗ ██████╗ ███╗   ██╗███████╗\n██╔══██╗╚██╗ ██╔╝████╗  ██║██╔══██╗██╔════╝██╔═══██╗████╗  ██║██╔════╝\n██║  ██║ ╚████╔╝ ██╔██╗ ██║███████║██║     ██║   ██║██╔██╗ ██║█████╗\n██║  ██║  ╚██╔╝  ██║╚██╗██║██╔══██║██║     ██║   ██║██║╚██╗██║██╔══╝\n██████╔╝   ██║   ██║ ╚████║██║  ██║╚██████╗╚██████╔╝██║ ╚████║██║\n╚═════╝    ╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝\n'</em><a class="headerlink" href="#dynaconf.base.Settings.dynaconf_banner" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.execute_loaders">
+<code class="sig-name descname">execute_loaders</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.execute_loaders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.execute_loaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute all internal and registered loaders</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> – The environment to load</p></li>
+<li><p><strong>silent</strong> – If loading erros is silenced</p></li>
+<li><p><strong>key</strong> – if provided load a single key</p></li>
+<li><p><strong>filename</strong> – optional custom filename to load</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.exists">
+<code class="sig-name descname">exists</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">fresh</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if key exists</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – the name of setting variable</p></li>
+<li><p><strong>fresh</strong> – if key should be taken from source direclty</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.exists_in_environ">
+<code class="sig-name descname">exists_in_environ</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.exists_in_environ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.exists_in_environ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if env variable is exported</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.find_file">
+<code class="sig-name descname">find_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.find_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.find_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.flag">
+<code class="sig-name descname">flag</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.flag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.flag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Feature flagging system
+write flags to redis
+$ dynaconf write redis -s DASHBOARD=1 -e premiumuser
+meaning: Any premium user has DASHBOARD feature enabled</p>
+<p>In your program do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># premium user has access to dashboard?</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">flag</span><span class="p">(</span><span class="s1">&#39;dashboard&#39;</span><span class="p">,</span> <span class="s1">&#39;premiumuser&#39;</span><span class="p">):</span>
+<span class="o">...</span>     <span class="n">activate_dashboard</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The value is ensured to be loaded fresh from redis server</p>
+<p>It also works with file settings but the recommended is redis
+as the data can be loaded once it is updated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The flag name</p></li>
+<li><p><strong>env</strong> – The env to look for</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.fresh">
+<code class="sig-name descname">fresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.fresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.fresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>this context manager force the load of a key direct from the store:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export DYNACONF_VALUE=&#39;Original&#39;
+&gt;&gt;&gt; from dynaconf import settings
+&gt;&gt;&gt; print settings.VALUE
+&#39;Original&#39;
+$ export DYNACONF_VALUE=&#39;Changed Value&#39;
+&gt;&gt;&gt; print settings.VALUE  # will not be reloaded from env vars
+&#39;Original
+&gt;&gt;&gt; with settings.fresh(): # inside this context all is reloaded
+...    print settings.VALUE
+&#39;Changed Value&#39;
+</pre></div>
+</div>
+<p>an alternative is using <cite>settings.get_fresh(key)</cite></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>context</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.from_env">
+<code class="sig-name descname">from_env</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">keep</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.from_env"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.from_env" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new isolated settings object pointing to specified env.</p>
+<p>Example of settings.toml:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">development</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;This is in dev&#39;</span>
+<span class="p">[</span><span class="n">other</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;this is in other env&#39;</span>
+</pre></div>
+</div>
+<p>Program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span><span class="p">)</span>
+<span class="go">&#39;This is in dev&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">from_env</span><span class="p">(</span><span class="s1">&#39;other&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">MESSAGE</span><span class="p">)</span>
+<span class="go">&#39;This is in other env&#39;</span>
+<span class="go"># The existing settings object remains the same.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span><span class="p">)</span>
+<span class="go">&#39;This is in dev&#39;</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Arguments:</dt><dd><p>env {str} – Env to load (development, production, custom)</p>
+</dd>
+<dt>Keyword Arguments:</dt><dd><p>keep {bool} – Keep pre-existing values (default: {False})
+kwargs {dict} – Passed directly to new instance.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.get">
+<code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cast</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fresh</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dotted_lookup</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">parent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a value from settings store, this is the prefered way to access:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;KEY&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The name of the setting value, will always be upper case</p></li>
+<li><p><strong>default</strong> – In case of not found it will be returned</p></li>
+<li><p><strong>cast</strong> – Should cast in to &#64;int, &#64;float, &#64;bool or &#64;json ?</p></li>
+<li><p><strong>fresh</strong> – Should reload from loaders store before access?</p></li>
+<li><p><strong>dotted_lookup</strong> – Should perform dotted-path lookup?</p></li>
+<li><p><strong>parent</strong> – Is there a pre-loaded parent in a nested data?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The value if found, default or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.get_environ">
+<code class="sig-name descname">get_environ</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cast</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.get_environ"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.get_environ" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get value from environment variable using os.environ.get</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The name of the setting value, will always be upper case</p></li>
+<li><p><strong>default</strong> – In case of not found it will be returned</p></li>
+<li><p><strong>cast</strong> – Should cast in to &#64;int, &#64;float, &#64;bool or &#64;json ?
+or cast must be true to use cast inference</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The value if found, default or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.get_fresh">
+<code class="sig-name descname">get_fresh</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cast</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.get_fresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.get_fresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a shortcut to <cite>get(key, fresh=True)</cite>. always reload from
+loaders store before getting the var.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The name of the setting value, will always be upper case</p></li>
+<li><p><strong>default</strong> – In case of not found it will be returned</p></li>
+<li><p><strong>cast</strong> – Should cast in to &#64;int, &#64;float, &#64;bool or &#64;json ?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The value if found, default or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.keys">
+<code class="sig-name descname">keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.keys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirects to store object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.load_extra_yaml">
+<code class="sig-name descname">load_extra_yaml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span></em>, <em class="sig-param"><span class="n">silent</span></em>, <em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.load_extra_yaml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.load_extra_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is deprecated, kept for compat</p>
+<div class="deprecated">
+<p><span class="versionmodified deprecated">Deprecated since version 1.0.0: </span>Use multiple settings or INCLUDES_FOR_DYNACONF files instead.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.load_file">
+<code class="sig-name descname">load_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.load_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.load_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Programmatically load files from <code class="docutils literal notranslate"><span class="pre">path</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – A single filename or a file list</p></li>
+<li><p><strong>env</strong> – Which env to load from file (default current_env)</p></li>
+<li><p><strong>silent</strong> – Should raise errors?</p></li>
+<li><p><strong>key</strong> – Load a single key?</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.load_includes">
+<code class="sig-name descname">load_includes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span></em>, <em class="sig-param"><span class="n">silent</span></em>, <em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.load_includes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.load_includes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do we have any nested includes we need to process?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.loaded_by_loaders">
+<em class="property">property </em><code class="sig-name descname">loaded_by_loaders</code><a class="headerlink" href="#dynaconf.base.Settings.loaded_by_loaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the internal mapping of LOADER -&gt; values</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.loaded_envs">
+<em class="property">property </em><code class="sig-name descname">loaded_envs</code><a class="headerlink" href="#dynaconf.base.Settings.loaded_envs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or create internal loaded envs list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.loaded_namespaces">
+<em class="property">property </em><code class="sig-name descname">loaded_namespaces</code><a class="headerlink" href="#dynaconf.base.Settings.loaded_namespaces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or create internal loaded envs list</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.loaders">
+<em class="property">property </em><code class="sig-name descname">loaders</code><a class="headerlink" href="#dynaconf.base.Settings.loaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return available loaders</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.logger">
+<em class="property">property </em><code class="sig-name descname">logger</code><a class="headerlink" href="#dynaconf.base.Settings.logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>backwards compatibility with pre 3.0 loaders
+In dynaconf 3.0.0 logger and debug messages has been removed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.namespace">
+<code class="sig-name descname">namespace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">clean</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynaconf.base.Settings.namespace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to interactively change the env
+Example of settings.toml:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">development</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;This is in dev&#39;</span>
+<span class="p">[</span><span class="n">other</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;this is in other env&#39;</span>
+</pre></div>
+</div>
+<p>Program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span>
+<span class="go">&#39;This is in dev&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">settings</span><span class="o">.</span><span class="n">using_env</span><span class="p">(</span><span class="s1">&#39;OTHER&#39;</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span>
+<span class="go">&#39;this is in other env&#39;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> – Upper case name of env without any _</p></li>
+<li><p><strong>clean</strong> – If preloaded vars should be cleaned</p></li>
+<li><p><strong>silent</strong> – Silence errors</p></li>
+<li><p><strong>filename</strong> – Custom filename to load (optional)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>context</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.path_for">
+<code class="sig-name descname">path_for</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.path_for"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.path_for" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path containing _root_path</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.populate_obj">
+<code class="sig-name descname">populate_obj</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">keys</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.populate_obj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.populate_obj" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given the <cite>obj</cite> populate it using self.store items.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – An object to be populated, a class instance.</p></li>
+<li><p><strong>keys</strong> – A list of keys to be included.</p></li>
+<li><p><strong>ignore</strong> – A list of keys to be excluded.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.pre_load">
+<code class="sig-name descname">pre_load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span></em>, <em class="sig-param"><span class="n">silent</span></em>, <em class="sig-param"><span class="n">key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.pre_load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.pre_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do we have any file to pre-load before main settings file?</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.reload">
+<code class="sig-name descname">reload</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.reload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.reload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clean end Execute all loaders</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.set">
+<code class="sig-name descname">set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">loader_identifier</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tomlfy</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dotted_lookup</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">is_secret</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">merge</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a value storing references for the loader</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key to store</p></li>
+<li><p><strong>value</strong> – The value to store</p></li>
+<li><p><strong>loader_identifier</strong> – Optional loader name e.g: toml, yaml etc.</p></li>
+<li><p><strong>tomlfy</strong> – Bool define if value is parsed by toml (defaults False)</p></li>
+<li><p><strong>is_secret</strong> – Bool define if secret values is hidden on logs.</p></li>
+<li><p><strong>merge</strong> – Bool define if existing nested data will be merged.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.setenv">
+<code class="sig-name descname">setenv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">clean</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.setenv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.setenv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Used to interactively change the env
+Example of settings.toml:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">development</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;This is in dev&#39;</span>
+<span class="p">[</span><span class="n">other</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;this is in other env&#39;</span>
+</pre></div>
+</div>
+<p>Program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span>
+<span class="go">&#39;This is in dev&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">settings</span><span class="o">.</span><span class="n">using_env</span><span class="p">(</span><span class="s1">&#39;OTHER&#39;</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span>
+<span class="go">&#39;this is in other env&#39;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> – Upper case name of env without any _</p></li>
+<li><p><strong>clean</strong> – If preloaded vars should be cleaned</p></li>
+<li><p><strong>silent</strong> – Silence errors</p></li>
+<li><p><strong>filename</strong> – Custom filename to load (optional)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>context</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.settings_file">
+<em class="property">property </em><code class="sig-name descname">settings_file</code><a class="headerlink" href="#dynaconf.base.Settings.settings_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets SETTINGS_MODULE variable</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.settings_module">
+<em class="property">property </em><code class="sig-name descname">settings_module</code><a class="headerlink" href="#dynaconf.base.Settings.settings_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets SETTINGS_MODULE variable</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.store">
+<em class="property">property </em><code class="sig-name descname">store</code><a class="headerlink" href="#dynaconf.base.Settings.store" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets internal storage</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">internal</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynaconf.base.Settings.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary with set key and values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> – Str env name, default self.current_env <cite>DEVELOPMENT</cite></p></li>
+<li><p><strong>internal</strong> – bool - should include dynaconf internal vars?</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.unset">
+<code class="sig-name descname">unset</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">force</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.unset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.unset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unset on all references</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> – The key to be unset</p></li>
+<li><p><strong>force</strong> – Bypass default checks and force unset</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.unset_all">
+<code class="sig-name descname">unset_all</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">keys</span></em>, <em class="sig-param"><span class="n">force</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.unset_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.unset_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unset based on a list of keys</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>keys</strong> – a list of keys</p></li>
+<li><p><strong>force</strong> – Bypass default checks and force unset</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">loader_identifier</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tomlfy</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">is_secret</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">merge</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update values in the current settings object without saving in stores:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">NAME</span>
+<span class="go">&#39;Bruno&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">settings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;NAME&#39;</span><span class="p">:</span> <span class="s1">&#39;John&#39;</span><span class="p">},</span> <span class="n">other_value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">NAME</span>
+<span class="go">&#39;John&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">OTHER_VALUE</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – Data to be updated</p></li>
+<li><p><strong>loader_identifier</strong> – Only to be used by custom loaders</p></li>
+<li><p><strong>tomlfy</strong> – Bool define if value is parsed by toml (defaults False)</p></li>
+<li><p><strong>merge</strong> – Bool define if existing nested data will be merged.</p></li>
+<li><p><strong>kwargs</strong> – extra values to update</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.using_env">
+<code class="sig-name descname">using_env</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span></em>, <em class="sig-param"><span class="n">clean</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.using_env"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.using_env" title="Permalink to this definition">¶</a></dt>
+<dd><p>This context manager allows the contextual use of a different env
+Example of settings.toml:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">development</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;This is in dev&#39;</span>
+<span class="p">[</span><span class="n">other</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;this is in other env&#39;</span>
+</pre></div>
+</div>
+<p>Program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span>
+<span class="go">&#39;This is in dev&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">settings</span><span class="o">.</span><span class="n">using_env</span><span class="p">(</span><span class="s1">&#39;OTHER&#39;</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span>
+<span class="go">&#39;this is in other env&#39;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> – Upper case name of env without any _</p></li>
+<li><p><strong>clean</strong> – If preloaded vars should be cleaned</p></li>
+<li><p><strong>silent</strong> – Silence errors</p></li>
+<li><p><strong>filename</strong> – Custom filename to load (optional)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>context</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.using_namespace">
+<code class="sig-name descname">using_namespace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">env</span></em>, <em class="sig-param"><span class="n">clean</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynaconf.base.Settings.using_namespace" title="Permalink to this definition">¶</a></dt>
+<dd><p>This context manager allows the contextual use of a different env
+Example of settings.toml:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">development</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;This is in dev&#39;</span>
+<span class="p">[</span><span class="n">other</span><span class="p">]</span>
+<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;this is in other env&#39;</span>
+</pre></div>
+</div>
+<p>Program:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span>
+<span class="go">&#39;This is in dev&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">settings</span><span class="o">.</span><span class="n">using_env</span><span class="p">(</span><span class="s1">&#39;OTHER&#39;</span><span class="p">):</span>
+<span class="gp">... </span>   <span class="nb">print</span> <span class="n">settings</span><span class="o">.</span><span class="n">MESSAGE</span>
+<span class="go">&#39;this is in other env&#39;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>env</strong> – Upper case name of env without any _</p></li>
+<li><p><strong>clean</strong> – If preloaded vars should be cleaned</p></li>
+<li><p><strong>silent</strong> – Silence errors</p></li>
+<li><p><strong>filename</strong> – Custom filename to load (optional)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>context</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.base.Settings.values">
+<code class="sig-name descname">values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#Settings.values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.base.Settings.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redirects to store object</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.cli">
+<span id="dynaconf-cli-module"></span><h2>dynaconf.cli module<a class="headerlink" href="#module-dynaconf.cli" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.cli.import_settings">
+<code class="sig-prename descclassname">dynaconf.cli.</code><code class="sig-name descname">import_settings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dotted_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/cli.html#import_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.cli.import_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import settings instance from python dotted path.</p>
+<p>Last item in dotted path must be settings instace.</p>
+<p>Example: import_settings(‘path.to.settings’)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.cli.open_docs">
+<code class="sig-prename descclassname">dynaconf.cli.</code><code class="sig-name descname">open_docs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ctx</span></em>, <em class="sig-param"><span class="n">param</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/cli.html#open_docs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.cli.open_docs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.cli.print_version">
+<code class="sig-prename descclassname">dynaconf.cli.</code><code class="sig-name descname">print_version</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ctx</span></em>, <em class="sig-param"><span class="n">param</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/cli.html#print_version"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.cli.print_version" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.cli.read_file_in_root_directory">
+<code class="sig-prename descclassname">dynaconf.cli.</code><code class="sig-name descname">read_file_in_root_directory</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">names</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/cli.html#read_file_in_root_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.cli.read_file_in_root_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a file on root dir.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.cli.set_settings">
+<code class="sig-prename descclassname">dynaconf.cli.</code><code class="sig-name descname">set_settings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ctx</span></em>, <em class="sig-param"><span class="n">instance</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/cli.html#set_settings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.cli.set_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pick correct settings instance and set it to a global variable.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.cli.show_banner">
+<code class="sig-prename descclassname">dynaconf.cli.</code><code class="sig-name descname">show_banner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ctx</span></em>, <em class="sig-param"><span class="n">param</span></em>, <em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/cli.html#show_banner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.cli.show_banner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shows dynaconf awesome banner</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.cli.split_vars">
+<code class="sig-prename descclassname">dynaconf.cli.</code><code class="sig-name descname">split_vars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">_vars</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/cli.html#split_vars"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.cli.split_vars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Splits values like foo=bar=zaz in {‘foo’: ‘bar=zaz’}</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.default_settings">
+<span id="dynaconf-default-settings-module"></span><h2>dynaconf.default_settings module<a class="headerlink" href="#module-dynaconf.default_settings" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.default_settings.get">
+<code class="sig-prename descclassname">dynaconf.default_settings.</code><code class="sig-name descname">get</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/default_settings.html#get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.default_settings.get" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.default_settings.reload">
+<code class="sig-prename descclassname">dynaconf.default_settings.</code><code class="sig-name descname">reload</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">load_dotenv</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/default_settings.html#reload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.default_settings.reload" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.default_settings.start_dotenv">
+<code class="sig-prename descclassname">dynaconf.default_settings.</code><code class="sig-name descname">start_dotenv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">root_path</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/default_settings.html#start_dotenv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.default_settings.start_dotenv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.default_settings.try_renamed">
+<code class="sig-prename descclassname">dynaconf.default_settings.</code><code class="sig-name descname">try_renamed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">older_key</span></em>, <em class="sig-param"><span class="n">current_key</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/default_settings.html#try_renamed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.default_settings.try_renamed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.constants">
+<span id="dynaconf-constants-module"></span><h2>dynaconf.constants module<a class="headerlink" href="#module-dynaconf.constants" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-dynaconf.test_settings">
+<span id="dynaconf-test-settings-module"></span><h2>dynaconf.test_settings module<a class="headerlink" href="#module-dynaconf.test_settings" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-dynaconf.validator">
+<span id="dynaconf-validator-module"></span><h2>dynaconf.validator module<a class="headerlink" href="#module-dynaconf.validator" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="dynaconf.validator.AndValidator">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.validator.</code><code class="sig-name descname">AndValidator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">validator_a</span></em>, <em class="sig-param"><span class="n">validator_b</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#AndValidator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.AndValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dynaconf.validator.CombinedValidator" title="dynaconf.validator.CombinedValidator"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynaconf.validator.CombinedValidator</span></code></a></p>
+<p>Evaluates on Validator() &amp; Validator()</p>
+<dl class="py method">
+<dt id="dynaconf.validator.AndValidator.validate">
+<code class="sig-name descname">validate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#AndValidator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.AndValidator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure both the validators are valid</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynaconf.validator.CombinedValidator">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.validator.</code><code class="sig-name descname">CombinedValidator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">validator_a</span></em>, <em class="sig-param"><span class="n">validator_b</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#CombinedValidator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.CombinedValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dynaconf.validator.Validator" title="dynaconf.validator.Validator"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynaconf.validator.Validator</span></code></a></p>
+<dl class="py method">
+<dt id="dynaconf.validator.CombinedValidator.validate">
+<code class="sig-name descname">validate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#CombinedValidator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.CombinedValidator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise ValidationError if invalid</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynaconf.validator.OrValidator">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.validator.</code><code class="sig-name descname">OrValidator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">validator_a</span></em>, <em class="sig-param"><span class="n">validator_b</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#OrValidator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.OrValidator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dynaconf.validator.CombinedValidator" title="dynaconf.validator.CombinedValidator"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynaconf.validator.CombinedValidator</span></code></a></p>
+<p>Evaluates on Validator() | Validator()</p>
+<dl class="py method">
+<dt id="dynaconf.validator.OrValidator.validate">
+<code class="sig-name descname">validate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#OrValidator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.OrValidator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure at least one of the validators are valid</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dynaconf.validator.ValidationError">
+<em class="property">exception </em><code class="sig-prename descclassname">dynaconf.validator.</code><code class="sig-name descname">ValidationError</code><a class="reference internal" href="../_modules/dynaconf/validator.html#ValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.ValidationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynaconf.validator.Validator">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.validator.</code><code class="sig-name descname">Validator</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">names</span></em>, <em class="sig-param"><span class="n">must_exist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">condition</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">when</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">messages</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cast</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">operations</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#Validator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.Validator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Validators are conditions attached to settings variables names
+or patterns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;MESSAGE&#39;</span><span class="p">,</span> <span class="n">must_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="s1">&#39;Hello World&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above ensure MESSAGE is available in default env and
+is equal to ‘Hello World’</p>
+<p><cite>names</cite> are a one (or more) names or patterns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+<span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">,</span> <span class="s1">&#39;OTHER_NAME&#39;</span><span class="p">,</span> <span class="s1">&#39;EVEN_OTHER&#39;</span><span class="p">)</span>
+<span class="n">Validator</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^NAME&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;OTHER./*&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <cite>operations</cite> are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eq</span><span class="p">:</span> <span class="n">value</span> <span class="o">==</span> <span class="n">other</span>
+<span class="n">ne</span><span class="p">:</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">other</span>
+<span class="n">gt</span><span class="p">:</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">other</span>
+<span class="n">lt</span><span class="p">:</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="n">other</span>
+<span class="n">gte</span><span class="p">:</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="n">other</span>
+<span class="n">lte</span><span class="p">:</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="n">other</span>
+<span class="n">is_type_of</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+<span class="n">is_in</span><span class="p">:</span>  <span class="n">value</span> <span class="ow">in</span> <span class="n">sequence</span>
+<span class="n">is_not_in</span><span class="p">:</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sequence</span>
+<span class="n">identity</span><span class="p">:</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">other</span>
+<span class="n">cont</span><span class="p">:</span> <span class="n">contain</span> <span class="n">value</span> <span class="ow">in</span>
+<span class="n">len_eq</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="n">other</span>
+<span class="n">len_ne</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="n">other</span>
+<span class="n">len_min</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">other</span>
+<span class="n">len_max</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">other</span>
+</pre></div>
+</div>
+<p><cite>env</cite> is which env to be checked, can be a list or
+default is used.</p>
+<p><cite>when</cite> holds a validator and its return decides if validator runs or not:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">,</span> <span class="n">must_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">when</span><span class="o">=</span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;OTHER&#39;</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="c1"># NAME is required only if OTHER eq to 2</span>
+<span class="c1"># When the very first thing to be performed when passed.</span>
+<span class="c1"># if no env is passed to `when` it is inherited</span>
+</pre></div>
+</div>
+<p><cite>must_exist</cite> is <cite>exists</cite> requirement. (executed after when):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">settings</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>condition is a callable to be executed and return boolean:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c1"># it is executed before operations.</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt id="dynaconf.validator.Validator.default_messages">
+<code class="sig-name descname">default_messages</code><em class="property"> = mappingproxy({'must_exist_true': '{name} is required in env {env}', 'must_exist_false': '{name} cannot exists in env {env}', 'condition': '{name} invalid for {function}({value}) in env {env}', 'operations': '{name} must {operation} {op_value} but it is {value} in env {env}', 'combined': 'combined validators failed {errors}'})</em><a class="headerlink" href="#dynaconf.validator.Validator.default_messages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.validator.Validator.validate">
+<code class="sig-name descname">validate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#Validator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.Validator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise ValidationError if invalid</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynaconf.validator.ValidatorList">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.validator.</code><code class="sig-name descname">ValidatorList</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span></em>, <em class="sig-param"><span class="n">validators</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#ValidatorList"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.ValidatorList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+<dl class="py method">
+<dt id="dynaconf.validator.ValidatorList.register">
+<code class="sig-name descname">register</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#ValidatorList.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.ValidatorList.register" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.validator.ValidatorList.validate">
+<code class="sig-name descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#ValidatorList.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator.ValidatorList.validate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.validator_conditions">
+<span id="dynaconf-validator-conditions-module"></span><h2>dynaconf.validator_conditions module<a class="headerlink" href="#module-dynaconf.validator_conditions" title="Permalink to this headline">¶</a></h2>
+<p>Implement basic assertions to be used in assertion action</p>
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.cont">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">cont</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#cont"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.cont" title="Permalink to this definition">¶</a></dt>
+<dd><p>Contains</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.eq">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">eq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#eq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equal</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.gt">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">gt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#gt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.gt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Greater than</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.gte">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">gte</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#gte"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.gte" title="Permalink to this definition">¶</a></dt>
+<dd><p>Greater than or equal</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.identity">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">identity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#identity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.identity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Identity check using ID</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.is_in">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">is_in</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#is_in"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.is_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Existence</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.is_not_in">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">is_not_in</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#is_not_in"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.is_not_in" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inexistence</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.is_type_of">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">is_type_of</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#is_type_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.is_type_of" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type check</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.len_eq">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">len_eq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#len_eq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.len_eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length Equal</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.len_max">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">len_max</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#len_max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.len_max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Maximum lenght</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.len_min">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">len_min</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#len_min"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.len_min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Minimum length</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.len_ne">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">len_ne</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#len_ne"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.len_ne" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length Not equal</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.lt">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">lt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#lt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.lt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lower than</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.lte">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">lte</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#lte"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.lte" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lower than or equal</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.ne">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">ne</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#ne"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.ne" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not equal</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.validator_conditions.startswith">
+<code class="sig-prename descclassname">dynaconf.validator_conditions.</code><code class="sig-name descname">startswith</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em>, <em class="sig-param"><span class="n">term</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator_conditions.html#startswith"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.validator_conditions.startswith" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns value.startswith(term) result</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-dynaconf" title="Permalink to this headline">¶</a></h2>
+<dl class="py attribute">
+<dt id="dynaconf.Dynaconf">
+<code class="sig-prename descclassname">dynaconf.</code><code class="sig-name descname">Dynaconf</code><a class="headerlink" href="#dynaconf.Dynaconf" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#dynaconf.base.LazySettings" title="dynaconf.base.LazySettings"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynaconf.base.LazySettings</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynaconf.LazySettings">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.</code><code class="sig-name descname">LazySettings</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#LazySettings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.LazySettings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="dynaconf.utils.html#dynaconf.utils.functional.LazyObject" title="dynaconf.utils.functional.LazyObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">dynaconf.utils.functional.LazyObject</span></code></a></p>
+<p>When you do:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">Dynaconf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">settings</span> <span class="o">=</span> <span class="n">Dynaconf</span><span class="p">(</span><span class="o">*</span><span class="n">options</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>a LazySettings is initialized with only default_settings and all the
+parameters passed to <a href="#id3"><span class="problematic" id="id4">*</span></a>options.</p>
+<p>Then when you first access a value, this will be set up and loaders will
+be executed looking for defined config files or the file defined in
+SETTINGS_FILE_FOR_DYNACONF environment variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export SETTINGS_FILE_FOR_DYNACONF=path
+
+&gt;&gt;&gt; settings.FOO
+</pre></div>
+</div>
+<p>Or when you call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">settings</span><span class="o">.</span><span class="n">configure</span><span class="p">(</span><span class="n">settings_module</span><span class="o">=</span><span class="s1">&#39;/tmp/settings.py&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can define in your settings module a list of loaders to get values
+from different stores. By default it will try environment variables
+starting with ENVVAR_PREFIX_FOR_DYNACONF (by defaulf <cite>DYNACONF_</cite>)</p>
+<p>You can also customize specific parameters.</p>
+<p>Exmaple: <cite>proj/config.py</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">dynaconf</span> <span class="kn">import</span> <span class="n">Dynaconf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">settings</span> <span class="o">=</span> <span class="n">Dynaconf</span><span class="p">(</span>
+<span class="gp">... </span>   <span class="n">env</span><span class="o">=</span><span class="s1">&#39;production&#39;</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="n">loaders</span><span class="o">=</span><span class="p">[</span>
+<span class="gp">... </span>       <span class="s1">&#39;dynaconf.loaders.env_loader&#39;</span><span class="p">,</span>
+<span class="gp">... </span>       <span class="s1">&#39;dynaconf.loaders.redis_loader&#39;</span>
+<span class="gp">... </span>   <span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>save common values in a settings file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ echo &quot;SERVER_IP = &#39;10.10.10.10&#39;&quot; &gt; proj/settings.py
+</pre></div>
+</div>
+<p>or use <cite>.toml|.yaml|.ini|.json</cite></p>
+<p>save sensitive values in .secrets.{py|toml|yaml|ini|json}
+or export as DYNACONF global environment variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export DYNACONF_SERVER_PASSWD=&#39;super_secret&#39;
+
+&gt;&gt;&gt; # from proj.config import settings
+&gt;&gt;&gt; print settings.SERVER_IP
+&gt;&gt;&gt; print settings.SERVER_PASSWD
+</pre></div>
+</div>
+<p>and now it reads all variables starting with <cite>DYNACONF_</cite> from envvars
+and all values in a hash called DYNACONF_PROJ in redis</p>
+<dl class="py method">
+<dt id="dynaconf.LazySettings.configure">
+<code class="sig-name descname">configure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings_module</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/base.html#LazySettings.configure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.LazySettings.configure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Allows user to reconfigure settings object passing a new settings
+module or separated kwargs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>settings_module</strong> – defines the setttings file</p></li>
+<li><p><strong>kwargs</strong> – override default settings</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.LazySettings.configured">
+<em class="property">property </em><code class="sig-name descname">configured</code><a class="headerlink" href="#dynaconf.LazySettings.configured" title="Permalink to this definition">¶</a></dt>
+<dd><p>If wrapped is configured</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynaconf.Validator">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.</code><code class="sig-name descname">Validator</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">names</span></em>, <em class="sig-param"><span class="n">must_exist</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">condition</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">when</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">messages</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cast</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">operations</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#Validator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.Validator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Validators are conditions attached to settings variables names
+or patterns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;MESSAGE&#39;</span><span class="p">,</span> <span class="n">must_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="s1">&#39;Hello World&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above ensure MESSAGE is available in default env and
+is equal to ‘Hello World’</p>
+<p><cite>names</cite> are a one (or more) names or patterns:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">)</span>
+<span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">,</span> <span class="s1">&#39;OTHER_NAME&#39;</span><span class="p">,</span> <span class="s1">&#39;EVEN_OTHER&#39;</span><span class="p">)</span>
+<span class="n">Validator</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;^NAME&#39;</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;OTHER./*&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <cite>operations</cite> are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">eq</span><span class="p">:</span> <span class="n">value</span> <span class="o">==</span> <span class="n">other</span>
+<span class="n">ne</span><span class="p">:</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">other</span>
+<span class="n">gt</span><span class="p">:</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="n">other</span>
+<span class="n">lt</span><span class="p">:</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="n">other</span>
+<span class="n">gte</span><span class="p">:</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="n">other</span>
+<span class="n">lte</span><span class="p">:</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="n">other</span>
+<span class="n">is_type_of</span><span class="p">:</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+<span class="n">is_in</span><span class="p">:</span>  <span class="n">value</span> <span class="ow">in</span> <span class="n">sequence</span>
+<span class="n">is_not_in</span><span class="p">:</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sequence</span>
+<span class="n">identity</span><span class="p">:</span> <span class="n">value</span> <span class="ow">is</span> <span class="n">other</span>
+<span class="n">cont</span><span class="p">:</span> <span class="n">contain</span> <span class="n">value</span> <span class="ow">in</span>
+<span class="n">len_eq</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="n">other</span>
+<span class="n">len_ne</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="n">other</span>
+<span class="n">len_min</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">other</span>
+<span class="n">len_max</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">other</span>
+</pre></div>
+</div>
+<p><cite>env</cite> is which env to be checked, can be a list or
+default is used.</p>
+<p><cite>when</cite> holds a validator and its return decides if validator runs or not:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">,</span> <span class="n">must_exist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">when</span><span class="o">=</span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;OTHER&#39;</span><span class="p">,</span> <span class="n">eq</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="c1"># NAME is required only if OTHER eq to 2</span>
+<span class="c1"># When the very first thing to be performed when passed.</span>
+<span class="c1"># if no env is passed to `when` it is inherited</span>
+</pre></div>
+</div>
+<p><cite>must_exist</cite> is <cite>exists</cite> requirement. (executed after when):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">settings</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>condition is a callable to be executed and return boolean:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Validator</span><span class="p">(</span><span class="s1">&#39;NAME&#39;</span><span class="p">,</span> <span class="n">condition</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c1"># it is executed before operations.</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt id="dynaconf.Validator.default_messages">
+<code class="sig-name descname">default_messages</code><em class="property"> = mappingproxy({'must_exist_true': '{name} is required in env {env}', 'must_exist_false': '{name} cannot exists in env {env}', 'condition': '{name} invalid for {function}({value}) in env {env}', 'operations': '{name} must {operation} {op_value} but it is {value} in env {env}', 'combined': 'combined validators failed {errors}'})</em><a class="headerlink" href="#dynaconf.Validator.default_messages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.Validator.validate">
+<code class="sig-name descname">validate</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/validator.html#Validator.validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.Validator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise ValidationError if invalid</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dynaconf.FlaskDynaconf">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.</code><code class="sig-name descname">FlaskDynaconf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">instance_relative_config</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dynaconf_instance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/contrib/flask_dynaconf.html#FlaskDynaconf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.FlaskDynaconf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>The arguments are.
+app = The created app
+dynaconf_args = Extra args to be passed to Dynaconf (validator for example)</p>
+<p>All other values are stored as config vars specially:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>ENVVAR_PREFIX_FOR_DYNACONF = env prefix for your envvars to be loaded
+                    example:
+                        if you set to `MYSITE` then
+                        export MYSITE_SQL_PORT=&#39;@int 5445&#39;
+
+                    with that exported to env you access using:
+                        app.config.SQL_PORT
+                        app.config.get(&#39;SQL_PORT&#39;)
+                        app.config.get(&#39;sql_port&#39;)
+                        # get is case insensitive
+                        app.config[&#39;SQL_PORT&#39;]
+
+                    Dynaconf uses `@int, @bool, @float, @json` to cast
+                    env vars
+
+SETTINGS_FILE_FOR_DYNACONF = The name of the module or file to use as
+                            default to load settings. If nothing is
+                            passed it will be `settings.*` or value
+                            found in `ENVVAR_FOR_DYNACONF`
+                            Dynaconf supports
+                            .py, .yml, .toml, ini, json
+</pre></div>
+</div>
+<dl class="simple">
+<dt>ATTENTION: Take a look at <cite>settings.yml</cite> and <cite>.secrets.yml</cite> to know the</dt><dd><p>required settings format.</p>
+</dd>
+</dl>
+<p>Settings load order in Dynaconf:</p>
+<ul class="simple">
+<li><p>Load all defaults and Flask defaults</p></li>
+<li><p>Load all passed variables when applying FlaskDynaconf</p></li>
+<li><p>Update with data in settings files</p></li>
+<li><p>Update with data in environment vars <cite>ENVVAR_FOR_DYNACONF_</cite></p></li>
+</ul>
+<p>TOML files are very useful to have <cite>envd</cite> settings, lets say,
+<cite>production</cite> and <cite>development</cite>.</p>
+<p>You can also achieve the same using multiple <cite>.py</cite> files naming as
+<cite>settings.py</cite>, <cite>production_settings.py</cite> and <cite>development_settings.py</cite>
+(see examples/validator)</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+<span class="n">FlaskDynaconf</span><span class="p">(</span>
+    <span class="n">app</span><span class="p">,</span>
+    <span class="n">ENV</span><span class="o">=</span><span class="s1">&#39;MYSITE&#39;</span><span class="p">,</span>
+    <span class="n">SETTINGS_FILE</span><span class="o">=</span><span class="s1">&#39;settings.yml&#39;</span><span class="p">,</span>
+    <span class="n">EXTRA_VALUE</span><span class="o">=</span><span class="s1">&#39;You can add aditional config vars here&#39;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Take a look at examples/flask in Dynaconf repository</p>
+<dl class="py method">
+<dt id="dynaconf.FlaskDynaconf.init_app">
+<code class="sig-name descname">init_app</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/contrib/flask_dynaconf.html#FlaskDynaconf.init_app"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.FlaskDynaconf.init_app" title="Permalink to this definition">¶</a></dt>
+<dd><p>kwargs holds initial dynaconf configuration</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.FlaskDynaconf.make_config">
+<code class="sig-name descname">make_config</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">app</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/contrib/flask_dynaconf.html#FlaskDynaconf.make_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.FlaskDynaconf.make_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt id="dynaconf.ValidationError">
+<em class="property">exception </em><code class="sig-prename descclassname">dynaconf.</code><code class="sig-name descname">ValidationError</code><a class="reference internal" href="../_modules/dynaconf/validator.html#ValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.ValidationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.DjangoDynaconf">
+<code class="sig-prename descclassname">dynaconf.</code><code class="sig-name descname">DjangoDynaconf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">django_settings_module_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dynaconf.DjangoDynaconf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../guides/usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/examples.html">}</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Module reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">dynaconf package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">dynaconf</a><ul>
+      <li>Previous: <a href="modules.html" title="previous chapter">dynaconf</a></li>
+      <li>Next: <a href="dynaconf.contrib.html" title="next chapter">dynaconf.contrib package</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/reference/dynaconf.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
