@@ -252,7 +252,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     The --env/-e is deprecated (kept for compatibility but unused)
     """
     click.echo("⚙️  Configuring your Dynaconf environment")
-    click.echo("-" * 40)
+    click.echo("-" * 42)
     path = Path(path)
 
     if settings.get("create_new_settings") is True:
@@ -272,7 +272,6 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
                 "  on your code now use `from config import settings`.\n"
                 "  (you must have `config` importable in your PYTHONPATH).\n"
             )
-            click.echo("-" * 40)
         else:
             click.echo(
                 f"⁉️  You already have a {filename} so it is not going to be\n"
@@ -281,7 +280,6 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
                 "      from dynaconf import Dynaconf \n"
                 "      settings = Dynaconf(**options)\n"
             )
-            click.echo("-" * 40)
         sys.path.append(str(path))
         set_settings(ctx, "config.settings")
 
@@ -347,7 +345,6 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
         click.echo(
             f"🎛️  {settings_path.name} created to hold your settings.\n"
         )
-        click.echo("-" * 40)
 
     if secrets_path:
         loader.write(secrets_path, secrets_data, merge=True)
@@ -369,9 +366,8 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
         click.echo(
             f"🙈 the {secrets_path.name} is also included in `.gitignore` \n"
             "  beware to not push your secrets to a public repo \n"
-            "  or use dynaconf builtin support for Vault Servers."
+            "  or use dynaconf builtin support for Vault Servers.\n"
         )
-        click.echo("-" * 40)
 
     if django:  # pragma: no cover
         dj_module, loaded_from = get_module({}, django)
@@ -386,11 +382,10 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
             click.echo("🎠  Now your Django settings are managed by Dynaconf")
         else:
             click.echo("❌  Django settings file not written.")
-        click.echo("-" * 40)
 
     click.echo(
         "🎉 Dynaconf is configured! read more on https://dynaconf.com\n"
-        "  Use `dynaconf -i config.settings list` to see your settings\n"
+        "   Use `dynaconf -i config.settings list` to see your settings\n"
     )
 
 

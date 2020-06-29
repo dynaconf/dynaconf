@@ -1,0 +1,237 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>&lt;no title&gt; &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title=")" href="flask.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="feature_flag.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p># Validation</p>
+<p>Dynaconf allows the validation of settings parameters, in some cases you may want to validate the settings before starting the program.</p>
+<p>Lets say you have <cite>settings.toml</cite></p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>ini
+[default]
+version = “1.0.0”
+age = 35
+name = “Bruno”
+DEV_SERVERS = [‘127.0.0.1’, ‘localhost’, ‘development.com’]
+PORT = 8001</p>
+<p>[production]
+PROJECT = “This is not hello_world”
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>## Validating in Python programatically</p>
+<p>At any point of your program you can do:</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>python
+from dynaconf import settings, Validator</p>
+<p># Register validators
+settings.validators.register(</p>
+<blockquote>
+<div><p># Ensure some parameters exists (are required)
+Validator(‘VERSION’, ‘AGE’, ‘NAME’, must_exist=True),</p>
+<p># Ensure some password cannot exist
+Validator(‘PASSWORD’, must_exist=False),</p>
+<p># Ensure some parameter mets a condition
+# conditions: (eq, ne, lt, gt, lte, gte, identity, is_type_of, is_in, is_not_in)
+Validator(‘AGE’, lte=30, gte=10),</p>
+<p># validate a value is eq in specific env
+Validator(‘PROJECT’, eq=’hello_world’, env=’production’),</p>
+<p># Ensure some parameter (string) meets a condition
+# conditions: (len_eq, len_ne, len_min, len_max, cont)
+# Determines the minimum and maximum length for the value
+Validator(“NAME”, len_min=3, len_max=125),</p>
+<p># Signifies the presence of the value in a set, text or word
+Validator(“DEV_SERVERS”, cont=’localhost’),</p>
+<p># Checks whether the length is the same as defined.
+Validator(“PORT”, len_eq=4),</p>
+</div></blockquote>
+<p>)</p>
+<p># Fire the validator
+settings.validators.validate()
+<a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>The above will raise <cite>dynaconf.validators.ValidationError(“AGE must be lte=30 but it is 35 in env DEVELOPMENT”)</cite> and <cite>dynaconf.validators.ValidationError(“PROJECT must be eq=’hello_world’ but it is ‘This is not hello_world’ in env PRODUCTION”)</cite></p>
+<p>You can also use dot-delimited paths for registering validators on nested structures:</p>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>python
+from dynaconf import settings, Validator</p>
+<p># Register validators
+settings.validators.register(</p>
+<blockquote>
+<div><p># Ensure the database.host field exists.
+Validator(‘DATABASE.HOST’, must_exist=True),</p>
+<p># Make the database.password field optional. This is a default behavior.
+Validator(‘DATABASE.PASSWORD’, must_exist=None),</p>
+</div></blockquote>
+<p>)</p>
+<p># Fire the validator
+settings.validators.validate()
+<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>### Combining validators</p>
+<p>Validators can be combined using:</p>
+<p>#### <cite>|</cite> <strong>or</strong> operator.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`py</span>
+<span class="pre">Validator('DATABASE.USER',</span> <span class="pre">must_exist=True)</span> <span class="pre">|</span> <span class="pre">Validator('DATABASE.KEY',</span> <span class="pre">must_exist=True)</span>
+<span class="pre">`</span></code></p>
+<p>#### <cite>&amp;</cite> <strong>and</strong> operator.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`py</span>
+<span class="pre">Validator('DATABASE.HOST',</span> <span class="pre">must_exist=True)</span> <span class="pre">&amp;</span> <span class="pre">Validator('DATABASE.CONN',</span> <span class="pre">must_exist=True)</span>
+<span class="pre">`</span></code></p>
+<p>## CLI and dynaconf_validators.toml</p>
+<p>&gt; <strong>NEW in 1.0.1</strong></p>
+<p>Starting on version 1.0.1 it is possible to define validators in <strong>TOML</strong> file called <strong>dynaconf_validators.toml</strong> placed in the same fodler as your settings files.</p>
+<p><cite>dynaconf_validators.toml</cite> equivalent to program above</p>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>ini
+[default]</p>
+<p>version = {must_exist=true}
+name = {must_exist=true}
+password = {must_exist=false}</p>
+<p># dot notation is also supported
+‘a_big_dict.nested_1.nested_2.nested_3.nested_4’ = {must_exist=true, eq=1}</p>
+<blockquote>
+<div><p>[default.age]
+must_exist = true
+lte = 30
+gte = 10</p>
+</div></blockquote>
+<p>[production]
+project = {eq=”hello_world”}
+<a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+<p>Then to fire the validation use:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">$</span> <span class="pre">dynaconf</span> <span class="pre">validate</span>
+<span class="pre">`</span></code></p>
+<p>This returns code 0 (success) if validation is ok.</p>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="feature_flag.html" title="previous chapter">&lt;no title&gt;</a></li>
+      <li>Next: <a href="flask.html" title="next chapter">)</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/guides/validation.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>dynaconf.utils.parse_conf &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dynaconf.utils.parse_conf</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+
+<span class="kn">import</span> <span class="nn">toml</span>
+<span class="kn">from</span> <span class="nn">box</span> <span class="kn">import</span> <span class="n">BoxKeyError</span>
+
+<span class="kn">from</span> <span class="nn">dynaconf.utils</span> <span class="kn">import</span> <span class="n">extract_json_objects</span>
+<span class="kn">from</span> <span class="nn">dynaconf.utils</span> <span class="kn">import</span> <span class="n">multi_replace</span>
+<span class="kn">from</span> <span class="nn">dynaconf.utils.boxing</span> <span class="kn">import</span> <span class="n">DynaBox</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">Environment</span>
+
+    <span class="n">jinja_env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">p_method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;abspath&quot;</span><span class="p">,</span> <span class="s2">&quot;realpath&quot;</span><span class="p">,</span> <span class="s2">&quot;relpath&quot;</span><span class="p">,</span> <span class="s2">&quot;dirname&quot;</span><span class="p">,</span> <span class="s2">&quot;basename&quot;</span><span class="p">):</span>
+        <span class="n">jinja_env</span><span class="o">.</span><span class="n">filters</span><span class="p">[</span><span class="n">p_method</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">p_method</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">jinja_env</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="n">true_values</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;enabled&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;on&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">,</span> <span class="s2">&quot;True&quot;</span><span class="p">)</span>
+<span class="n">false_values</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">,</span> <span class="s2">&quot;disabled&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span> <span class="s2">&quot;off&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+
+<span class="n">KV_PATTERN</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;([a-zA-Z0-9 ]*=[a-zA-Z0-9\- :]*)&quot;</span><span class="p">)</span>
+<span class="sd">&quot;&quot;&quot;matches `a=b, c=d, e=f` used on `VALUE=&#39;@merge foo=bar&#39;` variables.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="DynaconfParseError"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.DynaconfParseError">[docs]</a><span class="k">class</span> <span class="nc">DynaconfParseError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error to raise when parsing @casts&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MetaValue"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.MetaValue">[docs]</a><span class="k">class</span> <span class="nc">MetaValue</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A Marker to trigger specific actions on `set` and `object_merge`&quot;&quot;&quot;</span>
+
+    <span class="n">_meta_value</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">parse_conf_data</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">) on </span><span class="si">{</span><span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+<div class="viewcode-block" id="MetaValue.unwrap"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.MetaValue.unwrap">[docs]</a>    <span class="k">def</span> <span class="nf">unwrap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span></div></div>
+
+
+<div class="viewcode-block" id="Reset"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.Reset">[docs]</a><span class="k">class</span> <span class="nc">Reset</span><span class="p">(</span><span class="n">MetaValue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Triggers an existing key to be reset to its value</span>
+<span class="sd">    NOTE: DEPRECATED on v3.0.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_dynaconf_reset</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">parse_conf_data</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2"> does not need `@reset` anymore.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Del"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.Del">[docs]</a><span class="k">class</span> <span class="nc">Del</span><span class="p">(</span><span class="n">MetaValue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Triggers an existing key to be deleted&quot;&quot;&quot;</span>
+
+    <span class="n">_dynaconf_del</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="Del.unwrap"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.Del.unwrap">[docs]</a>    <span class="k">def</span> <span class="nf">unwrap</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Del object has no value&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="Merge"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.Merge">[docs]</a><span class="k">class</span> <span class="nc">Merge</span><span class="p">(</span><span class="n">MetaValue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Triggers an existing key to be merged&quot;&quot;&quot;</span>
+
+    <span class="n">_dynaconf_merge</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">parse_conf_data</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
+            <span class="c1"># @merge 1, @merge 1.1, @merge False</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># @merge {&quot;valid&quot;: &quot;json&quot;}</span>
+            <span class="n">json_object</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+                <span class="n">extract_json_objects</span><span class="p">(</span>
+                    <span class="n">multi_replace</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;: True&quot;</span><span class="p">:</span> <span class="s2">&quot;: true&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;:True&quot;</span><span class="p">:</span> <span class="s2">&quot;: true&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;: False&quot;</span><span class="p">:</span> <span class="s2">&quot;: false&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;:False&quot;</span><span class="p">:</span> <span class="s2">&quot;: false&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;: None&quot;</span><span class="p">:</span> <span class="s2">&quot;: null&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;:None&quot;</span><span class="p">:</span> <span class="s2">&quot;: null&quot;</span><span class="p">,</span>
+                        <span class="p">},</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">json_object</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">json_object</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">matches</span> <span class="o">=</span> <span class="n">KV_PATTERN</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+                <span class="c1"># a=b, c=d</span>
+                <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="n">k</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span> <span class="n">parse_conf_data</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span>
+                            <span class="n">match</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span>
+                        <span class="p">)</span>
+                    <span class="p">}</span>
+                <span class="k">elif</span> <span class="s2">&quot;,&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
+                    <span class="c1"># @merge foo,bar</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># @merge foo</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">unique</span> <span class="o">=</span> <span class="n">unique</span></div>
+
+
+<div class="viewcode-block" id="BaseFormatter"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.BaseFormatter">[docs]</a><span class="k">class</span> <span class="nc">BaseFormatter</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">token</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">function</span> <span class="o">=</span> <span class="n">function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">token</span> <span class="o">=</span> <span class="n">token</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">token</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_jinja_formatter</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="n">context</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">jinja_env</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;jinja2 must be installed to enable &#39;@jinja&#39; settings in dynaconf&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">jinja_env</span><span class="o">.</span><span class="n">from_string</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="o">**</span><span class="n">context</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Formatters"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.Formatters">[docs]</a><span class="k">class</span> <span class="nc">Formatters</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Dynaconf builtin formatters&quot;&quot;&quot;</span>
+
+    <span class="n">python_formatter</span> <span class="o">=</span> <span class="n">BaseFormatter</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">format</span><span class="p">,</span> <span class="s2">&quot;format&quot;</span><span class="p">)</span>
+    <span class="n">jinja_formatter</span> <span class="o">=</span> <span class="n">BaseFormatter</span><span class="p">(</span><span class="n">_jinja_formatter</span><span class="p">,</span> <span class="s2">&quot;jinja&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Lazy"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.Lazy">[docs]</a><span class="k">class</span> <span class="nc">Lazy</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Holds data to format lazily.&quot;&quot;&quot;</span>
+
+    <span class="n">_dynaconf_lazy_format</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">Formatters</span><span class="o">.</span><span class="n">python_formatter</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span> <span class="o">=</span> <span class="n">formatter</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Builds a context for formatting.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">,</span> <span class="s2">&quot;this&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">settings</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;LazyValue triggers format lazily.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="n">settings</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gives string representation for the object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Give the quoted str representation&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&#39;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">formatter</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_dynaconf_encode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Encodes this object values to be serializable to json&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;@</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">formatter</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span></div>
+
+
+<div class="viewcode-block" id="try_to_encode"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.try_to_encode">[docs]</a><span class="k">def</span> <span class="nf">try_to_encode</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Tries to encode a value by verifying existence of `_dynaconf_encode`&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">_dynaconf_encode</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">callback</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="evaluate_lazy_format"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.evaluate_lazy_format">[docs]</a><span class="k">def</span> <span class="nf">evaluate_lazy_format</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Marks a method on Settings instance to</span>
+<span class="sd">    lazily evaluate LazyFormat objects upon access.&quot;&quot;&quot;</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">settings</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;_dynaconf_lazy_format&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">evaluate</span></div>
+
+
+<span class="n">converters</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;@int&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="s2">&quot;@float&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="s2">&quot;@bool&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">true_values</span><span class="p">,</span>
+    <span class="s2">&quot;@json&quot;</span><span class="p">:</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">,</span>
+    <span class="s2">&quot;@format&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="n">Lazy</span><span class="p">(</span><span class="n">value</span><span class="p">),</span>
+    <span class="s2">&quot;@jinja&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="n">Lazy</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">Formatters</span><span class="o">.</span><span class="n">jinja_formatter</span><span class="p">),</span>
+    <span class="c1"># Meta Values to trigger pre assignment actions</span>
+    <span class="s2">&quot;@reset&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="n">Reset</span><span class="p">(</span><span class="n">value</span><span class="p">),</span>  <span class="c1"># @reset is DEPRECATED on v3.0.0</span>
+    <span class="s2">&quot;@del&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="n">Del</span><span class="p">(</span><span class="n">value</span><span class="p">),</span>
+    <span class="s2">&quot;@merge&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="n">Merge</span><span class="p">(</span><span class="n">value</span><span class="p">),</span>
+    <span class="s2">&quot;@merge_unique&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="n">Merge</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="c1"># Special markers to be used as placeholders e.g: in prefilled forms</span>
+    <span class="c1"># will always return None when evaluated</span>
+    <span class="s2">&quot;@note&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;@comment&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;@null&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="s2">&quot;@none&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">value</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="parse_with_toml"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.parse_with_toml">[docs]</a><span class="k">def</span> <span class="nf">parse_with_toml</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Uses TOML syntax to parse data&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">toml</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;key=</span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">DynaBox</span><span class="p">)</span><span class="o">.</span><span class="n">key</span>
+    <span class="k">except</span> <span class="p">(</span><span class="n">toml</span><span class="o">.</span><span class="n">TomlDecodeError</span><span class="p">,</span> <span class="n">BoxKeyError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<span class="k">def</span> <span class="nf">_parse_conf_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    @int @bool @float @json (for lists and dicts)</span>
+<span class="sd">    strings does not need converters</span>
+
+<span class="sd">    export DYNACONF_DEFAULT_THEME=&#39;material&#39;</span>
+<span class="sd">    export DYNACONF_DEBUG=&#39;@bool True&#39;</span>
+<span class="sd">    export DYNACONF_DEBUG_TOOLBAR_ENABLED=&#39;@bool False&#39;</span>
+<span class="sd">    export DYNACONF_PAGINATION_PER_PAGE=&#39;@int 20&#39;</span>
+<span class="sd">    export DYNACONF_MONGODB_SETTINGS=&#39;@json {&quot;DB&quot;: &quot;quokka_db&quot;}&#39;</span>
+<span class="sd">    export DYNACONF_ALLOWED_EXTENSIONS=&#39;@json [&quot;jpg&quot;, &quot;png&quot;]&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cast_toggler</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;AUTO_CAST_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">castenabled</span> <span class="o">=</span> <span class="n">cast_toggler</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">false_values</span>
+
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">castenabled</span>
+        <span class="ow">and</span> <span class="n">data</span>
+        <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">data</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">converters</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+    <span class="p">):</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">converter_key</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">parts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">converters</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">converter_key</span><span class="p">)(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parse_with_toml</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="k">if</span> <span class="n">tomlfy</span> <span class="k">else</span> <span class="n">data</span>
+
+
+<div class="viewcode-block" id="parse_conf_data"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.parse_conf_data">[docs]</a><span class="k">def</span> <span class="nf">parse_conf_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+        <span class="c1"># recursively parse each sequence item</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">parse_conf_data</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="n">tomlfy</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="nb">dict</span><span class="p">,</span> <span class="n">DynaBox</span><span class="p">)):</span>
+        <span class="c1"># recursively parse inner dict items</span>
+        <span class="n">_parsed</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">_parsed</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">parse_conf_data</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="n">tomlfy</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_parsed</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># return parsed string value</span>
+        <span class="k">return</span> <span class="n">_parse_conf_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="n">tomlfy</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="unparse_conf_data"><a class="viewcode-back" href="../../../reference/dynaconf.utils.html#dynaconf.utils.parse_conf.unparse_conf_data">[docs]</a><span class="k">def</span> <span class="nf">unparse_conf_data</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;@bool </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;@int </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;@float </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;@json </span><span class="si">{</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Lazy</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">try_to_encode</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;@none &quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">value</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/examples.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../utils.html">dynaconf.utils</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

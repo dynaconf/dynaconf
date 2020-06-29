@@ -1,0 +1,285 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>} &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="credits.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="contribute.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p># Examples</p>
+<p>## Supported file formats</p>
+<p>### TOML</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>cfg
+[default]
+DEBUG = true
+SERVER = “flaskdynaconf.com”
+PORT = 6666
+MESSAGE = “Dynaconf works like a charm with Flask and TOML”
+TEST_RULE = ‘/flask_with_toml’</p>
+<p>[development]
+DEBUG = true
+SERVER = “dev.flaskdynaconf.com”</p>
+<p>[production]
+DEBUG = false
+SERVER = “prod.flaskdynaconf.com”
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>### YAML</p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>yaml
+default:</p>
+<blockquote>
+<div><p>DEBUG: true
+SERVER: flaskdynaconf.com
+PORT: 6666
+MESSAGE: Dynaconf works like a charm with Flask and YAML
+TEST_RULE: /flask_with_yaml</p>
+</div></blockquote>
+<dl class="simple">
+<dt>development:</dt><dd><p>DEBUG: true
+SERVER: dev.flaskdynaconf.com</p>
+</dd>
+<dt>production:</dt><dd><p>DEBUG: false
+SERVER: prod.flaskdynaconf.com</p>
+</dd>
+</dl>
+<p><a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>### INI</p>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>ini
+[default]
+DEBUG = true
+SERVER = “flaskdynaconf.com”
+PORT = 6666
+MESSAGE = “Dynaconf works like a charm with Flask and INI”
+TEST_RULE = ‘/flask_with_ini’</p>
+<p>[development]
+DEBUG = true
+SERVER = “dev.flaskdynaconf.com”</p>
+<p>[production]
+DEBUG = false
+SERVER = “prod.flaskdynaconf.com”
+<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p>### JSON</p>
+<p><a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>json
+{</p>
+<blockquote>
+<div><dl class="simple">
+<dt>“default”: {</dt><dd><p>“DEBUG”: true,
+“SERVER”: “flaskdynaconf.com”,
+“PORT”: 6666,
+“MESSAGE”: “Dynaconf works like a charm with Flask and JSON”,
+“TEST_RULE”: “/flask_with_json”</p>
+</dd>
+</dl>
+<p>},
+“development”: {</p>
+<blockquote>
+<div><p>“DEBUG”: true,
+“SERVER”: “dev.flaskdynaconf.com”</p>
+</div></blockquote>
+<p>},
+“production”: {</p>
+<blockquote>
+<div><p>“DEBUG”: false,
+“SERVER”: “prod.flaskdynaconf.com”</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<div class="section" id="id29">
+<h1>}<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h1>
+<p>### PY</p>
+<p>In python fils the <cite>environment</cite> is set by prefixing the file names</p>
+<p><cite>settings.py</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">DEBUG</span> <span class="pre">=</span> <span class="pre">True</span>
+<span class="pre">SERVER</span> <span class="pre">=</span> <span class="pre">&quot;flaskdynaconf.com&quot;</span>
+<span class="pre">PORT</span> <span class="pre">=</span> <span class="pre">6666</span>
+<span class="pre">MESSAGE</span> <span class="pre">=</span> <span class="pre">&quot;Dynaconf</span> <span class="pre">works</span> <span class="pre">like</span> <span class="pre">a</span> <span class="pre">charm</span> <span class="pre">with</span> <span class="pre">Flask</span> <span class="pre">and</span> <span class="pre">.py&quot;</span>
+<span class="pre">TEST_RULE</span> <span class="pre">=</span> <span class="pre">'/flask_with_ini'</span>
+<span class="pre">`</span></code></p>
+<p><cite>development_settings.py</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">DEBUG</span> <span class="pre">=</span> <span class="pre">True</span>
+<span class="pre">SERVER</span> <span class="pre">=</span> <span class="pre">&quot;dev.flaskdynaconf.com&quot;</span>
+<span class="pre">`</span></code></p>
+<p><cite>production_settings.py</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">DEBUG</span> <span class="pre">=</span> <span class="pre">False</span>
+<span class="pre">SERVER</span> <span class="pre">=</span> <span class="pre">&quot;prod.flaskdynaconf.com&quot;</span>
+<span class="pre">`</span></code></p>
+<p>### .env</p>
+<p><cite>.env</cite> allows only the <cite>global</cite> environment (overrides everything)</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">DEBUG=true</span>
+<span class="pre">SERVER=&quot;flaskdynaconf.com&quot;</span>
+<span class="pre">PORT=6666</span>
+<span class="pre">MESSAGE=&quot;Dynaconf</span> <span class="pre">works</span> <span class="pre">like</span> <span class="pre">a</span> <span class="pre">charm</span> <span class="pre">with</span> <span class="pre">Flask</span> <span class="pre">and</span> <span class="pre">.env&quot;</span>
+<span class="pre">TEST_RULE='/flask_with_ini'</span>
+<span class="pre">`</span></code></p>
+<p>## Using a default main config file plus variable settings file</p>
+<p>On the <cite>.env</cite></p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">SETTINGS_FILE_FOR_DYNACONF=&quot;default.toml&quot;</span>
+<span class="pre">`</span></code></p>
+<p>The default file</p>
+<p><code class="docutils literal notranslate"><span class="pre">`ini</span>
+<span class="pre">[default]</span>
+<span class="pre">variable1</span> <span class="pre">=</span> <span class="pre">'value1'</span>
+<span class="pre">`</span></code></p>
+<p>Now having specific settings per environment</p>
+<p>Use cases:</p>
+<ul class="simple">
+<li><p>plugin based apps</p></li>
+<li><p>user specific settings</p></li>
+<li><p>dev specific settings</p></li>
+</ul>
+<p>On the <strong>user1</strong> environment</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">INCLUDES_FOR_DYNACONF='/path/to/user1_specific_settings.toml'</span>
+<span class="pre">`</span></code></p>
+<p>On the <strong>user2</strong> environment</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">INCLUDES_FOR_DYNACONF='/path/to/user2_specific_settings.toml'</span>
+<span class="pre">`</span></code></p>
+<p>It can be a glob</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">INCLUDES_FOR_DYNACONF='/path/to/config/*.toml'</span>
+<span class="pre">`</span></code></p>
+<p>And also supports having a <cite>;</cite> or <cite>,</cite> separated list of paths or globs.</p>
+<p>## More examples</p>
+<p>Take a look at [example/](<a class="reference external" href="https://github.com/rochacbruno/dynaconf/tree/master/example">https://github.com/rochacbruno/dynaconf/tree/master/example</a>) for more examples.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html#id55">})</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="contribute.html" title="previous chapter">&lt;no title&gt;</a></li>
+      <li>Next: <a href="credits.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/guides/examples.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

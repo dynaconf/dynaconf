@@ -1,0 +1,352 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>} &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="testing.html" />
+    <link rel="prev" title=")" href="flask.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p># Django Extension</p>
+<p>&gt; <strong>New in 2.0.0</strong></p>
+<p>Dynaconf extensions for Django works by patching the <cite>settings.py</cite> file with dynaconf loading hooks, the change is done on a single file and then in your whole project every time you call <cite>django.conf.settings</cite> you will have access to <cite>dynaconf</cite> attributes and methods.</p>
+<p>Ensure dynaconf is installed on your env <cite>pip install dynaconf[yaml]</cite></p>
+<p>## Initialize the extension</p>
+<p>You can manually append at the bottom of your django project’s <cite>settings.py</cite> the following code:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">#</span> <span class="pre">HERE</span> <span class="pre">STARTS</span> <span class="pre">DYNACONF</span> <span class="pre">EXTENSION</span> <span class="pre">LOAD</span> <span class="pre">(Keep</span> <span class="pre">at</span> <span class="pre">the</span> <span class="pre">very</span> <span class="pre">bottom</span> <span class="pre">of</span> <span class="pre">settings.py)</span>
+<span class="pre">#</span> <span class="pre">Read</span> <span class="pre">more</span> <span class="pre">at</span> <span class="pre">https://dynaconf.readthedocs.io/en/latest/guides/django.html</span>
+<span class="pre">import</span> <span class="pre">dynaconf</span>&#160; <span class="pre">#</span> <span class="pre">noqa</span>
+<span class="pre">settings</span> <span class="pre">=</span> <span class="pre">dynaconf.DjangoDynaconf(__name__)</span>&#160; <span class="pre">#</span> <span class="pre">noqa</span>
+<span class="pre">#</span> <span class="pre">HERE</span> <span class="pre">ENDS</span> <span class="pre">DYNACONF</span> <span class="pre">EXTENSION</span> <span class="pre">LOAD</span> <span class="pre">(No</span> <span class="pre">more</span> <span class="pre">code</span> <span class="pre">below</span> <span class="pre">this</span> <span class="pre">line)</span>
+<span class="pre">`</span></code></p>
+<p>Or <strong>optionally</strong> you can, on the same directory where your <cite>manage.py</cite> is located run:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>bash
+export DJANGO_SETTINGS_MODULE=yourapp.settings
+$ dynaconf init</p>
+<p># or passing the location of the settings file</p>
+<p>$ dynaconf init –django yourapp/settings.py</p>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p>Dynaconf will append its extension loading code to the bottom of your <cite>yourapp/settings.py</cite> file and will create <cite>settings.toml</cite> and <cite>.secrets.toml</cite> in the current folder (the same where <cite>manage.py</cite> is located).</p>
+<p>&gt; <strong>TIP</strong> Take a look at [example/django_example](<a class="reference external" href="https://github.com/rochacbruno/dynaconf/tree/master/example/django_example">https://github.com/rochacbruno/dynaconf/tree/master/example/django_example</a>)</p>
+<p>## Using <cite>DJANGO_</cite> environment variables</p>
+<p>Then <strong>django.conf.settings</strong> will work as a <cite>dynaconf.settings</cite> instance and <cite>DJANGO_</cite> will be the global prefix to export environment variables.</p>
+<p>Example:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">DJANGO_DEBUG=true</span>&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">django.conf.settings.DEBUG</span>
+<span class="pre">export</span> <span class="pre">DJANGO_INTVALUE=1</span>&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">django.conf.settings['INTVALUE']</span>
+<span class="pre">export</span> <span class="pre">DJANGO_HELLO=&quot;Hello&quot;</span>&#160; <span class="pre">#</span> <span class="pre">django.conf.settings.get('HELLO')</span>
+<span class="pre">`</span></code></p>
+<p>&gt; <strong>TIP</strong>: If you dont want to use <cite>DJANGO_</cite> as prefix for envvars you can customize by passing a new name e.g: <cite>dynaconf.DjangoDynaconf(__name__, ENVVAR_PREFIX_FOR_DYNACONF=”FOO”)</cite> then <cite>export FOO_DEBUG=true</cite></p>
+<p>You can also set nested dictionary values, for example lets say you have a configuration like this:</p>
+<p><cite>settings.py</cite></p>
+<p><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>py
+…
+DATABASES = {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>‘default’: {</dt><dd><p>‘NAME’: ‘db’,
+‘ENGINE’: ‘module.foo.engine’,
+‘ARGS’: {‘timeout’: 30}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<div class="section" id="id13">
+<h1>}<a class="headerlink" href="#id13" title="Permalink to this headline">¶</a></h1>
+<p><a href="#id14"><span class="problematic" id="id15">``</span></a><a href="#id16"><span class="problematic" id="id17">`</span></a></p>
+<p>And  now you want to change the values of <cite>ENGINE</cite> to <cite>other.module</cite>, via environment variables you can use the format <cite>${ENVVAR_PREFIX}_${VARIABLE}__${NESTED_ITEM}__${NESTED_ITEM}</cite></p>
+<p>Each <cite>__</cite> (dunder, a.k.a <em>double underline</em>) denotes access to nested elements in a dictionary.</p>
+<p>So:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">export</span> <span class="pre">DYNACONF_DATABASES__default__ENGINE=other.module</span>
+<span class="pre">`</span></code></p>
+<p>will result in</p>
+<p><a href="#id18"><span class="problematic" id="id19">``</span></a><a href="#id20"><span class="problematic" id="id21">`</span></a>py
+DATABASES = {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>‘default’: {</dt><dd><p>‘NAME’: ‘db’,
+‘ENGINE’: ‘other.module’,
+‘ARGS’: {‘timeout’: 30}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<div class="section" id="id22">
+<h2>}<a class="headerlink" href="#id22" title="Permalink to this headline">¶</a></h2>
+<p>Read more on [environment variables](<a class="reference external" href="https://dynaconf.readthedocs.io/en/latest/guides/environment_variables.html#nested-keys-in-dictionaries-via-environment-variables">https://dynaconf.readthedocs.io/en/latest/guides/environment_variables.html#nested-keys-in-dictionaries-via-environment-variables</a>)</p>
+<p>## Settings files</p>
+<p>You can also have settings files for your Django app, in the root directory (the same where <cite>manage.py</cite> is located) put your <cite>settings.{yaml, toml, ini, json, py}</cite> and <cite>.secrets.{yaml, toml, ini, json, py}</cite> files and then define your environments <cite>[default]</cite>, <cite>[development]</cite> and <cite>[production]</cite>.</p>
+<p>&gt; NOTE: <strong>.yaml</strong> is the recommended format for Django applications because it allows complex data structures in easy way, but feel free to choose any format you are familiar with.</p>
+<p>To switch the working environment the <cite>DJANGO_ENV</cite> variable can be used, so <cite>DJANGO_ENV=development</cite> to work
+in development mode or <cite>DJANGO_ENV=production</cite> to switch to production.</p>
+<p>&gt; <strong>IMPORTANT</strong>: To use <cite>$ dynaconf</cite> CLI the <cite>DJANGO_SETTINGS_MODULE</cite> environment variable must be defined.</p>
+<p>IF you don’t want to manually create your config files take a look at the [CLI](cli.html)</p>
+<p>## Customizations</p>
+<p>It is possible to customize how your django project will load settings, example: You want your users to customize a settings file defined in <cite>export PROJECTNAME_SETTINGS=/path/to/settings.toml</cite> and you want environment variables to be loaded from <cite>PROJECTNAME_VARNAME</cite></p>
+<p>Edit django <cite>settings.py</cite> and modify the dynaconf extension part:</p>
+<p>from:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">#</span> <span class="pre">HERE</span> <span class="pre">STARTS</span> <span class="pre">DYNACONF</span> <span class="pre">EXTENSION</span> <span class="pre">LOAD</span>
+<span class="pre">...</span>
+<span class="pre">settings</span> <span class="pre">=</span> <span class="pre">dynaconf.DjangoDynaconf(__name__)</span>
+<span class="pre">#</span> <span class="pre">HERE</span> <span class="pre">ENDS</span> <span class="pre">DYNACONF</span> <span class="pre">EXTENSION</span> <span class="pre">LOAD</span>
+<span class="pre">`</span></code></p>
+<p>to:</p>
+<p><a href="#id23"><span class="problematic" id="id24">``</span></a><a href="#id25"><span class="problematic" id="id26">`</span></a>python
+# HERE STARTS DYNACONF EXTENSION LOAD
+…
+settings = dynaconf.DjangoDynaconf(</p>
+<blockquote>
+<div><p>__name__,
+ENVVAR_PREFIX_FOR_DYNACONF=’PROJECTNAME’,
+ENV_SWITCHER_FOR_DYNACONF=’PROJECTNAME_ENV’,
+SETTINGS_FILE_FOR_DYNACONF=’/etc/projectname/settings.toml’,
+ENVVAR_FOR_DYNACONF=’PROJECTNAME_SETTINGS’,
+INCLUDES_FOR_DYNACONF=[‘/etc/projectname/plugins/<a href="#id27"><span class="problematic" id="id28">*</span></a>’],</p>
+</div></blockquote>
+<p>)
+# HERE ENDS DYNACONF EXTENSION LOAD
+<a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+<blockquote>
+<div><p>Variables on environment can be set/override using <cite>PROJECTNAME_</cite> prefix e.g: <cite>export PROJECTNAME_DEBUG=true</cite>.</p>
+</div></blockquote>
+<p>Working environment can now be switched using <cite>export PROJECTNAME_ENV=production</cite> it defaults to <cite>development</cite>.</p>
+<p>Your settings are now read from <cite>/etc/projectname/settings.toml</cite> (dynaconf will not perform search for all the settings formats). This settings location can be changed via envvar using <cite>export PROJECTNAME_SETTINGS=/other/path/to/settings.py{yaml,toml,json,ini}</cite></p>
+<p>You can have additional settings read from <cite>/etc/projectname/plugins/*</cite> any supoprted file from this folder will be loaded.</p>
+<p>You can set more options, take a look on [configuration](configuration.html)</p>
+<p>## Reading Settings on Standalone Scripts</p>
+<p>&gt; <strong>NOTE</strong>: The recommended way to create standalone scripts is by creating <cite>management commands</cite> inside your Django applications or pugins.</p>
+<p>&gt; <strong>IMPORTANT</strong> If you need that script to be out of your Django Application Scope, it is also possible and <strong>if needed</strong> you can use <cite>settings.DYNACONF.configure()</cite> instead of the common <cite>settings.configure()</cite> provided by Django.</p>
+<p>### Examples:</p>
+<p>Examples below assumes you have <cite>DJANGO_SETTINGS_MODULE</cite> environment variable set, either by <cite>exporting</cite> it to your env or by explicitly adding it to <cite>os.environ</cite> dictionary.</p>
+<p>&gt; <strong>IMPORTANT</strong>: If you call <cite>settings.configure()</cite> directly dynaconf will be disabled. As you have <cite>DJANGO_SETTINGS_MODULE</cite> exported you don’t need to call it, but if you need please use: <cite>settings.DYNACONF.configure()</cite>.</p>
+<p>#### Common case</p>
+<p>/etc/my_script.py
+<code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">from</span> <span class="pre">django.conf</span> <span class="pre">import</span> <span class="pre">settings</span>
+<span class="pre">print(settings.DATABASES)</span>
+<span class="pre">`</span></code></p>
+<p>#### Explicitly adding the setting module</p>
+<p>/etc/my_script.py
+<a href="#id33"><span class="problematic" id="id34">``</span></a><a href="#id35"><span class="problematic" id="id36">`</span></a>python
+import os
+os.environ[‘DJANGO_SETTINGS_MODULE’] = ‘foo.settings’</p>
+<p>from django.conf import settings
+print(settings.DATABASES)
+<a href="#id37"><span class="problematic" id="id38">``</span></a><a href="#id39"><span class="problematic" id="id40">`</span></a></p>
+<p>#### When you need the <cite>configure</cite></p>
+<p>&gt; Calling <cite>DYNACONF.configure()</cite> is needed when you want to access dynaconf special methods like <cite>using_env</cite>, <cite>get</cite>, <cite>get_fresh</cite> etc…</p>
+<p>/etc/my_script.py
+<code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">from</span> <span class="pre">django.conf</span> <span class="pre">import</span> <span class="pre">settings</span>
+<span class="pre">settings.DYNACONF.configure()</span>
+<span class="pre">print(settings.get('DATABASES'))</span>
+<span class="pre">`</span></code></p>
+<p>#### Importing settings directly (recommended for the above case)</p>
+<p>/etc/my_script.py
+<code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">from</span> <span class="pre">foo.settings</span> <span class="pre">import</span> <span class="pre">settings</span>
+<span class="pre">print(settings.get('DATABASES'))</span>
+<span class="pre">`</span></code></p>
+<p>#### Importing settings via importlib</p>
+<p>/etc/my_script.py
+<code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">import</span> <span class="pre">os</span>
+<span class="pre">import</span> <span class="pre">importlib</span>
+<span class="pre">settings</span> <span class="pre">=</span> <span class="pre">importlib.import_module(os.environ['DJANGO_SETTINGS_MODULE'])</span>
+<span class="pre">print(settings.get('DATABASES'))</span>
+<span class="pre">`</span></code></p>
+<p>## Testing on Django</p>
+<p>Django testing must work out of the box!</p>
+<p>But in some cases when you <cite>mock</cite> stuff and need to add <cite>environment variables</cite> to <cite>os.environ</cite> on demand for test cases it may be needed to <cite>reload</cite> the <cite>dynaconf</cite>.</p>
+<p>To do that write up on your test case setup part:</p>
+<p><a href="#id41"><span class="problematic" id="id42">``</span></a><a href="#id43"><span class="problematic" id="id44">`</span></a>py
+import os
+import importlib
+from myapp import settings # NOTE: this uses your app module not django.conf</p>
+<dl class="simple">
+<dt>class TestCase(…):</dt><dd><dl class="simple">
+<dt>def setUp(self):</dt><dd><p>os.environ[‘DJANGO_FOO’] = ‘BAR’  # dynaconf should read it and set <cite>settings.FOO</cite>
+importlib.reload(settings)</p>
+</dd>
+<dt>def test_foo(self):</dt><dd><p>self.assertEqual(settings.FOO, ‘BAR’)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p><a href="#id45"><span class="problematic" id="id46">``</span></a><a href="#id47"><span class="problematic" id="id48">`</span></a></p>
+<p>## Explicit mode</p>
+<p>Some users have the preference to explicitly load each setting variable inside the <cite>settings.py</cite> and then let django manage it in the common way, it is possible.</p>
+<p>&gt; <strong>NOTE</strong> Doing this way misses the ability to use dynaconf methods like <cite>using_env</cite>, <cite>get</cite> etc on your django applications code, you can use it only inside settings.py</p>
+<p>Dynaconf will be available only on <cite>settings.py</cite> scope, on the rest of your application settings is managed by Django normally.</p>
+<p><cite>settings.py</cite>
+<a href="#id49"><span class="problematic" id="id50">``</span></a><a href="#id51"><span class="problematic" id="id52">`</span></a>py
+import sys
+from dynaconf import LazySettings</p>
+<p>settings = LazySettings(<a href="#id53"><span class="problematic" id="id54">**</span></a>YOUR_OPTIONS_HERE)</p>
+<p>DEBUG = settings.get(‘DEBUG’, False)
+DATABASES = settings.get(‘DATABASES’, {</p>
+<blockquote>
+<div><dl class="simple">
+<dt>‘default’: {</dt><dd><p>‘ENGINE’: ‘…’,
+‘NAME’: ‘…</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="id55">
+<h1>})<a class="headerlink" href="#id55" title="Permalink to this headline">¶</a></h1>
+<p># At the end of your settings.py
+settings.populate_obj(sys.modules[__name__], ignore=locals())
+<a href="#id56"><span class="problematic" id="id57">``</span></a><a href="#id58"><span class="problematic" id="id59">`</span></a></p>
+<p>&gt; <strong>NOTE</strong>: Starting in <cite>2.1.1</cite> the <cite>ignore</cite> argument will tell Dynaconf to not override variables that already exists in the current settings file, remove it if you want all the existing local variables to be overwritten by dynaconf.</p>
+<p>You can still change env with <cite>export DJANGO_ENV=production</cite> and also can export variables lile <cite>export DJANGO_DEBUG=true</cite></p>
+<p>## Knowm Caveats</p>
+<ul class="simple">
+<li><p>If <cite>settings.configure()</cite> is called directly it disables Dynaconf, use <cite>settings.DYNACONF.configure()</cite></p></li>
+</ul>
+<p>## Deprecation note</p>
+<p>On old dynaconf releases the solution was to add <cite>dynaconf.contrib.django_dynaconf</cite> to <cite>INSTALLED_APPS</cite> as the first item, this still works but has some limitations so it is not recommended anymore.</p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id29">]</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">}</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id22">}</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="flask.html" title="previous chapter">)</a></li>
+      <li>Next: <a href="testing.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/guides/django.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

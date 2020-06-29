@@ -1,0 +1,361 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>dynaconf.default_settings &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dynaconf.default_settings</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">dynaconf.utils</span> <span class="kn">import</span> <span class="n">RENAMED_VARS</span>
+<span class="kn">from</span> <span class="nn">dynaconf.utils</span> <span class="kn">import</span> <span class="n">upperfy</span>
+<span class="kn">from</span> <span class="nn">dynaconf.utils</span> <span class="kn">import</span> <span class="n">warn_deprecations</span>
+<span class="kn">from</span> <span class="nn">dynaconf.utils.files</span> <span class="kn">import</span> <span class="n">find_file</span>
+<span class="kn">from</span> <span class="nn">dynaconf.utils.parse_conf</span> <span class="kn">import</span> <span class="n">parse_conf_data</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">dotenv</span> <span class="kn">import</span> <span class="n">load_dotenv</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">load_dotenv</span> <span class="o">=</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="kc">None</span>  <span class="c1"># noqa</span>
+
+
+<div class="viewcode-block" id="try_renamed"><a class="viewcode-back" href="../../reference/dynaconf.html#dynaconf.default_settings.try_renamed">[docs]</a><span class="k">def</span> <span class="nf">try_renamed</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">older_key</span><span class="p">,</span> <span class="n">current_key</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="n">current_key</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">older_key</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">older_key</span><span class="si">}</span><span class="s2"> is deprecated please use </span><span class="si">{</span><span class="n">current_key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="ne">DeprecationWarning</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">older_key</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="get"><a class="viewcode-back" href="../../reference/dynaconf.html#dynaconf.default_settings.get">[docs]</a><span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">upperfy</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+
+    <span class="c1"># compatibility with renamed variables</span>
+    <span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="n">RENAMED_VARS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">try_renamed</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">parse_conf_data</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">tomlfy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">default</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="start_dotenv"><a class="viewcode-back" href="../../reference/dynaconf.html#dynaconf.default_settings.start_dotenv">[docs]</a><span class="k">def</span> <span class="nf">start_dotenv</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">root_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># load_from_dotenv_if_installed</span>
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">obj</span> <span class="ow">or</span> <span class="p">{}</span>
+    <span class="n">_find_file</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;find_file&quot;</span><span class="p">,</span> <span class="n">find_file</span><span class="p">)</span>
+    <span class="n">root_path</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">root_path</span>
+        <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;_root_path&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;ROOT_PATH_FOR_DYNACONF&quot;</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">dotenv_path</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DOTENV_PATH_FOR_DYNACONF&quot;</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;DOTENV_PATH_FOR_DYNACONF&quot;</span><span class="p">)</span>
+        <span class="ow">or</span> <span class="n">_find_file</span><span class="p">(</span><span class="s2">&quot;.env&quot;</span><span class="p">,</span> <span class="n">project_root</span><span class="o">=</span><span class="n">root_path</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="n">load_dotenv</span><span class="p">(</span>
+        <span class="n">dotenv_path</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DOTENV_VERBOSE_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+        <span class="n">override</span><span class="o">=</span><span class="n">obj</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;DOTENV_OVERRIDE_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">warn_deprecations</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="reload"><a class="viewcode-back" href="../../reference/dynaconf.html#dynaconf.default_settings.reload">[docs]</a><span class="k">def</span> <span class="nf">reload</span><span class="p">(</span><span class="n">load_dotenv</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">load_dotenv</span><span class="p">:</span>
+        <span class="n">start_dotenv</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">importlib</span><span class="o">.</span><span class="n">reload</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">])</span></div>
+
+
+<span class="c1"># default proj root</span>
+<span class="c1"># pragma: no cover</span>
+<span class="n">ROOT_PATH_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;ROOT_PATH_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="c1"># Default settings file</span>
+<span class="n">SETTINGS_FILE_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;SETTINGS_FILE_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+<span class="c1"># MISPELLS `FILES` when/if it happens</span>
+<span class="n">mispelled_files</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;SETTINGS_FILES_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">SETTINGS_FILE_FOR_DYNACONF</span> <span class="ow">and</span> <span class="n">mispelled_files</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">SETTINGS_FILE_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">mispelled_files</span>
+
+<span class="c1"># # ENV SETTINGS</span>
+<span class="c1"># # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`</span>
+
+
+<span class="c1"># If provided environments will be loaded separatelly</span>
+<span class="n">ENVIRONMENTS_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;ENVIRONMENTS_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># If False dynaconf will allow access to first level settings only in upper</span>
+<span class="n">LOWERCASE_READ_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;LOWERCASE_READ_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># The environment variable to switch current env</span>
+<span class="n">ENV_SWITCHER_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span>
+    <span class="s2">&quot;ENV_SWITCHER_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;ENV_FOR_DYNACONF&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># The current env by default is DEVELOPMENT</span>
+<span class="c1"># to switch is needed to `export ENV_FOR_DYNACONF=PRODUCTION`</span>
+<span class="c1"># or put that value in .env file</span>
+<span class="c1"># this value is used only when reading files like .toml|yaml|ini|json</span>
+<span class="n">ENV_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="n">ENV_SWITCHER_FOR_DYNACONF</span><span class="p">,</span> <span class="s2">&quot;DEVELOPMENT&quot;</span><span class="p">)</span>
+
+<span class="c1"># This variable exists to support `from_env` method</span>
+<span class="n">FORCE_ENV_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;FORCE_ENV_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="c1"># Default values is taken from DEFAULT pseudo env</span>
+<span class="c1"># this value is used only when reading files like .toml|yaml|ini|json</span>
+<span class="n">DEFAULT_ENV_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;DEFAULT_ENV_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;DEFAULT&quot;</span><span class="p">)</span>
+
+<span class="c1"># Global values are taken from DYNACONF env used for exported envvars</span>
+<span class="c1"># Values here overwrites all other envs</span>
+<span class="c1"># This namespace is used for files and also envvars</span>
+<span class="n">ENVVAR_PREFIX_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;ENVVAR_PREFIX_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;DYNACONF&quot;</span><span class="p">)</span>
+
+<span class="c1"># The default encoding to open settings files</span>
+<span class="n">ENCODING_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;ENCODING_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+
+<span class="c1"># Merge objects on load</span>
+<span class="n">MERGE_ENABLED_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;MERGE_ENABLED_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># BY default `__` is the separator for nested env vars</span>
+<span class="c1"># export `DYNACONF__DATABASE__server=server.com`</span>
+<span class="c1"># export `DYNACONF__DATABASE__PORT=6666`</span>
+<span class="c1"># Should result in settings.DATABASE == {&#39;server&#39;: &#39;server.com&#39;, &#39;PORT&#39;: 6666}</span>
+<span class="c1"># To disable it one can set `NESTED_SEPARATOR_FOR_DYNACONF=false`</span>
+<span class="n">NESTED_SEPARATOR_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;NESTED_SEPARATOR_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;__&quot;</span><span class="p">)</span>
+
+<span class="c1"># The env var specifying settings module</span>
+<span class="n">ENVVAR_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;ENVVAR_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;SETTINGS_FILE_FOR_DYNACONF&quot;</span><span class="p">)</span>
+
+<span class="c1"># Default values for redis configs</span>
+<span class="n">default_redis</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;host&quot;</span><span class="p">:</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;REDIS_HOST_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;localhost&quot;</span><span class="p">),</span>
+    <span class="s2">&quot;port&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;REDIS_PORT_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="mi">6379</span><span class="p">)),</span>
+    <span class="s2">&quot;db&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;REDIS_DB_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+    <span class="s2">&quot;decode_responses&quot;</span><span class="p">:</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;REDIS_DECODE_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="n">REDIS_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;REDIS_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="n">default_redis</span><span class="p">)</span>
+<span class="n">REDIS_ENABLED_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;REDIS_ENABLED_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Hashicorp Vault Project</span>
+<span class="n">vault_scheme</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_SCHEME_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;http&quot;</span><span class="p">)</span>
+<span class="n">vault_host</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_HOST_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;localhost&quot;</span><span class="p">)</span>
+<span class="n">vault_port</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_PORT_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;8200&quot;</span><span class="p">)</span>
+<span class="n">default_vault</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">get</span><span class="p">(</span>
+        <span class="s2">&quot;VAULT_URL_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">vault_scheme</span><span class="si">}</span><span class="s2">://</span><span class="si">{</span><span class="n">vault_host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">vault_port</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">),</span>
+    <span class="s2">&quot;token&quot;</span><span class="p">:</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_TOKEN_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">&quot;cert&quot;</span><span class="p">:</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_CERT_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">&quot;verify&quot;</span><span class="p">:</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_VERIFY_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_TIMEOUT_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">&quot;proxies&quot;</span><span class="p">:</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_PROXIES_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+    <span class="s2">&quot;allow_redirects&quot;</span><span class="p">:</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_ALLOW_REDIRECTS_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+<span class="p">}</span>
+<span class="n">VAULT_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="n">default_vault</span><span class="p">)</span>
+<span class="n">VAULT_ENABLED_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_ENABLED_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+<span class="n">VAULT_PATH_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_PATH_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;dynaconf&quot;</span><span class="p">)</span>
+<span class="n">VAULT_MOUNT_POINT_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span>
+    <span class="s2">&quot;VAULT_MOUNT_POINT_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;secret&quot;</span>
+<span class="p">)</span>
+<span class="n">VAULT_ROLE_ID_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_ROLE_ID_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">VAULT_SECRET_ID_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;VAULT_SECRET_ID_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="c1"># Only core loaders defined on this list will be invoked</span>
+<span class="n">core_loaders</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;YAML&quot;</span><span class="p">,</span> <span class="s2">&quot;TOML&quot;</span><span class="p">,</span> <span class="s2">&quot;INI&quot;</span><span class="p">,</span> <span class="s2">&quot;JSON&quot;</span><span class="p">,</span> <span class="s2">&quot;PY&quot;</span><span class="p">]</span>
+<span class="n">CORE_LOADERS_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;CORE_LOADERS_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="n">core_loaders</span><span class="p">)</span>
+
+<span class="c1"># External Loaders to read vars from different data stores</span>
+<span class="n">default_loaders</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;dynaconf.loaders.env_loader&quot;</span><span class="p">,</span>
+    <span class="c1"># &#39;dynaconf.loaders.redis_loader&#39;</span>
+    <span class="c1"># &#39;dynaconf.loaders.vault_loader&#39;</span>
+<span class="p">]</span>
+<span class="n">LOADERS_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;LOADERS_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="n">default_loaders</span><span class="p">)</span>
+
+<span class="c1"># Errors in loaders should be silenced?</span>
+<span class="n">SILENT_ERRORS_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;SILENT_ERRORS_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># always fresh variables</span>
+<span class="n">FRESH_VARS_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;FRESH_VARS_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+<span class="n">DOTENV_PATH_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;DOTENV_PATH_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">DOTENV_VERBOSE_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;DOTENV_VERBOSE_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+<span class="n">DOTENV_OVERRIDE_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;DOTENV_OVERRIDE_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Currently this is only used by cli. INSTANCE_FOR_DYNACONF specifies python</span>
+<span class="c1"># dotted path to custom LazySettings instance. Last dotted path item should be</span>
+<span class="c1"># instance of LazySettings.</span>
+<span class="n">INSTANCE_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;INSTANCE_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="c1"># https://msg.pyyaml.org/load</span>
+<span class="n">YAML_LOADER_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;YAML_LOADER_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="s2">&quot;safe_load&quot;</span><span class="p">)</span>
+
+<span class="c1"># Use commentjson? https://commentjson.readthedocs.io/en/latest/</span>
+<span class="n">COMMENTJSON_ENABLED_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span>
+    <span class="s2">&quot;COMMENTJSON_ENABLED_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="c1"># Extra file, or list of files where to look for secrets</span>
+<span class="c1"># useful for CI environment like jenkins</span>
+<span class="c1"># where you can export this variable pointing to a local</span>
+<span class="c1"># absolute path of the secrets file.</span>
+<span class="n">SECRETS_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;SECRETS_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+<span class="c1"># To include extra paths based on envvar</span>
+<span class="n">INCLUDES_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;INCLUDES_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+<span class="c1"># To pre-load extra paths based on envvar</span>
+<span class="n">PRELOAD_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;PRELOAD_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+<span class="c1"># Files to skip if found on search tree</span>
+<span class="n">SKIP_FILES_FOR_DYNACONF</span> <span class="o">=</span> <span class="n">get</span><span class="p">(</span><span class="s2">&quot;SKIP_FILES_FOR_DYNACONF&quot;</span><span class="p">,</span> <span class="p">[])</span>
+
+
+<span class="c1"># Backwards compatibility with renamed variables</span>
+<span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="n">RENAMED_VARS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="vm">__name__</span><span class="p">],</span> <span class="n">old</span><span class="p">,</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">new</span><span class="p">])</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../index.html">
+    <img class="logo" src="../../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../guides/examples.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

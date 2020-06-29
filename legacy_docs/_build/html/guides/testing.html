@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>&lt;no title&gt; &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="extend.html" />
+    <link rel="prev" title="}" href="django.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p># Testing</p>
+<p>For testing it is recommended to just switch to <cite>testing</cite> environment and read the same config files.</p>
+<p><cite>settings.toml</cite>
+<a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>toml
+[default]
+value = “On Default”</p>
+<p>[testing]
+value = “On Testing”
+<a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<p><cite>program.py</cite>
+<a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>python
+from dynaconf import settings</p>
+<p>print(settings.VALUE)
+<a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">ENV_FOR_DYNACONF=testing</span> <span class="pre">python</span> <span class="pre">program.py</span>
+<span class="pre">`</span></code></p>
+<p>Then your <cite>program.py</cite> will print <cite>“On Testing”</cite> red from <cite>[testing]</cite> environment.</p>
+<p>## Pytest</p>
+<p>For pytest it is common to create fixtures to provide pre-configured settings object or to configure the settings before
+all the tests are collected.</p>
+<p>Examples available on [<a class="reference external" href="https://github.com/rochacbruno/dynaconf/tree/master/example/pytest_example](https://github.com/rochacbruno/dynaconf/tree/master/example/pytest_example">https://github.com/rochacbruno/dynaconf/tree/master/example/pytest_example](https://github.com/rochacbruno/dynaconf/tree/master/example/pytest_example</a>)</p>
+<p>With <cite>pytest</cite> fixtures it is recommended to use the <cite>FORCE_ENV_FOR_DYNACONF</cite> isntead of just <cite>ENV_FOR_DYNACONF</cite> because it has precedence.</p>
+<p>### A python program</p>
+<p><cite>settings.toml</cite> with the <cite>[testing]</cite> environment.</p>
+<p><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>toml
+[default]
+VALUE = “On Default”</p>
+<p>[testing]
+VALUE = “On Testing”
+<a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<p><cite>app.py</cite> that reads that value from current environment.
+<a href="#id25"><span class="problematic" id="id26">``</span></a><a href="#id27"><span class="problematic" id="id28">`</span></a>py
+from dynaconf import settings</p>
+<dl class="simple">
+<dt>def return_a_value():</dt><dd><p>return settings.VALUE</p>
+</dd>
+</dl>
+<p><a href="#id29"><span class="problematic" id="id30">``</span></a><a href="#id31"><span class="problematic" id="id32">`</span></a></p>
+<p><cite>tests/conftest.py</cite> with a fixture to force <cite>settings</cite> to run pointing to <cite>[testing]</cite> environment.</p>
+<p><a href="#id33"><span class="problematic" id="id34">``</span></a><a href="#id35"><span class="problematic" id="id36">`</span></a>py
+import pytest
+from dynaconf import settings</p>
+<p>&#64;pytest.fixture(scope=”session”, autouse=True)
+def set_test_settings():</p>
+<blockquote>
+<div><p>settings.configure(FORCE_ENV_FOR_DYNACONF=”testing”)</p>
+</div></blockquote>
+<p><a href="#id37"><span class="problematic" id="id38">``</span></a><a href="#id39"><span class="problematic" id="id40">`</span></a></p>
+<p><cite>tests/test_dynaconf.py</cite> to assert that the correct environment is loaded</p>
+<p><a href="#id41"><span class="problematic" id="id42">``</span></a><a href="#id43"><span class="problematic" id="id44">`</span></a>py
+from app import return_a_value</p>
+<dl class="simple">
+<dt>def test_dynaconf_is_in_testing_env():</dt><dd><p>assert return_a_value() == “On Testing”</p>
+</dd>
+</dl>
+<p><a href="#id45"><span class="problematic" id="id46">``</span></a><a href="#id47"><span class="problematic" id="id48">`</span></a></p>
+<p>### A Flask program</p>
+<p><cite>settings.toml</cite> with the <cite>[testing]</cite> environment.</p>
+<p><a href="#id49"><span class="problematic" id="id50">``</span></a><a href="#id51"><span class="problematic" id="id52">`</span></a>toml
+[default]
+VALUE = “On Default”</p>
+<p>[testing]
+VALUE = “On Testing”
+<a href="#id53"><span class="problematic" id="id54">``</span></a><a href="#id55"><span class="problematic" id="id56">`</span></a></p>
+<p><cite>src.py</cite> that has a Flask application factory</p>
+<p><a href="#id57"><span class="problematic" id="id58">``</span></a><a href="#id59"><span class="problematic" id="id60">`</span></a>py
+from flask import Flask
+from dynaconf.contrib import FlaskDynaconf</p>
+<dl class="simple">
+<dt>def create_app(<a href="#id61"><span class="problematic" id="id62">**</span></a>config):</dt><dd><p>app = Flask(__name__)
+FlaskDynaconf(app, <a href="#id63"><span class="problematic" id="id64">**</span></a>config)
+return app</p>
+</dd>
+</dl>
+<p><a href="#id65"><span class="problematic" id="id66">``</span></a><a href="#id67"><span class="problematic" id="id68">`</span></a></p>
+<p><cite>tests/conftest.py</cite> with a fixture to provide <cite>app</cite> dependency injection to all the tests,
+And force this <cite>app</cite> to point to <cite>[testing]</cite> config environment.</p>
+<p><a href="#id69"><span class="problematic" id="id70">``</span></a><a href="#id71"><span class="problematic" id="id72">`</span></a>py
+import pytest
+from src import create_app</p>
+<p>&#64;pytest.fixture(scope=”session”)
+def app():</p>
+<blockquote>
+<div><p>app = create_app(FORCE_ENV_FOR_DYNACONF=”testing”)
+return app</p>
+</div></blockquote>
+<p><a href="#id73"><span class="problematic" id="id74">``</span></a><a href="#id75"><span class="problematic" id="id76">`</span></a></p>
+<p><cite>tests/test_flask_dynaconf.py</cite> to assert that the correct environment is loaded</p>
+<p><a href="#id77"><span class="problematic" id="id78">``</span></a><a href="#id79"><span class="problematic" id="id80">`</span></a>py
+def test_dynaconf_is_on_testing_env(app):</p>
+<blockquote>
+<div><p>assert app.config[“VALUE”] == “On Testing”
+assert app.config.current_env == “testing”</p>
+</div></blockquote>
+<p><a href="#id81"><span class="problematic" id="id82">``</span></a><a href="#id83"><span class="problematic" id="id84">`</span></a></p>
+<p>## Mocking</p>
+<p>But it is common in unit tests to <cite>mock</cite> some objects and you may need in rare cases to mock the <cite>dynaconf.settings</cite> when running your tests.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">from</span> <span class="pre">dynaconf.utils</span> <span class="pre">import</span> <span class="pre">DynaconfDict</span>
+<span class="pre">mocked_settings</span> <span class="pre">=</span> <span class="pre">DynaconfDict({'FOO':</span> <span class="pre">'BAR'})</span>
+<span class="pre">`</span></code></p>
+<p>DynaconfDict is a dict like obj that can be populated from a file:</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">from</span> <span class="pre">dynaconf.loaders</span> <span class="pre">import</span> <span class="pre">toml_loader</span>
+<span class="pre">toml_loader.load(mocked_settings,</span> <span class="pre">filename='my_file.toml',</span> <span class="pre">env='testing')</span>
+<span class="pre">`</span></code></p>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="django.html" title="previous chapter">}</a></li>
+      <li>Next: <a href="extend.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/guides/testing.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

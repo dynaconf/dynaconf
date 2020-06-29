@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>) &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="cli.html" />
+    <link rel="prev" title="}" href="environment_variables.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <p># Accessing parameters</p>
+<p>Dynaconf offers different ways to access settings parameters</p>
+<p>Assuming the following <cite>settings.toml</cite> file</p>
+<p><code class="docutils literal notranslate"><span class="pre">`ini</span>
+<span class="pre">[default]</span>
+<span class="pre">host</span> <span class="pre">=</span> <span class="pre">&quot;server&quot;</span>
+<span class="pre">port</span> <span class="pre">=</span> <span class="pre">5555</span>
+<span class="pre">auth</span> <span class="pre">=</span> <span class="pre">{user=&quot;admin&quot;,</span> <span class="pre">passwd=&quot;1234&quot;}</span>
+<span class="pre">`</span></code></p>
+<p>## As attributes (dot notation)</p>
+<p>Using dot notation</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">settings.HOST</span>
+<span class="pre">`</span></code></p>
+<p>&gt; Raises: <strong>AttributeError</strong> if not defined</p>
+<p>## As dictionary [item]</p>
+<p>Using item access</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">settings['PORT']</span>
+<span class="pre">`</span></code></p>
+<p>&gt; Raises: <strong>KeyError</strong> if not defined</p>
+<p>## Default values (get)</p>
+<p>Using dict style get</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">settings.get('TIMEOUT',</span> <span class="pre">300)</span>
+<span class="pre">`</span></code></p>
+<p>&gt; Returns the default (300) if not defined</p>
+<p>Using dotted-path lookup</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">settings.get('AUTH.USER',</span> <span class="pre">'anonymous')</span>
+<span class="pre">`</span></code></p>
+<p>&gt; Returns the default (‘anonymous’) if not defined</p>
+<p>Explicitly disabling dotted-path lookup</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">settings.get('AUTH.USER',</span> <span class="pre">dotted_lookup=False)</span>
+<span class="pre">`</span></code></p>
+<p>## Forcing type casting</p>
+<p><code class="docutils literal notranslate"><span class="pre">`python</span>
+<span class="pre">settings.as_int('PORT')</span>
+<span class="pre">`</span></code></p>
+<p>Available casts:</p>
+<ul class="simple">
+<li><p>as_int</p></li>
+<li><p>as_float</p></li>
+<li><p>as_bool</p></li>
+<li><p>as_json</p></li>
+</ul>
+<p>## Boxed values</p>
+<p>In Dynaconf values are Boxed, it means the dot notation can also be used to access dictionary members, example:</p>
+<p>settings.toml</p>
+<p><code class="docutils literal notranslate"><span class="pre">`ini</span>
+<span class="pre">[default]</span>
+<span class="pre">mysql</span> <span class="pre">=</span> <span class="pre">{host=&quot;server.com&quot;,</span> <span class="pre">port=3600,</span> <span class="pre">auth={user=&quot;admin&quot;,</span> <span class="pre">passwd=1234}}</span>
+<span class="pre">`</span></code></p>
+<p>You can now access</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>python
+from dynaconf import settings</p>
+<dl class="simple">
+<dt>connect(</dt><dd><p>host=settings.MYSQL.host,
+port=settings.MYSQL.port,
+username=settings.MYSQL.auth.user,
+passwd=settings.MYSQL.auth.get(‘passwd’),</p>
+</dd>
+</dl>
+<div class="section" id="id5">
+<h1>)<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h1>
+<p>## Export settings as a Python dictionary</p>
+<p>After exporting the settings to a python dictionary it is easy to use it to serialize as a JSON, YAML or any other format you may need.</p>
+<p>### Programmatically</p>
+<p><code class="docutils literal notranslate"><span class="pre">`py</span>
+<span class="pre">from</span> <span class="pre">dynaconf</span> <span class="pre">import</span> <span class="pre">settings</span>
+<span class="pre">settings.as_dict()</span>&#160; <span class="pre">#</span> <span class="pre">a</span> <span class="pre">dict</span> <span class="pre">with</span> <span class="pre">only</span> <span class="pre">user</span> <span class="pre">defined</span> <span class="pre">values</span> <span class="pre">in</span> <span class="pre">current</span> <span class="pre">env</span>
+<span class="pre">settings.as_dict(env='production')</span>&#160; <span class="pre">#</span> <span class="pre">a</span> <span class="pre">dict</span> <span class="pre">with</span> <span class="pre">only</span> <span class="pre">user</span> <span class="pre">defined</span> <span class="pre">values</span> <span class="pre">in</span> <span class="pre">production</span> <span class="pre">env</span>
+<span class="pre">settings.as_dict(internal=True)</span>&#160; <span class="pre">#</span> <span class="pre">a</span> <span class="pre">dict</span> <span class="pre">with</span> <span class="pre">all</span> <span class="pre">values,</span> <span class="pre">user</span> <span class="pre">defined</span> <span class="pre">and</span> <span class="pre">dynaconf</span> <span class="pre">internal</span>
+<span class="pre">`</span></code></p>
+<p>### CLI (export to json)</p>
+<p>from your project root folder (generally the same place where you have <cite>.env</cite> or from where you call your scripts.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`bash</span>
+<span class="pre">dynaconf</span> <span class="pre">list</span> <span class="pre">-o</span> <span class="pre">path/to/file.json</span>
+<span class="pre">dynaconf</span> <span class="pre">list</span> <span class="pre">-e</span> <span class="pre">production</span> <span class="pre">-o</span> <span class="pre">path/to/file.json</span>
+<span class="pre">`</span></code></p>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment_variables.html#id51">}</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="environment_variables.html" title="previous chapter">}</a></li>
+      <li>Next: <a href="cli.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/guides/accessing_values.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

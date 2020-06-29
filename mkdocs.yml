@@ -1,0 +1,60 @@
+site_name: Dynaconf - 3.0.0
+site_url: https://dynaconf.com
+site_description: Configuration Management for Python
+site_author: Bruno Rocha
+repo_name: rochacbruno/dynaconf
+repo_url: https://github.com/rochacbruno/dynaconf
+edit_uri: ''
+nav:
+    - Home: index.md
+    - Configuration: configuration.md
+    - Env vars: envvars.md
+    - Settings files: settings_files.md
+    - Secrets: secrets.md
+    - Merging: merging.md
+    - Dynamic Variables: dynamic.md
+    - CLI: cli.md
+    - Validation: validation.md
+    - Flask: flask.md
+    - Django: django.md
+    - Advanced usage: advanced.md
+    - Release Notes: release_notes.md
+theme:
+    # features:
+    #   - tabs
+    language: en
+    name: material
+    logo: img/logo_square_d.svg
+    favicon: img/favicon.ico
+    palette:
+      # primary: blue grey
+markdown_extensions:
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tabbed
+  - pymdownx.tilde
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - toc:
+      permalink: true
+extra:
+  disqus: dynaconf
+  social:
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/rochacbruno/dynaconf
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/rochacbruno
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/in/rochacbruno
+    - icon: fontawesome/brands/twitch
+      link: https://twitch.tv/codeshow

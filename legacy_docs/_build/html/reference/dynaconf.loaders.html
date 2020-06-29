@@ -1,0 +1,630 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>dynaconf.loaders package &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="dynaconf.utils package" href="dynaconf.utils.html" />
+    <link rel="prev" title="dynaconf.contrib package" href="dynaconf.contrib.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="dynaconf-loaders-package">
+<h1>dynaconf.loaders package<a class="headerlink" href="#dynaconf-loaders-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-dynaconf.loaders.env_loader">
+<span id="dynaconf-loaders-env-loader-module"></span><h2>dynaconf.loaders.env_loader module<a class="headerlink" href="#module-dynaconf.loaders.env_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.loaders.env_loader.load">
+<code class="sig-prename descclassname">dynaconf.loaders.env_loader.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/env_loader.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.env_loader.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads envvars with prefixes:</p>
+<p><cite>DYNACONF_</cite> (default global) or <cite>$(ENVVAR_PREFIX_FOR_DYNACONF)_</cite></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.env_loader.load_from_env">
+<code class="sig-prename descclassname">dynaconf.loaders.env_loader.</code><code class="sig-name descname">load_from_env</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">prefix</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">identifier</span><span class="o">=</span><span class="default_value">'env'</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/env_loader.html#load_from_env"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.env_loader.load_from_env" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.env_loader.write">
+<code class="sig-prename descclassname">dynaconf.loaders.env_loader.</code><code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings_path</span></em>, <em class="sig-param"><span class="n">settings_data</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/env_loader.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.env_loader.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to .env file</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.loaders.redis_loader">
+<span id="dynaconf-loaders-redis-loader-module"></span><h2>dynaconf.loaders.redis_loader module<a class="headerlink" href="#module-dynaconf.loaders.redis_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.loaders.redis_loader.delete">
+<code class="sig-prename descclassname">dynaconf.loaders.redis_loader.</code><code class="sig-name descname">delete</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/redis_loader.html#delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.redis_loader.delete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a single key if specified, or all env if key is none
+:param obj: settings object
+:param key: key to delete from store location
+:return: None</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.redis_loader.load">
+<code class="sig-prename descclassname">dynaconf.loaders.redis_loader.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/redis_loader.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.redis_loader.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads and loads in to “settings” a single key or all keys from redis</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – the settings instance</p></li>
+<li><p><strong>env</strong> – settings env default=’DYNACONF’</p></li>
+<li><p><strong>silent</strong> – if errors should raise</p></li>
+<li><p><strong>key</strong> – if defined load a single key, else load all in env</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.redis_loader.write">
+<code class="sig-prename descclassname">dynaconf.loaders.redis_loader.</code><code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/redis_loader.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.redis_loader.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a value in to loader source</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – settings object</p></li>
+<li><p><strong>data</strong> – vars to be stored</p></li>
+<li><p><strong>kwargs</strong> – vars to be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.loaders.vault_loader">
+<span id="dynaconf-loaders-vault-loader-module"></span><h2>dynaconf.loaders.vault_loader module<a class="headerlink" href="#module-dynaconf.loaders.vault_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.loaders.vault_loader.get_client">
+<code class="sig-prename descclassname">dynaconf.loaders.vault_loader.</code><code class="sig-name descname">get_client</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/vault_loader.html#get_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.vault_loader.get_client" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.vault_loader.list_envs">
+<code class="sig-prename descclassname">dynaconf.loaders.vault_loader.</code><code class="sig-name descname">list_envs</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/vault_loader.html#list_envs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.vault_loader.list_envs" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is a helper to get a list of all the existing envs in
+the source of data, the use case is:</p>
+<blockquote>
+<div><p>existing_envs = vault_loader.list_envs(settings)
+for env in exiting_envs:</p>
+<blockquote>
+<div><p>with settings.using_env(env):  # switch to the env
+# do something with a key of that env</p>
+</div></blockquote>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – settings object</p></li>
+<li><p><strong>path</strong> – path to the vault secrets</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list containing all the keys at the given path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.vault_loader.load">
+<code class="sig-prename descclassname">dynaconf.loaders.vault_loader.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/vault_loader.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.vault_loader.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads and loads in to “settings” a single key or all keys from vault</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – the settings instance</p></li>
+<li><p><strong>env</strong> – settings env default=’DYNACONF’</p></li>
+<li><p><strong>silent</strong> – if errors should raise</p></li>
+<li><p><strong>key</strong> – if defined load a single key, else load all in env</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.vault_loader.write">
+<code class="sig-prename descclassname">dynaconf.loaders.vault_loader.</code><code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/vault_loader.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.vault_loader.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a value in to loader source</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – settings object</p></li>
+<li><p><strong>data</strong> – vars to be stored</p></li>
+<li><p><strong>kwargs</strong> – vars to be stored</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.loaders.yaml_loader">
+<span id="dynaconf-loaders-yaml-loader-module"></span><h2>dynaconf.loaders.yaml_loader module<a class="headerlink" href="#module-dynaconf.loaders.yaml_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.loaders.yaml_loader.load">
+<code class="sig-prename descclassname">dynaconf.loaders.yaml_loader.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/yaml_loader.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.yaml_loader.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads and loads in to “obj” a single key or all keys from source file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – the settings instance</p></li>
+<li><p><strong>env</strong> – settings current env default=’development’</p></li>
+<li><p><strong>silent</strong> – if errors should raise</p></li>
+<li><p><strong>key</strong> – if defined load a single key, else load all in env</p></li>
+<li><p><strong>filename</strong> – Optional custom filename to load</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.yaml_loader.write">
+<code class="sig-prename descclassname">dynaconf.loaders.yaml_loader.</code><code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings_path</span></em>, <em class="sig-param"><span class="n">settings_data</span></em>, <em class="sig-param"><span class="n">merge</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/yaml_loader.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.yaml_loader.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to a settings file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>settings_path</strong> – the filepath</p></li>
+<li><p><strong>settings_data</strong> – a dictionary with data</p></li>
+<li><p><strong>merge</strong> – boolean if existing file should be merged with new data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.loaders.toml_loader">
+<span id="dynaconf-loaders-toml-loader-module"></span><h2>dynaconf.loaders.toml_loader module<a class="headerlink" href="#module-dynaconf.loaders.toml_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.loaders.toml_loader.encode_nulls">
+<code class="sig-prename descclassname">dynaconf.loaders.toml_loader.</code><code class="sig-name descname">encode_nulls</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/toml_loader.html#encode_nulls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.toml_loader.encode_nulls" title="Permalink to this definition">¶</a></dt>
+<dd><p>TOML does not support <cite>None</cite> so this function transforms to <a class="reference external" href="mailto:'&#37;&#52;&#48;none">‘<span>&#64;</span>none</a> ‘.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.toml_loader.load">
+<code class="sig-prename descclassname">dynaconf.loaders.toml_loader.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/toml_loader.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.toml_loader.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads and loads in to “obj” a single key or all keys from source file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – the settings instance</p></li>
+<li><p><strong>env</strong> – settings current env default=’development’</p></li>
+<li><p><strong>silent</strong> – if errors should raise</p></li>
+<li><p><strong>key</strong> – if defined load a single key, else load all in env</p></li>
+<li><p><strong>filename</strong> – Optional custom filename to load</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.toml_loader.write">
+<code class="sig-prename descclassname">dynaconf.loaders.toml_loader.</code><code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings_path</span></em>, <em class="sig-param"><span class="n">settings_data</span></em>, <em class="sig-param"><span class="n">merge</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/toml_loader.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.toml_loader.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to a settings file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>settings_path</strong> – the filepath</p></li>
+<li><p><strong>settings_data</strong> – a dictionary with data</p></li>
+<li><p><strong>merge</strong> – boolean if existing file should be merged with new data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.loaders.py_loader">
+<span id="dynaconf-loaders-py-loader-module"></span><h2>dynaconf.loaders.py_loader module<a class="headerlink" href="#module-dynaconf.loaders.py_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.loaders.py_loader.get_module">
+<code class="sig-prename descclassname">dynaconf.loaders.py_loader.</code><code class="sig-name descname">get_module</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/py_loader.html#get_module"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.py_loader.get_module" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.py_loader.import_from_filename">
+<code class="sig-prename descclassname">dynaconf.loaders.py_loader.</code><code class="sig-name descname">import_from_filename</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/py_loader.html#import_from_filename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.py_loader.import_from_filename" title="Permalink to this definition">¶</a></dt>
+<dd><p>If settings_module is a filename path import it.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.py_loader.load">
+<code class="sig-prename descclassname">dynaconf.loaders.py_loader.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">settings_module</span></em>, <em class="sig-param"><span class="n">identifier</span><span class="o">=</span><span class="default_value">'py'</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/py_loader.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.py_loader.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tries to import a python module</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.py_loader.load_from_python_object">
+<code class="sig-prename descclassname">dynaconf.loaders.py_loader.</code><code class="sig-name descname">load_from_python_object</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">mod</span></em>, <em class="sig-param"><span class="n">settings_module</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">identifier</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/py_loader.html#load_from_python_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.py_loader.load_from_python_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.py_loader.try_to_load_from_py_module_name">
+<code class="sig-prename descclassname">dynaconf.loaders.py_loader.</code><code class="sig-name descname">try_to_load_from_py_module_name</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">identifier</span><span class="o">=</span><span class="default_value">'py'</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/py_loader.html#try_to_load_from_py_module_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.py_loader.try_to_load_from_py_module_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to load module by its string name.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><p>obj {LAzySettings} – Dynaconf settings instance
+name {str} – Name of the module e.g: foo.bar.zaz</p>
+</dd>
+<dt>Keyword Arguments:</dt><dd><p>key {str} – Single key to be loaded (default: {None})
+identifier {str} – Name of identifier to store (default: ‘py’)
+silent {bool} – Weather to raise or silence exceptions.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.py_loader.write">
+<code class="sig-prename descclassname">dynaconf.loaders.py_loader.</code><code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings_path</span></em>, <em class="sig-param"><span class="n">settings_data</span></em>, <em class="sig-param"><span class="n">merge</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/py_loader.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.py_loader.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to a settings file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>settings_path</strong> – the filepath</p></li>
+<li><p><strong>settings_data</strong> – a dictionary with data</p></li>
+<li><p><strong>merge</strong> – boolean if existing file should be merged with new data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.loaders.json_loader">
+<span id="dynaconf-loaders-json-loader-module"></span><h2>dynaconf.loaders.json_loader module<a class="headerlink" href="#module-dynaconf.loaders.json_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="dynaconf.loaders.json_loader.DynaconfEncoder">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.loaders.json_loader.</code><code class="sig-name descname">DynaconfEncoder</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span></em>, <em class="sig-param"><span class="n">skipkeys</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ensure_ascii</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">check_circular</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">allow_nan</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">sort_keys</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">indent</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">separators</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/json_loader.html#DynaconfEncoder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.json_loader.DynaconfEncoder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">json.encoder.JSONEncoder</span></code></p>
+<p>Transform Dynaconf custom types instances to json representation</p>
+<dl class="py method">
+<dt id="dynaconf.loaders.json_loader.DynaconfEncoder.default">
+<code class="sig-name descname">default</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">o</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/json_loader.html#DynaconfEncoder.default"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.json_loader.DynaconfEncoder.default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implement this method in a subclass such that it returns
+a serializable object for <code class="docutils literal notranslate"><span class="pre">o</span></code>, or calls the base implementation
+(to raise a <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>).</p>
+<p>For example, to support arbitrary iterators, you could
+implement default like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">iterable</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">o</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="c1"># Let the base class default method raise the TypeError</span>
+    <span class="k">return</span> <span class="n">JSONEncoder</span><span class="o">.</span><span class="n">default</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">o</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.json_loader.load">
+<code class="sig-prename descclassname">dynaconf.loaders.json_loader.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/json_loader.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.json_loader.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads and loads in to “obj” a single key or all keys from source file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – the settings instance</p></li>
+<li><p><strong>env</strong> – settings current env default=’development’</p></li>
+<li><p><strong>silent</strong> – if errors should raise</p></li>
+<li><p><strong>key</strong> – if defined load a single key, else load all in env</p></li>
+<li><p><strong>filename</strong> – Optional custom filename to load</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.json_loader.write">
+<code class="sig-prename descclassname">dynaconf.loaders.json_loader.</code><code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings_path</span></em>, <em class="sig-param"><span class="n">settings_data</span></em>, <em class="sig-param"><span class="n">merge</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/json_loader.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.json_loader.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to a settings file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>settings_path</strong> – the filepath</p></li>
+<li><p><strong>settings_data</strong> – a dictionary with data</p></li>
+<li><p><strong>merge</strong> – boolean if existing file should be merged with new data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.loaders.ini_loader">
+<span id="dynaconf-loaders-ini-loader-module"></span><h2>dynaconf.loaders.ini_loader module<a class="headerlink" href="#module-dynaconf.loaders.ini_loader" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.loaders.ini_loader.load">
+<code class="sig-prename descclassname">dynaconf.loaders.ini_loader.</code><code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/ini_loader.html#load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.ini_loader.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads and loads in to “obj” a single key or all keys from source file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – the settings instance</p></li>
+<li><p><strong>env</strong> – settings current env default=’development’</p></li>
+<li><p><strong>silent</strong> – if errors should raise</p></li>
+<li><p><strong>key</strong> – if defined load a single key, else load all in env</p></li>
+<li><p><strong>filename</strong> – Optional custom filename to load</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.ini_loader.write">
+<code class="sig-prename descclassname">dynaconf.loaders.ini_loader.</code><code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">settings_path</span></em>, <em class="sig-param"><span class="n">settings_data</span></em>, <em class="sig-param"><span class="n">merge</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/ini_loader.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.ini_loader.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to a settings file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>settings_path</strong> – the filepath</p></li>
+<li><p><strong>settings_data</strong> – a dictionary with data</p></li>
+<li><p><strong>merge</strong> – boolean if existing file should be merged with new data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.loaders.base">
+<span id="dynaconf-loaders-base"></span><h2>dynaconf.loaders.base<a class="headerlink" href="#module-dynaconf.loaders.base" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="dynaconf.loaders.base.BaseLoader">
+<em class="property">class </em><code class="sig-prename descclassname">dynaconf.loaders.base.</code><code class="sig-name descname">BaseLoader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">env</span></em>, <em class="sig-param"><span class="n">identifier</span></em>, <em class="sig-param"><span class="n">extensions</span></em>, <em class="sig-param"><span class="n">file_reader</span></em>, <em class="sig-param"><span class="n">string_reader</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/base.html#BaseLoader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.base.BaseLoader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base loader for dynaconf source files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – {[LazySettings]} – [Dynaconf settings]</p></li>
+<li><p><strong>env</strong> – {[string]} – [the current env to be loaded defaults to
+[development]]</p></li>
+<li><p><strong>identifier</strong> – {[string]} – [identifier ini, yaml, json, py, toml]</p></li>
+<li><p><strong>extensions</strong> – {[list]} – [List of extensions with dots [‘.a’, ‘.b’]]</p></li>
+<li><p><strong>file_reader</strong> – {[callable]} – [reads file return dict]</p></li>
+<li><p><strong>string_reader</strong> – {[callable]} – [reads string return dict]</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dynaconf.loaders.base.BaseLoader.get_source_date">
+<code class="sig-name descname">get_source_date</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">files</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/base.html#BaseLoader.get_source_date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.base.BaseLoader.get_source_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads each file and returns source data for each file
+{“path/to/file.ext”: {“key”: “value”}}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.loaders.base.BaseLoader.load">
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/base.html#BaseLoader.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.base.BaseLoader.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads and loads in to <cite>self.obj</cite> a single key or all keys from source</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> – Optional filename to load</p></li>
+<li><p><strong>key</strong> – if provided load a single key</p></li>
+<li><p><strong>silent</strong> – if load erros should be silenced</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dynaconf.loaders.base.BaseLoader.warn_not_installed">
+<em class="property">static </em><code class="sig-name descname">warn_not_installed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">identifier</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders/base.html#BaseLoader.warn_not_installed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.base.BaseLoader.warn_not_installed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-dynaconf.loaders">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-dynaconf.loaders" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="dynaconf.loaders.default_loader">
+<code class="sig-prename descclassname">dynaconf.loaders.</code><code class="sig-name descname">default_loader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">defaults</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders.html#default_loader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.default_loader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads default settings and check if there are overridings
+exported as environment variables</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.enable_external_loaders">
+<code class="sig-prename descclassname">dynaconf.loaders.</code><code class="sig-name descname">enable_external_loaders</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders.html#enable_external_loaders"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.enable_external_loaders" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable external service loaders like <cite>VAULT_</cite> and <cite>REDIS_</cite>
+looks forenv variables like <cite>REDIS_ENABLED_FOR_DYNACONF</cite></p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.settings_loader">
+<code class="sig-prename descclassname">dynaconf.loaders.</code><code class="sig-name descname">settings_loader</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em>, <em class="sig-param"><span class="n">settings_module</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">silent</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">key</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders.html#settings_loader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.settings_loader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads from defined settings module</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obj</strong> – A dynaconf instance</p></li>
+<li><p><strong>settings_module</strong> – A path or a list of paths e.g settings.toml</p></li>
+<li><p><strong>env</strong> – Env to look for data defaults: development</p></li>
+<li><p><strong>silent</strong> – Boolean to raise loading errors</p></li>
+<li><p><strong>key</strong> – Load a single key if provided</p></li>
+<li><p><strong>filename</strong> – optional filename to override the settings_module</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dynaconf.loaders.write">
+<code class="sig-prename descclassname">dynaconf.loaders.</code><code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">env</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dynaconf/loaders.html#write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dynaconf.loaders.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes <cite>data</cite> to <cite>filename</cite> infers format by file extension.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../guides/usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/examples.html">}</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Module reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="dynaconf.html">dynaconf package</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">dynaconf</a><ul>
+  <li><a href="dynaconf.html">dynaconf package</a><ul>
+      <li>Previous: <a href="dynaconf.contrib.html" title="previous chapter">dynaconf.contrib package</a></li>
+      <li>Next: <a href="dynaconf.utils.html" title="next chapter">dynaconf.utils package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/reference/dynaconf.loaders.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>dynaconf.contrib.flask_dynaconf &#8212; dynaconf 3.0.0rc2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for dynaconf.contrib.flask_dynaconf</h1><div class="highlight"><pre>
+<span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">flask.config</span> <span class="kn">import</span> <span class="n">Config</span>
+
+    <span class="n">flask_installed</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+    <span class="n">flask_installed</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">Config</span> <span class="o">=</span> <span class="nb">object</span>
+
+
+<span class="kn">import</span> <span class="nn">dynaconf</span>
+<span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span>
+
+
+<div class="viewcode-block" id="FlaskDynaconf"><a class="viewcode-back" href="../../../reference/dynaconf.contrib.html#dynaconf.FlaskDynaconf">[docs]</a><span class="k">class</span> <span class="nc">FlaskDynaconf</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The arguments are.</span>
+<span class="sd">    app = The created app</span>
+<span class="sd">    dynaconf_args = Extra args to be passed to Dynaconf (validator for example)</span>
+
+<span class="sd">    All other values are stored as config vars specially::</span>
+
+<span class="sd">        ENVVAR_PREFIX_FOR_DYNACONF = env prefix for your envvars to be loaded</span>
+<span class="sd">                            example:</span>
+<span class="sd">                                if you set to `MYSITE` then</span>
+<span class="sd">                                export MYSITE_SQL_PORT=&#39;@int 5445&#39;</span>
+
+<span class="sd">                            with that exported to env you access using:</span>
+<span class="sd">                                app.config.SQL_PORT</span>
+<span class="sd">                                app.config.get(&#39;SQL_PORT&#39;)</span>
+<span class="sd">                                app.config.get(&#39;sql_port&#39;)</span>
+<span class="sd">                                # get is case insensitive</span>
+<span class="sd">                                app.config[&#39;SQL_PORT&#39;]</span>
+
+<span class="sd">                            Dynaconf uses `@int, @bool, @float, @json` to cast</span>
+<span class="sd">                            env vars</span>
+
+<span class="sd">        SETTINGS_FILE_FOR_DYNACONF = The name of the module or file to use as</span>
+<span class="sd">                                    default to load settings. If nothing is</span>
+<span class="sd">                                    passed it will be `settings.*` or value</span>
+<span class="sd">                                    found in `ENVVAR_FOR_DYNACONF`</span>
+<span class="sd">                                    Dynaconf supports</span>
+<span class="sd">                                    .py, .yml, .toml, ini, json</span>
+
+<span class="sd">    ATTENTION: Take a look at `settings.yml` and `.secrets.yml` to know the</span>
+<span class="sd">            required settings format.</span>
+
+<span class="sd">    Settings load order in Dynaconf:</span>
+
+<span class="sd">    - Load all defaults and Flask defaults</span>
+<span class="sd">    - Load all passed variables when applying FlaskDynaconf</span>
+<span class="sd">    - Update with data in settings files</span>
+<span class="sd">    - Update with data in environment vars `ENVVAR_FOR_DYNACONF_`</span>
+
+
+<span class="sd">    TOML files are very useful to have `envd` settings, lets say,</span>
+<span class="sd">    `production` and `development`.</span>
+
+<span class="sd">    You can also achieve the same using multiple `.py` files naming as</span>
+<span class="sd">    `settings.py`, `production_settings.py` and `development_settings.py`</span>
+<span class="sd">    (see examples/validator)</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        app = Flask(__name__)</span>
+<span class="sd">        FlaskDynaconf(</span>
+<span class="sd">            app,</span>
+<span class="sd">            ENV=&#39;MYSITE&#39;,</span>
+<span class="sd">            SETTINGS_FILE=&#39;settings.yml&#39;,</span>
+<span class="sd">            EXTRA_VALUE=&#39;You can add aditional config vars here&#39;</span>
+<span class="sd">        )</span>
+
+<span class="sd">    Take a look at examples/flask in Dynaconf repository</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">app</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">instance_relative_config</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">dynaconf_instance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;kwargs holds initial dynaconf configuration&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">flask_installed</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;To use this extension Flask must be installed &quot;</span>
+                <span class="s2">&quot;install it with: pip install flask&quot;</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;ENVVAR_PREFIX&quot;</span><span class="p">,</span> <span class="s2">&quot;FLASK&quot;</span><span class="p">)</span>
+        <span class="n">env_prefix</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;ENVVAR_PREFIX&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">_ENV&quot;</span>  <span class="c1"># FLASK_ENV</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;ENV_SWITCHER&quot;</span><span class="p">,</span> <span class="n">env_prefix</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;ENVIRONMENTS&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;load_dotenv&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+            <span class="s2">&quot;default_settings_paths&quot;</span><span class="p">,</span> <span class="n">dynaconf</span><span class="o">.</span><span class="n">DEFAULT_SETTINGS_FILES</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dynaconf_instance</span> <span class="o">=</span> <span class="n">dynaconf_instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instance_relative_config</span> <span class="o">=</span> <span class="n">instance_relative_config</span>
+        <span class="k">if</span> <span class="n">app</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_app</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FlaskDynaconf.init_app"><a class="viewcode-back" href="../../../reference/dynaconf.contrib.html#dynaconf.FlaskDynaconf.init_app">[docs]</a>    <span class="k">def</span> <span class="nf">init_app</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;kwargs holds initial dynaconf configuration&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynaconf_instance</span> <span class="ow">or</span> <span class="n">dynaconf</span><span class="o">.</span><span class="n">LazySettings</span><span class="p">(</span>
+            <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="n">dynaconf</span><span class="o">.</span><span class="n">settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span>  <span class="c1"># rebind customized settings</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_config</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">dynaconf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">settings</span></div>
+
+<div class="viewcode-block" id="FlaskDynaconf.make_config"><a class="viewcode-back" href="../../../reference/dynaconf.contrib.html#dynaconf.FlaskDynaconf.make_config">[docs]</a>    <span class="k">def</span> <span class="nf">make_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app</span><span class="p">):</span>
+        <span class="n">root_path</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">root_path</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance_relative_config</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">root_path</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">instance_path</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dynaconf_instance</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">DynaconfConfig</span><span class="p">(</span>
+            <span class="n">root_path</span><span class="o">=</span><span class="n">root_path</span><span class="p">,</span>
+            <span class="n">defaults</span><span class="o">=</span><span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">_settings</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">settings</span><span class="p">,</span>
+            <span class="n">_app</span><span class="o">=</span><span class="n">app</span><span class="p">,</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DynaconfConfig"><a class="viewcode-back" href="../../../reference/dynaconf.contrib.html#dynaconf.DynaconfConfig">[docs]</a><span class="k">class</span> <span class="nc">DynaconfConfig</span><span class="p">(</span><span class="n">Config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Settings load order in Dynaconf:</span>
+
+<span class="sd">    - Load all defaults and Flask defaults</span>
+<span class="sd">    - Load all passed variables when applying FlaskDynaconf</span>
+<span class="sd">    - Update with data in settings files</span>
+<span class="sd">    - Update with data in environmente vars `ENV_FOR_DYNACONF_`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_settings</span><span class="p">,</span> <span class="n">_app</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;perform the initial load&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DynaconfConfig</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">Config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_settings</span><span class="o">.</span><span class="n">store</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span> <span class="o">=</span> <span class="n">_settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_app</span> <span class="o">=</span> <span class="n">_app</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Flask templates always expects a None when key is not found in config</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Allows app.config[&#39;key&#39;] = &#39;foo&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="o">.</span><span class="fm">__setitem__</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        First try to get value from dynaconf then from Flask</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DynaconfConfig.get"><a class="viewcode-back" href="../../../reference/dynaconf.contrib.html#dynaconf.DynaconfConfig.get">[docs]</a>    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets config from dynaconf variables</span>
+<span class="sd">        if variables does not exists in dynaconf try getting from</span>
+<span class="sd">        `app.config` to support runtime settings.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_settings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">Config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">default</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DynaconfConfig.load_extensions"><a class="viewcode-back" href="../../../reference/dynaconf.contrib.html#dynaconf.DynaconfConfig.load_extensions">[docs]</a>    <span class="k">def</span> <span class="nf">load_extensions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">&quot;EXTENSIONS&quot;</span><span class="p">,</span> <span class="n">app</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Loads flask extensions dynamically.&quot;&quot;&quot;</span>
+        <span class="n">app</span> <span class="o">=</span> <span class="n">app</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_app</span>
+        <span class="k">for</span> <span class="n">extension</span> <span class="ow">in</span> <span class="n">app</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+            <span class="c1"># Split data in form `extension.path:factory_function`</span>
+            <span class="n">module_name</span><span class="p">,</span> <span class="n">factory</span> <span class="o">=</span> <span class="n">extension</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span>
+            <span class="c1"># Dynamically import extension module.</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+            <span class="c1"># Invoke factory passing app.</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="n">factory</span><span class="p">)(</span><span class="n">app</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../../../index.html">
+    <img class="logo" src="../../../_static/logo.svg" alt="Logo"/>
+    
+    <h1 class="logo logo-name">dynaconf</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">Layered configuration system for Python applications</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=rochacbruno&repo=dynaconf&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id24">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id31">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id36">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id41">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id46">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/environment_variables.html#id51">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/accessing_values.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/external_storages.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/external_storages.html#id6">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/configuration.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/advanced_usage.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/flask.html">)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/flask.html#id16">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/flask.html#id29">]</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/django.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/django.html#id55">})</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/examples.html">}</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/modules.html">Module reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2015-2020, Bruno Rocha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+    <a href="https://github.com/rochacbruno/dynaconf" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>
