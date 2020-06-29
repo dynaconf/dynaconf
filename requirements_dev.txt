@@ -46,6 +46,7 @@ mkdocs-material
 #mkdocs-multilang
 #mkdocs-nav-enhancements
 #mkdocs-git-revision-date-localized-plugin
+#pymdown-extensions
 
 # editable dynaconf
 --editable .
