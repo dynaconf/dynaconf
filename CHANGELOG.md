@@ -2,8 +2,28 @@ Changelog
 =========
 
 
-(unreleased)
-------------
+3.0.0 (2020-06-29)
+------------------
+- Release version 3.0.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (5):
+            Release version 3.0.0rc2
+            Improvements on CLI and init command (#363)
+            Writing new docs page 1 (#364)
+            Add netlify (#366)
+            Add netlify runtime file...
+- Add netlify runtime file... [Bruno Rocha]
+- Add netlify (#366) [Bruno Rocha]
+- Writing new docs page 1 (#364) [Bruno Rocha]
+
+  * porting docs to mkdocs
+
+  * Docs First Page
+
+  * New docs ok
+- Improvements on CLI and init command (#363) [Bruno Rocha]
 - Release version 3.0.0rc2. [Bruno Rocha]
 
   Shortlog of commits since last release:
