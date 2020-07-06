@@ -182,7 +182,7 @@ class Validator(object):
                         name=name, env=env
                     )
                 )
-            elif self.must_exist is False and not exists:
+            elif self.must_exist in (False, None) and not exists:
                 return
 
             value = self.cast(settings.get(name, empty))
