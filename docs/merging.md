@@ -60,7 +60,7 @@ export DYNACONF_DATABASE__ARGS__timeout=30
 export DYNACONF_DATABASE__ARGS__retries=5
 ```
 
-Each `__` is parsed as a level traversing thought dict keys. read more in [environment variables](environment_variables.html#nested-keys-in-dictionaries-via-environment-variables)
+Each `__` is parsed as a level traversing thought dict keys. read more in [environment variables](/envvars/#nested-keys-in-dictionaries-via-environment-variables)
 
 So the above will result in
 
@@ -527,7 +527,7 @@ settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234
 
 The **dynaconf_merge** and **@merge** functionalities works only for the first level keys, it will not merge subdicts or nested lists (yet).
 
-For deeper nested objects use [dunder merge](environment_variables.html#nested-keys-in-dictionaries-via-environment-variables).
+For deeper nested objects use [dunder merge](/envvars/#nested-keys-in-dictionaries-via-environment-variables).
 
 
 

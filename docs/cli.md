@@ -9,7 +9,7 @@ Every command (except the init) will require the Instance can be set using `-i` 
 
 The `$ dynaconf -i config.settings` cli provides some useful commands
 
-> **IMPORTANT** if you are using [Flask Extension](flask.html) the env var `FLASK_APP` must be defined to use the CLI, and if using [Django Extension](django.html) the `DJANGO_SETTINGS_MODULE` must be defined.
+> **IMPORTANT** if you are using [Flask Extension](/flask/) the env var `FLASK_APP` must be defined to use the CLI, and if using [Django Extension](/django/) the `DJANGO_SETTINGS_MODULE` must be defined.
 
 ### dynaconf --help
 
@@ -79,7 +79,7 @@ And will include the `.secrets.toml` in the `.gitignore`
 .secrets.*
 ```
 
-> For sensitive data in production is recommended using [Vault Server](sensitive_secrets.html)
+> For sensitive data in production is recommended using [Vault Server](/secrets/)
 
 ```
 Usage: dynaconf init [OPTIONS]
