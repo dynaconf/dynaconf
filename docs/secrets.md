@@ -124,7 +124,7 @@ If that variable exists in your environment then Dynaconf will also load it.
 An external storage is needed in some programs for scenarios like:
 
 1) Having a single storage for settings and distribute across multiple instances
-2) The need to change settings on the fly without redeploying or restarting the app (see [Feature Flags](feature_flag.html))
+2) The need to change settings on the fly without redeploying or restarting the app.
 3) Storing sensitive values in a safe sealed **Vault**
 
 ### Using REDIS

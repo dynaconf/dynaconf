@@ -157,7 +157,7 @@ all_settings = settings.from_env('development', keep=True).from_env('other', kee
 
 The variables from [development] are loaded keeping pre-loaded values, then the variables from [other] are loaded keeping pre-loaded from [development] and overriding it.
 
-It is also possible to pass additional [configuration](configuration.html) variables to `from_env` method.
+It is also possible to pass additional [configuration](/configuration/) variables to `from_env` method.
 
 ```py
 new_settings = settings.from_env('production', keep=True, SETTINGS_FILE_FOR_DYNACONF='another_file_path.yaml')
@@ -236,7 +236,7 @@ assert obj.VALUE == 42.1  # AttributeError
 
 ## Exporting
 
-You can generate a file with current configs by calling `dynaconf list -o /path/to/file.ext` see more in [cli](cli.html)
+You can generate a file with current configs by calling `dynaconf list -o /path/to/file.ext` see more in [cli](/cli/)
 
 You can also do that programmatically with:
 

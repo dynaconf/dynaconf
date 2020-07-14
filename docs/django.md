@@ -99,7 +99,7 @@ in development mode or `DJANGO_ENV=production` to switch to production.
 
 > **IMPORTANT**: To use `$ dynaconf` CLI the `DJANGO_SETTINGS_MODULE` environment variable must be defined.
 
-IF you don't want to manually create your config files take a look at the [CLI](cli.html)
+IF you don't want to manually create your config files take a look at the [CLI](/cli/)
 
 ## Customizations
 
@@ -140,7 +140,7 @@ Your settings are now read from `/etc/projectname/settings.toml` (dynaconf will 
 
 You can have additional settings read from `/etc/projectname/plugins/*` any supoprted file from this folder will be loaded.
 
-You can set more options, take a look on [configuration](configuration.html)
+You can set more options, take a look on [configuration](/configuration/)
 
 ## Reading Settings on Standalone Scripts
 

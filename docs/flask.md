@@ -39,7 +39,7 @@ in development mode or `FLASK_ENV=production` to switch to production.
 
 > **IMPORTANT**: To use `$ dynaconf` CLI the `FLASK_APP` must be defined.
 
-IF you don't want to manually create your config files take a look at the [CLI](cli.html)
+IF you don't want to manually create your config files take a look at the [CLI](/cli/)
 
 
 ## Loading Flask Extensions Dynamically
