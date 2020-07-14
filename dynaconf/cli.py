@@ -10,7 +10,6 @@ from pathlib import Path
 
 import click
 import toml
-from dotenv import cli as dotenv_cli
 
 from dynaconf import constants
 from dynaconf import default_settings

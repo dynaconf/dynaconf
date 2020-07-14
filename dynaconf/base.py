@@ -15,7 +15,6 @@ from dynaconf.loaders import settings_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.utils import BANNER
 from dynaconf.utils import compat_kwargs
-from dynaconf.utils import deduplicate
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge

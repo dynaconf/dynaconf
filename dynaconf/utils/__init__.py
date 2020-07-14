@@ -1,4 +1,3 @@
-import functools
 import os
 import warnings
 from json import JSONDecoder
