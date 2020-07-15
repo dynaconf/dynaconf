@@ -2,6 +2,7 @@
 # pip install hvac
 from dynaconf.utils import build_env_list
 from dynaconf.utils.parse_conf import parse_conf_data
+import boto3
 
 try:
     from hvac import Client
@@ -31,8 +32,16 @@ def get_client(obj):
             secret_id=obj.get("VAULT_SECRET_ID_FOR_DYNACONF"),
         )
     elif obj.VAULT_ROOT_TOKEN_FOR_DYNACONF is not None:
-      print(obj.VAULT_ROOT_TOKEN_FOR_DYNACONF)
       client.token = obj.VAULT_ROOT_TOKEN_FOR_DYNACONF
+    elif obj.VAULT_AUTH_WITH_IAM_FOR_DYNACONF:
+      session = boto3.Session()
+      credentials = session.get_credentials()
+      client.auth.aws.iam_login(
+        credentials.access_key,
+        credentials.secret_key,
+        credentials.token,
+        role=obj.VAULT_AUTH_ROLE_FOR_DYNACONF,
+      )
     assert client.is_authenticated(), (
         "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF or "
         "VAULT_ROLE_ID_FOR_DYNACONF defined?"
