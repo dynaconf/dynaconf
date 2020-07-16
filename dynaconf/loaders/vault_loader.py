@@ -2,7 +2,15 @@
 # pip install hvac
 from dynaconf.utils import build_env_list
 from dynaconf.utils.parse_conf import parse_conf_data
-import boto3
+
+try:
+    import boto3
+except ImportError:
+    raise ImportError(
+        "boto3 package is not installed in your environment. "
+        "`pip install boto3` or disable the vault loader with "
+        "export VAULT_ENABLED_FOR_DYNACONF=false"
+    )
 
 try:
     from hvac import Client
@@ -32,16 +40,16 @@ def get_client(obj):
             secret_id=obj.get("VAULT_SECRET_ID_FOR_DYNACONF"),
         )
     elif obj.VAULT_ROOT_TOKEN_FOR_DYNACONF is not None:
-      client.token = obj.VAULT_ROOT_TOKEN_FOR_DYNACONF
+        client.token = obj.VAULT_ROOT_TOKEN_FOR_DYNACONF
     elif obj.VAULT_AUTH_WITH_IAM_FOR_DYNACONF:
-      session = boto3.Session()
-      credentials = session.get_credentials()
-      client.auth.aws.iam_login(
-        credentials.access_key,
-        credentials.secret_key,
-        credentials.token,
-        role=obj.VAULT_AUTH_ROLE_FOR_DYNACONF,
-      )
+        session = boto3.Session()
+        credentials = session.get_credentials()
+        client.auth.aws.iam_login(
+            credentials.access_key,
+            credentials.secret_key,
+            credentials.token,
+            role=obj.VAULT_AUTH_ROLE_FOR_DYNACONF,
+        )
     assert client.is_authenticated(), (
         "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF or "
         "VAULT_ROLE_ID_FOR_DYNACONF defined?"
@@ -62,9 +70,9 @@ def load(obj, env=None, silent=None, key=None):
     client = get_client(obj)
     try:
         dirs = client.secrets.kv.list_secrets(
-            path = obj.VAULT_PATH_FOR_DYNACONF,
-            mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
-        )['data']['keys']
+            path=obj.VAULT_PATH_FOR_DYNACONF,
+            mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
+        )["data"]["keys"]
     except InvalidPath:
         # The given path is not a directory
         dirs = []
