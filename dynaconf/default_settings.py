@@ -35,7 +35,9 @@ def get(key, default=None):
         value = try_renamed(key, value, old, new)
 
     return (
-        parse_conf_data(value, tomlfy=True) if value is not None else default
+        parse_conf_data(value, tomlfy=True, box_settings={})
+        if value is not None
+        else default
     )
 
 

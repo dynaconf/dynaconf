@@ -26,6 +26,7 @@ from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import converters
 from dynaconf.utils.parse_conf import evaluate_lazy_format
+from dynaconf.utils.parse_conf import get_converter
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidatorList
@@ -229,7 +230,7 @@ class Settings(object):
         self._loaded_envs = []
         self._loaded_files = []
         self._deleted = set()
-        self._store = DynaBox()
+        self._store = DynaBox(box_settings=self)
         self._env_cache = {}
         self._loaded_by_loaders = {}
         self._loaders = []
@@ -396,7 +397,7 @@ class Settings(object):
 
         data = (parent or self.store).get(key, default)
         if cast:
-            data = converters.get(cast)(data)
+            data = get_converter(cast, data, box_settings=self)
         return data
 
     def exists(self, key, fresh=False):
@@ -435,9 +436,9 @@ class Settings(object):
         data = self.environ.get(key, default)
         if data:
             if cast in converters:
-                data = converters.get(cast)(data)
+                data = get_converter(cast, data, box_settings=self)
             if cast is True:
-                data = parse_conf_data(data, tomlfy=True)
+                data = parse_conf_data(data, tomlfy=True, box_settings=self)
         return data
 
     def exists_in_environ(self, key):
@@ -628,6 +629,7 @@ class Settings(object):
                 self.ENVVAR_FOR_DYNACONF, self.SETTINGS_FILE_FOR_DYNACONF
             ),
             tomlfy=True,
+            box_settings=self,
         )
         if settings_module != getattr(self, "SETTINGS_MODULE", None):
             self.set("SETTINGS_MODULE", settings_module)
@@ -728,13 +730,13 @@ class Settings(object):
 
         split_keys = dotted_key.split(".")
         existing_data = self.get(split_keys[0], {})
-        new_data = DynaBox()
+        new_data = DynaBox(box_settings=self)
 
         tree = new_data
         for k in split_keys[:-1]:
             tree = tree.setdefault(k, {})
 
-        value = parse_conf_data(value, tomlfy=tomlfy)
+        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         tree[split_keys[-1]] = value
 
         if existing_data:
@@ -775,7 +777,7 @@ class Settings(object):
                 key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
             )
 
-        value = parse_conf_data(value, tomlfy=tomlfy)
+        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
         existing = getattr(self, key, None)
 
@@ -804,7 +806,7 @@ class Settings(object):
                 value = self._merge_before_set(key, existing, value, is_secret)
 
         if isinstance(value, dict):
-            value = DynaBox(value)
+            value = DynaBox(value, box_settings=self)
 
         setattr(self, key, value)
         self.store[key] = value

@@ -1,0 +1,11 @@
+development:
+  template: "HELLO @tpl@"
+
+  level1:
+    template2: "Whoohoo @tpl@"
+    value1: "@format {this[TEMPLATE]}/level1/format"
+    level2:
+      value2: "@jinja {{this.TEMPLATE | replace('@tpl@','world')}}/level2/jinja"
+      level3:
+        value3: "@jinja {{this.level1.template2 | replace('@tpl@','world')}}/level3/jinja"
+  value0: "@jinja {{this.TEMPLATE | replace('@tpl@','world')}}/level0/jinja"

@@ -38,7 +38,7 @@ def test_unparse():
 
 def test_cast_bool(settings):
     """Covers https://github.com/rochacbruno/dynaconf/issues/14"""
-    assert parse_conf_data(False) is False
+    assert parse_conf_data(False, box_settings=settings) is False
     assert settings.get("SIMPLE_BOOL", cast="@bool") is False
 
 
@@ -84,31 +84,43 @@ def test_find_file(tmpdir):
 
 def test_disable_cast(monkeypatch):
     # this casts for int
-    assert parse_conf_data("@int 42") == 42
+    assert parse_conf_data("@int 42", box_settings={}) == 42
     # now gives pure string
     with monkeypatch.context() as m:
         m.setenv("AUTO_CAST_FOR_DYNACONF", "off")
-        assert parse_conf_data("@int 42") == "@int 42"
+        assert parse_conf_data("@int 42", box_settings={}) == "@int 42"
 
 
-def test_tomlfy():
-    assert parse_conf_data("1", tomlfy=True) == 1
-    assert parse_conf_data("true", tomlfy=True) is True
-    assert parse_conf_data("'true'", tomlfy=True) == "true"
-    assert parse_conf_data('"42"', tomlfy=True) == "42"
-    assert parse_conf_data("[1, 32, 3]", tomlfy=True) == [1, 32, 3]
-    assert parse_conf_data("[1.1, 32.1, 3.3]", tomlfy=True) == [1.1, 32.1, 3.3]
-    assert parse_conf_data("['a', 'b', 'c']", tomlfy=True) == ["a", "b", "c"]
-    assert parse_conf_data("[true, false]", tomlfy=True) == [True, False]
-    assert parse_conf_data("{key='value', v=1}", tomlfy=True) == {
-        "key": "value",
-        "v": 1,
-    }
+def test_tomlfy(settings):
+    assert parse_conf_data("1", tomlfy=True, box_settings=settings) == 1
+    assert parse_conf_data("true", tomlfy=True, box_settings=settings) is True
+    assert (
+        parse_conf_data("'true'", tomlfy=True, box_settings=settings) == "true"
+    )
+    assert parse_conf_data('"42"', tomlfy=True, box_settings=settings) == "42"
+    assert parse_conf_data(
+        "[1, 32, 3]", tomlfy=True, box_settings=settings
+    ) == [1, 32, 3]
+    assert parse_conf_data(
+        "[1.1, 32.1, 3.3]", tomlfy=True, box_settings=settings
+    ) == [1.1, 32.1, 3.3]
+    assert parse_conf_data(
+        "['a', 'b', 'c']", tomlfy=True, box_settings=settings
+    ) == ["a", "b", "c"]
+    assert parse_conf_data(
+        "[true, false]", tomlfy=True, box_settings=settings
+    ) == [True, False]
+    assert parse_conf_data(
+        "{key='value', v=1}", tomlfy=True, box_settings=settings
+    ) == {"key": "value", "v": 1}
 
 
 @pytest.mark.parametrize("test_input", ["something=42"])
-def test_tomlfy_unparseable(test_input):
-    assert parse_conf_data(test_input, tomlfy=True) == test_input
+def test_tomlfy_unparseable(test_input, settings):
+    assert (
+        parse_conf_data(test_input, tomlfy=True, box_settings=settings)
+        == test_input
+    )
 
 
 def test_missing_sentinel():
@@ -131,14 +143,16 @@ def test_missing_sentinel():
     assert str(missing) == "<dynaconf.missing>"
 
 
-def test_meta_values():
-    reset = parse_conf_data("@reset [1, 2]", tomlfy=True)
+def test_meta_values(settings):
+    reset = parse_conf_data(
+        "@reset [1, 2]", tomlfy=True, box_settings=settings
+    )
     # @reset is DEPRECATED in v3.0.0 but kept for backwards compatibility
     assert reset.value == [1, 2]
     assert reset._dynaconf_reset is True
     assert "Reset([1, 2])" in repr(reset)
 
-    _del = parse_conf_data("@del", tomlfy=True)
+    _del = parse_conf_data("@del", tomlfy=True, box_settings=settings)
     assert _del.value == ""
     assert _del._dynaconf_del is True
     assert "Del()" in repr(_del)
@@ -174,11 +188,11 @@ def test_merge_existing_dict():
     assert new == {"host": "localhost", "port": 666, "user": "admin"}
 
 
-def test_merge_dict_with_meta_values():
+def test_merge_dict_with_meta_values(settings):
     existing = {"A": 1, "B": 2, "C": 3}
     new = {
-        "B": parse_conf_data("@del", tomlfy=True),
-        "C": parse_conf_data("4", tomlfy=True),
+        "B": parse_conf_data("@del", tomlfy=True, box_settings=settings),
+        "C": parse_conf_data("4", tomlfy=True, box_settings=settings),
     }
     object_merge(existing, new)
     assert new == {"A": 1, "C": 4}
@@ -261,13 +275,13 @@ def test_lazy_format_class():
     assert repr(value) == f"'@{value.formatter} {value.value}'"
 
 
-def test_evaluate_lazy_format_decorator():
+def test_evaluate_lazy_format_decorator(settings):
     class Settings:
         FOO = "foo"
 
         @evaluate_lazy_format
         def get(self):
-            return parse_conf_data("@format {this.FOO}/bar")
+            return parse_conf_data("@format {this.FOO}/bar", box_settings=self)
 
     settings = Settings()
     assert settings.get() == "foo/bar"
@@ -288,13 +302,15 @@ def test_lazy_format_class_jinja():
     assert value(settings) == "foo/bar"
 
 
-def test_evaluate_lazy_format_decorator_jinja():
+def test_evaluate_lazy_format_decorator_jinja(settings):
     class Settings:
         FOO = "foo"
 
         @evaluate_lazy_format
         def get(self):
-            return parse_conf_data("@jinja {{this.FOO}}/bar")
+            return parse_conf_data(
+                "@jinja {{this.FOO}}/bar", box_settings=settings
+            )
 
     settings = Settings()
     assert settings.get() == "foo/bar"
@@ -324,8 +340,8 @@ def test_try_to_encode():
     assert try_to_encode(value) == "@format {this[FOO]}/bar"
 
 
-def test_del_raises_on_unwrap():
-    value = parse_conf_data("@del ")
+def test_del_raises_on_unwrap(settings):
+    value = parse_conf_data("@del ", box_settings=settings)
     with pytest.raises(ValueError):
         value.unwrap()
 

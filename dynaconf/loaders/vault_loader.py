@@ -65,7 +65,9 @@ def load(obj, env=None, silent=None, key=None):
             data = data.get("data", {}).get("data", {})
         try:
             if data and key:
-                value = parse_conf_data(data.get(key), tomlfy=True)
+                value = parse_conf_data(
+                    data.get(key), tomlfy=True, box_settings=obj
+                )
                 if value:
                     obj.set(key, value)
             elif data:

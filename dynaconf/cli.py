@@ -119,7 +119,9 @@ def split_vars(_vars):
     """Splits values like foo=bar=zaz in {'foo': 'bar=zaz'}"""
     return (
         {
-            upperfy(k.strip()): parse_conf_data(v.strip(), tomlfy=True)
+            upperfy(k.strip()): parse_conf_data(
+                v.strip(), tomlfy=True, box_settings=settings
+            )
             for k, _, v in [item.partition("=") for item in _vars]
         }
         if _vars

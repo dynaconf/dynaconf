@@ -3,6 +3,7 @@ import os
 import re
 import warnings
 from functools import wraps
+from typing import Type
 
 import toml
 from box import BoxKeyError
@@ -10,6 +11,7 @@ from box import BoxKeyError
 from dynaconf.utils import extract_json_objects
 from dynaconf.utils import multi_replace
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.vendor.box import box
 
 try:
     from jinja2 import Environment
@@ -37,8 +39,11 @@ class MetaValue:
 
     _meta_value = True
 
-    def __init__(self, value):
-        self.value = parse_conf_data(value, tomlfy=True)
+    def __init__(self, value, box_settings):
+        self.box_settings = box_settings
+        self.value = parse_conf_data(
+            value, tomlfy=True, box_settings=box_settings
+        )
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}) on {id(self)}"
@@ -54,8 +59,11 @@ class Reset(MetaValue):
 
     _dynaconf_reset = True
 
-    def __init__(self, value):
-        self.value = parse_conf_data(value, tomlfy=True)
+    def __init__(self, value, box_settings):
+        self.box_settings = box_settings
+        self.value = parse_conf_data(
+            value, tomlfy=True, box_settings=self.box_settings
+        )
         warnings.warn(f"{self.value} does not need `@reset` anymore.")
 
 
@@ -73,9 +81,12 @@ class Merge(MetaValue):
 
     _dynaconf_merge = True
 
-    def __init__(self, value, unique=False):
+    def __init__(self, value, box_settings, unique=False):
+        self.box_settings = box_settings
 
-        self.value = parse_conf_data(value, tomlfy=True)
+        self.value = parse_conf_data(
+            value, tomlfy=True, box_settings=box_settings
+        )
 
         if isinstance(self.value, (int, float, bool)):
             # @merge 1, @merge 1.1, @merge False
@@ -104,7 +115,9 @@ class Merge(MetaValue):
                 # a=b, c=d
                 if matches:
                     self.value = {
-                        k.strip(): parse_conf_data(v, tomlfy=True)
+                        k.strip(): parse_conf_data(
+                            v, tomlfy=True, box_settings=box_settings
+                        )
                         for k, v in (
                             match.strip().split("=") for match in matches
                         )
@@ -208,10 +221,14 @@ converters = {
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
-    "@reset": lambda value: Reset(value),  # @reset is DEPRECATED on v3.0.0
-    "@del": lambda value: Del(value),
-    "@merge": lambda value: Merge(value),
-    "@merge_unique": lambda value: Merge(value, unique=True),
+    "@reset": lambda value, box_settings: Reset(
+        value, box_settings
+    ),  # @reset is DEPRECATED on v3.0.0
+    "@del": lambda value, box_settings: Del(value, box_settings),
+    "@merge": lambda value, box_settings: Merge(value, box_settings),
+    "@merge_unique": lambda value, box_settings: Merge(
+        value, box_settings, unique=True
+    ),
     # Special markers to be used as placeholders e.g: in prefilled forms
     # will always return None when evaluated
     "@note": lambda value: None,
@@ -221,15 +238,24 @@ converters = {
 }
 
 
+def get_converter(converter_key, value, box_settings):
+    converter = converters[converter_key]
+    try:
+        converted_value = converter(value, box_settings=box_settings)
+    except TypeError:
+        converted_value = converter(value)
+    return converted_value
+
+
 def parse_with_toml(data):
     """Uses TOML syntax to parse data"""
     try:
-        return toml.loads(f"key={data}", DynaBox).key
-    except (toml.TomlDecodeError, BoxKeyError):
+        return toml.loads(f"key={data}")["key"]
+    except (toml.TomlDecodeError, KeyError):
         return data
 
 
-def _parse_conf_data(data, tomlfy=False):
+def _parse_conf_data(data, tomlfy=False, box_settings=None):
     """
     @int @bool @float @json (for lists and dicts)
     strings does not need converters
@@ -241,6 +267,9 @@ def _parse_conf_data(data, tomlfy=False):
     export DYNACONF_MONGODB_SETTINGS='@json {"DB": "quokka_db"}'
     export DYNACONF_ALLOWED_EXTENSIONS='@json ["jpg", "png"]'
     """
+    # not enforced to not break backwards compatibility with custom loaders
+    box_settings = box_settings or {}
+
     cast_toggler = os.environ.get("AUTO_CAST_FOR_DYNACONF", "true").lower()
     castenabled = cast_toggler not in false_values
 
@@ -253,24 +282,36 @@ def _parse_conf_data(data, tomlfy=False):
         parts = data.partition(" ")
         converter_key = parts[0]
         value = parts[-1]
-        return converters.get(converter_key)(value)
+        return get_converter(converter_key, value, box_settings)
 
-    return parse_with_toml(data) if tomlfy else data
+    value = parse_with_toml(data) if tomlfy else data
+    if isinstance(value, dict):
+        value = DynaBox(value, box_settings=box_settings)
+    return value
 
 
-def parse_conf_data(data, tomlfy=False):
+def parse_conf_data(data, tomlfy=False, box_settings=None):
+
+    # not enforced to not break backwards compatibility with custom loaders
+    box_settings = box_settings or {}
+
     if isinstance(data, (tuple, list)):
         # recursively parse each sequence item
-        return [parse_conf_data(item, tomlfy=tomlfy) for item in data]
+        return [
+            parse_conf_data(item, tomlfy=tomlfy, box_settings=box_settings)
+            for item in data
+        ]
     elif isinstance(data, (dict, DynaBox)):
         # recursively parse inner dict items
         _parsed = {}
         for k, v in data.items():
-            _parsed[k] = parse_conf_data(v, tomlfy=tomlfy)
+            _parsed[k] = parse_conf_data(
+                v, tomlfy=tomlfy, box_settings=box_settings
+            )
         return _parsed
     else:
         # return parsed string value
-        return _parse_conf_data(data, tomlfy=tomlfy)
+        return _parse_conf_data(data, tomlfy=tomlfy, box_settings=box_settings)
 
 
 def unparse_conf_data(value):
