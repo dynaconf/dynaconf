@@ -16,6 +16,23 @@ def test_dynamic_load_exts(settings):
     assert app.is_dummy_loaded is True
 
 
+def test_dynamic_load_exts_list(settings):
+    """Assert that a config based extensions are loaded"""
+    app = Flask(__name__)
+    app.config["EXTENSIONS"] = ["example.dummy_flask_extension.dummy:init_app"]
+    FlaskDynaconf(app, dynaconf_instance=settings, extensions_list=True)
+    assert app.config.EXTENSIONS == [
+        "example.dummy_flask_extension.dummy:init_app"
+    ]
+    assert app.is_dummy_loaded is True
+
+
+def test_dynamic_load_exts_no_list(settings):
+    """Assert that a config based extensions are loaded"""
+    app = Flask(__name__)
+    FlaskDynaconf(app, dynaconf_instance=settings, extensions_list=True)
+
+
 def test_flask_dynaconf(settings):
     """
     Test Flask app wrapped with FlaskDynaconf

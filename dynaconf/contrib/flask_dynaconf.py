@@ -1,3 +1,5 @@
+import warnings
+
 try:
     from flask.config import Config
 
@@ -77,6 +79,7 @@ class FlaskDynaconf(object):
         app=None,
         instance_relative_config=False,
         dynaconf_instance=None,
+        extensions_list=False,
         **kwargs,
     ):
         """kwargs holds initial dynaconf configuration"""
@@ -98,6 +101,7 @@ class FlaskDynaconf(object):
 
         self.dynaconf_instance = dynaconf_instance
         self.instance_relative_config = instance_relative_config
+        self.extensions_list = extensions_list
         if app:
             self.init_app(app, **kwargs)
 
@@ -110,6 +114,11 @@ class FlaskDynaconf(object):
         dynaconf.settings = self.settings  # rebind customized settings
         app.config = self.make_config(app)
         app.dynaconf = self.settings
+
+        if self.extensions_list:
+            if not isinstance(self.extensions_list, str):
+                self.extensions_list = "EXTENSIONS"
+            app.config.load_extensions(self.extensions_list)
 
     def make_config(self, app):
         root_path = app.root_path
@@ -175,6 +184,14 @@ class DynaconfConfig(Config):
     def load_extensions(self, key="EXTENSIONS", app=None):
         """Loads flask extensions dynamically."""
         app = app or self._app
+        extensions = app.config.get(key)
+        if not extensions:
+            warnings.warn(
+                f"Settings is missing {key} to load Flask Extensions",
+                RuntimeWarning,
+            )
+            return
+
         for extension in app.config[key]:
             # Split data in form `extension.path:factory_function`
             module_name, factory = extension.split(":")

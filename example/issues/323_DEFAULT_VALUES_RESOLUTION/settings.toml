@@ -1,0 +1,25 @@
+[default]
+a = 100
+b = "BB"
+
+[default.namespace]
+b = "Default namespace B"
+
+[development]
+a = 200
+
+[development.namespace]
+a = "DEV Namespace A"
+dynaconf_merge = true
+
+
+
+# Dynaconf reads as:
+# [default]
+# a = 100
+# b = "bb"
+# namespace = {b="Default namespace B"}
+
+# [development]
+# a = 200
+# namespace = {a="DEV namespace A"}
