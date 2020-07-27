@@ -48,11 +48,15 @@ def load_from_env(
             try:  # obj is a Settings
                 obj.set(key, value, loader_identifier=identifier, tomlfy=True)
             except AttributeError:  # obj is a dict
-                obj[key] = parse_conf_data(value, tomlfy=True)
+                obj[key] = parse_conf_data(
+                    value, tomlfy=True, box_settings=obj
+                )
     else:
         trim_len = len(env_)
         data = {
-            key[trim_len:]: parse_conf_data(data, tomlfy=True)
+            key[trim_len:]: parse_conf_data(
+                data, tomlfy=True, box_settings=obj
+            )
             for key, data in environ.items()
             if key.startswith(env_)
         }

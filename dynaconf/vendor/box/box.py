@@ -101,7 +101,7 @@ class Box(dict):
         "merge_update",
     ] + [attr for attr in dir({}) if not attr.startswith("_")]
 
-    def __new__(cls, *args: Any, default_box: bool = False, default_box_attr: Any = NO_DEFAULT,
+    def __new__(cls, *args: Any,  box_settings: Any, default_box: bool = False, default_box_attr: Any = NO_DEFAULT,
                 default_box_none_transform: bool = True, frozen_box: bool = False, camel_killer_box: bool = False,
                 conversion_box: bool = True, modify_tuples_box: bool = False, box_safe_prefix: str = 'x',
                 box_duplicates: str = 'ignore', box_intact_types: Union[Tuple, List] = (),
@@ -124,11 +124,12 @@ class Box(dict):
             'box_duplicates': box_duplicates,
             'box_intact_types': tuple(box_intact_types),
             'box_recast': box_recast,
-            'box_dots': box_dots
+            'box_dots': box_dots,
+            'box_settings': box_settings
         })
         return obj
 
-    def __init__(self, *args: Any, default_box: bool = False, default_box_attr: Any = NO_DEFAULT,
+    def __init__(self, *args: Any, box_settings: Any, default_box: bool = False, default_box_attr: Any = NO_DEFAULT,
                  default_box_none_transform: bool = True, frozen_box: bool = False, camel_killer_box: bool = False,
                  conversion_box: bool = True, modify_tuples_box: bool = False, box_safe_prefix: str = 'x',
                  box_duplicates: str = 'ignore', box_intact_types: Union[Tuple, List] = (),
@@ -147,7 +148,8 @@ class Box(dict):
             'box_duplicates': box_duplicates,
             'box_intact_types': tuple(box_intact_types),
             'box_recast': box_recast,
-            'box_dots': box_dots
+            'box_dots': box_dots,
+            'box_settings': box_settings
         })
         if not self._box_config['conversion_box'] and self._box_config['box_duplicates'] != 'ignore':
             raise BoxError('box_duplicates are only for conversion_boxes')
@@ -222,7 +224,7 @@ class Box(dict):
                 else:
                     return None
             if isinstance(default, dict) and not isinstance(default, Box):
-                return Box(default)
+                return Box(default, box_settings=self._box_config.get("box_settings"))
             if isinstance(default, list) and not isinstance(default, box.BoxList):
                 return box.BoxList(default)
             return default

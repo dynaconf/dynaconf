@@ -191,7 +191,7 @@ def write(filename, data, env=None):
     if not loader:
         raise IOError(f"{loader_name} cannot be found.")
 
-    data = DynaBox(data).to_dict()
+    data = DynaBox(data, box_settings={}).to_dict()
     if loader is not py_loader and env and env not in data:
         data = {env: data}
 
