@@ -3,10 +3,8 @@ import os
 import re
 import warnings
 from functools import wraps
-from typing import Type
 
 import toml
-from box import BoxKeyError
 
 from dynaconf.utils import extract_json_objects
 from dynaconf.utils import multi_replace

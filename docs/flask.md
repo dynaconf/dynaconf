@@ -68,8 +68,15 @@ from flask import Flask
 from dynaconf import FlaskDynaconf
 
 app = Flask(__name__)
-flask_dynaconf = FlaskDynaconf(app)
+flask_dynaconf = FlaskDynaconf(app, extensions_list="EXTENSIONS")
+```
 
+The above will immediatelly load all flask extensions listed on `EXTENSIONS` key on settings.
+
+You can also load it lazily.
+
+```py
+# at any point in your app startup
 app.config.load_extensions()
 ```
 
@@ -87,7 +94,7 @@ The extensions will be loaded in order.
 
 ### Develoment extensions
 
-It is also possible to have extensions that loads only in development environment.
+It is also possible to have extensions that loads only for development environment.
 
 ```toml
 [default]
@@ -102,4 +109,12 @@ EXTENSIONS = [
   "dynaconf_merge",
   "flask_debugtoolbar:DebugToolbar"
 ]
+```
+
+### Troubleshooting
+
+If you find an issue regarding Flask not being able to load variables from .env file or not possible to import app or create_app please disable flask support for dotenv
+
+```bash
+export FLASK_SKIP_DOTENV=1
 ```
