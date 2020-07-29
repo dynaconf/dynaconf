@@ -139,6 +139,8 @@ default_redis = {
     "port": int(get("REDIS_PORT_FOR_DYNACONF", 6379)),
     "db": int(get("REDIS_DB_FOR_DYNACONF", 0)),
     "decode_responses": get("REDIS_DECODE_FOR_DYNACONF", True),
+    "username": get("REDIS_USERNAME_FOR_DYNACONF", None),
+    "password": get("REDIS_PASSWORD_FOR_DYNACONF", None)
 }
 REDIS_FOR_DYNACONF = get("REDIS_FOR_DYNACONF", default_redis)
 REDIS_ENABLED_FOR_DYNACONF = get("REDIS_ENABLED_FOR_DYNACONF", False)
