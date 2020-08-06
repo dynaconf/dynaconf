@@ -1,0 +1,5 @@
+[development]
+FOO = "dev foo"
+
+[production]
+# here FOO is computed

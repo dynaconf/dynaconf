@@ -55,6 +55,50 @@ settings = Dynaconf(
 
 The above will raise `dynaconf.validators.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")` and `dynaconf.validators.ValidationError("PROJECT must be eq='hello_world' but it is 'This is not hello_world' in env PRODUCTION")`
 
+
+### Providing default or computed values
+
+
+Validators can be used to provide default or computed values.
+
+#### Defeault values
+
+```py
+Validator("FOO", default="A default value for foo")
+```
+
+Then if not able to load the values from files or environment this default value will be set for that key.
+
+
+#### Computed values
+
+Sometimes you need some values to be computed by calling functions, just passa a callable to the `default` argument.
+
+```py
+
+Validator("FOO", default=my_dunction)
+
+```
+
+then
+
+```py
+
+def my_function(settings, validator):
+    return "this is computed during validation time"
+
+```
+
+If you want to be lazy evaluated
+
+```py
+
+from dynaconf.utils.parse_conf import empty, Lazy
+
+Validator("FOO", default=Lazy(empty, formatter=my_function))
+
+```
+
 You can also use dot-delimited paths for registering validators on nested structures:
 
 ```python
