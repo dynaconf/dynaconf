@@ -562,7 +562,7 @@ settings['databases.schema'] == "main"        # Nested items traversing
 settings.get("nonexisting", "default value")  # Default values just like a dict
 settings("number", cast=int)                  # customizable forcing of casting
 
-for key, value in settings:                   # dict like iteration
+for key, value in settings.items():           # dict like iteration
     print(key, value)
 ```
 

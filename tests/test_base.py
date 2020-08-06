@@ -820,3 +820,23 @@ def test_lowercase_read_mode(tmpdir):
     results = dir(settings.databases)
     assert "default" in results
     assert "DEFAULT" in results
+
+
+def test_settings_dict_like_iteration(tmpdir):
+    """Settings can be iterated just like a dict"""
+    data = {
+        "foo": "bar",
+        "hello": "world",
+        "default": 1,
+        "databases": {"default": {"port": 8080}},
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data)
+
+    # settings_files mispelled.. should be `settings_file`
+    settings = LazySettings(settings_files="settings.toml")
+
+    for key in settings:
+        assert key in settings._store
+
+    for key, value in settings.items():
+        assert settings._store[key] == value

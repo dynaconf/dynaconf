@@ -304,6 +304,14 @@ class Settings(object):
             + list(self.keys())
         )
 
+    def __iter__(self):
+        """Redirects to store object"""
+        yield from self._store
+
+    def items(self):
+        """Redirects to store object"""
+        return self._store.items()
+
     def keys(self):
         """Redirects to store object"""
         return self.store.keys()
