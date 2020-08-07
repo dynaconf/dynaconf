@@ -52,9 +52,9 @@ class Validator(object):
         # When the very first thing to be performed when passed.
         # if no env is passed to `when` it is inherited
 
-    `must_exist` is `exists` requirement. (executed after when)::
+    `must_exist` is alias to `required` requirement. (executed after when)::
 
-       settings.exists(value)
+       settings.get(value, empty) returns non empty
 
     condition is a callable to be executed and return boolean::
 
@@ -80,11 +80,13 @@ class Validator(object):
         self,
         *names,
         must_exist=None,
+        required=None,  # this is alias for `must_exist`
         condition=None,
         when=None,
         env=None,
         messages=None,
         cast=None,
+        default=empty,  # Literal value or a callable
         **operations
     ):
         # Copy immutable MappingProxyType as a mutable dict
@@ -99,11 +101,12 @@ class Validator(object):
             raise TypeError("condition must be callable")
 
         self.names = names
-        self.must_exist = must_exist
+        self.must_exist = must_exist if must_exist is not None else required
         self.condition = condition
         self.when = when
         self.cast = cast or (lambda value: value)
         self.operations = operations
+        self.default = default
 
         if isinstance(env, str):
             self.envs = [env]
@@ -169,23 +172,30 @@ class Validator(object):
     def _validate_items(self, settings, env=None):
         env = env or settings.current_env
         for name in self.names:
-            exists = settings.exists(name)
+            if self.default is not empty:
+                default_value = (
+                    self.default(settings, self)
+                    if callable(self.default)
+                    else self.default
+                )
+            else:
+                default_value = empty
+
+            value = self.cast(settings.setdefault(name, default_value))
 
             # is name required but not exists?
-            if self.must_exist is True and not exists:
+            if self.must_exist is True and value is empty:
                 raise ValidationError(
                     self.messages["must_exist_true"].format(name=name, env=env)
                 )
-            elif self.must_exist is False and exists:
+            elif self.must_exist is False and value is not empty:
                 raise ValidationError(
                     self.messages["must_exist_false"].format(
                         name=name, env=env
                     )
                 )
-            elif self.must_exist in (False, None) and not exists:
+            elif self.must_exist in (False, None) and value is empty:
                 return
-
-            value = self.cast(settings.get(name, empty))
 
             # is there a callable condition?
             if self.condition is not None:

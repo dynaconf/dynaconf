@@ -234,7 +234,7 @@ class Settings(object):
         self._env_cache = {}
         self._loaded_by_loaders = {}
         self._loaders = []
-        self._defaults = {}
+        self._defaults = DynaBox(box_settings=self)
         self.environ = os.environ
         self.SETTINGS_MODULE = None
         self._not_installed_warnings = []
@@ -319,6 +319,20 @@ class Settings(object):
     def values(self):
         """Redirects to store object"""
         return self.store.values()
+
+    def setdefault(self, item, default):
+        """Returns value if exists or set it as the given default"""
+        value = self.get(item, empty)
+        if value is empty and default is not empty:
+            self.set(
+                item,
+                default,
+                loader_identifier="setdefault",
+                tomlfy=True,
+                dotted_lookup=True,
+            )
+            return default
+        return value
 
     def as_dict(self, env=None, internal=False):
         """Returns a dictionary with set key and values.

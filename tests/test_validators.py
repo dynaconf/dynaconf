@@ -427,3 +427,25 @@ def test_cast_before_validate(tmpdir):
     )
     assert settings.name == "Bruno"
     assert settings.colors == ["red", "green", "blue"]
+
+
+def test_validator_can_provide_default(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    TOML = """
+    name = 'Bruno'
+    colors = ['red', 'green', 'blue']
+    """
+    tmpfile.write(TOML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        validators=[
+            Validator("name", required=True),
+            Validator("FOO", default="BAR"),
+            Validator("COMPUTED", default=lambda st, va: "I am computed"),
+        ],
+    )
+    assert settings.name == "Bruno"
+    assert settings.colors == ["red", "green", "blue"]
+
+    assert settings.FOO == "BAR"
+    assert settings.COMPUTED == "I am computed"
