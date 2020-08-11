@@ -16,7 +16,7 @@
 - Protection of **sensitive information** (passwords/tokens)
 - Multiple **file formats** `toml|yaml|json|ini|py` and also customizable loaders.
 - Full support for **environment variables** to override existing settings (dotenv support included).
-- Optional layered system for **multi environments** `[default, development, testing, production]`
+- Optional layered system for **multi environments** `[default, development, testing, production]` (also called multi profiles)
 - Built-in support for **Hashicorp Vault** and **Redis** as settings and secrets storage.
 - Built-in extensions for **Django** and **Flask** web frameworks.
 - **CLI** for common operations such as `init, list, write, validate, export`.
@@ -377,7 +377,7 @@ export FLASK_DEBUG=true                      # FLASK_ extension prefix
                                              # automatically loaded as boolean
 
 export CUSTOM_NAME=Bruno                     # CUSTOM_ prefix as specified in
-                                             # Dynaconf(envvvar_prefix="custom")
+                                             # Dynaconf(envvar_prefix="custom")
 
 export DYNACONF_NESTED__LEVEL__KEY=1         # Double underlines
                                              # denotes nested settings
@@ -648,7 +648,7 @@ pip install dynaconf[vault]
 pip install dynaconf[redis]
 ```
 
-Read more on [external loaders](/loaders/)
+Read more on [external loaders](/advanced/#creating-new-loaders)
 
 ## License
 
