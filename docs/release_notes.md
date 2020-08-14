@@ -1,4 +1,52 @@
-# Dynaconf 3.0.0
+# Release Notes
+
+
+## Dynaconf 3.1.0
+
+### Providing default or computed values
+
+
+Validators can be used to provide default or computed values.
+
+#### Defeault values
+
+```py
+Validator("FOO", default="A default value for foo")
+```
+
+Then if not able to load the values from files or environment this default value will be set for that key.
+
+
+#### Computed values
+
+Sometimes you need some values to be computed by calling functions, just passa a callable to the `default` argument.
+
+```py
+
+Validator("FOO", default=my_dunction)
+
+```
+
+then
+
+```py
+
+def my_function(settings, validator):
+    return "this is computed during validation time"
+
+```
+
+If you want to be lazy evaluated
+
+```py
+
+from dynaconf.utils.parse_conf import empty, Lazy
+
+Validator("FOO", default=Lazy(empty, formatter=my_function))
+
+```
+
+## Dynaconf 3.0.0
 
 In Dynaconf 3.0.0 we introduced some improvements and with
 those improvements it comes some **breaking changes.**
