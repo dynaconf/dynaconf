@@ -7,6 +7,7 @@ setuptools>=38.6.0
 configobj
 hvac
 django
+django-debug-toolbar
 gitchangelog
 
 # testing
