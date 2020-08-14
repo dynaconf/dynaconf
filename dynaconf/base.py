@@ -1142,6 +1142,10 @@ class Settings(object):
 
         return logging.getLogger("dynaconf")
 
+    def is_overridden(self, setting):
+        """This is to provide Django DJDT support: issue 382"""
+        return False
+
 
 """Attributes created on Settings before 3.0.0"""
 RESERVED_ATTRS = (

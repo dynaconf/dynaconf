@@ -68,5 +68,11 @@ target/
 .idea
 .idea/*
 .vscode/
+.vim/
 
 junit/
+
+
+# django example static files
+example/django_example/admin/
+example/django_example/debug_toolbar/
