@@ -59,7 +59,7 @@ def test_list_envs_in_vault(docker_vault):
     os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
     settings = LazySettings(environments=True)
-    envs = list_envs(settings)
+    envs = list_envs(settings, "test_list_envs_in_vault")
     assert envs == []
 
 

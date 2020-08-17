@@ -76,15 +76,19 @@ def load(obj, env=None, silent=None, key=None):
     except InvalidPath:
         # The given path is not a directory
         dirs = []
-
     env_list = build_env_list(obj, env) + dirs
     for env in env_list:
         path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, env])
-        mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
         try:
-            data = client.secrets.kv.read_secret_version(
-                path, mount_point=mount_point
-            )
+            if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2:
+                data = client.secrets.kv.v2.read_secret_version(
+                    path, mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF
+                )
+            else:
+                data = client.secrets.kv.read_secret(
+                    "data/" + path,
+                    mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
+                )
         except InvalidPath:
             # If the path doesn't exist, ignore it and set data to None
             data = None
@@ -93,6 +97,8 @@ def load(obj, env=None, silent=None, key=None):
             # extract the inner data
             data = data.get("data", {}).get("data", {})
         try:
+            if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2 and data:
+                data = data.get("data", {})
             if data and key:
                 value = parse_conf_data(
                     data.get(key), tomlfy=True, box_settings=obj
@@ -125,9 +131,13 @@ def write(obj, data=None, **kwargs):
     data.update(kwargs)
     if not data:
         raise AttributeError("Data must be provided")
+    data = {"data": data}
     client = get_client(obj)
+    if obj.VAULT_KV_VERSION_FOR_DYNACONF == 1:
+        mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF + "/data"
+    else:
+        mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
     path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, obj.current_env.lower()])
-    mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
     client.secrets.kv.create_or_update_secret(
         path, secret=data, mount_point=mount_point
     )
