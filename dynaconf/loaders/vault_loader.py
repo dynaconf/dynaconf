@@ -30,10 +30,14 @@ def get_client(obj):
             role_id=obj.VAULT_ROLE_ID_FOR_DYNACONF,
             secret_id=obj.get("VAULT_SECRET_ID_FOR_DYNACONF"),
         )
+    elif obj.VAULT_ROOT_TOKEN_FOR_DYNACONF is not None:
+      print(obj.VAULT_ROOT_TOKEN_FOR_DYNACONF)
+      client.token = obj.VAULT_ROOT_TOKEN_FOR_DYNACONF
     assert client.is_authenticated(), (
         "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF or "
         "VAULT_ROLE_ID_FOR_DYNACONF defined?"
     )
+    client.kv.default_kv_version = obj.VAULT_KV_VERSION_FOR_DYNACONF
     return client
 
 
@@ -46,9 +50,17 @@ def load(obj, env=None, silent=None, key=None):
     :param key: if defined load a single key, else load all in env
     :return: None
     """
-
     client = get_client(obj)
-    env_list = build_env_list(obj, env)
+    try:
+        dirs = client.secrets.kv.list_secrets(
+            path = obj.VAULT_PATH_FOR_DYNACONF,
+            mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
+        )['data']['keys']
+    except InvalidPath:
+        # The given path is not a directory
+        dirs = []
+
+    env_list = build_env_list(obj, env) + dirs
     for env in env_list:
         path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, env])
         mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
