@@ -3,16 +3,13 @@
 from json import JSONDecodeError
 from pathlib import Path
 from typing import Union
+from dynaconf.vendor.toml import TomlDecodeError
+from dynaconf.vendor.ruamel.yaml import YAMLError
 
-from toml import TomlDecodeError
-try:
-    from ruamel.yaml import YAMLError
-except ImportError:
-    from yaml import YAMLError
 
-from box.exceptions import BoxError
-from box.box import Box
-from box.box_list import BoxList
+from .exceptions import BoxError
+from .box import Box
+from .box_list import BoxList
 
 __all__ = ['box_from_file']
 

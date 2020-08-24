@@ -4,10 +4,10 @@ from __future__ import absolute_import, print_function
 
 import warnings
 
-from ruamel.yaml.error import MarkedYAMLError, ReusedAnchorWarning
-from ruamel.yaml.compat import utf8, nprint, nprintf  # NOQA
+from .error import MarkedYAMLError, ReusedAnchorWarning
+from .compat import utf8, nprint, nprintf  # NOQA
 
-from ruamel.yaml.events import (
+from .events import (
     StreamStartEvent,
     StreamEndEvent,
     MappingStartEvent,
@@ -17,7 +17,7 @@ from ruamel.yaml.events import (
     AliasEvent,
     ScalarEvent,
 )
-from ruamel.yaml.nodes import MappingNode, ScalarNode, SequenceNode
+from .nodes import MappingNode, ScalarNode, SequenceNode
 
 if False:  # MYPY
     from typing import Any, Dict, Optional, List  # NOQA

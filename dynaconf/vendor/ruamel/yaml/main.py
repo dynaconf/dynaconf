@@ -9,34 +9,34 @@ import glob
 from importlib import import_module
 
 
-import ruamel.yaml
-from ruamel.yaml.error import UnsafeLoaderWarning, YAMLError  # NOQA
+import dynaconf.vendor.ruamel as ruamel
+from .error import UnsafeLoaderWarning, YAMLError  # NOQA
 
-from ruamel.yaml.tokens import *  # NOQA
-from ruamel.yaml.events import *  # NOQA
-from ruamel.yaml.nodes import *  # NOQA
+from .tokens import *  # NOQA
+from .events import *  # NOQA
+from .nodes import *  # NOQA
 
-from ruamel.yaml.loader import BaseLoader, SafeLoader, Loader, RoundTripLoader  # NOQA
-from ruamel.yaml.dumper import BaseDumper, SafeDumper, Dumper, RoundTripDumper  # NOQA
-from ruamel.yaml.compat import StringIO, BytesIO, with_metaclass, PY3, nprint
-from ruamel.yaml.resolver import VersionedResolver, Resolver  # NOQA
-from ruamel.yaml.representer import (
+from .loader import BaseLoader, SafeLoader, Loader, RoundTripLoader  # NOQA
+from .dumper import BaseDumper, SafeDumper, Dumper, RoundTripDumper  # NOQA
+from .compat import StringIO, BytesIO, with_metaclass, PY3, nprint
+from .resolver import VersionedResolver, Resolver  # NOQA
+from .representer import (
     BaseRepresenter,
     SafeRepresenter,
     Representer,
     RoundTripRepresenter,
 )
-from ruamel.yaml.constructor import (
+from .constructor import (
     BaseConstructor,
     SafeConstructor,
     Constructor,
     RoundTripConstructor,
 )
-from ruamel.yaml.loader import Loader as UnsafeLoader
+from .loader import Loader as UnsafeLoader
 
 if False:  # MYPY
     from typing import List, Set, Dict, Union, Any, Callable, Optional, Text  # NOQA
-    from ruamel.yaml.compat import StreamType, StreamTextType, VersionType  # NOQA
+    from .compat import StreamType, StreamTextType, VersionType  # NOQA
 
     if PY3:
         from pathlib import Path
@@ -612,7 +612,7 @@ class YAML(object):
     def map(self, **kw):
         # type: (Any) -> Any
         if 'rt' in self.typ:
-            from ruamel.yaml.comments import CommentedMap
+            from dynaconf.vendor.ruamel.yaml.comments import CommentedMap
 
             return CommentedMap(**kw)
         else:
@@ -621,7 +621,7 @@ class YAML(object):
     def seq(self, *args):
         # type: (Any) -> Any
         if 'rt' in self.typ:
-            from ruamel.yaml.comments import CommentedSeq
+            from dynaconf.vendor.ruamel.yaml.comments import CommentedSeq
 
             return CommentedSeq(*args)
         else:
