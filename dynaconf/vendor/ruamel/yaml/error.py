@@ -5,7 +5,7 @@ from __future__ import absolute_import
 import warnings
 import textwrap
 
-from ruamel.yaml.compat import utf8
+from .compat import utf8
 
 if False:  # MYPY
     from typing import Any, Dict, Optional, List, Text  # NOQA

@@ -5,11 +5,7 @@ from dynaconf import default_settings
 from dynaconf.constants import TOML_EXTENSIONS
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.utils import object_merge
-
-try:
-    import toml
-except ImportError:  # pragma: no cover
-    toml = None
+from dynaconf.vendor import toml
 
 
 def load(obj, env=None, silent=True, key=None, filename=None):

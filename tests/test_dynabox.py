@@ -13,7 +13,6 @@ box = DynaBox(
             },
         }
     },
-    box_settings={},
 )
 
 

@@ -9,14 +9,10 @@ import sys
 import warnings
 from pathlib import Path
 
-from box.exceptions import BoxError, BoxWarning
+import dynaconf.vendor.ruamel.yaml as yaml
+from dynaconf.vendor.box.exceptions import BoxError, BoxWarning
+from dynaconf.vendor import toml
 
-try:
-    import ruamel.yaml as yaml
-except ImportError:
-    import yaml
-    warnings.warn("ruamel.yaml was not detected, using PyYAML instead, which may not support YAML 1.2", BoxWarning)
-import toml
 
 BOX_PARAMETERS = ('default_box', 'default_box_attr', 'conversion_box',
                   'frozen_box', 'camel_killer_box',

@@ -4,12 +4,10 @@ import re
 import warnings
 from functools import wraps
 
-import toml
-
 from dynaconf.utils import extract_json_objects
 from dynaconf.utils import multi_replace
 from dynaconf.utils.boxing import DynaBox
-from dynaconf.vendor.box import box
+from dynaconf.vendor import toml
 
 try:
     from jinja2 import Environment

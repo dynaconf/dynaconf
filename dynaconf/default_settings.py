@@ -8,11 +8,7 @@ from dynaconf.utils import upperfy
 from dynaconf.utils import warn_deprecations
 from dynaconf.utils.files import find_file
 from dynaconf.utils.parse_conf import parse_conf_data
-
-try:
-    from dotenv import load_dotenv
-except ImportError:  # pragma: no cover
-    load_dotenv = lambda *args, **kwargs: None  # noqa
+from dynaconf.vendor.dotenv import load_dotenv
 
 
 def try_renamed(key, value, older_key, current_key):

@@ -8,9 +8,6 @@ import webbrowser
 from contextlib import suppress
 from pathlib import Path
 
-import click
-import toml
-
 from dynaconf import constants
 from dynaconf import default_settings
 from dynaconf import LazySettings
@@ -22,6 +19,8 @@ from dynaconf.utils.files import read_file
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.validator import ValidationError
 from dynaconf.validator import Validator
+from dynaconf.vendor import click
+from dynaconf.vendor import toml
 
 
 CWD = Path.cwd()
