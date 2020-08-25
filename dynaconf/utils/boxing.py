@@ -1,7 +1,6 @@
 import inspect
 from functools import wraps
 
-import dynaconf
 from dynaconf.utils import upperfy
 from dynaconf.vendor.box import Box
 
