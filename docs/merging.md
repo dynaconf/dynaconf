@@ -1,6 +1,6 @@
 ## Merging existing data structures
 
-If your settings has existing variables of types `list` ot `dict` and you want to `merge` instead of `override` then 
+If your settings has existing variables of types `list` or `dict` and you want to `merge` instead of `override` then 
 the `dynaconf_merge` and `dynaconf_merge_unique` stanzas can mark that variable as a candidate for merging.
 
 For **dict** value:
