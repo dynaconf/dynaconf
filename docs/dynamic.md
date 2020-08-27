@@ -34,7 +34,7 @@ DB_PATH = "@format {env[HOME]}/{this.current_env}/{env[PROGRAM_NAME]}/{this.DB_N
 - `{env[HOME]}` is the same as `os.environ["HOME"]` or `$HOME` in the shell.
 - `{this.current_env}` is the same as `settings.current_env`
 - `{env[PROGRAM_NAME]}` is the same as `os.environ["PROGRAM_NAME"]` or `$PROGRAM_NAME` in the shell.
-- `{this.DB_NAME}` is the same as `settins.DB_NAME` or `settings["DB_NAME"]`
+- `{this.DB_NAME}` is the same as `settings.DB_NAME` or `settings["DB_NAME"]`
 
 so in your `program`
 
