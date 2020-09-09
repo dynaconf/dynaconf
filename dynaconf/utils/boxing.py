@@ -1,6 +1,7 @@
 import inspect
 from functools import wraps
 
+from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils import upperfy
 from dynaconf.vendor.box import Box
 
@@ -12,12 +13,14 @@ def evaluate_lazy_format(f):
     @wraps(f)
     def evaluate(dynabox, item, *args, **kwargs):
         value = f(dynabox, item, *args, **kwargs)
-        if getattr(value, "_dynaconf_lazy_format", None):
+        settings = dynabox._box_config["box_settings"]
+
+        if getattr(value, "formatter", None):
             dynabox._box_config[
                 f"raw_{item.lower()}"
             ] = f"@{value.formatter.token} {value.value}"
-            return value(dynabox._box_config["box_settings"])
-        return value
+
+        return recursively_evaluate_lazy_format(value, settings)
 
     return evaluate
 
