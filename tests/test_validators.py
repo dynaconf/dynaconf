@@ -54,10 +54,12 @@ def test_validators_on_init(tmpdir):
     hostname = 'devserver.com'
     username = 'admin'
     """
-    tmpdir.join("settings.toml").write(TOML)
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
 
     settings = LazySettings(
         environments=True,
+        settings_file=str(tmpfile),
         validators=(
             Validator("hostname", eq="devserver.com"),
             Validator("username", ne="admin"),
@@ -65,10 +67,10 @@ def test_validators_on_init(tmpdir):
     )
 
     with pytest.raises(ValidationError):
-        settings.validators.validate()
+        settings.HOSTNAME
 
 
-def test_validators(tmpdir):
+def test_validators_register(tmpdir):
 
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
@@ -79,7 +81,6 @@ def test_validators(tmpdir):
         SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
         silent=True,
     )
-
     settings.validators.register(
         Validator("VERSION", "AGE", "NAME", must_exist=True),
         Validator("AGE", lte=30, gte=10),
