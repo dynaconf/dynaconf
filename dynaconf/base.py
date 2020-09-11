@@ -913,8 +913,6 @@ class Settings(object):
                     except ValueError:  # EAFP
                         value.remove("dynaconf_merge_unique")
                         unique = True
-
-                original = set(value)
                 value = object_merge(existing, value, unique=unique)
         return value
 

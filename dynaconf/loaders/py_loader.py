@@ -32,9 +32,6 @@ def load_from_python_object(
         if setting[:3].isupper():
             if key is None or key == setting:
                 setting_value = getattr(mod, setting)
-                secret = (
-                    "*****" if "secret" in settings_module else setting_value
-                )
                 obj.set(
                     setting,
                     setting_value,
