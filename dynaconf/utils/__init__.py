@@ -47,23 +47,25 @@ def object_merge(old, new, unique=False, tail=None):
 
         handle_metavalues(old, new)
 
+    return new
+
 
 def handle_metavalues(old, new):
     """Cleanup of MetaValues on new dict"""
     for key in list(new.keys()):
         if getattr(new[key], "_dynaconf_reset", False):  # pragma: no cover
-            # a Reset on new triggers reasign of existing data
+            # a Reset on `new` triggers reasign of existing data
             # @reset is deprecated on v3.0.0
             new[key] = new[key].unwrap()
 
         if getattr(new[key], "_dynaconf_merge", False):
-            # a Merge on new triggers merge with existing data
-            unique = new[key].unique
-            new[key] = new[key].unwrap()
-            object_merge(old.get(key), new[key], unique=unique)
+            # a Merge on `new` triggers merge with existing data
+            new[key] = object_merge(
+                old.get(key), new[key].unwrap(), unique=new[key].unique
+            )
 
         if getattr(new[key], "_dynaconf_del", False):
-            # a Del on new triggers deletion of existing data
+            # a Del on `new` triggers deletion of existing data
             new.pop(key, None)
             old.pop(key, None)
 
@@ -280,3 +282,20 @@ def extract_json_objects(text, decoder=JSONDecoder()):
             pos = match + index
         except ValueError:
             pos = match + 1
+
+
+def recursively_evaluate_lazy_format(value, settings):
+
+    if getattr(value, "_dynaconf_lazy_format", None):
+        value = value(settings)
+
+    if isinstance(value, list):
+        # Keep the original type, can be a BoxList
+        value = value.__class__(
+            [
+                recursively_evaluate_lazy_format(item, settings)
+                for item in value
+            ]
+        )
+
+    return value

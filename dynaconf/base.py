@@ -18,6 +18,7 @@ from dynaconf.utils import compat_kwargs
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
+from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
 from dynaconf.utils.boxing import DynaBox
@@ -25,7 +26,6 @@ from dynaconf.utils.files import find_file
 from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import converters
-from dynaconf.utils.parse_conf import evaluate_lazy_format
 from dynaconf.utils.parse_conf import get_converter
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
@@ -135,7 +135,6 @@ class LazySettings(LazyObject):
                 value = kwargs.pop(alias.lower())
             kwargs[f"{alias}_FOR_DYNACONF"] = value
 
-    @evaluate_lazy_format
     def __getattr__(self, name):
         """Allow getting keys from self.store using dot notation"""
         if self._wrapped is empty:
@@ -162,7 +161,10 @@ class LazySettings(LazyObject):
             and name not in dir(default_settings)
         ):
             return self._wrapped.get_fresh(name)
-        return getattr(self._wrapped, name)
+        value = getattr(self._wrapped, name)
+        if name not in RESERVED_ATTRS:
+            return recursively_evaluate_lazy_format(value, self)
+        return value
 
     def __call__(self, *args, **kwargs):
         """Allow direct call of settings('val')
@@ -371,7 +373,6 @@ class Settings(object):
             ".".join(keys), default=default, parent=result, **kwargs
         )
 
-    @evaluate_lazy_format
     def get(
         self,
         key,
@@ -816,13 +817,14 @@ class Settings(object):
         if getattr(value, "_dynaconf_merge", False):
             # just in case someone use a `@merge` in a first level var
             if existing:
-                object_merge(existing, value.unwrap())
-            value = value.unwrap()
+                value = object_merge(existing, value.unwrap())
+            else:
+                value = value.unwrap()
 
         if existing is not None and existing != value:
             # `dynaconf_merge` used in file root `merge=True`
             if merge:
-                object_merge(existing, value)
+                value = object_merge(existing, value)
             else:
                 # `dynaconf_merge` may be used within the key structure
                 value = self._merge_before_set(key, existing, value, is_secret)
@@ -886,9 +888,7 @@ class Settings(object):
 
     def _merge_before_set(self, key, existing, value, is_secret):
         """Merge the new value being set with the existing value before set"""
-
         global_merge = getattr(self, "MERGE_ENABLED_FOR_DYNACONF", False)
-
         if isinstance(value, dict):
             local_merge = value.pop(
                 "dynaconf_merge", value.pop("dynaconf_merge_unique", None)
@@ -898,16 +898,7 @@ class Settings(object):
                 value = local_merge
 
             if global_merge or local_merge:
-                safe_value = {k: "***" for k in value} if is_secret else value
-                object_merge(existing, value)
-                safe_value = (
-                    {
-                        k: ("***" if k in safe_value else v)
-                        for k, v in value.items()
-                    }
-                    if is_secret
-                    else value
-                )
+                value = object_merge(existing, value)
 
         if isinstance(value, (list, tuple)):
             local_merge = (
@@ -916,21 +907,13 @@ class Settings(object):
             if global_merge or local_merge:
                 value = list(value)
                 unique = False
-
                 if local_merge:
                     try:
                         value.remove("dynaconf_merge")
                     except ValueError:  # EAFP
                         value.remove("dynaconf_merge_unique")
                         unique = True
-
-                original = set(value)
-                object_merge(existing, value, unique=unique)
-                safe_value = (
-                    ["***" if item in original else item for item in value]
-                    if is_secret
-                    else value
-                )
+                value = object_merge(existing, value, unique=unique)
         return value
 
     @property
