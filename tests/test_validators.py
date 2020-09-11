@@ -167,6 +167,7 @@ def test_dotted_validators(settings):
         Validator("TESTVALUE", eq="hello_world"),
         Validator("PROJECT", condition=lambda x: False, env="development"),
         Validator("TESTVALUEZZ", must_exist=True),
+        Validator("TESTVALUEZZ", "PROJECT", must_exist=False),
     ],
 )
 def test_validation_error(validator_instance, tmpdir):
