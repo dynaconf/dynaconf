@@ -195,7 +195,7 @@ class Validator(object):
                     )
                 )
             elif self.must_exist in (False, None) and value is empty:
-                return
+                continue
 
             # is there a callable condition?
             if self.condition is not None:
