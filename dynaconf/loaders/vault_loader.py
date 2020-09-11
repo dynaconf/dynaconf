@@ -72,7 +72,7 @@ def load(obj, env=None, silent=None, key=None):
                     obj.set(key, value)
             elif data:
                 obj.update(data, loader_identifier=IDENTIFIER, tomlfy=True)
-        except Exception as e:
+        except Exception:
             if silent:
                 return False
             raise
