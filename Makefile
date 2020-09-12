@@ -99,6 +99,7 @@ test_examples:
 	cd example/issues/288_null_values;pwd;python app.py
 	cd example/issues/306_merge_replace;pwd;python app.py
 	cd example/issues/359_variable_reference;pwd;python app.py
+	cd example/issues/392_evaluate_nested_structures;pwd;DYNACONF_INITIAL='@merge [1,2,3]' python app.py
 test_vault:
 	# @cd example/vault;pwd;python write.py
 	docker run --rm --name dynaconf_with_vault -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
@@ -156,7 +157,8 @@ pep8:
 	#   F841 (local variable assigned but never used, useful for debugging on exception)
 	#   W504 (line break after binary operator, I prefer to put `and|or` at the end)
 	#   F403 (star import `from foo import *` often used in __init__ files)
-	flake8 dynaconf --ignore=F403,W504,W503,F841,E401,F401,E402 --exclude=dynaconf/vendor
+	# flake8 dynaconf --ignore=F403,W504,W503,F841,E401,F401,E402 --exclude=dynaconf/vendor
+	flake8 dynaconf --exclude=dynaconf/vendor
 
 dist: clean
 	@python setup.py sdist bdist_wheel

@@ -34,7 +34,7 @@ DB_PATH = "@format {env[HOME]}/{this.current_env}/{env[PROGRAM_NAME]}/{this.DB_N
 - `{env[HOME]}` is the same as `os.environ["HOME"]` or `$HOME` in the shell.
 - `{this.current_env}` is the same as `settings.current_env`
 - `{env[PROGRAM_NAME]}` is the same as `os.environ["PROGRAM_NAME"]` or `$PROGRAM_NAME` in the shell.
-- `{this.DB_NAME}` is the same as `settins.DB_NAME` or `settings["DB_NAME"]`
+- `{this.DB_NAME}` is the same as `settings.DB_NAME` or `settings["DB_NAME"]`
 
 so in your `program`
 
@@ -72,6 +72,6 @@ from dynaconf import settings
 settings.DB_PATH == '~/development/calculator/mydb.db'
 ```
 
-The main difference is that Jinja allows some Python expressions to be avaluated such as `{% for, if, while %}` and also supports calling methods and has lots of filters like `| lower`.
+The main difference is that Jinja allows some Python expressions to be evaluated such as `{% for, if, while %}` and also supports calling methods and has lots of filters like `| lower`.
 
-Jinja supports its built-in filters listed in [Builtin Filters Page](http://jinja.palletsprojects.com/en/master/templates/#builtin-filters) and Dynaconf includes aditional filters for `os.path` module: `abspath`. `realpath`, `relpath`, `basename` and `dirname` and usage is like: `VALUE = "@jinja {{this.FOO | abspath}}"`
+Jinja supports its built-in filters listed in [Builtin Filters Page](http://jinja.palletsprojects.com/en/master/templates/#builtin-filters) and Dynaconf includes additional filters for `os.path` module: `abspath`. `realpath`, `relpath`, `basename` and `dirname` and usage is like: `VALUE = "@jinja {{this.FOO | abspath}}"`

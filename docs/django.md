@@ -46,7 +46,7 @@ export DJANGO_INTVALUE=1     # django.conf.settings['INTVALUE']
 export DJANGO_HELLO="Hello"  # django.conf.settings.get('HELLO')
 ```
 
-> **TIP**: If you dont want to use `DJANGO_` as prefix for envvars you can customize by passing a new name e.g: `dynaconf.DjangoDynaconf(__name__, ENVVAR_PREFIX_FOR_DYNACONF="FOO")` then `export FOO_DEBUG=true`
+> **TIP**: If you don't want to use `DJANGO_` as prefix for envvars you can customize by passing a new name e.g: `dynaconf.DjangoDynaconf(__name__, ENVVAR_PREFIX_FOR_DYNACONF="FOO")` then `export FOO_DEBUG=true`
 
 You can also set nested dictionary values, for example lets say you have a configuration like this:
 
@@ -138,13 +138,13 @@ Working environment can now be switched using `export PROJECTNAME_ENV=production
 
 Your settings are now read from `/etc/projectname/settings.toml` (dynaconf will not perform search for all the settings formats). This settings location can be changed via envvar using `export PROJECTNAME_SETTINGS=/other/path/to/settings.py{yaml,toml,json,ini}`
 
-You can have additional settings read from `/etc/projectname/plugins/*` any supoprted file from this folder will be loaded.
+You can have additional settings read from `/etc/projectname/plugins/*` any supported file from this folder will be loaded.
 
 You can set more options, take a look on [configuration](/configuration/)
 
 ## Reading Settings on Standalone Scripts
 
-> **NOTE**: The recommended way to create standalone scripts is by creating `management commands` inside your Django applications or pugins.
+> **NOTE**: The recommended way to create standalone scripts is by creating `management commands` inside your Django applications or plugins.
 
 > **IMPORTANT** If you need that script to be out of your Django Application Scope, it is also possible and **if needed** you can use `settings.DYNACONF.configure()` instead of the common `settings.configure()` provided by Django.
 
@@ -254,9 +254,9 @@ settings.populate_obj(sys.modules[__name__], ignore=locals())
 
 > **NOTE**: Starting in `2.1.1` the `ignore` argument will tell Dynaconf to not override variables that already exists in the current settings file, remove it if you want all the existing local variables to be overwritten by dynaconf.
 
-You can still change env with `export DJANGO_ENV=production` and also can export variables lile `export DJANGO_DEBUG=true`
+You can still change env with `export DJANGO_ENV=production` and also can export variables like `export DJANGO_DEBUG=true`
 
-## Knowm Caveats
+## Known Caveats
 
 - If `settings.configure()` is called directly it disables Dynaconf, use `settings.DYNACONF.configure()`
 

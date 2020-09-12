@@ -199,7 +199,7 @@ assert settings.MESSAGE == 'This is in dev'
 
 > **New in 2.0.0**
 
-You can use dynaconf values to populate Python objects (intances).
+You can use dynaconf values to populate Python objects (instances).
 
 example:
 ```py
@@ -305,7 +305,7 @@ all the tests are collected.
 
 Examples available on [https://github.com/rochacbruno/dynaconf/tree/master/example/pytest_example](https://github.com/rochacbruno/dynaconf/tree/master/example/pytest_example)
 
-With `pytest` fixtures it is recommended to use the `FORCE_ENV_FOR_DYNACONF` isntead of just `ENV_FOR_DYNACONF` because it has precedence.
+With `pytest` fixtures it is recommended to use the `FORCE_ENV_FOR_DYNACONF` instead of just `ENV_FOR_DYNACONF` because it has precedence.
 
 #### A python program
 
