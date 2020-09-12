@@ -2,6 +2,127 @@ Changelog
 =========
 
 
+(unreleased)
+------------
+- Release version 3.1.1rc1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (10):
+            Release version 3.1.0
+            Create FUNDING.yml
+            Fix #391 make box_settings optional, change vendoring strategy (#398)
+            HOTFIX: Add missing vendor.txt
+            Allow nested Lazy Values (#405)
+            Makes   PEP8 more strictly and remove unused variables (#408)
+            Merge branch 'master' into vault
+            boto is optional
+            Merge branch 'vault' into master
+            Included example of custom SOPS loader to the docs
+
+      Christoph Schmatzler (1):
+            Fix typo in Validation docs (#394)
+
+      Gabriel Simonetto (1):
+            Fix #399 - Update documentation link (#401)
+
+      Jiranun Jiratrakanvong (1):
+            Add auth username and password for redis settings (#378)
+
+      Martijn Pieters (1):
+            Correct typos in documentation and README (#400)
+
+      Mirek Długosz (1):
+            Test all names in Validator("foo", "bar", must_exist=False) (#406)
+
+      Nikolai Bessonov (1):
+            fix a typo (#393)
+
+      Peng Yin (5):
+            Read all secrets under a vault path
+            Add option to auth vault with iam role
+            Fix format
+            Fix test for versioned kv engine in latest vault
+            Merge branch 'master' into vault
+
+      whg517 (1):
+            docs: Fixed filename error in the case of the index page (#396)
+- Included example of custom SOPS loader to the docs. [Bruno Rocha]
+- Add auth username and password for redis settings (#378) [Bruno Rocha,
+  Jiranun Jiratrakanvong, Jiranun Jiratrakanvong]
+- Merge branch 'vault' into master. [Bruno Rocha]
+- Boto is optional. [Bruno Rocha]
+- Merge branch 'master' into vault. [Bruno Rocha]
+- Fix a typo (#393) [Bruno Rocha, Nikolai Bessonov]
+- Fix typo in Validation docs (#394) [Bruno Rocha, Christoph Schmatzler]
+- Correct typos in documentation and README (#400) [Bruno Rocha, Martijn
+  Pieters]
+
+  * Correct minor documentation typo in the Dynamic Variables section.
+
+  * Fix typos throughout the docs
+- Docs: Fixed filename error in the case of the index page (#396) [Bruno
+  Rocha, whg517]
+- Fix #399 - Update documentation link (#401) [Bruno Rocha, Gabriel
+  Simonetto]
+- Makes   PEP8 more strictly and remove unused variables (#408) [Bruno
+  Rocha]
+- Test all names in Validator("foo", "bar", must_exist=False) (#406)
+  [Mirek Długosz]
+
+  `Validator(must_exist=False)` incorrectly checked first name only.
+  Given settings.yaml:
+
+     bar: some_value
+
+  `Validator("foo", "bar", must_exist=False)` would **not** raise
+  ValidationError - it would return after checking that first name
+  indeed is not defined.
+- Allow nested Lazy Values (#405) [Bruno Rocha]
+
+  Fix #392
+  Fix #402
+- Merge branch 'master' into vault. [Peng Yin]
+- HOTFIX: Add missing vendor.txt. [Bruno Rocha]
+- Fix #391 make box_settings optional, change vendoring strategy (#398)
+  [Bruno Rocha]
+
+  - Revert DynaBox box_settings to be optional
+  - Change vendoring strategy
+     - instead of hacking sys.modules, using abs paths
+  - Pin to Box 4.2.2 without conflicting with system installed box
+  - Added a Django example on tests to fix @daviddavis reported issue
+- Fix test for versioned kv engine in latest vault. [Peng Yin]
+- Fix format. [Peng Yin]
+- Add option to auth vault with iam role. [Peng Yin]
+- Read all secrets under a vault path. [Peng Yin]
+- Create FUNDING.yml. [Bruno Rocha]
+- Release version 3.1.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Andreas Poehlmann (1):
+            Allow importing SEARCHTREE before settings are configured (#383)
+
+      Bruno Rocha (10):
+            Release version 3.0.0
+            Hot fix removing unused imports
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Removing invalid links, adding allert on old docs  fix #369 and fix #371 (#372)
+            Fix #359 lazy template substitution on nested keys (#375)
+            Flask fizes and other issues included. (#376)
+            Fix #379 dict like iteration (#385)
+            Fix #377 allow computed values (#386)
+            Fix #388 URL reference for custom loaders (#389)
+            Fix #382 add is_overriden method (#390)
+
+      John Vandenberg (1):
+            Allow testing against local redis server (#387)
+
+      Piotr Baniukiewicz (1):
+            Fix validation of optional fields (#370)
+
+
 3.1.0 (2020-08-14)
 ------------------
 - Release version 3.1.0. [Bruno Rocha]
