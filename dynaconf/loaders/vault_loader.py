@@ -6,11 +6,7 @@ from dynaconf.utils.parse_conf import parse_conf_data
 try:
     import boto3
 except ImportError:
-    raise ImportError(
-        "boto3 package is not installed in your environment. "
-        "`pip install boto3` or disable the vault loader with "
-        "export VAULT_ENABLED_FOR_DYNACONF=false"
-    )
+    boto3 = None
 
 try:
     from hvac import Client
@@ -42,6 +38,12 @@ def get_client(obj):
     elif obj.VAULT_ROOT_TOKEN_FOR_DYNACONF is not None:
         client.token = obj.VAULT_ROOT_TOKEN_FOR_DYNACONF
     elif obj.VAULT_AUTH_WITH_IAM_FOR_DYNACONF:
+        if boto3 is None:
+            raise ImportError(
+                "boto3 package is not installed in your environment. "
+                "`pip install boto3` or disable the VAULT_AUTH_WITH_IAM"
+            )
+
         session = boto3.Session()
         credentials = session.get_credentials()
         client.auth.aws.iam_login(
