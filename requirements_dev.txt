@@ -9,6 +9,7 @@ hvac
 django
 django-debug-toolbar
 gitchangelog
+boto3
 
 # testing
 codecov

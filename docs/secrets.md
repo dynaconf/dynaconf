@@ -41,7 +41,19 @@ $ pip install dynaconf[vault]
 ```bash
 VAULT_ENABLED_FOR_DYNACONF=true
 VAULT_URL_FOR_DYNACONF="http://localhost:8200"
+# Specify the secrets engine for kv, default is 1
+VAULT_KV_VERSION_FOR_DYNACONF=1
+# Authenticate with token https://www.vaultproject.io/docs/auth/token
 VAULT_TOKEN_FOR_DYNACONF="myroot"
+# Authenticate with AppRole https://www.vaultproject.io/docs/auth/approle
+VAULT_ROLE_ID_FOR_DYNACONF="role-id"
+VAULT_SECRET_ID_FOR_DYNACONF="secret-id"
+# Authenticate with AWS IAM https://www.vaultproject.io/docs/auth/aws
+# The IAM Credentials can be retrieved from the standard providers: https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html
+VAULT_AUTH_WITH_IAM_FOR_DYNACONF=True
+VAULT_AUTH_ROLE_FOR_DYNACONF="vault-role"
+# Authenticate with root token
+VAULT_ROOT_TOKEN_FOR_DYNACONF="root-token"
 ```
 
 Or pass it to the `Dynaconf` instance.
