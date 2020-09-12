@@ -90,7 +90,7 @@ pip install dynaconf
         from dynaconf import Dynaconf
 
         settings = Dynaconf(
-            settings_files=['settings.yaml', '.secrets.yaml'],
+            settings_files=['settings.toml', '.secrets.toml'],
         )
         ```
         More options described on [Dynaconf Configuration](/configuration/)
