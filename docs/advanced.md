@@ -56,8 +56,38 @@ In case you need to disable all core loaders and rely only on external loaders:
 CORE_LOADERS_FOR_DYNACONF='[]'  # a toml empty list
 ```
 
-See [example/custom_loader](https://github.com/rochacbruno/dynaconf/tree/master/example/custom_loader)
 
+For example, if you want to add a [SOPS](https://github.com/mozilla/sops) loader
+
+```py
+def load(
+    obj: LazySettings,
+    env: str = "DEVELOPMENT",
+    silent: bool = True,
+    key: str = None,
+    filename: str = None,
+) -> None:
+    sops_filename = f"secrets.{env}.yaml"
+    sops_file = obj.find_file(sops_filename)
+    if not sops_file:
+        logger.error(f"{sops_filename} not found! Secrets not loaded!")
+        return
+
+    _output = run(["sops", "-d", sops_file], capture_output=True)
+    if _output.stderr:
+        logger.warning(f"SOPS error: {_output.stderr}")
+    decrypted_config = yaml.load(_output.stdout, Loader=yaml.CLoader)
+
+    if key:
+        value = decrypted_config.get(key.lower())
+        obj.set(key, value)
+    else:
+        obj.update(decrypted_config)
+
+    obj._loaded_files.append(sops_file)
+```
+
+See more [example/custom_loader](https://github.com/rochacbruno/dynaconf/tree/master/example/custom_loader)
 
 ## Module impersonation
 
