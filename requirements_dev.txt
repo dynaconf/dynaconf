@@ -7,7 +7,9 @@ setuptools>=38.6.0
 configobj
 hvac
 django
+django-debug-toolbar
 gitchangelog
+boto3
 
 # testing
 codecov

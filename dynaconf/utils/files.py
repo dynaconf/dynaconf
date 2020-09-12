@@ -28,7 +28,7 @@ def _walk_to_root(path, break_at=None):
     return paths
 
 
-SEARCHTREE = None
+SEARCHTREE = []
 
 
 def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
@@ -63,7 +63,7 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
     search_tree = deduplicate(search_tree)
 
     global SEARCHTREE
-    SEARCHTREE = search_tree
+    SEARCHTREE[:] = search_tree
 
     for dirname in search_tree:
         check_path = os.path.join(dirname, filename)

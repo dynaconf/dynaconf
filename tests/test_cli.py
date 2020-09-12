@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 
 import pytest
-from click.testing import CliRunner
 
 from dynaconf import default_settings
 from dynaconf import LazySettings
@@ -12,6 +11,7 @@ from dynaconf.cli import main
 from dynaconf.cli import read_file_in_root_directory
 from dynaconf.cli import WRITERS
 from dynaconf.utils.files import read_file
+from dynaconf.vendor.click.testing import CliRunner
 
 
 runner = CliRunner()
@@ -31,7 +31,7 @@ def test_help():
     assert "Dynaconf - Command Line Interface" in run(["--help"])
 
 
-def test_banner():
+def test_banner(clean_env):
     assert "Learn more at:" in run(["--banner"])
 
 
@@ -82,7 +82,6 @@ def test_init_with_path(fileformat, tmpdir):
 
 def test_list(testdir):
     """Test list command shows only user defined vars"""
-
     result = run(
         ["list"],
         env={
@@ -90,8 +89,7 @@ def test_list(testdir):
             "INSTANCE_FOR_DYNACONF": "tests.config.settings",
         },
     )
-    assert "DOTENV_STR<str> 'hello'" in result
-    assert "GLOBAL_ENV_FOR_DYNACONF<str> 'DYNACONF'" not in result
+    assert "TEST_KEY<str> 'test_value'" in result
 
 
 def test_help_dont_require_instance(testdir):
@@ -104,11 +102,8 @@ def test_list_export_json(testdir):
         ["-i", "tests.config.settings", "list", "-o", "sets.json"],
         env={"ROOT_PATH_FOR_DYNACONF": testdir},
     )
-    # breakpoint()
-    assert "DOTENV_STR<str> 'hello'" in result
-    assert "DOTENV_STR" in read_file("sets.json")
-    assert json.loads(read_file("sets.json"))["DOTENV_STR"] == "hello"
-    assert json.loads(read_file("sets.json"))["DOTENV_FLOAT"] == 4.2
+    assert "TEST_KEY<str> 'test_value'" in result
+    assert json.loads(read_file("sets.json"))["TEST_KEY"] == "test_value"
 
 
 def test_list_with_all(testdir):
@@ -117,8 +112,8 @@ def test_list_with_all(testdir):
         ["-i", "tests.config.settings", "list", "-a"],
         env={"ROOT_PATH_FOR_DYNACONF": testdir},
     )
-    assert "DOTENV_STR<str> 'hello'" in result
-    assert "ENVVAR_PREFIX_FOR_DYNACONF<str> 'DYNACONF'" in result
+
+    assert "TEST_KEY<str> 'test_value'" in result
 
 
 @pytest.mark.parametrize("loader", WRITERS)
@@ -164,8 +159,8 @@ def test_instance_pypath_error():
 
 
 def test_list_with_key():
-    result = run(["-i", "tests.config.settings", "list", "-k", "DOTENV_STR"])
-    assert "DOTENV_STR<str> 'hello'" in result
+    result = run(["-i", "tests.config.settings", "list", "-k", "TEST_KEY"])
+    assert "TEST_KEY<str> 'test_value'" in result
 
 
 def test_list_with_key_export_json(tmpdir):
@@ -175,16 +170,18 @@ def test_list_with_key_export_json(tmpdir):
             "tests.config.settings",
             "list",
             "-k",
-            "DOTENV_STR",
+            "TEST_KEY",
             "-o",
             "sets.json",
         ]
     )
-    assert "DOTENV_STR<str> 'hello'" in result
-    assert "DOTENV_STR" in read_file("sets.json")
-    assert json.loads(read_file("sets.json"))["DOTENV_STR"] == "hello"
+
+    assert "TEST_KEY<str> 'test_value'" in result
+
+    assert "TEST_KEY" in read_file("sets.json")
+    assert json.loads(read_file("sets.json"))["TEST_KEY"] == "test_value"
     with pytest.raises(KeyError):
-        json.loads(read_file("sets.json"))["DOTENV_FLOAT"]
+        json.loads(read_file("sets.json"))["ANOTHER_KEY"]
 
 
 def test_list_with_missing_key():

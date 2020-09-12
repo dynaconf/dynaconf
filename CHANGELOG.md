@@ -2,6 +2,88 @@ Changelog
 =========
 
 
+3.1.0 (2020-08-14)
+------------------
+- Release version 3.1.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Andreas Poehlmann (1):
+            Allow importing SEARCHTREE before settings are configured (#383)
+
+      Bruno Rocha (10):
+            Release version 3.0.0
+            Hot fix removing unused imports
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Removing invalid links, adding allert on old docs  fix #369 and fix #371 (#372)
+            Fix #359 lazy template substitution on nested keys (#375)
+            Flask fizes and other issues included. (#376)
+            Fix #379 dict like iteration (#385)
+            Fix #377 allow computed values (#386)
+            Fix #388 URL reference for custom loaders (#389)
+            Fix #382 add is_overriden method (#390)
+
+      John Vandenberg (1):
+            Allow testing against local redis server (#387)
+
+      Piotr Baniukiewicz (1):
+            Fix validation of optional fields (#370)
+- Allow importing SEARCHTREE before settings are configured (#383)
+  [Andreas Poehlmann]
+- Allow testing against local redis server (#387) [John Vandenberg]
+- Fix #382 add is_overriden method (#390) [Bruno Rocha]
+
+  Fix #382 add is_overriden method for DJDT
+- Fix #388 URL reference for custom loaders (#389) [Bruno Rocha]
+
+  Fix #388 URL reference for custom loaders
+- Fix #377 allow computed values (#386) [Bruno Rocha]
+
+  This fixes #377 by allowing Validator to provide default values.
+- Fix #379 dict like iteration (#385) [Bruno Rocha]
+
+  * Fix #379 add missing __iter__ and items
+
+  * Fix docs
+- Flask fizes and other issues included. (#376) [Bruno Rocha]
+
+  Fix #323
+  Fix #325
+  Fix #327
+  Fix #341
+
+  Exemples added:
+
+  	example/issues/323_DEFAULT_VALUES_RESOLUTION/
+  	example/issues/325_flask_dot_env/
+  	example/issues/327_flask_extensions_warning/
+  	example/issues/341_box_it_up/
+- Fix #359 lazy template substitution on nested keys (#375) [Bruno
+  Rocha]
+- Removing invalid links, adding allert on old docs  fix #369 and fix
+  #371 (#372) [Bruno Rocha]
+- Merge branch 'master' of github.com:rochacbruno/dynaconf. [Bruno
+  Rocha]
+- Fix validation of optional fields (#370) [Bruno Rocha
+  <rochacbruno@users.noreply.github.com>    Co-authored-by: Bruno Rocha
+  <rochacbruno@users.noreply.github.com>, Piotr Baniukiewicz]
+
+  * Fix validation of optional fields
+
+  * More concise code
+- Hot fix removing unused imports. [Bruno Rocha]
+- Release version 3.0.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (5):
+            Release version 3.0.0rc2
+            Improvements on CLI and init command (#363)
+            Writing new docs page 1 (#364)
+            Add netlify (#366)
+            Add netlify runtime file...
+
+
 3.0.0 (2020-06-29)
 ------------------
 - Release version 3.0.0. [Bruno Rocha]

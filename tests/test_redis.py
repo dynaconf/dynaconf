@@ -15,14 +15,24 @@ def custom_checker(ip_address, port):
     return True
 
 
-@pytest.fixture(scope="module")
-def docker_redis(docker_services):
-    docker_services.start("redis")
-    public_port = docker_services.wait_for_service(
-        "redis", 6379, check_server=custom_checker
-    )
-    url = f"http://{docker_services.docker_ip}:{public_port}"
-    return url
+DYNACONF_TEST_REDIS_URL = os.environ.get("DYNACONF_TEST_REDIS_URL", None)
+if DYNACONF_TEST_REDIS_URL:
+
+    @pytest.fixture(scope="module")
+    def docker_redis():
+        return DYNACONF_TEST_REDIS_URL
+
+
+else:
+
+    @pytest.fixture(scope="module")
+    def docker_redis(docker_services):
+        docker_services.start("redis")
+        public_port = docker_services.wait_for_service(
+            "redis", 6379, check_server=custom_checker
+        )
+        url = f"http://{docker_services.docker_ip}:{public_port}"
+        return url
 
 
 @pytest.mark.integration

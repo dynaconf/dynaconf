@@ -71,7 +71,7 @@ app = Flask(__name__)
 flask_dynaconf = FlaskDynaconf(app, extensions_list="EXTENSIONS")
 ```
 
-The above will immediatelly load all flask extensions listed on `EXTENSIONS` key on settings.
+The above will immediately load all flask extensions listed on `EXTENSIONS` key on settings.
 
 You can also load it lazily.
 
@@ -92,7 +92,7 @@ export FLASK_EXTENSIONS="['flask_admin:Admin']"
 The extensions will be loaded in order.
 
 
-### Develoment extensions
+### Development extensions
 
 It is also possible to have extensions that loads only for development environment.
 

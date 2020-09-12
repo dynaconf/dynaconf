@@ -8,11 +8,7 @@ from dynaconf.utils import upperfy
 from dynaconf.utils import warn_deprecations
 from dynaconf.utils.files import find_file
 from dynaconf.utils.parse_conf import parse_conf_data
-
-try:
-    from dotenv import load_dotenv
-except ImportError:  # pragma: no cover
-    load_dotenv = lambda *args, **kwargs: None  # noqa
+from dynaconf.vendor.dotenv import load_dotenv
 
 
 def try_renamed(key, value, older_key, current_key):
@@ -166,6 +162,12 @@ VAULT_PATH_FOR_DYNACONF = get("VAULT_PATH_FOR_DYNACONF", "dynaconf")
 VAULT_MOUNT_POINT_FOR_DYNACONF = get(
     "VAULT_MOUNT_POINT_FOR_DYNACONF", "secret"
 )
+VAULT_ROOT_TOKEN_FOR_DYNACONF = get("VAULT_ROOT_TOKEN_FOR_DYNACONF", None)
+VAULT_KV_VERSION_FOR_DYNACONF = get("VAULT_KV_VERSION_FOR_DYNACONF", 1)
+VAULT_AUTH_WITH_IAM_FOR_DYNACONF = get(
+    "VAULT_AUTH_WITH_IAM_FOR_DYNACONF", False
+)
+VAULT_AUTH_ROLE_FOR_DYNACONF = get("VAULT_AUTH_ROLE_FOR_DYNACONF", None)
 VAULT_ROLE_ID_FOR_DYNACONF = get("VAULT_ROLE_ID_FOR_DYNACONF", None)
 VAULT_SECRET_ID_FOR_DYNACONF = get("VAULT_SECRET_ID_FOR_DYNACONF", None)
 

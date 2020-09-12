@@ -4,6 +4,11 @@ from dynaconf.utils import build_env_list
 from dynaconf.utils.parse_conf import parse_conf_data
 
 try:
+    import boto3
+except ImportError:
+    boto3 = None
+
+try:
     from hvac import Client
     from hvac.exceptions import InvalidPath
 except ImportError:
@@ -30,10 +35,28 @@ def get_client(obj):
             role_id=obj.VAULT_ROLE_ID_FOR_DYNACONF,
             secret_id=obj.get("VAULT_SECRET_ID_FOR_DYNACONF"),
         )
+    elif obj.VAULT_ROOT_TOKEN_FOR_DYNACONF is not None:
+        client.token = obj.VAULT_ROOT_TOKEN_FOR_DYNACONF
+    elif obj.VAULT_AUTH_WITH_IAM_FOR_DYNACONF:
+        if boto3 is None:
+            raise ImportError(
+                "boto3 package is not installed in your environment. "
+                "`pip install boto3` or disable the VAULT_AUTH_WITH_IAM"
+            )
+
+        session = boto3.Session()
+        credentials = session.get_credentials()
+        client.auth.aws.iam_login(
+            credentials.access_key,
+            credentials.secret_key,
+            credentials.token,
+            role=obj.VAULT_AUTH_ROLE_FOR_DYNACONF,
+        )
     assert client.is_authenticated(), (
         "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF or "
         "VAULT_ROLE_ID_FOR_DYNACONF defined?"
     )
+    client.kv.default_kv_version = obj.VAULT_KV_VERSION_FOR_DYNACONF
     return client
 
 
@@ -46,16 +69,28 @@ def load(obj, env=None, silent=None, key=None):
     :param key: if defined load a single key, else load all in env
     :return: None
     """
-
     client = get_client(obj)
-    env_list = build_env_list(obj, env)
+    try:
+        dirs = client.secrets.kv.list_secrets(
+            path=obj.VAULT_PATH_FOR_DYNACONF,
+            mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
+        )["data"]["keys"]
+    except InvalidPath:
+        # The given path is not a directory
+        dirs = []
+    env_list = build_env_list(obj, env) + dirs
     for env in env_list:
         path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, env])
-        mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
         try:
-            data = client.secrets.kv.read_secret_version(
-                path, mount_point=mount_point
-            )
+            if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2:
+                data = client.secrets.kv.v2.read_secret_version(
+                    path, mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF
+                )
+            else:
+                data = client.secrets.kv.read_secret(
+                    "data/" + path,
+                    mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
+                )
         except InvalidPath:
             # If the path doesn't exist, ignore it and set data to None
             data = None
@@ -64,6 +99,8 @@ def load(obj, env=None, silent=None, key=None):
             # extract the inner data
             data = data.get("data", {}).get("data", {})
         try:
+            if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2 and data:
+                data = data.get("data", {})
             if data and key:
                 value = parse_conf_data(
                     data.get(key), tomlfy=True, box_settings=obj
@@ -72,7 +109,7 @@ def load(obj, env=None, silent=None, key=None):
                     obj.set(key, value)
             elif data:
                 obj.update(data, loader_identifier=IDENTIFIER, tomlfy=True)
-        except Exception as e:
+        except Exception:
             if silent:
                 return False
             raise
@@ -96,9 +133,13 @@ def write(obj, data=None, **kwargs):
     data.update(kwargs)
     if not data:
         raise AttributeError("Data must be provided")
+    data = {"data": data}
     client = get_client(obj)
+    if obj.VAULT_KV_VERSION_FOR_DYNACONF == 1:
+        mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF + "/data"
+    else:
+        mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
     path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, obj.current_env.lower()])
-    mount_point = obj.VAULT_MOUNT_POINT_FOR_DYNACONF
     client.secrets.kv.create_or_update_secret(
         path, secret=data, mount_point=mount_point
     )

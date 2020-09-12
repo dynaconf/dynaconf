@@ -1,9 +1,8 @@
 from os import environ
 
-from dotenv import cli as dotenv_cli
-
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
+from dynaconf.vendor.dotenv import cli as dotenv_cli
 
 
 IDENTIFIER = "env"
