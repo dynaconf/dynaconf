@@ -146,7 +146,7 @@ def print_version(ctx, param, value):
 def open_docs(ctx, param, value):  # pragma: no cover
     if not value or ctx.resilient_parsing:
         return
-    url = "http://dynaconf.readthedocs.io/"
+    url = "https://dynaconf.com/"
     webbrowser.open(url, new=2)
     click.echo(f"{url} opened in browser")
     ctx.exit()
@@ -197,7 +197,7 @@ def show_banner(ctx, param, value):
 @click.pass_context
 def main(ctx, instance):
     """Dynaconf - Command Line Interface\n
-    Documentation: http://dynaconf.readthedocs.io/
+    Documentation: https://dynaconf.com/
     """
     set_settings(ctx, instance)
 

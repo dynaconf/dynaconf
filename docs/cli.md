@@ -171,7 +171,7 @@ Options:
 
 > **NEW in 1.0.1**
 
-Starting on version 1.0.1 it is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same fodler as your settings files.
+Starting on version 1.0.1 it is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same folder as your settings files.
 
 `dynaconf_validators.toml` equivalent to program above
 

@@ -46,7 +46,7 @@ def load(obj, env=None, silent=True, key=None):
                 }
                 if data:
                     obj.update(data, loader_identifier=IDENTIFIER)
-        except Exception as e:
+        except Exception:
             if silent:
                 return False
             raise

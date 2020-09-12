@@ -16,7 +16,7 @@ PORT = 8001
 PROJECT = "This is not hello_world"
 ```
 
-## Validating in Python programatically
+## Validating in Python programmatically
 
 At any point of your program you can do:
 
@@ -61,7 +61,7 @@ The above will raise `dynaconf.validators.ValidationError("AGE must be lte=30 bu
 
 Validators can be used to provide default or computed values.
 
-#### Defeault values
+#### Default values
 
 ```py
 Validator("FOO", default="A default value for foo")
@@ -72,11 +72,11 @@ Then if not able to load the values from files or environment this default value
 
 #### Computed values
 
-Sometimes you need some values to be computed by calling functions, just passa a callable to the `default` argument.
+Sometimes you need some values to be computed by calling functions, just pass a callable to the `default` argument.
 
 ```py
 
-Validator("FOO", default=my_dunction)
+Validator("FOO", default=my_function)
 
 ```
 
@@ -137,7 +137,7 @@ Validator('DATABASE.HOST', must_exist=True) & Validator('DATABASE.CONN', must_ex
 
 > **NEW in 1.0.1**
 
-Starting on version 1.0.1 it is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same fodler as your settings files.
+Starting on version 1.0.1 it is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same folder as your settings files.
 
 `dynaconf_validators.toml` equivalent to program above
 

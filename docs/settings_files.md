@@ -12,7 +12,7 @@ mixed settings formats across your application.
 
 - **.toml** - Default and **recommended** file format.
 - **.yaml|.yml** - Recommended for Django applications.
-- **.json** - Usefull to reuse existing or exported settings.
+- **.json** - Useful to reuse existing or exported settings.
 - **.ini** - Useful to reuse legacy settings.
 - **.py** - **Not Recommended** but supported for backwards compatibility.
 - **.env** - Useful to automate the loading of environment variables.
@@ -64,7 +64,7 @@ settings.name == "Bruno"
 ```
 
 !!! info
-    The default enconding when loading the settings files is `utf-8` and it can be customized
+    The default encoding when loading the settings files is `utf-8` and it can be customized
     via `encoding` parameter.
 
 ## Settings file location
@@ -91,7 +91,7 @@ specified in `root_path`.
 
 ### /etc/program/foo.yaml
 
-Dynaconf will then recognize this as an absolute path and will try to laod it directly from
+Dynaconf will then recognize this as an absolute path and will try to load it directly from
 the specified location.
 
 
@@ -208,8 +208,8 @@ You can for example name it `[testing]` or `[anything]`
 !!! warning
     On **Flask** and **Django** extensions the default behaviour is already
     the layered environments.
-    Also to switch the environment you use `#!bash export FLASK_ENV=production` or `#!bash export DJANGO_ENV=production` respectivelly. 
+    Also to switch the environment you use `#!bash export FLASK_ENV=production` or `#!bash export DJANGO_ENV=production` respectively. 
 
 !!! tip
-    It is also possible to switch environments programatically passing
+    It is also possible to switch environments programmatically passing
     `env="development"` to `Dynaconf` class on instantiation.
