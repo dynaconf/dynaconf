@@ -2,7 +2,7 @@
 
 import warnings
 
-from ruamel.yaml.util import configobj_walker as new_configobj_walker
+from .util import configobj_walker as new_configobj_walker
 
 if False:  # MYPY
     from typing import Any  # NOQA

@@ -27,7 +27,7 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
-  - bash: make clean install run-pre-commit
+  - bash: make clean install
     displayName: 'Adequacy Tests'
 
 - job: 'LinuxInstall'

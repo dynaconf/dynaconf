@@ -119,7 +119,7 @@ export SECRETS_FOR_DYNACONF=/path/to/secrets.toml{json|py|ini|yaml}
 If that variable exists in your environment then Dynaconf will also load it.
 
 ---
-## External Storaged
+## External Storage
 
 An external storage is needed in some programs for scenarios like:
 
@@ -190,7 +190,7 @@ DYNACONF_PRODUCTION {
 
 Then to access that values you can set `export ENV_FOR_DYNACONF=production` or directly via `settings.from_env('production').NAME`
 
-> if you want to skip type casting, write as string intead of PORT=1234 use PORT="'1234'".
+> if you want to skip type casting, write as string instead of PORT=1234 use PORT="'1234'".
 
 Data is read from redis and another loaders only once when `dynaconf.settings` is first accessed
 or when `from_env`, `.setenv()` or `using_env()` are invoked.

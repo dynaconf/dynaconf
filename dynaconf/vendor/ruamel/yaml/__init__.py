@@ -57,4 +57,4 @@ try:
 except (ImportError, ValueError):  # for Jython
     __with_libyaml__ = False
 
-from ruamel.yaml.main import *  # NOQA
+from dynaconf.vendor.ruamel.yaml.main import *  # NOQA

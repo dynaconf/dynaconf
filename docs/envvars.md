@@ -51,7 +51,7 @@ assert settings.STRING_NUM == "76"
 
 !!! tip
     Dynaconf has multiple valid ways to access settings keys so it is compatible with your 
-    existing settings solution. You can acess using `.notation`, `[item] indexing`, `.get method` 
+    existing settings solution. You can access using `.notation`, `[item] indexing`, `.get method` 
     and also it allows `.notation.nested` for data structures like dicts.  
     **Also variable access is case insensitive for the first level key**
 

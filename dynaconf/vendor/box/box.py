@@ -14,9 +14,9 @@ from keyword import kwlist
 from pathlib import Path
 from typing import Any, Union, Tuple, List, Dict
 
-import box
-from box.converters import (_to_json, _from_json, _from_toml, _to_toml, _from_yaml, _to_yaml, BOX_PARAMETERS)
-from box.exceptions import BoxError, BoxKeyError, BoxTypeError, BoxValueError, BoxWarning
+from dynaconf.vendor import box
+from .converters import (_to_json, _from_json, _from_toml, _to_toml, _from_yaml, _to_yaml, BOX_PARAMETERS)
+from .exceptions import BoxError, BoxKeyError, BoxTypeError, BoxValueError, BoxWarning
 
 __all__ = ['Box']
 
@@ -101,7 +101,7 @@ class Box(dict):
         "merge_update",
     ] + [attr for attr in dir({}) if not attr.startswith("_")]
 
-    def __new__(cls, *args: Any,  box_settings: Any, default_box: bool = False, default_box_attr: Any = NO_DEFAULT,
+    def __new__(cls, *args: Any,  box_settings: Any = None, default_box: bool = False, default_box_attr: Any = NO_DEFAULT,
                 default_box_none_transform: bool = True, frozen_box: bool = False, camel_killer_box: bool = False,
                 conversion_box: bool = True, modify_tuples_box: bool = False, box_safe_prefix: str = 'x',
                 box_duplicates: str = 'ignore', box_intact_types: Union[Tuple, List] = (),
@@ -125,11 +125,11 @@ class Box(dict):
             'box_intact_types': tuple(box_intact_types),
             'box_recast': box_recast,
             'box_dots': box_dots,
-            'box_settings': box_settings
+            'box_settings': box_settings or {}
         })
         return obj
 
-    def __init__(self, *args: Any, box_settings: Any, default_box: bool = False, default_box_attr: Any = NO_DEFAULT,
+    def __init__(self, *args: Any, box_settings: Any = None, default_box: bool = False, default_box_attr: Any = NO_DEFAULT,
                  default_box_none_transform: bool = True, frozen_box: bool = False, camel_killer_box: bool = False,
                  conversion_box: bool = True, modify_tuples_box: bool = False, box_safe_prefix: str = 'x',
                  box_duplicates: str = 'ignore', box_intact_types: Union[Tuple, List] = (),
@@ -149,7 +149,7 @@ class Box(dict):
             'box_intact_types': tuple(box_intact_types),
             'box_recast': box_recast,
             'box_dots': box_dots,
-            'box_settings': box_settings
+            'box_settings': box_settings or {}
         })
         if not self._box_config['conversion_box'] and self._box_config['box_duplicates'] != 'ignore':
             raise BoxError('box_duplicates are only for conversion_boxes')

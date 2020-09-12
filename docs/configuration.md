@@ -86,7 +86,7 @@ When `load_dotenv` is enabled, this controls if variables in `.env` will overrid
 
 ### **dotenv_path**
 
-Sets the path for the `.env` file and it can be full path ot just the directory.
+Sets the path for the `.env` file and it can be full path or just the directory.
 
 - type: str
 - default: "." (or the same as project_root)
@@ -214,7 +214,7 @@ The list of loaders Dynaconf will trigger after its core loaders, this list is u
 [custom loaders](/advanced/#custom loaders) and also to control the loading of env vars as the last step.
 
 !!! warning
-    By default the `env_loader` will be latest on this list, so it ensures anvironment variables has
+    By default the `env_loader` will be latest on this list, so it ensures environment variables has
     the priority following the Unix philosophy.
 
 - type: list
@@ -380,7 +380,7 @@ Must be a `list`:
 settings_files=["file1.toml", "file2.toml"]
 ```
 
-or a `str` separated by semicollons or commas.
+or a `str` separated by semicolons or commas.
 
 ```py
 settings_files="file1.toml;file2.toml"
@@ -423,7 +423,7 @@ skip_filess=["path/to/ignored.toml"]
 
 ### **validators**
 
-A list of validators to be trigered right after the `Dynaconf` initialization.
+A list of validators to be triggered right after the `Dynaconf` initialization.
 
 - type: list
 - default: []

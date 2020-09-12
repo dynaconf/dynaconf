@@ -4,7 +4,7 @@ from __future__ import print_function, absolute_import, division, unicode_litera
 
 import sys
 from .compat import no_limit_int  # NOQA
-from ruamel.yaml.anchor import Anchor
+from .anchor import Anchor
 
 if False:  # MYPY
     from typing import Text, Any, Dict, List  # NOQA

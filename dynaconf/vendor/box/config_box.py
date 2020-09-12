@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-from box.box import Box
+from dynaconf.vendor.box.box import Box
 
 
 class ConfigBox(Box):
