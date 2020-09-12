@@ -362,7 +362,7 @@ you can optionally store settings in [Settings Files](/settings_files/) using an
 
 [environment variables](/envvars/) are loaded by Dynaconf if prefixed either with
 `DYNACONF_` or a `CUSTOM_` name that you can customize on your settings instance, or
-`FLASK_` and `DJANGO_` respectivelly if you are using extensions.
+`FLASK_` and `DJANGO_` respectively if you are using extensions.
 
 ```bash
 export DYNACONF_FOO=BAR                      # string value
@@ -398,7 +398,7 @@ mixed settings formats across your application.
 
 - **.toml** - Default and **recommended** file format.
 - **.yaml|.yml** - Recommended for Django applications.
-- **.json** - Usefull to reuse existing or exported settings.
+- **.json** - Useful to reuse existing or exported settings.
 - **.ini** - Useful to reuse legacy settings.
 - **.py** - **Not Recommended** but supported for backwards compatibility.
 - **.env** - Useful to automate the loading of environment variables.
@@ -530,10 +530,10 @@ You can for example name it `[testing]` or `[anything]`
 !!! warning
     On **Flask** and **Django** extensions the default behaviour is already
     the layered environments.
-    Also to switch the environment you use `#!bash export FLASK_ENV=production` or `#!bash export DJANGO_ENV=production` respectivelly. 
+    Also to switch the environment you use `#!bash export FLASK_ENV=production` or `#!bash export DJANGO_ENV=production` respectively. 
 
 !!! tip
-    It is also possible to switch environments programatically passing
+    It is also possible to switch environments programmatically passing
     `env="development"` to `Dynaconf` class on instantiation.
 
 

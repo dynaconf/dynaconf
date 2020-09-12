@@ -15,7 +15,7 @@
 - Built-in support for Hashicorp Vault and Redis as settings and secrets storage.
 - Built-in extensions for **Django** and **Flask** web frameworks.
 - CLI for common operations such as `init, list, write, validate, export`.
-- fuill docs on https://dynaconf.com
+- full docs on https://dynaconf.com
 
 ## Quick start
 
@@ -87,7 +87,7 @@ Put sensitive information on `.secrets.{toml|yaml|ini|json|py}`
 password = "secret123"
 ```
 
-> **IMPORTANT:** `dynaconf init` command puts the `.secrets.*` in yout `.gitignore` to avoid it to be exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
+> **IMPORTANT:** `dynaconf init` command puts the `.secrets.*` in your `.gitignore` to avoid it to be exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
 
 
 Optionally you can now use environment variables to override values per execution or per environment.
@@ -118,7 +118,7 @@ settings['databases.schema'] == "main"  # Nested key traversing
 - Settings Schema Validation
 - Custom Settings Loaders
 - Vault Services
-- Template substitions
+- Template substitutions
 - etc...
 
 There is a lot more you can do, **read the docs:** http://dynaconf.com
