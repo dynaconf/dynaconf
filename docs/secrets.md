@@ -77,7 +77,7 @@ You can also use the Dynaconf writer via console:
 
 ```bash
 # writes {'password': 123456} to secret/dynaconf/default
-$ dynaconf -i config.settings write vault -s password=123456  
+$ dynaconf -i config.settings write vault -s password=123456
 
 # writes {'password': 123456, 'username': 'admin'} to secret/dynaconf/default
 $ dynaconf -i config.settings write vault -s password=123456 -s username=admin
@@ -159,6 +159,8 @@ $ pip install dynaconf[redis]
 REDIS_ENABLED_FOR_DYNACONF=true
 REDIS_HOST_FOR_DYNACONF=localhost
 REDIS_PORT_FOR_DYNACONF=6379
+REDIS_USERNAME_FOR_DYNACONF=<ACL username>(optional)
+REDIS_PASSWORD_FOR_DYNACONF=<password>(optional)
 ```
 
 You can now write variables direct in to a redis hash named `DYNACONF_< env >` for example:
