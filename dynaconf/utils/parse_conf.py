@@ -6,6 +6,7 @@ from functools import wraps
 
 from dynaconf.utils import extract_json_objects
 from dynaconf.utils import multi_replace
+from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor import toml
 
@@ -191,7 +192,7 @@ def try_to_encode(value, callback=str):
     """Tries to encode a value by verifying existence of `_dynaconf_encode`"""
     try:
         return value._dynaconf_encode()
-    except (AttributeError, TypeError) as e:
+    except (AttributeError, TypeError):
         return callback(value)
 
 
@@ -202,9 +203,7 @@ def evaluate_lazy_format(f):
     @wraps(f)
     def evaluate(settings, *args, **kwargs):
         value = f(settings, *args, **kwargs)
-        if getattr(value, "_dynaconf_lazy_format", None):
-            return value(settings)
-        return value
+        return recursively_evaluate_lazy_format(value, settings)
 
     return evaluate
 
