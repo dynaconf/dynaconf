@@ -8,9 +8,6 @@ import webbrowser
 from contextlib import suppress
 from pathlib import Path
 
-import click
-import toml
-
 from dynaconf import constants
 from dynaconf import default_settings
 from dynaconf import LazySettings
@@ -22,6 +19,8 @@ from dynaconf.utils.files import read_file
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.validator import ValidationError
 from dynaconf.validator import Validator
+from dynaconf.vendor import click
+from dynaconf.vendor import toml
 
 
 CWD = Path.cwd()
@@ -147,7 +146,7 @@ def print_version(ctx, param, value):
 def open_docs(ctx, param, value):  # pragma: no cover
     if not value or ctx.resilient_parsing:
         return
-    url = "http://dynaconf.readthedocs.io/"
+    url = "https://dynaconf.com/"
     webbrowser.open(url, new=2)
     click.echo(f"{url} opened in browser")
     ctx.exit()
@@ -198,7 +197,7 @@ def show_banner(ctx, param, value):
 @click.pass_context
 def main(ctx, instance):
     """Dynaconf - Command Line Interface\n
-    Documentation: http://dynaconf.readthedocs.io/
+    Documentation: https://dynaconf.com/
     """
     set_settings(ctx, instance)
 

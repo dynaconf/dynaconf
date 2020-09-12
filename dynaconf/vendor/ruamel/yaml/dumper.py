@@ -2,19 +2,19 @@
 
 from __future__ import absolute_import
 
-from ruamel.yaml.emitter import Emitter
-from ruamel.yaml.serializer import Serializer
-from ruamel.yaml.representer import (
+from .emitter import Emitter
+from .serializer import Serializer
+from .representer import (
     Representer,
     SafeRepresenter,
     BaseRepresenter,
     RoundTripRepresenter,
 )
-from ruamel.yaml.resolver import Resolver, BaseResolver, VersionedResolver
+from .resolver import Resolver, BaseResolver, VersionedResolver
 
 if False:  # MYPY
     from typing import Any, Dict, List, Union, Optional  # NOQA
-    from ruamel.yaml.compat import StreamType, VersionType  # NOQA
+    from .compat import StreamType, VersionType  # NOQA
 
 __all__ = ['BaseDumper', 'SafeDumper', 'Dumper', 'RoundTripDumper']
 

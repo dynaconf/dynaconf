@@ -3,22 +3,22 @@
 from __future__ import print_function, absolute_import, division
 
 
-from ruamel.yaml.error import *  # NOQA
-from ruamel.yaml.nodes import *  # NOQA
-from ruamel.yaml.compat import text_type, binary_type, to_unicode, PY2, PY3
-from ruamel.yaml.compat import ordereddict  # type: ignore
-from ruamel.yaml.compat import nprint, nprintf  # NOQA
-from ruamel.yaml.scalarstring import (
+from .error import *  # NOQA
+from .nodes import *  # NOQA
+from .compat import text_type, binary_type, to_unicode, PY2, PY3
+from .compat import ordereddict  # type: ignore
+from .compat import nprint, nprintf  # NOQA
+from .scalarstring import (
     LiteralScalarString,
     FoldedScalarString,
     SingleQuotedScalarString,
     DoubleQuotedScalarString,
     PlainScalarString,
 )
-from ruamel.yaml.scalarint import ScalarInt, BinaryInt, OctalInt, HexInt, HexCapsInt
-from ruamel.yaml.scalarfloat import ScalarFloat
-from ruamel.yaml.scalarbool import ScalarBoolean
-from ruamel.yaml.timestamp import TimeStamp
+from .scalarint import ScalarInt, BinaryInt, OctalInt, HexInt, HexCapsInt
+from .scalarfloat import ScalarFloat
+from .scalarbool import ScalarBoolean
+from .timestamp import TimeStamp
 
 import datetime
 import sys
@@ -644,7 +644,7 @@ Representer.add_multi_representer(object, Representer.represent_object)
 
 Representer.add_multi_representer(type, Representer.represent_name)
 
-from ruamel.yaml.comments import (
+from .comments import (
     CommentedMap,
     CommentedOrderedMap,
     CommentedSeq,

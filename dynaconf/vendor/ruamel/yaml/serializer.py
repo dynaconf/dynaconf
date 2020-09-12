@@ -2,11 +2,11 @@
 
 from __future__ import absolute_import
 
-from ruamel.yaml.error import YAMLError
-from ruamel.yaml.compat import nprint, DBG_NODE, dbg, string_types, nprintf  # NOQA
-from ruamel.yaml.util import RegExp
+from .error import YAMLError
+from .compat import nprint, DBG_NODE, dbg, string_types, nprintf  # NOQA
+from .util import RegExp
 
-from ruamel.yaml.events import (
+from .events import (
     StreamStartEvent,
     StreamEndEvent,
     MappingStartEvent,
@@ -18,11 +18,11 @@ from ruamel.yaml.events import (
     DocumentStartEvent,
     DocumentEndEvent,
 )
-from ruamel.yaml.nodes import MappingNode, ScalarNode, SequenceNode
+from .nodes import MappingNode, ScalarNode, SequenceNode
 
 if False:  # MYPY
     from typing import Any, Dict, Union, Text, Optional  # NOQA
-    from ruamel.yaml.compat import VersionType  # NOQA
+    from .compat import VersionType  # NOQA
 
 __all__ = ['Serializer', 'SerializerError']
 

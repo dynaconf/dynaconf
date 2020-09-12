@@ -1,0 +1,5 @@
+[default]
+VAL = "bar"
+TEST = ["a", "@format formatted {this.VAL}"]
+TEST2 = {a="@format formatted on a dict {this.VAL}"}
+TEST3 = {a=["a", "@format formatted on a list in a dict {this.VAL}"]}

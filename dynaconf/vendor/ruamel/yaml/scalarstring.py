@@ -2,8 +2,8 @@
 
 from __future__ import print_function, absolute_import, division, unicode_literals
 
-from ruamel.yaml.compat import text_type
-from ruamel.yaml.anchor import Anchor
+from .compat import text_type
+from .anchor import Anchor
 
 if False:  # MYPY
     from typing import Text, Any, Dict, List  # NOQA
@@ -129,8 +129,8 @@ def walk_tree(base, map=None):
         map[':'] = SingleQuotedScalarString
         walk_tree(data, map=map)
     """
-    from ruamel.yaml.compat import string_types
-    from ruamel.yaml.compat import MutableMapping, MutableSequence  # type: ignore
+    from dynaconf.vendor.ruamel.yaml.compat import string_types
+    from dynaconf.vendor.ruamel.yaml.compat import MutableMapping, MutableSequence  # type: ignore
 
     if map is None:
         map = {'\n': preserve_literal}

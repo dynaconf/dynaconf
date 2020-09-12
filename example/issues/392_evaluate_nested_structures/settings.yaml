@@ -1,0 +1,33 @@
+DEFAULT:
+  USER_CONFIG:
+    VALUE: foo
+  TOP_LEVEL_LIST:
+    - "@format top list {this.USER_CONFIG.value}"
+    - 12
+    - "a bare string"
+    - "@jinja a jinja formatted {{this.USER_CONFIG.value | upper }}"
+    - "@float 32"
+  SOME_DICT:
+    VALUE: "@format formatted: {this.USER_CONFIG.VALUE}"
+  INNER1:
+    VALUE: "@format inner1 str {this.USER_CONFIG.value}"
+    VALUE_LIST:
+      - "@format list 0 {this.USER_CONFIG.value}"
+      - "@format list 1 {this.USER_CONFIG.value}"
+    INNER2:
+      VALUE: "@format inner2 str {this.INNER1.VALUE}"
+      VALUE_LIST:
+        - "@format list2 0 {this.INNER1.VALUE_LIST}"
+
+  INITIAL:
+    - 3
+    - 2
+    - 2
+    - 1
+    - 1
+
+  DATABASES:
+      default:
+          PARAMS:
+              - d
+              - e

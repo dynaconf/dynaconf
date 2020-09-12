@@ -3,7 +3,7 @@ import sys
 from subprocess import Popen
 
 try:
-    import click
+    from dynaconf.vendor import click
 except ImportError:
     sys.stderr.write('It seems python-dotenv is not installed with cli option. \n'
                      'Run pip install "python-dotenv[cli]" to fix this.')

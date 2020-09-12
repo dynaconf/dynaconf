@@ -63,7 +63,7 @@ def go_to_tmpdir(request):
 def clean_env(request):
     backup = copy.deepcopy(os.environ)
     for key in os.environ.keys():
-        if key.startswith("DYNACONF_"):
+        if key.startswith(("DYNACONF_", "FLASK_", "DJANGO_")):
             del os.environ[key]
     yield
     os.environ.update(backup)

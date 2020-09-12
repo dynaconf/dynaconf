@@ -1,5 +1,4 @@
 import io
-import os
 import warnings
 
 from dynaconf.utils import build_env_list
@@ -173,8 +172,6 @@ class BaseLoader(object):
             key = upperfy(key)
 
         is_secret = "secret" in source_file
-        _keys = (list(data.keys()) if is_secret else data,)
-        _path = os.path.split(source_file)[-1]
 
         # is there a `dynaconf_merge` inside an `[env]`?
         file_merge = file_merge or data.pop("DYNACONF_MERGE", False)
