@@ -4,6 +4,19 @@ Changelog
 
 (unreleased)
 ------------
+- Release version 3.1.1rc2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.1rc1
+            HOTFIX: Logging instance has a `formatter` attribute (#410)
+- HOTFIX: Logging instance has a `formatter` attribute (#410) [Bruno
+  Rocha]
+
+  Dynaconf was trying to detect a lazy value by the existence
+  of `formatter` attribute but in Django when the value is a logging
+  it has `.formatter` attribute.
 - Release version 3.1.1rc1. [Bruno Rocha]
 
   Shortlog of commits since last release:
