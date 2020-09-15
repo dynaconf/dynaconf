@@ -23,7 +23,7 @@ Sometimes you need some values to be computed by calling functions, just pass a 
 
 ```py
 
-Validator("FOO", default=my_dunction)
+Validator("FOO", default=my_function)
 
 ```
 
