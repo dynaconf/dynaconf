@@ -265,12 +265,11 @@ class Settings(object):
 
     def __setattr__(self, name, value):
         """Allow `settings.FOO = 'value'` and deal with `_deleted`"""
-        try:
-            self._deleted.discard(name)
-        except AttributeError:
-            pass
 
-        super(Settings, self).__setattr__(name, value)
+        if name not in RESERVED_ATTRS + dir(default_settings):
+            self.set(name, value)
+        else:
+            super(Settings, self).__setattr__(name, value)
 
     def __delattr__(self, name):
         """stores reference in `_deleted` for proper error management"""
@@ -832,9 +831,9 @@ class Settings(object):
         if isinstance(value, dict):
             value = DynaBox(value, box_settings=self)
 
-        setattr(self, key, value)
         self.store[key] = value
         self._deleted.discard(key)
+        super(Settings, self).__setattr__(key, value)
 
         # set loader identifiers so cleaners know which keys to clean
         if loader_identifier and loader_identifier in self.loaded_by_loaders:
