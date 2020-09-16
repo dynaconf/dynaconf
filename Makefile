@@ -95,6 +95,7 @@ test_examples:
 	cd example/issues/228_nested_toml_bool/python_app;pwd;python app.py
 	cd example/issues/228_nested_toml_bool/django_app;pwd;python manage.py test
 	cd example/issues/251_dotted_unexistent;pwd;python app.py
+	cd example/issues/253_set;pwd;python app.py
 	cd example/issues/266_envvar_from_env_override;pwd;python app.py
 	cd example/issues/288_null_values;pwd;python app.py
 	cd example/issues/306_merge_replace;pwd;python app.py
