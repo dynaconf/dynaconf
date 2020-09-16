@@ -52,6 +52,8 @@ def object_merge(old, new, unique=False, tail=None):
 
 def handle_metavalues(old, new):
     """Cleanup of MetaValues on new dict"""
+    if "dynaconf_merge" in new:
+        new.pop("dynaconf_merge", None)
     for key in list(new.keys()):
         if getattr(new[key], "_dynaconf_reset", False):  # pragma: no cover
             # a Reset on `new` triggers reasign of existing data

@@ -765,9 +765,9 @@ class Settings(object):
             object_merge(
                 old={split_keys[0]: existing_data},
                 new=new_data,
-                tail=split_keys[-1],
+                # tail=split_keys[-1],
             )
-
+        # print(new_data)
         self.update(data=new_data, tomlfy=tomlfy, **kwargs)
 
     def set(

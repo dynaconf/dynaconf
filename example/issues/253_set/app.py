@@ -35,3 +35,13 @@ assert settings.editor == "vim"
 settings.terminal_emulator = "alacritty"
 
 assert settings.get("TERMINAL_emulator") == "alacritty"
+
+settings.set("a.b.c.d.e", "f")
+
+settings.set("a.b", {"other": 1, "dynaconf_merge": True})
+
+settings.set("a.b", {"another": 2})
+
+assert settings.a == {
+    "b": {"other": 1, "another": 2, "c": {"d": {"e": "f"}}}
+}, settings.a
