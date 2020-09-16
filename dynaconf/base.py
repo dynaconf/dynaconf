@@ -264,12 +264,12 @@ class Settings(object):
         return self.get(*args, **kwargs)
 
     def __setattr__(self, name, value):
-        """Allow `settings.FOO = 'value'` and deal with `_deleted`"""
+        """Allow `settings.FOO = 'value'` while keeping internal attrs."""
 
-        if name not in RESERVED_ATTRS + dir(default_settings):
-            self.set(name, value)
-        else:
+        if name in RESERVED_ATTRS:
             super(Settings, self).__setattr__(name, value)
+        else:
+            self.set(name, value)
 
     def __delattr__(self, name):
         """stores reference in `_deleted` for proper error management"""
