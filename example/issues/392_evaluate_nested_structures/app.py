@@ -4,7 +4,6 @@ settings = Dynaconf(
     settings_files=["settings.toml", "settings.yaml"], environments=True
 )
 
-
 assert settings.SOME_DICT.value == "formatted: foo", settings.SOME_DICT.value
 
 assert settings.INNER1.value == "inner1 str foo"
