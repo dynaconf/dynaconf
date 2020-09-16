@@ -125,6 +125,9 @@ class Validator(object):
         if self is other:
             return True
 
+        if type(self).__name__ != type(other).__name__:
+            return False
+
         identical_attrs = (
             getattr(self, attr) == getattr(other, attr)
             for attr in (
@@ -229,6 +232,24 @@ class CombinedValidator(Validator):
         """Takes 2 validators and combines the validation"""
         self.validators = (validator_a, validator_b)
         super().__init__(*args, **kwargs)
+        self.names = self.names or tuple(
+            validator.names for validator in self.validators
+        )
+        self.must_exist = self.must_exist or tuple(
+            validator.must_exist for validator in self.validators
+        )
+        self.when = self.when or tuple(
+            validator.when for validator in self.validators
+        )
+        self.condition = self.condition or tuple(
+            validator.condition for validator in self.validators
+        )
+        self.operations = self.operations or tuple(
+            validator.operations for validator in self.validators
+        )
+        self.envs = self.envs or tuple(
+            validator.envs for validator in self.validators
+        )
 
     def validate(self, settings):  # pragma: no cover
         raise NotImplementedError(

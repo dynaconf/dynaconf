@@ -211,21 +211,53 @@ def test_no_reload_on_single_env(tmpdir, mocker):
     assert using_env.call_count == 1
 
 
-def test_equality():
-    validator1 = Validator("VERSION", "AGE", "NAME", must_exist=True)
-    validator2 = Validator("VERSION", "AGE", "NAME", must_exist=True)
+@pytest.mark.parametrize(
+    "this_validator,another_validator",
+    [
+        (
+            Validator("VERSION", "AGE", "NAME", must_exist=True),
+            Validator("VERSION", "AGE", "NAME", must_exist=True),
+        ),
+        (
+            Validator("VERSION") | Validator("AGE"),
+            Validator("VERSION") | Validator("AGE"),
+        ),
+        (
+            Validator("VERSION") & Validator("AGE"),
+            Validator("VERSION") & Validator("AGE"),
+        ),
+    ],
+)
+def test_equality(this_validator, another_validator):
+    assert this_validator == another_validator
+    assert this_validator is not another_validator
 
-    assert validator1 == validator2
-    assert validator1 is not validator2
 
-    validator3 = (
-        Validator("IMAGE_1", when=Validator("BASE_IMAGE", must_exist=True)),
-    )
-    validator4 = (
-        Validator("IMAGE_1", when=Validator("MYSQL_HOST", must_exist=True)),
-    )
-
-    assert validator3 != validator4
+@pytest.mark.parametrize(
+    "this_validator,another_validator",
+    [
+        (
+            Validator(
+                "IMAGE_1", when=Validator("BASE_IMAGE", must_exist=True)
+            ),
+            Validator(
+                "IMAGE_1", when=Validator("MYSQL_HOST", must_exist=True)
+            ),
+        ),
+        (Validator("VERSION"), Validator("VERSION") & Validator("AGE")),
+        (Validator("VERSION"), Validator("VERSION") | Validator("AGE")),
+        (
+            Validator("VERSION") | Validator("AGE"),
+            Validator("VERSION") & Validator("AGE"),
+        ),
+        (
+            Validator("VERSION") | Validator("AGE"),
+            Validator("NAME") | Validator("BASE_IMAGE"),
+        ),
+    ],
+)
+def test_inequality(this_validator, another_validator):
+    assert this_validator != another_validator
 
 
 def test_ignoring_duplicate_validators(tmpdir):
