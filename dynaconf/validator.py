@@ -5,6 +5,16 @@ from dynaconf import validator_conditions  # noqa
 from dynaconf.utils.functional import empty
 
 
+EQUALITY_ATTRS = (
+    "names",
+    "must_exist",
+    "when",
+    "condition",
+    "operations",
+    "envs",
+)
+
+
 class ValidationError(Exception):
     pass
 
@@ -130,14 +140,7 @@ class Validator(object):
 
         identical_attrs = (
             getattr(self, attr) == getattr(other, attr)
-            for attr in (
-                "names",
-                "must_exist",
-                "when",
-                "condition",
-                "operations",
-                "envs",
-            )
+            for attr in EQUALITY_ATTRS
         )
         if all(identical_attrs):
             return True
@@ -232,24 +235,12 @@ class CombinedValidator(Validator):
         """Takes 2 validators and combines the validation"""
         self.validators = (validator_a, validator_b)
         super().__init__(*args, **kwargs)
-        self.names = self.names or tuple(
-            validator.names for validator in self.validators
-        )
-        self.must_exist = self.must_exist or tuple(
-            validator.must_exist for validator in self.validators
-        )
-        self.when = self.when or tuple(
-            validator.when for validator in self.validators
-        )
-        self.condition = self.condition or tuple(
-            validator.condition for validator in self.validators
-        )
-        self.operations = self.operations or tuple(
-            validator.operations for validator in self.validators
-        )
-        self.envs = self.envs or tuple(
-            validator.envs for validator in self.validators
-        )
+        for attr in EQUALITY_ATTRS:
+            if not getattr(self, attr, None):
+                value = tuple(
+                    getattr(validator, attr) for validator in self.validators
+                )
+                setattr(self, attr, value)
 
     def validate(self, settings):  # pragma: no cover
         raise NotImplementedError(
