@@ -262,9 +262,13 @@ class OrValidator(CombinedValidator):
                 continue
             else:
                 return
+
         raise ValidationError(
             self.messages["combined"].format(
-                errors=" or ".join(str(e) for e in errors)
+                errors=" or ".join(
+                    str(e).replace("combined validators failed ", "")
+                    for e in errors
+                )
             )
         )
 
@@ -281,10 +285,14 @@ class AndValidator(CombinedValidator):
             except ValidationError as e:
                 errors.append(e)
                 continue
+
         if errors:
             raise ValidationError(
                 self.messages["combined"].format(
-                    errors=" and ".join(str(e) for e in errors)
+                    errors=" and ".join(
+                        str(e).replace("combined validators failed ", "")
+                        for e in errors
+                    )
                 )
             )
 
