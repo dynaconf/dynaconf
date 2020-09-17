@@ -35,3 +35,24 @@ assert settings.editor == "vim"
 settings.terminal_emulator = "alacritty"
 
 assert settings.get("TERMINAL_emulator") == "alacritty"
+
+settings.set("a.b.c.d.e", "f")
+
+# All the merging strategies
+
+settings.set("a.b", {"other": 1, "dynaconf_merge": True})
+settings.set("a.b", {"dynaconf_merge": {"another": 2}})
+settings.set("a.b", "@merge {foo='bar'}", tomlfy=True)
+
+assert settings.a == {
+    "b": {"foo": "bar", "other": 1, "another": 2, "c": {"d": {"e": "f"}}}
+}, settings.a
+
+# Now the reset of a.b
+settings.set("a__b", {"reset": None})
+
+assert settings.a.b == {"reset": None}
+
+settings.a.b.reset = 1
+
+assert settings.A.b.reset == 1

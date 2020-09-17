@@ -17,18 +17,18 @@ if os.name == "nt":  # pragma: no cover
     BANNER = "DYNACONF"
 
 
-def object_merge(old, new, unique=False, tail=None):
+def object_merge(old, new, unique=False, full_path=None):
     """
     Recursively merge two data structures, new is mutated in-place.
 
     :param old: The existing data.
     :param new: The new data to get old values merged in to.
     :param unique: When set to True existing list items are not set.
-    :param tail: Indicates the last element of a tree.
+    :param full_path: Indicates the elements of a tree.
     """
     if old == new or old is None or new is None:
         # Nothing to merge
-        return
+        return new
 
     if isinstance(old, list) and isinstance(new, list):
         for item in old[::-1]:
@@ -37,37 +37,93 @@ def object_merge(old, new, unique=False, tail=None):
             new.insert(0, item)
 
     if isinstance(old, dict) and isinstance(new, dict):
+        existing_value = recursive_get(old, full_path)  # doesnt handle None
+        # Need to make every `None` on `_store` to be an wrapped `LazyNone`
+
         for key, value in old.items():
-            if key == tail:
+
+            if existing_value is not None and existing_value is value:
                 continue
+
             if key not in new:
                 new[key] = value
             else:
-                object_merge(value, new[key], tail=tail)
+                object_merge(
+                    value,
+                    new[key],
+                    full_path=full_path[1:] if full_path else None,
+                )
 
         handle_metavalues(old, new)
 
     return new
 
 
+def recursive_get(obj, names):
+    """Given a dot accessible object and a list of names `foo.bar.zaz`
+    gets recursivelly all names one by one obj.foo.bar.zaz.
+    """
+    if not names:
+        return
+    head, tail = names[0], names[1:]
+    result = getattr(obj, head, None)
+    if not tail:
+        return result
+    return recursive_get(result, tail)
+
+
 def handle_metavalues(old, new):
     """Cleanup of MetaValues on new dict"""
+
     for key in list(new.keys()):
+
+        # MetaValue instances
         if getattr(new[key], "_dynaconf_reset", False):  # pragma: no cover
             # a Reset on `new` triggers reasign of existing data
             # @reset is deprecated on v3.0.0
             new[key] = new[key].unwrap()
-
-        if getattr(new[key], "_dynaconf_merge", False):
+        elif getattr(new[key], "_dynaconf_del", False):
+            # a Del on `new` triggers deletion of existing data
+            new.pop(key, None)
+            old.pop(key, None)
+        elif getattr(new[key], "_dynaconf_merge", False):
             # a Merge on `new` triggers merge with existing data
             new[key] = object_merge(
                 old.get(key), new[key].unwrap(), unique=new[key].unique
             )
 
-        if getattr(new[key], "_dynaconf_del", False):
-            # a Del on `new` triggers deletion of existing data
-            new.pop(key, None)
-            old.pop(key, None)
+        # Data structures containing merge tokens
+        if isinstance(new.get(key), (list, tuple)):
+            if (
+                "dynaconf_merge" in new[key]
+                or "dynaconf_merge_unique" in new[key]
+            ):
+                value = list(new[key])
+                unique = False
+
+                try:
+                    value.remove("dynaconf_merge")
+                except ValueError:
+                    value.remove("dynaconf_merge_unique")
+                    unique = True
+
+                for item in old.get(key)[::-1]:
+                    if unique and item in value:
+                        continue
+                    value.insert(0, item)
+
+                new[key] = value
+
+        elif isinstance(new.get(key), dict):
+            local_merge = new[key].pop(
+                "dynaconf_merge", new[key].pop("dynaconf_merge_unique", None)
+            )
+            if local_merge not in (True, False, None) and not new[key]:
+                # In case `dynaconf_merge:` holds value not boolean - ref #241
+                new[key] = local_merge
+
+            if local_merge:
+                new[key] = object_merge(old.get(key), new[key])
 
 
 class DynaconfDict(dict):
@@ -285,6 +341,11 @@ def extract_json_objects(text, decoder=JSONDecoder()):
 
 
 def recursively_evaluate_lazy_format(value, settings):
+    """Given a value as a data structure, traverse all its members
+    to find Lazy values and evaluate it.
+
+    For example: Evaluate values inside lists and dicts
+    """
 
     if getattr(value, "_dynaconf_lazy_format", None):
         value = value(settings)
