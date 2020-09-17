@@ -92,6 +92,10 @@ fi
 
 # Generate new packages.
 echo "${new_version}" > dynaconf/VERSION
+
+# update doc header
+sed -i "s/Dynaconf - [[:digit:]]*.[[:digit:]]*.[[:alnum:]]*/Dynaconf - ${new_version}/" mkdocs.yml
+
 make dist
 echo 'New Package generated!'
 # Create a venv, and schedule it for deletion.
