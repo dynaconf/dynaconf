@@ -752,9 +752,8 @@ class Settings(object):
 
         split_keys = dotted_key.split(".")
         existing_data = self.get(split_keys[0], {})
-        new_data = DynaBox(box_settings=self)
+        new_data = tree = DynaBox(box_settings=self)
 
-        tree = new_data
         for k in split_keys[:-1]:
             tree = tree.setdefault(k, {})
 
@@ -762,12 +761,11 @@ class Settings(object):
         tree[split_keys[-1]] = value
 
         if existing_data:
-            object_merge(
-                old={split_keys[0]: existing_data},
+            new_data = object_merge(
+                old=DynaBox({split_keys[0]: existing_data}),
                 new=new_data,
-                # tail=split_keys[-1],
+                full_path=split_keys,
             )
-        # print(new_data)
         self.update(data=new_data, tomlfy=tomlfy, **kwargs)
 
     def set(

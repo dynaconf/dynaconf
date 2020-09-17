@@ -2,6 +2,7 @@ import os
 
 import pytest
 
+from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf.loaders import toml_loader
 from dynaconf.utils.parse_conf import true_values
@@ -250,7 +251,8 @@ def test_global_merge_shortcut(settings):
     assert settings.MERGE_KEY == ["item1"]
 
 
-def test_local_set_merge_dict(settings):
+def test_local_set_merge_dict():
+    settings = Dynaconf()
     settings.set("DATABASE", {"host": "localhost", "port": 666})
     # calling twice  does not change anything
     settings.set("DATABASE", {"host": "localhost", "port": 666})
@@ -262,6 +264,31 @@ def test_local_set_merge_dict(settings):
     assert settings.DATABASE == {"host": "new", "port": 666, "user": "admin"}
     assert settings.DATABASE.HOST == "new"
     assert settings.DATABASE.user == "admin"
+
+    settings.set("DATABASE.attrs", {"a": ["b", "c"]})
+    settings.set("DATABASE.attrs", {"dynaconf_merge": {"foo": "bar"}})
+    assert settings.DATABASE.attrs == {"a": ["b", "c"], "foo": "bar"}
+
+    settings.set("DATABASE.attrs", {"yeah": "baby", "dynaconf_merge": True})
+    assert settings.DATABASE.attrs == {
+        "a": ["b", "c"],
+        "foo": "bar",
+        "yeah": "baby",
+    }
+
+    settings.set(
+        "DATABASE.attrs",
+        {"a": ["d", "e", "dynaconf_merge"], "dynaconf_merge": True},
+    )
+
+    assert settings.DATABASE.attrs == {
+        "a": ["b", "c", "d", "e"],
+        "foo": "bar",
+        "yeah": "baby",
+    }
+
+    settings.set("DATABASE.attrs.a", ["d", "e", "f", "dynaconf_merge_unique"])
+    assert settings.DATABASE.attrs.a == ["b", "c", "d", "e", "f"]
 
 
 def test_local_set_merge_list(settings):
