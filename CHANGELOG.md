@@ -4,6 +4,47 @@ Changelog
 
 (unreleased)
 ------------
+- Release version 3.1.1rc3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (5):
+            Release version 3.1.1rc2
+            Fix set attribute directly and fresh vars (#412)
+            384 fix tail and dotted merge (#415)
+            Fix #404 no more dup message on combined validators (#417)
+            HOTFIX 414 update docs version on release
+
+      Max Winterstein (1):
+            Fix typo in release notes (#411)
+
+      Mirek Długosz (1):
+            Fix #407 - add proper equality test for CombinedValidator (#413)
+- HOTFIX 414 update docs version on release. [Bruno Rocha]
+
+  Fix #414
+- Fix #404 no more dup message on combined validators (#417) [Bruno
+  Rocha]
+- 384 fix tail and dotted merge (#415) [Bruno Rocha]
+
+  * attempt to fix tail call on object_merge Fix #384
+
+  * Fix list and dict merge issues
+- Fix typo in release notes (#411) [Bruno Rocha, Max Winterstein]
+- Fix #407 - add proper equality test for CombinedValidator (#413)
+  [Mirek Długosz]
+
+  * Fix #407 - add proper equality test for CombinedValidator
+
+  * Update after review
+- Fix set attribute directly and fresh vars (#412) [Bruno Rocha]
+
+  * Fix set attribute directly and fresh vars
+
+  Fix #253
+  Fix #395
+
+  * No need to check for default_settings in setattr
 - Release version 3.1.1rc2. [Bruno Rocha]
 
   Shortlog of commits since last release:
