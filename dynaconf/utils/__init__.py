@@ -37,13 +37,13 @@ def object_merge(old, new, unique=False, full_path=None):
             new.insert(0, item)
 
     if isinstance(old, dict) and isinstance(new, dict):
-        existing_value = recursive_get(old, full_path)  # doesnt handle None
+        existing_value = recursive_get(new, full_path)  # doesnt handle None
         # Need to make every `None` on `_store` to be an wrapped `LazyNone`
 
         for key, value in old.items():
 
-            if existing_value is not None and existing_value is value:
-                continue
+            # if existing_value is not None and existing_value is value:
+            #     continue
 
             if key not in new:
                 new[key] = value
@@ -55,8 +55,19 @@ def object_merge(old, new, unique=False, full_path=None):
                 )
 
         handle_metavalues(old, new)
+        recursive_set(new, full_path, existing_value)
 
     return new
+
+
+def recursive_set(obj, names, value):
+    if not names:
+        return
+    head, tail = names[0], names[1:]
+    if not tail:
+        obj[head] = value
+    else:
+        recursive_set(obj[head], tail, value)
 
 
 def recursive_get(obj, names):
