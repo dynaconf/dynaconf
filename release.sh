@@ -125,8 +125,9 @@ echo "Starting release of $new_version"
 make setup-pre-commit
 
 # Create a new commit and annotated tag.
-git add dynaconf/VERSION
-pre-commit run --files dynaconf/VERSION || true
+git add dynaconf/VERSION dynaconf/mkdocs.yml
+pre-commit run --files dynaconf/VERSION dynaconf/mkdocs.yml || true
+
 commit_message="$(git shortlog "${old_version}.." | sed 's/^./    &/')"
 git commit \
     --message "Release version ${new_version}" \
