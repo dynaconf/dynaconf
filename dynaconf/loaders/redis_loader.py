@@ -6,11 +6,7 @@ from dynaconf.utils.parse_conf import unparse_conf_data
 try:
     from redis import StrictRedis
 except ImportError:
-    raise ImportError(
-        "redis package is not installed in your environment. "
-        "`pip install dynaconf[redis]` or disable the redis loader with "
-        "export REDIS_ENABLED_FOR_DYNACONF=false"
-    )
+    StrictRedis = None
 
 IDENTIFIER = "redis"
 
@@ -24,6 +20,13 @@ def load(obj, env=None, silent=True, key=None):
     :param key: if defined load a single key, else load all in env
     :return: None
     """
+    if StrictRedis is None:
+        raise ImportError(
+            "redis package is not installed in your environment. "
+            "`pip install dynaconf[redis]` or disable the redis loader with "
+            "export REDIS_ENABLED_FOR_DYNACONF=false"
+        )
+
     redis = StrictRedis(**obj.get("REDIS_FOR_DYNACONF"))
     prefix = obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
     # prefix is added to env_list to keep backwards compatibility

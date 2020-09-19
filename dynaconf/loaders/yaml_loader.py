@@ -28,10 +28,6 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :param filename: Optional custom filename to load
     :return: None
     """
-    if yaml is None:  # pragma: no cover
-        BaseLoader.warn_not_installed(obj, "yaml")
-        return
-
     # Resolve the loaders
     # https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
     # Possible values are `safe_load, full_load, unsafe_load, load`

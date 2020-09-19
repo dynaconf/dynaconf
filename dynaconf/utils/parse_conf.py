@@ -277,11 +277,13 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
         parts = data.partition(" ")
         converter_key = parts[0]
         value = parts[-1]
-        return get_converter(converter_key, value, box_settings)
+        value = get_converter(converter_key, value, box_settings)
+    else:
+        value = parse_with_toml(data) if tomlfy else data
 
-    value = parse_with_toml(data) if tomlfy else data
     if isinstance(value, dict):
         value = DynaBox(value, box_settings=box_settings)
+
     return value
 
 
