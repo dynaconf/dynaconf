@@ -4,6 +4,16 @@ Changelog
 
 (unreleased)
 ------------
+- Release version 3.1.1rc4. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (3):
+            Release version 3.1.1rc3
+            HOTFIX: Add missing instruction to release.sh
+            Added full Dynaconf Diagram and few fizes. (#418)
+- Added full Dynaconf Diagram and few fizes. (#418) [Bruno Rocha]
+- HOTFIX: Add missing instruction to release.sh. [Bruno Rocha]
 - Release version 3.1.1rc3. [Bruno Rocha]
 
   Shortlog of commits since last release:
