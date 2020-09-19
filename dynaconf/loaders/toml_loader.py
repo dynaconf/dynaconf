@@ -19,9 +19,6 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :param filename: Optional custom filename to load
     :return: None
     """
-    if toml is None:  # pragma: no cover
-        BaseLoader.warn_not_installed(obj, "toml")
-        return
 
     loader = BaseLoader(
         obj=obj,
