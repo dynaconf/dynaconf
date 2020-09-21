@@ -1,5 +1,52 @@
 # Release Notes
 
+## Dynaconf 3.1.1
+
+This release is more about bug fixes and improvements,
+we included a full [diagram](https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=Dynaconf#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D11krXcDr67FGci_f36FZO-hiL08z4FuL9%26export%3Ddownload) of the library to help contributors.
+
+### Vendoring
+
+Dynaconf now doesn't have dependencies because the main used libraries has
+been vendored, in addition to the vendoring process (which followed the guidelines
+regarding licensing and structure) all the vendored libraries has been minified to
+save space on the distribution.
+
+Ideally the vendored libraries will be upgraded on-demand only when a new security
+or important bug fix is released on the respective vendored repository.
+
+Exception is python-box which the goal is to remove the dependency and implement
+its basic features within dynaconf/DynaBox type.
+
+### Cleanups
+
+We made flake8 more strict and removed some unused imports and variables.
+
+### Variable interpolation
+
+The mechanism to evaluate `Lazy` values has been refactored and now `@format` and
+`@jinja` values can be used within dictionaries and lists in any nesting levels.
+
+### Validators
+
+Fixed a problem when multiple combined validators are registered and fixed
+duplication of ValidationError messages.
+
+All names in a must_exist clausule are now tested, before it wes stopping
+validation on the first failure.
+
+### Fixes
+
+- Cli now accepts dotted keys ex: `dynaconf -i config.settings list -k foo.bar.zaz`
+- boto is now optional for vault authentication
+- a `.formatter` attrbute lookup was conflicting with Django logging so argument has
+been renamed.
+- box_settings made optional to DynaBox
+- Included an example of SOPS custom loader
+- `settings.set` is fixed so it now can set dotted attrs directly `settings.FOO = 1`
+- Fix a problem on object_merge to allow keys with same name
+- Added username and password to Redis
+- Lots of typos on docs
 
 ## Dynaconf 3.1.0
 
