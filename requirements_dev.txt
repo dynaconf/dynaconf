@@ -33,6 +33,7 @@ pre-commit
 # tools
 ipython
 ipdb
+python-minifier
 
 # documentation
 sphinx
