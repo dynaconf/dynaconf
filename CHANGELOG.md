@@ -4,6 +4,14 @@ Changelog
 
 (unreleased)
 ------------
+- Release version 3.1.1rc6. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.1rc5
+            Do not include vendor_src on wheel target (#420)
+- Do not include vendor_src on wheel target (#420) [Bruno Rocha]
 - Release version 3.1.1rc5. [Bruno Rocha]
 
   Shortlog of commits since last release:
