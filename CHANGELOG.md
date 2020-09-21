@@ -2,8 +2,16 @@ Changelog
 =========
 
 
-(unreleased)
-------------
+3.1.1 (2020-09-21)
+------------------
+- Release version 3.1.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.1rc6
+            HOTFIX: Cli now accepts dotter keys
+- HOTFIX: Cli now accepts dotter keys. [Bruno Rocha]
 - Release version 3.1.1rc6. [Bruno Rocha]
 
   Shortlog of commits since last release:
