@@ -4,6 +4,25 @@ Changelog
 
 (unreleased)
 ------------
+- Release version 3.1.1rc5. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (3):
+            Release version 3.1.1rc4
+            Small fix on release script
+            Minification of vendored modules (#419)
+- Minification of vendored modules (#419) [Bruno Rocha]
+
+  * Minified all the vendor folder saving 50% od disk space
+
+  * Add vendor_src and minify script
+
+  vendor_src is not included in the build, only the results of its
+  minification
+- Small fix on release script. [Bruno Rocha]
+
+  Correct path for mkdocs.yml
 - Release version 3.1.1rc4. [Bruno Rocha]
 
   Shortlog of commits since last release:
