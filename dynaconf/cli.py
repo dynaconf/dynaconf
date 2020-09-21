@@ -491,7 +491,7 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
             loaders.write(output, data, env=not flat and cur_env)
     else:
         key = upperfy(key)
-        value = data.get(key)
+        value = settings.get(key)
         if not value:
             click.echo(click.style("Key not found", bg="red", fg="white"))
             return
