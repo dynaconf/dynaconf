@@ -41,6 +41,10 @@ setup(
             "docs.*",
             "build",
             "build.*",
+            "dynaconf.vendor_src",
+            "dynaconf/vendor_src",
+            "dynaconf.vendor_src.*",
+            "dynaconf/vendor_src/*",
         ]
     ),
     include_package_data=True,
