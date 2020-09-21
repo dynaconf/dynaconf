@@ -13,4 +13,5 @@ omit =
     dynaconf/loaders/__init__.py
     dynaconf/example/*
     dynaconf/vendor/*
+    dynaconf/vendor_src/*
     dynaconf/contrib/django_dynaconf/*

@@ -3,3 +3,4 @@ include *.png
 include LICENSE
 include VERSION
 include dynaconf/VERSION
+prune dynaconf/vendor_src

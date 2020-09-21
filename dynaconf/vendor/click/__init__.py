@@ -1,18 +1,4 @@
-"""
-Click is a simple Python module inspired by the stdlib optparse to make
-writing command line scripts fun. Unlike other modules, it's based
-around a simple API that does not come with too much magic and is
-composable.
-"""
-from .core import Argument
-from .core import BaseCommand
-from .core import Command
-from .core import CommandCollection
-from .core import Context
-from .core import Group
-from .core import MultiCommand
-from .core import Option
-from .core import Parameter
+from .core import Argument,BaseCommand,Command,CommandCollection,Context,Group,MultiCommand,Option,Parameter
 from .decorators import argument
 from .decorators import command
 from .decorators import confirmation_option
@@ -71,5 +57,4 @@ from .utils import get_binary_stream
 from .utils import get_os_args
 from .utils import get_text_stream
 from .utils import open_file
-
-__version__ = "8.0.0.dev"
+__version__='8.0.0.dev'
