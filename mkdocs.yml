@@ -20,14 +20,10 @@ nav:
     - Advanced usage: advanced.md
     - Release Notes: release_notes.md
 theme:
-    # features:
-    #   - tabs
     language: en
     name: material
     logo: img/logo_square_d.svg
     favicon: img/favicon.ico
-    palette:
-      # primary: blue grey
 markdown_extensions:
   - pymdownx.details
   - pymdownx.emoji:
