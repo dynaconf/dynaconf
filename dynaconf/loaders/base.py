@@ -6,7 +6,7 @@ from dynaconf.utils import ensure_a_list
 from dynaconf.utils import upperfy
 
 
-class BaseLoader(object):
+class BaseLoader:
     """Base loader for dynaconf source files.
 
     :param obj: {[LazySettings]} -- [Dynaconf settings]
@@ -171,23 +171,17 @@ class BaseLoader(object):
         if key:
             key = upperfy(key)
 
-        is_secret = "secret" in source_file
-
         # is there a `dynaconf_merge` inside an `[env]`?
         file_merge = file_merge or data.pop("DYNACONF_MERGE", False)
 
         if not key:
             self.obj.update(
-                data,
-                loader_identifier=identifier,
-                is_secret=is_secret,
-                merge=file_merge,
+                data, loader_identifier=identifier, merge=file_merge,
             )
         elif key in data:
             self.obj.set(
                 key,
                 data.get(key),
                 loader_identifier=identifier,
-                is_secret=is_secret,
                 merge=file_merge,
             )

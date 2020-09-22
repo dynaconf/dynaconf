@@ -42,7 +42,7 @@ def set_settings(ctx, instance=None):
         settings = import_settings(instance)
     elif "FLASK_APP" in os.environ:  # pragma: no cover
         with suppress(ImportError, click.UsageError):
-            from flask.cli import ScriptInfo
+            from flask.cli import ScriptInfo  # noqa
 
             flask_app = ScriptInfo().load_app()
             settings = flask_app.config
@@ -55,13 +55,13 @@ def set_settings(ctx, instance=None):
         sys.path.insert(0, os.path.abspath(os.getcwd()))
         try:
             # Django extension v2
-            from django.conf import settings
+            from django.conf import settings  # noqa
 
             settings.DYNACONF.configure()
         except (ImportError, AttributeError):
             # Backwards compatible with old django extension (pre 2.0.0)
             import dynaconf.contrib.django_dynaconf  # noqa
-            from django.conf import settings as django_settings
+            from django.conf import settings as django_settings  # noqa
 
             django_settings.configure()
             settings = django_settings
@@ -370,7 +370,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
         )
 
     if django:  # pragma: no cover
-        dj_module, loaded_from = get_module({}, django)
+        dj_module, _ = get_module({}, django)
         dj_filename = dj_module.__file__
         if Path(dj_filename).exists():
             click.confirm(

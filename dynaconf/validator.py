@@ -19,7 +19,7 @@ class ValidationError(Exception):
     pass
 
 
-class Validator(object):
+class Validator:
     """Validators are conditions attached to settings variables names
     or patterns::
 
@@ -194,13 +194,15 @@ class Validator(object):
                 raise ValidationError(
                     self.messages["must_exist_true"].format(name=name, env=env)
                 )
-            elif self.must_exist is False and value is not empty:
+
+            if self.must_exist is False and value is not empty:
                 raise ValidationError(
                     self.messages["must_exist_false"].format(
                         name=name, env=env
                     )
                 )
-            elif self.must_exist in (False, None) and value is empty:
+
+            if self.must_exist in (False, None) and value is empty:
                 continue
 
             # is there a callable condition?
