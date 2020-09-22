@@ -215,7 +215,7 @@ class LazySettings(LazyObject):
         return self._wrapped is not empty
 
 
-class Settings(object):
+class Settings:
     """
     Common logic for settings whether set by a module or by the user.
     """
@@ -775,7 +775,7 @@ class Settings(object):
         loader_identifier=None,
         tomlfy=False,
         dotted_lookup=True,
-        is_secret=False,
+        is_secret="DeprecatedArgument",  # noqa
         merge=False,
     ):
         """Set a value storing references for the loader
@@ -784,7 +784,6 @@ class Settings(object):
         :param value: The value to store
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
-        :param is_secret: Bool define if secret values is hidden on logs.
         :param merge: Bool define if existing nested data will be merged.
         """
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
@@ -824,7 +823,7 @@ class Settings(object):
                 value = object_merge(existing, value)
             else:
                 # `dynaconf_merge` may be used within the key structure
-                value = self._merge_before_set(key, existing, value, is_secret)
+                value = self._merge_before_set(existing, value)
 
         if isinstance(value, dict):
             value = DynaBox(value, box_settings=self)
@@ -848,8 +847,8 @@ class Settings(object):
         data=None,
         loader_identifier=None,
         tomlfy=False,
-        is_secret=False,
         merge=False,
+        is_secret="DeprecatedArgument",  # noqa
         **kwargs,
     ):
         """
@@ -879,11 +878,10 @@ class Settings(object):
                 value,
                 loader_identifier=loader_identifier,
                 tomlfy=tomlfy,
-                is_secret=is_secret,
                 merge=merge,
             )
 
-    def _merge_before_set(self, key, existing, value, is_secret):
+    def _merge_before_set(self, existing, value):
         """Merge the new value being set with the existing value before set"""
         global_merge = getattr(self, "MERGE_ENABLED_FOR_DYNACONF", False)
         if isinstance(value, dict):
@@ -1018,9 +1016,11 @@ class Settings(object):
     @property
     def _root_path(self):
         """ROOT_PATH_FOR_DYNACONF or the path of first loaded file or '.'"""
+
         if self.ROOT_PATH_FOR_DYNACONF is not None:
             return self.ROOT_PATH_FOR_DYNACONF
-        elif self._loaded_files:  # called once
+
+        if self._loaded_files:  # called once
             root_path = os.path.dirname(self._loaded_files[0])
             self.set("ROOT_PATH_FOR_DYNACONF", root_path)
             return root_path
@@ -1122,7 +1122,7 @@ class Settings(object):
 
         return logging.getLogger("dynaconf")
 
-    def is_overridden(self, setting):
+    def is_overridden(self, setting):  # noqa
         """This is to provide Django DJDT support: issue 382"""
         return False
 

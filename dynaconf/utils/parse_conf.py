@@ -216,11 +216,9 @@ converters = {
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
-    "@reset": lambda value, box_settings: Reset(
-        value, box_settings
-    ),  # @reset is DEPRECATED on v3.0.0
-    "@del": lambda value, box_settings: Del(value, box_settings),
-    "@merge": lambda value, box_settings: Merge(value, box_settings),
+    "@reset": Reset,  # @reset is DEPRECATED on v3.0.0
+    "@del": Del,
+    "@merge": Merge,
     "@merge_unique": lambda value, box_settings: Merge(
         value, box_settings, unique=True
     ),
@@ -298,7 +296,8 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
             parse_conf_data(item, tomlfy=tomlfy, box_settings=box_settings)
             for item in data
         ]
-    elif isinstance(data, (dict, DynaBox)):
+
+    if isinstance(data, (dict, DynaBox)):
         # recursively parse inner dict items
         _parsed = {}
         for k, v in data.items():
@@ -306,23 +305,28 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
                 v, tomlfy=tomlfy, box_settings=box_settings
             )
         return _parsed
-    else:
-        # return parsed string value
-        return _parse_conf_data(data, tomlfy=tomlfy, box_settings=box_settings)
+
+    # return parsed string value
+    return _parse_conf_data(data, tomlfy=tomlfy, box_settings=box_settings)
 
 
 def unparse_conf_data(value):
     if isinstance(value, bool):
         return f"@bool {value}"
-    elif isinstance(value, int):
+
+    if isinstance(value, int):
         return f"@int {value}"
-    elif isinstance(value, float):
+
+    if isinstance(value, float):
         return f"@float {value}"
-    elif isinstance(value, (list, dict)):
+
+    if isinstance(value, (list, dict)):
         return f"@json {json.dumps(value)}"
-    elif isinstance(value, Lazy):
+
+    if isinstance(value, Lazy):
         return try_to_encode(value)
-    elif value is None:
+
+    if value is None:
         return "@none "
-    else:
-        return value
+
+    return value

@@ -174,7 +174,7 @@ def compat_kwargs(kwargs):
                     kwargs[c_old] = kwargs[new]
 
 
-class Missing(object):
+class Missing:
     """
     Sentinel value object/singleton used to differentiate between ambiguous
     situations where `None` is a valid value.

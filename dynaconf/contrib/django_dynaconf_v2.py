@@ -93,15 +93,14 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     lazy_settings.update(dj)
 
     # 5) Patch django.conf.settings
-    class Wrapper(object):
+    class Wrapper:
 
         # lazy_settings = conf.settings.lazy_settings
 
         def __getattribute__(self, name):
             if name == "settings":
                 return lazy_settings
-            else:
-                return getattr(conf, name)
+            return getattr(conf, name)
 
     # This implementation is recommended by Guido Van Rossum
     # https://mail.python.org/pipermail/python-ideas/2012-May/014969.html

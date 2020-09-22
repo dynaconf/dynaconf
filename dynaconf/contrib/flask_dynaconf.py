@@ -13,7 +13,7 @@ import dynaconf
 from importlib import import_module
 
 
-class FlaskDynaconf(object):
+class FlaskDynaconf:
     """The arguments are.
     app = The created app
     dynaconf_args = Extra args to be passed to Dynaconf (validator for example)
