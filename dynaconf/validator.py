@@ -201,7 +201,8 @@ class Validator:
                         name=name, env=env
                     )
                 )
-            elif self.must_exist in (False, None) and value is empty:
+
+            if self.must_exist in (False, None) and value is empty:
                 continue
 
             # is there a callable condition?

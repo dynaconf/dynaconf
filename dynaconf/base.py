@@ -240,7 +240,6 @@ class Settings:
         self.environ = os.environ
         self.SETTINGS_MODULE = None
         self._not_installed_warnings = []
-        self._memoized = None
 
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
@@ -1149,7 +1148,6 @@ RESERVED_ATTRS = (
         "_loaded_envs",
         "_loaded_files",
         "_loaders",
-        "_memoized",
         "_not_installed_warnings",
         "_store",
         "_warn_dynaconf_global_settings",
