@@ -9,6 +9,10 @@
 
 <p align="center"><a href="/LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square"></a> <a href="https://pypi.python.org/pypi/dynaconf"><img alt="PyPI" src="https://img.shields.io/pypi/v/dynaconf.svg"></a> <img alt="Azure DevOps builds (branch)" src="https://img.shields.io/azure-devops/build/rochacbruno/3e08a9d6-ea7f-43d7-9584-96152e542071/1/master.svg?label=windows%20build&amp;logo=windows"> <img alt="Azure DevOps builds (branch)" src="https://img.shields.io/azure-devops/build/rochacbruno/3e08a9d6-ea7f-43d7-9584-96152e542071/1/master.svg?label=linux%20build&amp;logo=linux"> <img alt="Azure DevOps builds (branch)" src="https://img.shields.io/azure-devops/build/rochacbruno/3e08a9d6-ea7f-43d7-9584-96152e542071/1/master.svg?label=macos%20build&amp;logo=apple"> <a href="https://codecov.io/gh/rochacbruno/dynaconf"><img alt="codecov" src="https://codecov.io/gh/rochacbruno/dynaconf/branch/master/graph/badge.svg"></a> <a href="https://www.codacy.com/app/rochacbruno/dynaconf?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rochacbruno/dynaconf&amp;utm_campaign=Badge_Grade"><img alt="Codacy Badge" src="https://api.codacy.com/project/badge/Grade/5074f5d870a24ddea79def463453545b"></a> <img alt="GitHub Release Date" src="https://img.shields.io/github/release-date/rochacbruno/dynaconf.svg"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/rochacbruno/dynaconf.svg"> <a href="https://t.me/dynaconf"><img alt="Telegram" src="https://img.shields.io/badge/chat-t.me/dynaconf-blue.svg?logo=telegram"></a></p>
 
+
+[![Foo](https://xscode.com/assets/promo-banner.svg)](https://xscode.com/rochacbruno/dynaconf)
+
+
 ## Features
 
 - Inspired by the **[12-factor application guide](https://12factor.net/config)**
@@ -116,10 +120,10 @@ pip install dynaconf
         password = "s3cr3t"
         token = "dfgrfg5d4g56ds4gsdf5g74984we5345-"
         message = "This file doesn't go to your pub repo"
-        ``` 
+        ```
 
         > ⚠️ `dynaconf init` command puts the `.secrets.*` in yout `.gitignore` to avoid it to be exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
- 
+
         ```ini
         # Secrets doesn't go to public repos
         .secrets.*
@@ -175,7 +179,7 @@ pip install dynaconf
         key = "value"
         a_boolean = false
         number = 1234
-        
+
         [development]
         key = "development value"
         SQLALCHEMY_DB_URI = "sqlite://data.db"
@@ -196,10 +200,10 @@ pip install dynaconf
         password = "s3cr3t"
         token = "dfgrfg5d4g56ds4gsdf5g74984we5345-"
         message = "This file doesn't go to your pub repo"
-        ``` 
+        ```
 
         > ⚠️ put `.secrets.*` in yout `.gitignore` to avoid it to be exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
- 
+
         ```ini
         # Secrets doesn't go to public repos
         .secrets.*
@@ -247,18 +251,18 @@ pip install dynaconf
 
     🔑 .secrets.yaml created to hold your secrets.
 
-    🙈 the .secrets.yaml is also included in `.gitignore` 
-    beware to not push your secrets to a public repo 
+    🙈 the .secrets.yaml is also included in `.gitignore`
+    beware to not push your secrets to a public repo
     or use dynaconf builtin support for Vault Servers.
 
-    ⁉  path/to/yourproject/settings.py is found do you want to add dynaconf? [y/N]: 
+    ⁉  path/to/yourproject/settings.py is found do you want to add dynaconf? [y/N]:
     ```
 
     Answer **y**
 
     ```plain
     🎠  Now your Django settings are managed by Dynaconf
-    🎉  Dynaconf is configured! read more on https://dynaconf.com 
+    🎉  Dynaconf is configured! read more on https://dynaconf.com
     ```
 
     > ℹ️ On Django the recommended file format is **yaml** because it can hold
@@ -293,7 +297,7 @@ pip install dynaconf
                 - django.contrib.contenttypes
                 - django.contrib.sessions
                 - django.contrib.messages
-                - django.contrib.staticfiles 
+                - django.contrib.staticfiles
         production:
             ALLOWED_HOSTS:
                 - 'server.prod.com'
@@ -310,10 +314,10 @@ pip install dynaconf
             SECRET_KEY: 43grng9398534nfkjer
         production:
             SECRET_KEY: vfkjndkjg098gdf90gudfsg
-        ``` 
+        ```
 
         > ⚠️ put `.secrets.*` in yout `.gitignore` to avoid it to be exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
- 
+
         ```ini
         # Secrets doesn't go to public repos
         .secrets.*
@@ -355,7 +359,7 @@ pip install dynaconf
 
 ## Defining your settings variables
 
-Dynaconf prioritizes the use of [environment variables](/envvars/) and 
+Dynaconf prioritizes the use of [environment variables](/envvars/) and
 you can optionally store settings in [Settings Files](/settings_files/) using any of `toml|yaml|json|ini|py` extension.
 
 ### On env vars
@@ -373,7 +377,7 @@ export DYNACONF_NUMBER=123                   # automatically loaded as int
 export DJANGO_ALLOWED_HOSTS="['*', 'other']" # DJANGO_ extension prefix
                                              # automatically loaded as a list
 
-export FLASK_DEBUG=true                      # FLASK_ extension prefix  
+export FLASK_DEBUG=true                      # FLASK_ extension prefix
                                              # automatically loaded as boolean
 
 export CUSTOM_NAME=Bruno                     # CUSTOM_ prefix as specified in
@@ -451,7 +455,7 @@ settings.name == "Bruno"
 
 #### Layered environments on files
 
-It is also possible to make dynaconf to read the files separated by layered 
+It is also possible to make dynaconf to read the files separated by layered
 environments so each section or first level key is loaded as a
 distinct environment.
 
@@ -512,7 +516,7 @@ You can for example name it `[testing]` or `[anything]`
 
 === "program.py"
 
-    Then in your program you can use environment variables 
+    Then in your program you can use environment variables
     to switch environments.
 
     `#!bash export ENV_FOR_DYNACONF=development`
@@ -530,7 +534,7 @@ You can for example name it `[testing]` or `[anything]`
 !!! warning
     On **Flask** and **Django** extensions the default behaviour is already
     the layered environments.
-    Also to switch the environment you use `#!bash export FLASK_ENV=production` or `#!bash export DJANGO_ENV=production` respectively. 
+    Also to switch the environment you use `#!bash export FLASK_ENV=production` or `#!bash export DJANGO_ENV=production` respectively.
 
 !!! tip
     It is also possible to switch environments programmatically passing
@@ -596,7 +600,7 @@ validate your settings in 2 ways.
     settings.validators.register(Validator("field", **rules))
     ```
 
-    You can also force the earlier validation placing a call to `validate` 
+    You can also force the earlier validation placing a call to `validate`
     after your settings instantiation.
 
     ```py
