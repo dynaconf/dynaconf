@@ -5,9 +5,7 @@ email, or any other method with the owners of this repository before making a ch
 
 Please note we have a code of conduct, please follow it in all your interactions with the project.
 
-1. Ensure you read https://github.com/rochacbruno/dynaconf/issues/154
-2. Also please read https://github.com/rochacbruno/dynaconf/issues/156
-3. Library Diagram: https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=Dynaconf#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D11krXcDr67FGci_f36FZO-hiL08z4FuL9%26export%3Ddownload
+This Diagram can help you understand visually what happens on Dynaconf: https://viewer.diagrams.net/?highlight=0000ff&edit=_blank&layers=1&nav=1&title=Dynaconf#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D11krXcDr67FGci_f36FZO-hiL08z4FuL9%26export%3Ddownload
 
 ## Pull Request Process
 
