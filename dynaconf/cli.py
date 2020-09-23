@@ -16,6 +16,7 @@ from dynaconf import settings as legacy_settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
+from dynaconf.utils.functional import empty
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.validator import ValidationError
 from dynaconf.validator import Validator
@@ -470,12 +471,12 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
     def color(_k):
         if _k in dir(default_settings):
             return "blue"
-        return "green"
+        return "magenta"
 
     def format_setting(_k, _v):
-        key = click.style(_k, bg=color(_k), fg="white")
+        key = click.style(_k, bg=color(_k), fg="bright_white")
         data_type = click.style(
-            f"<{type(_v).__name__}>", bg="bright_black", fg="white"
+            f"<{type(_v).__name__}>", bg="bright_black", fg="bright_white"
         )
         value = pprint.pformat(_v)
         return f"{key}{data_type} {value}"
@@ -491,10 +492,16 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
             loaders.write(output, data, env=not flat and cur_env)
     else:
         key = upperfy(key)
-        value = settings.get(key)
-        if not value:
+
+        try:
+            value = settings.get(key, empty)
+        except AttributeError:
+            value = empty
+
+        if value is empty:
             click.echo(click.style("Key not found", bg="red", fg="white"))
             return
+
         click.echo(format_setting(key, value))
         if output:
             loaders.write(output, {key: value}, env=not flat and cur_env)

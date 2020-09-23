@@ -153,6 +153,7 @@ setup-pre-commit:
 
 run-pre-commit:
 	rm -rf .tox/
+	rm -rf build/
 	pre-commit run --files $$(find -regex '.*\.\(py\|yaml\|yml\|md\)') -v
 
 pep8:
