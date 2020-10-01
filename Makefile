@@ -103,6 +103,8 @@ test_examples:
 	cd example/issues/384_dotted_set;pwd;python app.py
 	cd example/issues/392_evaluate_nested_structures;pwd;DYNACONF_INITIAL='@merge [1,2,3]' python app.py
 	cd example/issues/404_dup_validator_message;pwd;python app.py
+	cd example/issues/434_setenv;pwd;python app.py --config development dynaconf
+
 test_vault:
 	# @cd example/vault;pwd;python write.py
 	docker run --rm --name dynaconf_with_vault -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
