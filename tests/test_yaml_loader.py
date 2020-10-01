@@ -284,16 +284,6 @@ def test_explicit_local_files(tmpdir):
     assert conf.get("music.current.even.inner.element") is True
 
 
-def test_empty_env(tmpdir):
-    """Assert empty env is not crashing on load."""
-    settings_file_yaml = """
-    default: ~
-    """
-    tmpdir.join("settings.yaml").write(settings_file_yaml)
-    settings = LazySettings(environments=True)
-    settings.reload()
-
-
 def test_envless():
     settings = LazySettings()
     _yaml = """
@@ -305,3 +295,27 @@ def test_envless():
     assert settings.a == "a,b"
     assert settings.COLORS.white.code == "#FFFFFF"
     assert settings.COLORS.white.name == "white"
+
+
+def test_empty_env():
+    settings = LazySettings(environments=True)
+    _yaml = """
+    default:
+        foo: bar
+    development:
+    """
+    load(settings, filename=_yaml)
+    assert settings.FOO == "bar"
+
+
+def test_empty_env_from_file(tmpdir):
+    """Assert empty env is not crashing on load."""
+    settings_file_yaml = """
+    default:
+        foo: bar
+    development: ~
+    """
+    tmpdir.join("settings.yaml").write(settings_file_yaml)
+    settings = LazySettings(environments=True, settings_file="settings.yaml")
+    settings.reload()
+    assert settings.FOO == "bar"
