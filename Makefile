@@ -104,6 +104,7 @@ test_examples:
 	cd example/issues/392_evaluate_nested_structures;pwd;DYNACONF_INITIAL='@merge [1,2,3]' python app.py
 	cd example/issues/404_dup_validator_message;pwd;python app.py
 	cd example/issues/434_setenv;pwd;python app.py --config development dynaconf
+	cd example/issues/430_same_name;pwd;python app.py
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
