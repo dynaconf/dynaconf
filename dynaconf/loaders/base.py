@@ -59,14 +59,14 @@ class BaseLoader:
         else:  # it is already a list/tuple
             files = filename
 
-        source_data = self.get_source_date(files)
+        source_data = self.get_source_data(files)
 
         if self.obj.get("ENVIRONMENTS_FOR_DYNACONF") is False:
             self._envless_load(source_data, silent, key)
         else:
             self._load_all_envs(source_data, silent, key)
 
-    def get_source_date(self, files):
+    def get_source_data(self, files):
         """Reads each file and returns source data for each file
         {"path/to/file.ext": {"key": "value"}}
         """
@@ -99,15 +99,13 @@ class BaseLoader:
 
     def _envless_load(self, source_data, silent=True, key=None):
         """Load all the keys from each file without env separation"""
-        for source_file, file_data in source_data.items():
-            self._set_data_to_obj(
-                file_data, self.identifier, source_file, key=key
-            )
+        for file_data in source_data.values():
+            self._set_data_to_obj(file_data, self.identifier, key=key)
 
     def _load_all_envs(self, source_data, silent=True, key=None):
         """Load configs from files separating by each environment"""
 
-        for source_file, file_data in source_data.items():
+        for file_data in source_data.values():
 
             # env name is checked in lower
             file_data = {k.lower(): value for k, value in file_data.items()}
@@ -115,35 +113,18 @@ class BaseLoader:
             # is there a `dynaconf_merge` on top level of file?
             file_merge = file_data.get("dynaconf_merge")
 
-            # all lower case for comparison
-            base_envs = [
-                # DYNACONF or MYPROGRAM
-                (self.obj.get("ENVVAR_PREFIX_FOR_DYNACONF") or "").lower(),
-                # DEFAULT
-                self.obj.get("DEFAULT_ENV_FOR_DYNACONF").lower(),
-                # default active env unless ENV_FOR_DYNACONF is changed
-                "development",
-                # backwards compatibility for global
-                "dynaconf",
-                # global that rules all
-                "global",
-            ]
-
             for env in build_env_list(self.obj, self.env):
                 env = env.lower()  # lower for better comparison
                 data = {}
+
                 try:
                     data = file_data[env] or {}
                 except KeyError:
-                    if env not in base_envs:
-                        message = (
-                            f"{self.identifier}_loader: {env} env not"
-                            f"defined in {source_file}"
-                        )
-                        if silent:
-                            warnings.warn(message)
-                        else:
-                            raise KeyError(message)
+                    if silent:
+                        continue
+                    raise
+
+                if not data:
                     continue
 
                 if env != self.obj.get("DEFAULT_ENV_FOR_DYNACONF").lower():
@@ -151,18 +132,10 @@ class BaseLoader:
                 else:
                     identifier = self.identifier
 
-                self._set_data_to_obj(
-                    data, identifier, source_file, file_merge, key, env
-                )
+                self._set_data_to_obj(data, identifier, file_merge, key)
 
     def _set_data_to_obj(
-        self,
-        data,
-        identifier,
-        source_file,
-        file_merge=None,
-        key=False,
-        env=False,
+        self, data, identifier, file_merge=None, key=False,
     ):
         """Calls setttings.set to add the keys"""
 
