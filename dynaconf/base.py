@@ -724,8 +724,11 @@ class Settings:
             and key not in self._defaults
             or force
         ):
-            delattr(self, key)
-            self.store.pop(key, None)
+            with suppress(KeyError, AttributeError):
+                # AttributeError can happen when a LazyValue consumes
+                # a previously deleted key
+                delattr(self, key)
+                del self.store[key]
 
     def unset_all(self, keys, force=False):  # pragma: no cover
         """Unset based on a list of keys

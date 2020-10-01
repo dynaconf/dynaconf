@@ -163,6 +163,11 @@ def test_list_with_key():
     assert "TEST_KEY<str> 'test_value'" in result
 
 
+def test_list_with_invalid_key():
+    result = run(["-i", "tests.config.settings", "list", "-k", "TEST_KEY.foo"])
+    assert "Key not found" in result
+
+
 def test_list_with_key_export_json(tmpdir):
     result = run(
         [
