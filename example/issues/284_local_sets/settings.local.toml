@@ -1,0 +1,6 @@
+# to explicitly merge a file into existing data it should contain merge token
+dynaconf_merge = true
+[default]
+
+[development.A.cousin]
+D = "2"
