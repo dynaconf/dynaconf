@@ -2,6 +2,127 @@ Changelog
 =========
 
 
+3.1.2 (2020-10-08)
+------------------
+- Release version 3.1.2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (13):
+            Release version 3.1.1
+            Update diagram images
+            Update docs/release_notes
+            Fixing prospector warnings. (#425)
+            Fix mkdocs config problem found in #423
+            Signed in for https://xscode.com/rochacbruno/dynaconf (#426)
+            Remove links to outdated issues from guidelines
+            Fix colors and KEyError handling on cli.py (#429)
+            Fix #434 setenv failing to unset LazyValues (#437)
+            Fix #432 no need for warning when env is missing on a file (#438)
+            Add test to ensure fix #430 (#439)
+            Close #284 not a bug (#440)
+            Fix #443 object merge with same value on same level keys (#444)
+
+      dependabot-preview[bot] (6):
+            Bump mkdocs-material from 5.3.2 to 5.5.13 (#423)
+            Bump pymdown-extensions from 7.1 to 8.0 (#422)
+            Bump mkdocs-material-extensions from 1.0 to 1.0.1 (#427)
+            Bump pymdown-extensions from 8.0 to 8.0.1 (#435)
+            Bump mkdocs-material from 5.5.13 to 6.0.1 (#436)
+            Bump mkdocs-material from 6.0.1 to 6.0.2 (#442)
+- Fix #443 object merge with same value on same level keys (#444) [Bruno
+  Rocha]
+
+  This solution is a temporary solution as it solves current
+  problem, but there is still the case for `None` values.
+
+  The best solution for this case would be wrapping all the values
+  on assignment and give it a full path signature to compare.
+- Bump mkdocs-material from 6.0.1 to 6.0.2 (#442) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 6.0.1 to 6.0.2.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.0.1...6.0.2)
+- Close #284 not a bug (#440) [Bruno Rocha]
+
+  284 is not a bug but a missing of explicit merge tokens
+- Add test to ensure fix #430 (#439) [Bruno Rocha]
+
+  I could not reproduce the problem resported on #430
+  considering it close #430
+  reopen as needed.
+- Fix #432 no need for warning when env is missing on a file (#438)
+  [Bruno Rocha]
+
+  When env is missing on a file ther eis no need to output
+  a warning.
+
+  All envs are optional on files.
+
+  Fix #432
+- Fix #434 setenv failing to unset LazyValues (#437) [Bruno Rocha]
+
+  Fix #434
+- Bump mkdocs-material from 5.5.13 to 6.0.1 (#436) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 5.5.13 to 6.0.1.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/5.5.13...6.0.1)
+- Bump pymdown-extensions from 8.0 to 8.0.1 (#435) [dependabot-
+  preview[bot]]
+
+  Bumps [pymdown-extensions](https://github.com/facelessuser/pymdown-extensions) from 8.0 to 8.0.1.
+  - [Release notes](https://github.com/facelessuser/pymdown-extensions/releases)
+  - [Commits](https://github.com/facelessuser/pymdown-extensions/compare/8.0...8.0.1)
+- Fix colors and KEyError handling on cli.py (#429) [Bruno Rocha]
+- Remove links to outdated issues from guidelines. [Bruno Rocha]
+- Bump mkdocs-material-extensions from 1.0 to 1.0.1 (#427) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material-extensions](https://github.com/facelessuser/mkdocs-material-extensions) from 1.0 to 1.0.1.
+  - [Release notes](https://github.com/facelessuser/mkdocs-material-extensions/releases)
+  - [Changelog](https://github.com/facelessuser/mkdocs-material-extensions/blob/master/changelog.md)
+  - [Commits](https://github.com/facelessuser/mkdocs-material-extensions/compare/1.0...1.0.1)
+- Signed in for https://xscode.com/rochacbruno/dynaconf (#426) [Bruno
+  Rocha]
+
+  Offering paid support for dynaconf users.
+- Bump pymdown-extensions from 7.1 to 8.0 (#422) [dependabot-
+  preview[bot]]
+
+  Bumps [pymdown-extensions](https://github.com/facelessuser/pymdown-extensions) from 7.1 to 8.0.
+  - [Release notes](https://github.com/facelessuser/pymdown-extensions/releases)
+  - [Commits](https://github.com/facelessuser/pymdown-extensions/compare/7.1...8.0)
+- Bump mkdocs-material from 5.3.2 to 5.5.13 (#423) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 5.3.2 to 5.5.13.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/5.3.2...5.5.13)
+- Fix mkdocs config problem found in #423. [Bruno Rocha]
+
+  Fix #mkdocs-material/1941
+- Fixing prospector warnings. (#425) [Bruno Rocha]
+
+  * Fixing prospector warnings
+
+  * Used vulture to detect and remove dead code
+- Update docs/release_notes. [Bruno Rocha]
+- Update diagram images. [Bruno Rocha]
+- Release version 3.1.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.1rc6
+            HOTFIX: Cli now accepts dotter keys
+
+
 3.1.1 (2020-09-21)
 ------------------
 - Release version 3.1.1. [Bruno Rocha]
