@@ -42,7 +42,11 @@ def object_merge(old, new, unique=False, full_path=None):
 
         for key, value in old.items():
 
-            if existing_value is not None and existing_value is value:
+            if (
+                existing_value is not None
+                and key == full_path[-1]
+                and existing_value is value
+            ):
                 continue
 
             if key not in new:
