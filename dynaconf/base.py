@@ -366,7 +366,11 @@ class Settings:
 
         # If we've reached the end, or parent key not found, then return result
         if not keys or result == default:
-            return converters.get(cast, lambda value: value)(result)
+            if cast and cast in converters:
+                return get_converter(cast, result, box_settings=self)
+            elif cast is True:
+                return parse_conf_data(result, tomlfy=True, box_settings=self)
+            return result
 
         # If we've still got key elements to traverse, let's do that.
         return self._dotted_get(
@@ -464,7 +468,7 @@ class Settings:
         if data:
             if cast in converters:
                 data = get_converter(cast, data, box_settings=self)
-            if cast is True:
+            elif cast is True:
                 data = parse_conf_data(data, tomlfy=True, box_settings=self)
         return data
 
