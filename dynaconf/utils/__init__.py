@@ -47,6 +47,8 @@ def object_merge(old, new, unique=False, full_path=None):
                 and key == full_path[-1]
                 and existing_value is value
             ):
+                # Here Be The Dragons
+                # This comparison needs to be smarter
                 continue
 
             if key not in new:
