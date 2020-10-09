@@ -351,7 +351,9 @@ class Settings:
 
     to_dict = as_dict  # backwards compatibility
 
-    def _dotted_get(self, dotted_key, default=None, parent=None, **kwargs):
+    def _dotted_get(
+        self, dotted_key, default=None, parent=None, cast=None, **kwargs
+    ):
         """
         Perform dotted key lookups and keep track of where we are.
         :param key: The name of the setting value, will always be upper case
@@ -364,11 +366,15 @@ class Settings:
 
         # If we've reached the end, or parent key not found, then return result
         if not keys or result == default:
+            if cast and cast in converters:
+                return get_converter(cast, result, box_settings=self)
+            elif cast is True:
+                return parse_conf_data(result, tomlfy=True, box_settings=self)
             return result
 
         # If we've still got key elements to traverse, let's do that.
         return self._dotted_get(
-            ".".join(keys), default=default, parent=result, **kwargs
+            ".".join(keys), default=default, parent=result, cast=cast, **kwargs
         )
 
     def get(
@@ -394,6 +400,10 @@ class Settings:
         :param parent: Is there a pre-loaded parent in a nested data?
         :return: The value if found, default or None
         """
+        nested_sep = self._store.get("NESTED_SEPARATOR_FOR_DYNACONF")
+        if nested_sep and nested_sep in key:
+            # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
+            key = key.replace(nested_sep, ".")
 
         if "." in key and dotted_lookup:
             return self._dotted_get(
@@ -458,7 +468,7 @@ class Settings:
         if data:
             if cast in converters:
                 data = get_converter(cast, data, box_settings=self)
-            if cast is True:
+            elif cast is True:
                 data = parse_conf_data(data, tomlfy=True, box_settings=self)
         return data
 
