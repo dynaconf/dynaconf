@@ -1,6 +1,13 @@
+from __future__ import annotations
 import os
 import warnings
 from json import JSONDecoder
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dynaconf.base import LazySettings, Settings
+    from dynaconf.utils.boxing import DynaBox
+    from json.decoder import JSONDecoder
 
 
 BANNER = """
@@ -17,7 +24,9 @@ if os.name == "nt":  # pragma: no cover
     BANNER = "DYNACONF"
 
 
-def object_merge(old, new, unique=False, full_path=None):
+def object_merge(
+    old: Any, new: Any, unique: bool = False, full_path: List[str] = None
+) -> Any:
     """
     Recursively merge two data structures, new is mutated in-place.
 
@@ -26,6 +35,8 @@ def object_merge(old, new, unique=False, full_path=None):
     :param unique: When set to True existing list items are not set.
     :param full_path: Indicates the elements of a tree.
     """
+    if full_path is None:
+        full_path = []
     if old == new or old is None or new is None:
         # Nothing to merge
         return new
@@ -65,7 +76,10 @@ def object_merge(old, new, unique=False, full_path=None):
     return new
 
 
-def recursive_get(obj, names):
+def recursive_get(
+    obj: Union[DynaBox, Dict[str, int], Dict[str, Union[str, int]]],
+    names: Optional[List[str]],
+) -> Any:
     """Given a dot accessible object and a list of names `foo.bar.zaz`
     gets recursivelly all names one by one obj.foo.bar.zaz.
     """
@@ -78,7 +92,9 @@ def recursive_get(obj, names):
     return recursive_get(result, tail)
 
 
-def handle_metavalues(old, new):
+def handle_metavalues(
+    old: Union[DynaBox, Dict[str, int], Dict[str, Union[str, int]]], new: Any
+) -> None:
     """Cleanup of MetaValues on new dict"""
 
     for key in list(new.keys()):
@@ -100,10 +116,7 @@ def handle_metavalues(old, new):
 
         # Data structures containing merge tokens
         if isinstance(new.get(key), (list, tuple)):
-            if (
-                "dynaconf_merge" in new[key]
-                or "dynaconf_merge_unique" in new[key]
-            ):
+            if "dynaconf_merge" in new[key] or "dynaconf_merge_unique" in new[key]:
                 value = list(new[key])
                 unique = False
 
@@ -140,14 +153,14 @@ class DynaconfDict(dict):
         self._loaded_files = []
         super(DynaconfDict, self).__init__(*args, **kwargs)
 
-    def set(self, key, value, *args, **kwargs):
+    def set(self, key: str, value: str, *args, **kwargs) -> None:
         self[key] = value
 
     @staticmethod
     def get_environ(key, default=None):  # pragma: no cover
         return os.environ.get(key, default)
 
-    def exists(self, key, **kwargs):
+    def exists(self, key: str, **kwargs) -> bool:
         return self.get(key, missing) is not missing
 
 
@@ -168,7 +181,7 @@ RENAMED_VARS = {
 }
 
 
-def compat_kwargs(kwargs):
+def compat_kwargs(kwargs: Dict[str, Any]) -> None:
     """To keep backwards compat change the kwargs to new names"""
     warn_deprecations(kwargs)
     for old, new in RENAMED_VARS.items():
@@ -186,11 +199,11 @@ class Missing:
     situations where `None` is a valid value.
     """
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         """Respond to boolean duck-typing."""
         return False
 
-    def __eq__(self, other):
+    def __eq__(self, other: Union[DynaBox, Missing]) -> bool:
         """Equality check for a singleton."""
 
         return isinstance(other, self.__class__)
@@ -198,7 +211,7 @@ class Missing:
     # Ensure compatibility with Python 2.x
     __nonzero__ = __bool__
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         """
         Unambiguously identify this string-based representation of Missing,
         used as a singleton.
@@ -209,7 +222,7 @@ class Missing:
 missing = Missing()
 
 
-def deduplicate(list_object):
+def deduplicate(list_object: List[str]) -> List[str]:
     """Rebuild `list_object` removing duplicated and keeping order"""
     new = []
     for item in list_object:
@@ -218,7 +231,7 @@ def deduplicate(list_object):
     return new
 
 
-def warn_deprecations(data):
+def warn_deprecations(data: Any) -> None:
     for old, new in RENAMED_VARS.items():
         if old in data:
             warnings.warn(
@@ -228,7 +241,7 @@ def warn_deprecations(data):
             )
 
 
-def trimmed_split(s, seps=(";", ",")):
+def trimmed_split(s: str, seps: Union[str, Tuple[str, str]] = (";", ",")) -> List[str]:
     """Given a string s, split is by one of one of the seps."""
     for sep in seps:
         if sep not in s:
@@ -238,7 +251,7 @@ def trimmed_split(s, seps=(";", ",")):
     return [s]  # raw un-splitted
 
 
-def ensure_a_list(data):
+def ensure_a_list(data: Any) -> Union[List[int], List[str]]:
     """Ensure data is a list or wrap it in a list"""
     if not data:
         return []
@@ -250,7 +263,7 @@ def ensure_a_list(data):
     return [data]
 
 
-def build_env_list(obj, env):
+def build_env_list(obj: Union[Settings, LazySettings], env: Optional[str]) -> List[str]:
     """Build env list for loaders to iterate.
 
     Arguments:
@@ -284,7 +297,7 @@ def build_env_list(obj, env):
     return [env.lower() for env in env_list]
 
 
-def upperfy(key):
+def upperfy(key: str) -> str:
     """Receive a string key and returns its upper version.
 
     Example:
@@ -311,7 +324,7 @@ def upperfy(key):
     return key.upper()
 
 
-def multi_replace(text, patterns):
+def multi_replace(text: str, patterns: Dict[str, str]) -> str:
     """Replaces multiple pairs in a string
 
     Arguments:
@@ -326,7 +339,9 @@ def multi_replace(text, patterns):
     return text
 
 
-def extract_json_objects(text, decoder=JSONDecoder()):
+def extract_json_objects(
+    text: str, decoder: JSONDecoder = JSONDecoder()
+) -> Iterator[Dict[str, Union[int, Dict[Any, Any]]]]:
     """Find JSON objects in text, and yield the decoded JSON data
 
     Does not attempt to look for JSON arrays, text, or other JSON types outside
@@ -346,7 +361,9 @@ def extract_json_objects(text, decoder=JSONDecoder()):
             pos = match + 1
 
 
-def recursively_evaluate_lazy_format(value, settings):
+def recursively_evaluate_lazy_format(
+    value: Any, settings: Union[Settings, LazySettings]
+) -> Any:
     """Given a value as a data structure, traverse all its members
     to find Lazy values and evaluate it.
 
@@ -359,10 +376,7 @@ def recursively_evaluate_lazy_format(value, settings):
     if isinstance(value, list):
         # Keep the original type, can be a BoxList
         value = value.__class__(
-            [
-                recursively_evaluate_lazy_format(item, settings)
-                for item in value
-            ]
+            [recursively_evaluate_lazy_format(item, settings) for item in value]
         )
 
     return value

@@ -499,13 +499,13 @@ class Settings:
             self._loaded_envs = []
         return self._loaded_envs
 
-    # compat
-    loaded_namespaces = loaded_envs
-
     @loaded_envs.setter
     def loaded_envs(self, value):
         """Setter for env list"""
         self._loaded_envs = value
+
+    # compat
+    loaded_namespaces = loaded_envs
 
     @property
     def loaded_by_loaders(self):
