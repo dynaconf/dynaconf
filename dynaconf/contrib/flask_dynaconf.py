@@ -10,7 +10,7 @@ except ImportError:  # pragma: no cover
 
 
 import dynaconf
-from importlib import import_module
+import pkg_resources
 
 
 class FlaskDynaconf:
@@ -192,10 +192,12 @@ class DynaconfConfig(Config):
             )
             return
 
-        for extension in app.config[key]:
-            # Split data in form `extension.path:factory_function`
-            module_name, factory = extension.split(":")
-            # Dynamically import extension module.
-            ext = import_module(module_name)
-            # Invoke factory passing app.
-            getattr(ext, factory)(app)
+        for object_reference in app.config[key]:
+            # add a placeholder `name` to create a valid entry point
+            entry_point_spec = f"__name = {object_reference}"
+            # parse the entry point specification
+            entry_point = pkg_resources.EntryPoint.parse(entry_point_spec)
+            # dynamically resolve the entry point
+            initializer = entry_point.resolve()
+            # Invoke extension initializer
+            initializer(app)

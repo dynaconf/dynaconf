@@ -16,6 +16,19 @@ def test_dynamic_load_exts(settings):
     assert app.is_dummy_loaded is True
 
 
+def test_dynamic_load_entry_point(settings):
+    """Assert that a config based extensions support entry point syntax"""
+    app = Flask(__name__)
+    app.config["EXTENSIONS"] = [
+        "example.dummy_flask_extension:dummy_instance.init_app"]
+    FlaskDynaconf(app, dynaconf_instance=settings)
+    app.config.load_extensions()
+    assert app.config.EXTENSIONS == [
+        "example.dummy_flask_extension:dummy_instance.init_app"
+    ]
+    assert app.extensions['dummy'].__class__.__name__ == 'DummyExtensionType'
+
+
 def test_dynamic_load_exts_list(settings):
     """Assert that a config based extensions are loaded"""
     app = Flask(__name__)
