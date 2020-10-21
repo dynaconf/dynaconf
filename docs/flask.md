@@ -46,9 +46,9 @@ IF you don't want to manually create your config files take a look at the [CLI](
 
 You can tell Dynaconf to load your Flask Extensions dynamically as long as the extensions follows the Pattens of Flask extensions.
 
-The only requirement is that the extension must be a `callable` that accepts `app` as first argument. e.g: `flask_admin:Admin` or `custom_extension.module:init_app` and of course the extension must be in Python namespace to be imported.
+The only requirement is that the extension must be a `callable` that accepts `app` as first argument. e.g: `flask_admin:Admin` or `custom_extension.module:instance.init_app` and of course the extension must be in Python namespace to be imported.
 
-For extensions initialized just use the class or function path like: "flask_admin:Admin" or "extension.module:init_app"
+For extensions initialized just use an [entry point](https://packaging.python.org/specifications/entry-points/) object reference like: "flask_admin:Admin" or "extension.module:instance.init_app"
 
 having a `settings.toml`
 
