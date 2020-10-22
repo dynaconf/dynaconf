@@ -94,8 +94,9 @@ def settings_loader(
             # a bare python module name w/o extension
             modules_names.append(item)
 
-    enabled_core_loaders = list(map(str.upper,
-                                    obj.get("CORE_LOADERS_FOR_DYNACONF")))
+       enabled_core_loaders = [
+        item.upper() for item in obj.get("CORE_LOADERS_FOR_DYNACONF") or []
+    ]
 
     # add `.local.` to found_files list to search for local files.
     found_files.extend(
