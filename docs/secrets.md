@@ -62,7 +62,8 @@ Or pass it to the `Dynaconf` instance.
 settings = Dynaconf(
     environment=True,
     vault_enabled=True,
-    vault={'url': 'http://localhost:8200', 'token': 'myroot'} # recommended to keep as env var.
+    vault_url="http://localhost:8200",
+    vault_token="myroot"  # recommended to keep as env var.
 )
 ```
 
