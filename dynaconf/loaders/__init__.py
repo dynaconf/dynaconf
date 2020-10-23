@@ -94,7 +94,7 @@ def settings_loader(
             # a bare python module name w/o extension
             modules_names.append(item)
 
-       enabled_core_loaders = [
+    enabled_core_loaders = [
         item.upper() for item in obj.get("CORE_LOADERS_FOR_DYNACONF") or []
     ]
 
