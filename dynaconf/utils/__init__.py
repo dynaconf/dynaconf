@@ -2,12 +2,21 @@ from __future__ import annotations
 import os
 import warnings
 from json import JSONDecoder
-from typing import Any, Dict, Iterator, List, Optional, Tuple, Union, TYPE_CHECKING
+from typing import (
+    Any,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Union,
+    TYPE_CHECKING,
+)
+
 
 if TYPE_CHECKING:
     from dynaconf.base import LazySettings, Settings
     from dynaconf.utils.boxing import DynaBox
-    from json.decoder import JSONDecoder
 
 
 BANNER = """
@@ -116,7 +125,9 @@ def handle_metavalues(
 
         # Data structures containing merge tokens
         if isinstance(new.get(key), (list, tuple)):
-            if "dynaconf_merge" in new[key] or "dynaconf_merge_unique" in new[key]:
+            has_merge = "dynaconf_merge" in new[key]
+            has_merge_unique = "dynaconf_merge_unique" in new[key]
+            if has_merge or has_merge_unique:
                 value = list(new[key])
                 unique = False
 
@@ -241,7 +252,9 @@ def warn_deprecations(data: Any) -> None:
             )
 
 
-def trimmed_split(s: str, seps: Union[str, Tuple[str, str]] = (";", ",")) -> List[str]:
+def trimmed_split(
+    s: str, seps: Union[str, Tuple[str, str]] = (";", ",")
+) -> List[str]:
     """Given a string s, split is by one of one of the seps."""
     for sep in seps:
         if sep not in s:
@@ -263,7 +276,9 @@ def ensure_a_list(data: Any) -> Union[List[int], List[str]]:
     return [data]
 
 
-def build_env_list(obj: Union[Settings, LazySettings], env: Optional[str]) -> List[str]:
+def build_env_list(
+    obj: Union[Settings, LazySettings], env: Optional[str]
+) -> List[str]:
     """Build env list for loaders to iterate.
 
     Arguments:
@@ -376,7 +391,10 @@ def recursively_evaluate_lazy_format(
     if isinstance(value, list):
         # Keep the original type, can be a BoxList
         value = value.__class__(
-            [recursively_evaluate_lazy_format(item, settings) for item in value]
+            [
+                recursively_evaluate_lazy_format(item, settings)
+                for item in value
+            ]
         )
 
     return value
