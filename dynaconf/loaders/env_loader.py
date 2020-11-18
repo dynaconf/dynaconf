@@ -40,6 +40,7 @@ def load_from_env(
         prefix = prefix.upper()
         env_ = f"{prefix}_"
 
+    # Load a single environment variable explicitly.
     if key:
         key = upperfy(key)
         value = environ.get(f"{env_}{key}")
@@ -50,15 +51,26 @@ def load_from_env(
                 obj[key] = parse_conf_data(
                     value, tomlfy=True, box_settings=obj
                 )
+
+    # Load environment variables in bulk (when matching).
     else:
+        # Only known variables should be loaded from environment.
+        ignore_unknown = obj.get('IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF')
+        known_keys = set(obj.store)
+
         trim_len = len(env_)
         data = {
             key[trim_len:]: parse_conf_data(
                 data, tomlfy=True, box_settings=obj
             )
             for key, data in environ.items()
-            if key.startswith(env_)
+            if key.startswith(env_) and not (
+                # Ignore environment variables that haven't been
+                # pre-defined in settings space.
+                ignore_unknown and key[trim_len:] not in known_keys
+            )
         }
+        # Update the settings space based on gathered data from environment.
         if data:
             obj.update(data, loader_identifier=identifier)
 
