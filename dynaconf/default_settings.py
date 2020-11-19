@@ -113,6 +113,15 @@ DEFAULT_ENV_FOR_DYNACONF = get("DEFAULT_ENV_FOR_DYNACONF", "DEFAULT")
 # This namespace is used for files and also envvars
 ENVVAR_PREFIX_FOR_DYNACONF = get("ENVVAR_PREFIX_FOR_DYNACONF", "DYNACONF")
 
+# By default all environment variables (filtered by `envvar_prefix`) will
+# be pulled into settings space. In case some of them are polluting the space,
+# setting this flag to `True` will change this behaviour.
+# Only "known" variables will be considered -- that is variables defined before
+# in settings files (or includes/preloads).
+IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF = get(
+    "IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF", False
+)
+
 # The default encoding to open settings files
 ENCODING_FOR_DYNACONF = get("ENCODING_FOR_DYNACONF", "utf-8")
 
