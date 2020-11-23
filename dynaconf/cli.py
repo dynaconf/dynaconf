@@ -59,13 +59,8 @@ def set_settings(ctx, instance=None):
             from django.conf import settings  # noqa
 
             settings.DYNACONF.configure()
-        except (ImportError, AttributeError):
-            # Backwards compatible with old django extension (pre 2.0.0)
-            import dynaconf.contrib.django_dynaconf  # noqa
-            from django.conf import settings as django_settings  # noqa
-
-            django_settings.configure()
-            settings = django_settings
+        except AttributeError:
+            settings = LazySettings()
 
         if settings is not None:
             click.echo(
@@ -383,11 +378,11 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
             click.echo("🎠  Now your Django settings are managed by Dynaconf")
         else:
             click.echo("❌  Django settings file not written.")
-
-    click.echo(
-        "🎉 Dynaconf is configured! read more on https://dynaconf.com\n"
-        "   Use `dynaconf -i config.settings list` to see your settings\n"
-    )
+    else:
+        click.echo(
+            "🎉 Dynaconf is configured! read more on https://dynaconf.com\n"
+            "   Use `dynaconf -i config.settings list` to see your settings\n"
+        )
 
 
 @main.command(name="list")

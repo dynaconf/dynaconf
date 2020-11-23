@@ -238,7 +238,7 @@ pip install dynaconf
     On the same folder where your `manage.py` is located run `dynaconf init` command.
 
     ```bash hl_lines="1"
-    dynaconf init -f yaml --django
+    dynaconf init -f yaml
     ```
 
     Then follow the instructions on terminal.

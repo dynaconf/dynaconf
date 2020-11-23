@@ -55,7 +55,7 @@ def load_from_env(
     # Load environment variables in bulk (when matching).
     else:
         # Only known variables should be loaded from environment.
-        ignore_unknown = obj.get('IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF')
+        ignore_unknown = obj.get("IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF")
         known_keys = set(obj.store)
 
         trim_len = len(env_)
@@ -64,10 +64,12 @@ def load_from_env(
                 data, tomlfy=True, box_settings=obj
             )
             for key, data in environ.items()
-            if key.startswith(env_) and not (
+            if key.startswith(env_)
+            and not (
                 # Ignore environment variables that haven't been
                 # pre-defined in settings space.
-                ignore_unknown and key[trim_len:] not in known_keys
+                ignore_unknown
+                and key[trim_len:] not in known_keys
             )
         }
         # Update the settings space based on gathered data from environment.
