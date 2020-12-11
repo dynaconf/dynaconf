@@ -90,3 +90,18 @@ def test_write_and_load_from_vault_without_key(docker_vault):
     write(settings, {"SECRET": "vault_works_perfectly"})
     load(settings)
     assert settings.get("SECRET") == "vault_works_perfectly"
+
+
+@pytest.mark.integration
+def test_read_from_vault_kv2_with_different_environments(docker_vault):
+    os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_KV_VERSION_FOR_DYNACONF"] = "2"
+    os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
+    settings = LazySettings(environments=["dev", "prod"])
+    for env in ["default", "dev", "prod"]:
+        with settings.using_env(env):
+            write(settings, {"SECRET": f"vault_works_in_{env}"})
+    load(settings)
+    assert settings.secret == "vault_works_in_default"
+    assert settings.from_env("dev").secret == "vault_works_in_dev"
+    assert settings.from_env("prod").secret == "vault_works_in_prod"
