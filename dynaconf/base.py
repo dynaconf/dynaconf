@@ -105,6 +105,9 @@ class LazySettings(LazyObject):
         self._kwargs = kwargs
         super(LazySettings, self).__init__()
 
+    def __contains__(self, item):
+        return hasattr(self, item)
+
     def __resolve_config_aliases(self, kwargs):
         """takes aliases for _FOR_DYNACONF configurations
 
