@@ -277,7 +277,7 @@ class Settings:
             super(Settings, self).__delattr__(name)
 
     def __contains__(self, item):
-        "Respond to `item in settings`"
+        """Respond to `item in settings`"""
         return item.upper() in self.store or item.lower() in self.store
 
     def __getitem__(self, item):

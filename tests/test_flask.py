@@ -66,6 +66,9 @@ def test_flask_dynaconf(settings):
     assert app.config("HOSTNAME") == "host.com"
     assert app.config("MY_VAR") == "foo"
 
+    assert "HOSTNAME" in app.config
+    assert "MY_VAR" in app.config
+
 
 def test_flask_with_dot_env():
     envvars = {
