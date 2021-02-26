@@ -548,6 +548,18 @@ def test_dotted_traversal_access(settings):
     # First key is always transformed to upper()
     assert settings("nested_1.nested_2.nested_3.nested_4") is True
 
+    # using cast
+    settings.set("me.name", '@json ["bruno", "rocha"]')
+    settings.set("me.number", "42")
+    assert settings.get("me.name", cast=True, default=["bruno", "rocha"]) == [
+        "bruno",
+        "rocha",
+    ]
+    assert settings.get("me.number", cast="@int", default=42) == 42
+
+    # nested separator test
+    assert settings.get("ME__NUMBER") == "42"
+
 
 def test_dotted_set(settings):
     settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
