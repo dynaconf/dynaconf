@@ -151,14 +151,11 @@ class DynaconfConfig(Config):
         self._settings = _settings
         self._app = _app
 
-    def __contains__(self, item):
-        return hasattr(self, item)
-
     def __getitem__(self, key):
-        """
-        Flask templates always expects a None when key is not found in config
-        """
-        return self.get(key)
+        try:
+            return self._settings[key]
+        except KeyError:
+            return Config.__getitem__(self, key)
 
     def __setitem__(self, key, value):
         """
@@ -168,7 +165,7 @@ class DynaconfConfig(Config):
 
     def __getattr__(self, name):
         """
-        First try to get value from dynaconf then from Flask
+        First try to get value from dynaconf then from Flask Config
         """
         try:
             return getattr(self._settings, name)
