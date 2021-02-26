@@ -34,6 +34,7 @@ pre-commit
 ipython
 ipdb
 python-minifier
+pdbr
 
 # documentation
 sphinx
@@ -51,6 +52,10 @@ mkdocs-nav-enhancements>=0.9.1
 mkdocs-new-features-notifier>=0.1.6
 mkdocs-versioning>=0.2.1
 pymdown-extensions
+
+# vim
+pynvim
+jedi
 
 # editable dynaconf
 --editable .

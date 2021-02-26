@@ -1,3 +1,4 @@
+import pytest
 from flask import Flask
 
 from dynaconf.contrib import FlaskDynaconf
@@ -68,6 +69,13 @@ def test_flask_dynaconf(settings):
 
     assert "HOSTNAME" in app.config
     assert "MY_VAR" in app.config
+
+    # ref: #521
+    assert "NONEXISTENETVAR" not in app.config
+    assert ("NONEXISTENETVAR" in app.config) is False
+
+    with pytest.raises(KeyError):
+        app.config["NONEXISTENETVAR"]
 
 
 def test_flask_with_dot_env():
