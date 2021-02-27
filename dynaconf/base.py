@@ -5,6 +5,7 @@ import os
 import warnings
 from contextlib import contextmanager
 from contextlib import suppress
+from pathlib import Path
 
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
@@ -1001,9 +1002,19 @@ class Settings:
                     # continue the loop.
                     continue
 
-                filepath = os.path.join(
-                    self._root_path or os.getcwd(), _filename
-                )
+                # python 3.6 does not resolve Pathlib basedirs
+                # issue #494
+                root_dir = str(self._root_path or os.getcwd())
+                if (
+                    isinstance(_filename, Path)
+                    and str(_filename.parent) in root_dir
+                ):  # pragma: no cover
+                    filepath = str(_filename)
+                else:
+                    filepath = os.path.join(
+                        self._root_path or os.getcwd(), str(_filename)
+                    )
+
                 paths = [
                     p
                     for p in sorted(glob.glob(filepath))
