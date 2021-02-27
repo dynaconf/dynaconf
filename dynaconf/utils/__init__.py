@@ -44,7 +44,7 @@ def object_merge(old, new, unique=False, full_path=None):
 
             if (
                 existing_value is not None
-                and key == full_path[-1]
+                and key.lower() == full_path[-1].lower()
                 and existing_value is value
             ):
                 # Here Be The Dragons

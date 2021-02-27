@@ -459,6 +459,9 @@ It is also possible to make dynaconf to read the files separated by layered
 environments so each section or first level key is loaded as a
 distinct environment.
 
+!!! warning
+    To enable layered environments the argument `environments` must be set to `True`, otherwise dynaconf will ignore layers and read all first level keys as normal values.
+
 === "config.py"
     ```py
     settings = Dynaconf(environments=True)

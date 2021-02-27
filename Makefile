@@ -107,6 +107,8 @@ test_examples:
 	cd example/issues/430_same_name;pwd;python app.py
 	cd example/issues/443_object_merge;pwd;python app.py
 	cd example/issues/445_casting;pwd;python app.py
+	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__device_id=42 EXPECTED_VALUE=42 python app.py
+	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__DEVICE_ID=42 EXPECTED_VALUE=42 python app.py
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
