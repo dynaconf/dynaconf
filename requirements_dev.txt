@@ -34,7 +34,7 @@ pre-commit
 ipython
 ipdb
 python-minifier
-pdbr
+pdbr[ipython]
 
 # documentation
 sphinx
