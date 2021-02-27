@@ -86,6 +86,9 @@ DATABASES = {
 }
 ```
 
+!!! warning
+    Notice that casing is important for Django settings, so `DYNACONF_DATABASES__default__ENGINE` is not the same as `DYNACONF_DATABASES__DEFAULT__ENGINE` you must use the first which matched the proper django settings.
+
 Read more on [environment variables](https://dynaconf.readthedocs.io/en/latest/guides/environment_variables.html#nested-keys-in-dictionaries-via-environment-variables)
 
 ## Settings files
