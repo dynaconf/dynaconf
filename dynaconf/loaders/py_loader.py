@@ -58,7 +58,7 @@ def try_to_load_from_py_module_name(
     ctx = suppress(ImportError, TypeError) if silent else suppress()
 
     with ctx:
-        mod = importlib.import_module(name)
+        mod = importlib.import_module(str(name))
         load_from_python_object(obj, mod, name, key, identifier)
         return True  # loaded ok!
     # if it reaches this point that means exception occurred, module not found.
