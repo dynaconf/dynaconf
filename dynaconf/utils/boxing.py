@@ -3,6 +3,7 @@ from functools import wraps
 
 from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils import upperfy
+from dynaconf.utils.functional import empty
 from dynaconf.vendor.box import Box
 
 
@@ -57,11 +58,22 @@ class DynaBox(Box):
             box_settings=self._box_config.get("box_settings"),
         )
 
+    def _case_insensitive_get(self, item, default=None):
+        """adds a bit of overhead but allows case insensitive get
+        See issue: #486
+        """
+        lower_self = {k.casefold(): v for k, v in self.items()}
+        return lower_self.get(item.casefold(), default)
+
     @evaluate_lazy_format
     def get(self, item, default=None, *args, **kwargs):
         if item not in self:  # toggle case
             item = item.lower() if item.isupper() else upperfy(item)
-        return super(DynaBox, self).get(item, default, *args, **kwargs)
+        value = super(DynaBox, self).get(item, empty, *args, **kwargs)
+        if value is empty:
+            # see Issue: #486
+            return self._case_insensitive_get(item, default)
+        return value
 
     def __dir__(self):
         keys = list(self.keys())
