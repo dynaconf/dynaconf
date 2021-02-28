@@ -20,9 +20,33 @@ assert settings.get("S3_URL", default="s3://default") == expected_value
 assert settings("s3_url", cast="@str") == expected_value
 assert settings("S3_URL", cast="@str") == expected_value
 
+expected = {
+    "first_name": "Bruno",
+    "morenested": {
+        "last_name": "Rocha",
+        "evenmore": {
+            "full_name": "Bruno Rocha",
+            "full_name2": "Bruno Rocha",
+            "full_name3": "Bruno Rocha",
+        },
+    },
+}
+
+assert (
+    settings.nested
+    == settings.NESTED
+    == settings["nested"]
+    == settings["NESTED"]
+    == settings.get("NesTed")
+    == settings("nested")
+)
+
+assert settings.nested.to_dict() == expected, (settings.nested, expected)
 
 print(settings.s3_url)
 print(settings.S3_URL)
 
 print(settings["s3_url"])
 print(settings["S3_URL"])
+
+print(settings.nested)
