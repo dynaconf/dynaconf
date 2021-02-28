@@ -209,6 +209,7 @@ def evaluate_lazy_format(f):
 
 
 converters = {
+    "@str": str,
     "@int": int,
     "@float": float,
     "@bool": lambda value: str(value).lower() in true_values,

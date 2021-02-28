@@ -1,0 +1,5 @@
+s3_protocol = 's3a'
+s3_url = '@format {this[s3_protocol]}://{this[s3_bucket]}'
+s3_url1 = '@format {this[S3_PROTOCOL]}://{this[S3_BUCKET]}'
+s3_url2 = '@format {this.s3_protocol}://{this.s3_bucket}'
+s3_url3 = '@format {this.S3_PROTOCOL}://{this.S3_BUCKET}'
