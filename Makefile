@@ -78,6 +78,7 @@ test_examples:
 	python example/specific_settings_files/app.py
 	python example/django_example/manage.py test polls -v 2
 	PYTHONPATH=example/django_example DJANGO_SETTINGS_MODULE=foo.settings python example/django_example/standalone_script.py
+	PYTHONPATH=example/issues/449_django_lazy_path DJANGO_SETTINGS_MODULE=foo.settings python example/django_example/standalone_script.py
 	PYTHONPATH=example/django_example_compat DJANGO_SETTINGS_MODULE=foo.settings python example/django_example_compat/standalone_script.py
 	python example/envvar_prefix/app.py
 

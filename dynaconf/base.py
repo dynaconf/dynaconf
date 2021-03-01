@@ -281,27 +281,21 @@ class Settings:
         """Respond to `item in settings`"""
         return item.upper() in self.store or item.lower() in self.store
 
-    def __getattr__(self, item):
-        """This method is called only when the attribute does not exits
-        usually on access to the direct `Settings` object instead of the
-        `LazySettings`.
-        All first level attributes are stored as UPPERCASE, so self.FOO
-        will always be accessible, however in some cases `self.foo` might
-        be acessible. This method routes this access to the underlying `_store`
-        which handles casing and recursive access.
-        """
-        try:
-            if (
-                item.islower()
-                and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty)
-                is False
-            ):
-                raise KeyError
-            value = self._store[item]
-        except KeyError:
-            raise AttributeError(f"Settings has no attribute '{item}'")
-        else:
-            return value
+    def __getattribute__(self, name):
+        if name not in RESERVED_ATTRS:
+            with suppress(KeyError):
+                # self._store has Lazy values already evaluated
+                if (
+                    name.islower()
+                    and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty)
+                    is False
+                ):
+                    # only matches exact casing, first levels always upper
+                    return self._store.to_dict()[name]
+                # perform lookups for upper, and casefold
+                return self._store[name]
+        # in case of RESERVED_ATTRS or KeyError above, keep default behaviour
+        return super().__getattribute__(name)
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
