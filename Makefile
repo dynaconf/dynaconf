@@ -153,6 +153,9 @@ coverage-report:
 
 test: pep8 test_only
 
+test_all: test_examples test_integration test_redis test_vault test
+	@coverage html
+
 install:
 	pip install --upgrade pip
 	pip install -r requirements_dev.txt

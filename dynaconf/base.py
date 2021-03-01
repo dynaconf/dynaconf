@@ -122,7 +122,7 @@ class LazySettings(LazyObject):
 
         for_dynaconf_keys = {
             key
-            for key in dir(default_settings)
+            for key in UPPER_DEFAULT_SETTINGS
             if key.endswith("_FOR_DYNACONF")
         }
         aliases = {
@@ -159,7 +159,7 @@ class LazySettings(LazyObject):
                 self._wrapped._fresh
                 or name in self._wrapped.FRESH_VARS_FOR_DYNACONF
             )
-            and name not in dir(default_settings)
+            and name not in UPPER_DEFAULT_SETTINGS
         ):
             return self._wrapped.get_fresh(name)
         value = getattr(self._wrapped, name)
@@ -282,7 +282,7 @@ class Settings:
         return item.upper() in self.store or item.lower() in self.store
 
     def __getattribute__(self, name):
-        if name not in RESERVED_ATTRS:
+        if name not in RESERVED_ATTRS and name not in UPPER_DEFAULT_SETTINGS:
             with suppress(KeyError):
                 # self._store has Lazy values already evaluated
                 if (
@@ -362,7 +362,7 @@ class Settings:
             data = self.store.to_dict().copy()
             # if not internal remove internal settings
             if not internal:
-                for name in dir(default_settings):
+                for name in UPPER_DEFAULT_SETTINGS:
                     data.pop(name, None)
             return data
 
@@ -439,7 +439,7 @@ class Settings:
             fresh
             or self._fresh
             or key in getattr(self, "FRESH_VARS_FOR_DYNACONF", ())
-        ) and key not in dir(default_settings):
+        ) and key not in UPPER_DEFAULT_SETTINGS:
             self.unset(key)
             self.execute_loaders(key=key)
 
@@ -563,8 +563,8 @@ class Settings:
 
         new_data = {
             key: self.get(key)
-            for key in dir(default_settings)
-            if key.isupper() and key not in RENAMED_VARS
+            for key in UPPER_DEFAULT_SETTINGS
+            if key not in RENAMED_VARS
         }
 
         # This is here for backwards compatibility
@@ -747,7 +747,7 @@ class Settings:
         """
         key = upperfy(key.strip())
         if (
-            key not in dir(default_settings)
+            key not in UPPER_DEFAULT_SETTINGS
             and key not in self._defaults
             or force
         ):
@@ -1165,6 +1165,9 @@ class Settings:
         """This is to provide Django DJDT support: issue 382"""
         return False
 
+
+"""Upper case default settings"""
+UPPER_DEFAULT_SETTINGS = [k for k in dir(default_settings) if k.isupper()]
 
 """Attributes created on Settings before 3.0.0"""
 RESERVED_ATTRS = (
