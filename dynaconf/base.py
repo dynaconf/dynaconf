@@ -958,26 +958,36 @@ class Settings:
         self.clean()
         self.execute_loaders(env, silent)
 
-    def execute_loaders(self, env=None, silent=None, key=None, filename=None):
+    def execute_loaders(
+        self, env=None, silent=None, key=None, filename=None, loaders=None
+    ):
         """Execute all internal and registered loaders
 
         :param env: The environment to load
         :param silent: If loading erros is silenced
         :param key: if provided load a single key
         :param filename: optional custom filename to load
+        :param loaders: optional list of loader modules
         """
         if key is None:
             default_loader(self, self._defaults)
+
         env = (env or self.current_env).upper()
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
-        self.pre_load(env, silent=silent, key=key)
-        settings_loader(
-            self, env=env, silent=silent, key=key, filename=filename
-        )
-        self.load_extra_yaml(env, silent, key)  # DEPRECATED
-        enable_external_loaders(self)
-        for loader in self.loaders:
+
+        if loaders is None:
+            self.pre_load(env, silent=silent, key=key)
+            settings_loader(
+                self, env=env, silent=silent, key=key, filename=filename
+            )
+            self.load_extra_yaml(env, silent, key)  # DEPRECATED
+            enable_external_loaders(self)
+
+            loaders = self.loaders
+
+        for loader in loaders:
             loader.load(self, env, silent=silent, key=key)
+
         self.load_includes(env, silent=silent, key=key)
 
     def pre_load(self, env, silent, key):
