@@ -19,6 +19,24 @@ def test_deleted_raise(settings):
     assert settings.get("TODELETE") is None
 
 
+def test_delete_and_set_again(settings):
+    """asserts variable can be deleted and setted again"""
+
+    # set
+    settings.TODELETE2 = True
+    assert "TODELETE2" in settings
+    assert settings.TODELETE2 is True
+
+    # delete
+    del settings.TODELETE2
+    assert settings.exists("TODELETE2") is False
+    assert settings.get("TODELETE2") is None
+
+    # set again
+    settings.TODELETE2 = "new value"
+    assert settings.TODELETE2 == "new value"
+
+
 def test_accepts_only_upper():
     """Only upper case names are allowed if lowercase_read=False
     lower case are converted"""
