@@ -1,0 +1,5 @@
+[default]
+name = "default name"
+
+[development]
+name = "Bruno"
