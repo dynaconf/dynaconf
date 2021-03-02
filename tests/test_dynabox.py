@@ -1,4 +1,9 @@
+import pytest
+
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.vendor.box import Box
+from dynaconf.vendor.box import BoxKeyError
+from dynaconf.vendor.box import BoxList
 
 
 box = DynaBox(
@@ -73,3 +78,17 @@ def test_get():
 def test_copy_no_cause_inf_recursion():
     box.__copy__()
     box.copy()
+
+
+def test_accessing_dynabox_inside_boxlist_inside_dynabox():
+    data = DynaBox({"nested": [{"deeper": "nest"}]})
+    assert data.nested[0].deeper == "nest"
+    assert data.NESTED[0].deeper == "nest"
+    assert data.NESTED[0].DEEPER == "nest"
+
+    data = DynaBox({"nested": BoxList([DynaBox({"deeper": "nest"})])})
+    assert data.nested[0].deeper == "nest"
+    assert data.NESTED[0].deeper == "nest"
+    assert isinstance(data.NESTED, BoxList)
+    assert isinstance(data.NESTED[0], DynaBox)
+    assert data.NESTED[0].DEEPER == "nest"

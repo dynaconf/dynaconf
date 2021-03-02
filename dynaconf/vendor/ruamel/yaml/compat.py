@@ -34,7 +34,7 @@ else:
 	def to_unicode(s):return unicode(s)
 if PY3:string_types=str;integer_types=int;class_types=type;text_type=str;binary_type=bytes;MAXSIZE=sys.maxsize;unichr=chr;import io;StringIO=io.StringIO;BytesIO=io.BytesIO;no_limit_int=int;from collections.abc import Hashable,MutableSequence,MutableMapping,Mapping
 else:string_types=basestring;integer_types=int,long;class_types=type,types.ClassType;text_type=unicode;binary_type=str;unichr=unichr;from StringIO import StringIO as _StringIO;StringIO=_StringIO;import cStringIO;BytesIO=cStringIO.StringIO;no_limit_int=long;from collections import Hashable,MutableSequence,MutableMapping,Mapping
-if _B:StreamType=Any;StreamTextType=StreamType;VersionType=Union[(List[int],str,Tuple[(int,int)])]
+if _B:StreamType=Any;StreamTextType=StreamType;VersionType=Union[List[int],str,Tuple[int,int]]
 if PY3:builtins_module='builtins'
 else:builtins_module='__builtin__'
 UNICODE_SIZE=4 if sys.maxunicode>65535 else 2

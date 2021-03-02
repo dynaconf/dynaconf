@@ -4,7 +4,7 @@
 # Copyright (c) 2017-2020 - Chris Griffith - MIT License
 import copy
 import re
-from typing import Iterable
+from typing import Iterable, Optional
 
 
 from dynaconf.vendor import box
@@ -15,14 +15,28 @@ from .exceptions import BoxError, BoxTypeError, BoxKeyError
 _list_pos_re = re.compile(r'\[(\d+)\]')
 
 
+DYNABOX_CLASS = None  # a cache constant to avoid multiple imports
+
+
+def get_dynabox_class_avoiding_circular_import():
+    """
+    See dynaconf issue #462
+    """
+    global DYNABOX_CLASS
+    if DYNABOX_CLASS is None:
+        from dynaconf.utils.boxing import DynaBox
+        DYNABOX_CLASS = DynaBox
+    return DYNABOX_CLASS
+
+
 class BoxList(list):
     """
     Drop in replacement of list, that converts added objects to Box or BoxList
     objects as necessary.
     """
 
-    def __init__(self, iterable: Iterable = None, box_class: box.Box = box.Box, **box_options):
-        self.box_class = box_class
+    def __init__(self, iterable: Iterable = None, box_class : Optional[box.Box] = None, **box_options):
+        self.box_class = box_class or get_dynabox_class_avoiding_circular_import()
         self.box_options = box_options
         self.box_org_ref = self.box_org_ref = id(iterable) if iterable else 0
         if iterable:

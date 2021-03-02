@@ -7,14 +7,19 @@ _C='strict'
 _B='utf-8'
 _A=None
 import copy,re
-from typing import Iterable
+from typing import Iterable,Optional
 from dynaconf.vendor import box
 from .converters import _to_yaml,_from_yaml,_to_json,_from_json,_to_toml,_from_toml,_to_csv,_from_csv,BOX_PARAMETERS
 from .exceptions import BoxError,BoxTypeError,BoxKeyError
 _list_pos_re=re.compile('\\[(\\d+)\\]')
+DYNABOX_CLASS=_A
+def get_dynabox_class_avoiding_circular_import():
+	global DYNABOX_CLASS
+	if DYNABOX_CLASS is _A:from dynaconf.utils.boxing import DynaBox as A;DYNABOX_CLASS=A
+	return DYNABOX_CLASS
 class BoxList(list):
-	def __init__(A,iterable=_A,box_class=box.Box,**C):
-		B=iterable;A.box_class=box_class;A.box_options=C;A.box_org_ref=A.box_org_ref=id(B)if B else 0
+	def __init__(A,iterable=_A,box_class=_A,**C):
+		B=iterable;A.box_class=box_class or get_dynabox_class_avoiding_circular_import();A.box_options=C;A.box_org_ref=A.box_org_ref=id(B)if B else 0
 		if B:
 			for D in B:A.append(D)
 		if C.get(_E):
