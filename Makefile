@@ -108,6 +108,7 @@ test_examples:
 	cd example/issues/430_same_name;pwd;python app.py
 	cd example/issues/443_object_merge;pwd;python app.py
 	cd example/issues/445_casting;pwd;python app.py
+	cd example/issues/467_load_from_parent_folder/src;pwd;python app.py
 	cd example/issues/478_mispell_environments;pwd;python app.py
 	cd example/issues/482_layered_format;pwd;python app.py
 	cd example/issues/486_title_case_validation;pwd;python app.py
