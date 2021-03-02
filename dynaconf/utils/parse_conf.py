@@ -8,6 +8,8 @@ from dynaconf.utils import extract_json_objects
 from dynaconf.utils import multi_replace
 from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils.math_evaluator import matheval
+from dynaconf.utils.math_evaluator import postfix
 from dynaconf.vendor import toml
 
 try:
@@ -229,6 +231,8 @@ converters = {
     "@comment": lambda value: None,
     "@null": lambda value: None,
     "@none": lambda value: None,
+    "@math": matheval,
+    "@postfix": postfix,
 }
 
 

@@ -1,5 +1,6 @@
 import io
 import json
+import math
 import os
 
 import pytest
@@ -15,6 +16,8 @@ from dynaconf.utils import trimmed_split
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import get_local_filename
+from dynaconf.utils.math_evaluator import matheval
+from dynaconf.utils.math_evaluator import postfix
 from dynaconf.utils.parse_conf import evaluate_lazy_format
 from dynaconf.utils.parse_conf import Formatters
 from dynaconf.utils.parse_conf import Lazy
@@ -34,6 +37,39 @@ def test_unparse():
     assert unparse_conf_data({"name": "Bruno"}) == '@json {"name": "Bruno"}'
     assert unparse_conf_data(None) == "@none "
     assert unparse_conf_data(Lazy("{foo}")) == "@format {foo}"
+
+
+def test_cast_math(settings):
+    assert (
+        parse_conf_data("@math 40 + 2", box_settings=settings)
+        == (40 + 2)
+        == matheval(["40", "+", "2"])
+    )
+    assert parse_conf_data("@math 40 + 2 * 3 / 2", box_settings=settings) == (
+        40 + 2 * 3 / 2
+    )
+    assert matheval("9 + ( 8 / 2 )") == (9 + (8 / 2))
+
+    with pytest.raises(ValueError):
+        assert matheval("9 + (8 / 2 )") == (9 + (8 / 2))  # malformed
+
+    assert parse_conf_data("@math 9 ** 2", box_settings=settings) == (9 ** 2)
+
+
+def test_cast_postfix(settings):
+    assert parse_conf_data("@postfix 9 2 **", box_settings=settings) == (
+        9 ** 2
+    )
+    assert (
+        parse_conf_data("@postfix 40 2 +", box_settings=settings)
+        == (40 + 2)
+        == postfix(["40", "2", "+"])
+    )
+
+    assert postfix("pi 2 +") == (math.pi + 2)
+
+    with pytest.raises(ValueError):
+        postfix("40 + 2")
 
 
 def test_cast_bool(settings):
