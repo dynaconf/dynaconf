@@ -115,6 +115,8 @@ class LazySettings(LazyObject):
         mispells = {
             "settings_files": "settings_file",
             "SETTINGS_FILES": "SETTINGS_FILE",
+            "environment": "environments",
+            "ENVIRONMENT": "ENVIRONMENTS",
         }
         for mispell, correct in mispells.items():
             if mispell in kwargs:
