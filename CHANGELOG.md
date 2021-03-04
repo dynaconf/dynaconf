@@ -2,8 +2,8 @@ Changelog
 =========
 
 
-(unreleased)
-------------
+3.1.3 (2021-03-04)
+------------------
 
 Fix
 ~~~
@@ -11,6 +11,28 @@ Fix
 
 Other
 ~~~~~
+- Release version 3.1.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 3.1.3rc1
+            Fix #462 make DynaBox nested List to use DynaBox as default class (#533)
+            Fix #478 Make alias for environment -> environments (#534)
+            Test to ensure #467 is not an issue (#535)
+- Test to ensure #467 is not an issue (#535) [Bruno Rocha]
+
+  Closes #467
+- Fix #478 Make alias for environment -> environments (#534) [Bruno
+  Rocha]
+
+  This is a commom mistake to pass `environment` so it is alias.
+
+  Fix #478
+- Fix #462 make DynaBox nested List to use DynaBox as default class
+  (#533) [Bruno Rocha]
+
+  Fix #462
 - Release version 3.1.3rc1. [Bruno Rocha]
 
   Shortlog of commits since last release:
