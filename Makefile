@@ -84,6 +84,7 @@ test_examples:
 
 	@echo '###############  Django Admin From root folder  ###############'
 	PYTHONPATH=./example/django_example/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
+	PYTHONPATH=./example/issues/449_django_lazy_path/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
 	PYTHONPATH=./example/django_example_compat/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
 
 	@echo '############ Issues  ##################'

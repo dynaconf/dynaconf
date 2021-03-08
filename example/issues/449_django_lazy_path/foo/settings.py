@@ -34,7 +34,6 @@ settings = dynaconf.DjangoDynaconf(
 )  # noqa
 # HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
 
-
 # test
 assert settings.SERVER == "prodserver.com"
 # assert settings.STATIC_URL == "/changed/in/settings.toml/by/dynaconf/"
@@ -46,3 +45,21 @@ assert settings.FOO == "It overrides every other env"
 assert settings.TEMPLATES[0]["DIRS"] == [
     f"{BASE_DIR}/templates"
 ], settings.TEMPLATES[0]["DIRS"]
+
+ALLOWED_HOSTS = settings.get(
+    "ALLOWED_HOSTS", ["::1", "127.0.0.1", "localhost"]
+)
+DUMMY_LIST = settings.get(
+    "DUMMY_LIST",
+    [
+        "a",
+        "dummy",
+        "list",
+    ],  # will be converted to a BoxList to keep the same API
+)
+
+# this is going to be a BoxList from yaml file
+ALLOWED_HOSTS.to_list()
+
+# this is going to be a list provided as default, but still with the same api.
+DUMMY_LIST.to_list()
