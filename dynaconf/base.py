@@ -31,6 +31,7 @@ from dynaconf.utils.parse_conf import get_converter
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidatorList
+from dynaconf.vendor.box.box_list import BoxList
 
 
 class LazySettings(LazyObject):
@@ -432,6 +433,13 @@ class Settings:
                 fresh=fresh,
                 parent=parent,
             )
+
+        if default is not None:
+            # default values should behave exactly Dynaconf parsed values
+            if isinstance(default, list):
+                default = BoxList(default)
+            elif isinstance(default, dict):
+                default = DynaBox(default)
 
         key = upperfy(key)
         if key in self._deleted:
