@@ -55,6 +55,8 @@ def test_flask_dynaconf(settings):
     app = Flask(__name__)
     app.config["MY_VAR"] = "foo"
     FlaskDynaconf(app, dynaconf_instance=settings)
+    app.config["MY_VAR2"] = "bar"
+
     assert app.config.HOSTNAME == "host.com"
     assert app.config.MY_VAR == "foo"
 
@@ -74,8 +76,14 @@ def test_flask_dynaconf(settings):
     assert "NONEXISTENETVAR" not in app.config
     assert ("NONEXISTENETVAR" in app.config) is False
 
+    assert "MY_VAR" in app.config
+    assert "MY_VAR2" in app.config
+
     with pytest.raises(KeyError):
         app.config["NONEXISTENETVAR"]
+
+    with pytest.raises(AttributeError):
+        app.config.nonexistentattribute
 
 
 def test_flask_with_dot_env():

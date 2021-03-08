@@ -1,4 +1,5 @@
 import warnings
+from contextlib import suppress
 
 try:
     from flask.config import Config
@@ -136,20 +137,21 @@ class FlaskDynaconf:
 
 class DynaconfConfig(Config):
     """
-    Settings load order in Dynaconf:
-
-    - Load all defaults and Flask defaults
-    - Load all passed variables when applying FlaskDynaconf
-    - Update with data in settings files
-    - Update with data in environmente vars `ENV_FOR_DYNACONF_`
+    Replacement for flask.config_class that responds as a Dynaconf instance.
     """
 
     def __init__(self, _settings, _app, *args, **kwargs):
         """perform the initial load"""
         super(DynaconfConfig, self).__init__(*args, **kwargs)
+
+        # Bring Dynaconf instance value to Flask Config
         Config.update(self, _settings.store)
+
         self._settings = _settings
         self._app = _app
+
+    def __contains__(self, item):
+        return hasattr(self, item)
 
     def __getitem__(self, key):
         try:
@@ -167,10 +169,15 @@ class DynaconfConfig(Config):
         """
         First try to get value from dynaconf then from Flask Config
         """
-        try:
+        with suppress(AttributeError):
             return getattr(self._settings, name)
-        except AttributeError:
+
+        with suppress(KeyError):
             return self[name]
+
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
 
     def __call__(self, name, *args, **kwargs):
         return self.get(name, *args, **kwargs)
