@@ -2,6 +2,57 @@ Changelog
 =========
 
 
+3.1.4 (2021-03-08)
+------------------
+- Release version 3.1.4. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (3):
+            Release version 3.1.3
+            HOTFIX for 501 (#540)
+            HOTFIX for 462 related issue, `default` on .get should be parsed as Box (#541)
+
+      dependabot-preview[bot] (2):
+            Bump mkdocs-material from 6.1.6 to 7.0.4 (#537)
+            Bump mkdocs-material from 7.0.4 to 7.0.5 (#539)
+- HOTFIX for 462 related issue, `default` on .get should be parsed as
+  Box (#541) [Bruno Rocha]
+
+  objects
+
+  In order to keep the same method api, default values should be parsed
+  and converted to Boxed objects.
+
+  https://github.com/rochacbruno/dynaconf/issues/462
+- HOTFIX for 501 (#540) [Bruno Rocha]
+
+  Flask still missing __contains__
+- Bump mkdocs-material from 7.0.4 to 7.0.5 (#539) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 7.0.4 to 7.0.5.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/7.0.4...7.0.5)
+- Bump mkdocs-material from 6.1.6 to 7.0.4 (#537) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 6.1.6 to 7.0.4.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.1.6...7.0.4)
+- Release version 3.1.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 3.1.3rc1
+            Fix #462 make DynaBox nested List to use DynaBox as default class (#533)
+            Fix #478 Make alias for environment -> environments (#534)
+            Test to ensure #467 is not an issue (#535)
+
+
 3.1.3 (2021-03-04)
 ------------------
 
