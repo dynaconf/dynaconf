@@ -10,6 +10,7 @@ test_examples:
 	@echo '###############  Chdir to example directory  ###############'
 	cd example/common;pwd;python program.py
 	cd example/common-encoding;pwd;python program.py
+	cd example/simple_ini_example;pwd;TEFLO_LOG_LEVEL=debug python app.py
 	cd example/;pwd;python full_example.py
 	cd example/;pwd;python compat.py
 	cd example/app;pwd;python app.py
