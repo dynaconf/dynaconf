@@ -35,60 +35,17 @@ from dynaconf.vendor.box.box_list import BoxList
 
 
 class LazySettings(LazyObject):
-    """When you do::
+    """Loads settings lazily from multple sources::
 
-        >>> from dynaconf import Dynaconf
-        >>> settings = Dynaconf(*options)
+        settings = Dynaconf(
+            settings_files=["settings.toml"],  # path/glob
+            environments=True,                 # activate layered environments
+            envvar_prefix="MYAPP",             # `export MYAPP_FOO=bar`
+            env_switcher="MYAPP_MODE",         # `export MYAPP_MODE=production`
+            load_dotenv=True,                  # read a .env file
+        )
 
-    a LazySettings is initialized with only default_settings and all the
-    parameters passed to *options.
-
-    Then when you first access a value, this will be set up and loaders will
-    be executed looking for defined config files or the file defined in
-    SETTINGS_FILE_FOR_DYNACONF environment variable::
-
-        $ export SETTINGS_FILE_FOR_DYNACONF=path
-
-        >>> settings.FOO
-
-    Or when you call::
-
-        >>> settings.configure(settings_module='/tmp/settings.py')
-
-    You can define in your settings module a list of loaders to get values
-    from different stores. By default it will try environment variables
-    starting with ENVVAR_PREFIX_FOR_DYNACONF (by defaulf `DYNACONF_`)
-
-    You can also customize specific parameters.
-
-    Exmaple: `proj/config.py`::
-
-        >>> from dynaconf import Dynaconf
-        >>> settings = Dynaconf(
-        ...    env='production',
-        ...    loaders=[
-        ...        'dynaconf.loaders.env_loader',
-        ...        'dynaconf.loaders.redis_loader'
-        ...    ]
-        ... )
-
-    save common values in a settings file::
-
-        $ echo "SERVER_IP = '10.10.10.10'" > proj/settings.py
-
-    or use `.toml|.yaml|.ini|.json`
-
-    save sensitive values in .secrets.{py|toml|yaml|ini|json}
-    or export as DYNACONF global environment variable::
-
-        $ export DYNACONF_SERVER_PASSWD='super_secret'
-
-        >>> # from proj.config import settings
-        >>> print settings.SERVER_IP
-        >>> print settings.SERVER_PASSWD
-
-    and now it reads all variables starting with `DYNACONF_` from envvars
-    and all values in a hash called DYNACONF_PROJ in redis
+    More options available on https://www.dynaconf.com/configuration/
     """
 
     def __init__(self, **kwargs):
