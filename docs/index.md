@@ -663,3 +663,8 @@ Read more on [external loaders](/advanced/#creating-new-loaders)
 ## License
 
 This project is licensed under the terms of the MIT license.
+
+## More
+
+
+If you are looking for something similar to Dynaconf to use in your Rust projects: https://github.com/rubik/hydroconf

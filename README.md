@@ -25,6 +25,7 @@
 
 > **DEMO:** You can see a working demo here: https://github.com/rochacbruno/learndynaconf
 
+
 ### Install
 
 ```bash
@@ -129,11 +130,11 @@ settings['databases.schema'] == "main"  # Nested key traversing
 
 There is a lot more you can do, **read the docs:** http://dynaconf.com
 
-
 ## Contribute
 
 Main discussions happens on [t.me/dynaconf](https://t.me/dynaconf) learn more about how to get involved on [CONTRIBUTING.md guide](CONTRIBUTING.md)
 
-# Top Contributors
 
-[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/0)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/0)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/1)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/1)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/2)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/2)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/3)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/3)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/4)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/4)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/5)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/5)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/6)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/6)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/images/7)](https://sourcerer.io/fame/rochacbruno/rochacbruno/dynaconf/links/7)
+## more
+
+If you are looking for something similar to Dynaconf to use in your Rust projects: https://github.com/rubik/hydroconf
