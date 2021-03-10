@@ -201,6 +201,8 @@ class Settings:
         self.environ = os.environ
         self.SETTINGS_MODULE = None
         self._not_installed_warnings = []
+        self._validate_only = kwargs.pop("validate_only", None)
+        self._validate_exclude = kwargs.pop("validate_exclude", None)
 
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
@@ -215,7 +217,9 @@ class Settings:
         self._defaults = kwargs
         self.execute_loaders()
 
-        self.validators.validate()
+        self.validators.validate(
+            only=self._validate_only, exclude=self._validate_exclude
+        )
 
     def __call__(self, *args, **kwargs):
         """Allow direct call of `settings('val')`
@@ -1174,5 +1178,7 @@ RESERVED_ATTRS = (
         "environ",
         "SETTINGS_MODULE",
         "validators",
+        "_validate_only",
+        "_validate_exclude",
     ]
 )

@@ -47,6 +47,56 @@ MYSQL_PASSWD = "SuperSecret"
 TESTVALUE = "value"
 """
 
+YAML = """
+server:
+    hostname: "localhost"
+    port: 22
+    users:
+      - "Bruno"
+      - "Lula"
+app:
+    name: "testname"
+    path: "/tmp/app_startup"
+    args:
+        arg1: "a"
+        arg2: "b"
+        arg3: "c"
+"""
+
+
+@pytest.fixture
+def yaml_validators_good():
+    return [
+        Validator(
+            "server.hostname", "server.port", "server.users", must_exist=True
+        ),
+        Validator(
+            "app.name",
+            "app.path",
+            "app.args.arg1",
+            "app.args.arg2",
+            "app.args.arg3",
+            must_exist=True,
+        ),
+    ]
+
+
+@pytest.fixture
+def yaml_validators_bad():
+    return [
+        Validator("missing.value", must_exist=True),
+        Validator("app.missing", must_exist=True),
+        Validator("app.args.missing", must_exist=True),
+    ]
+
+
+@pytest.fixture
+def yaml_validators_mixed(yaml_validators_good, yaml_validators_bad):
+    mixed = []
+    mixed.extend(yaml_validators_good)
+    mixed.extend(yaml_validators_bad)
+    return mixed
+
 
 def test_validators_on_init(tmpdir):
     TOML = """
@@ -483,3 +533,72 @@ def test_validator_can_provide_default(tmpdir):
 
     assert settings.FOO == "BAR"
     assert settings.COMPUTED == "I am computed"
+
+
+def test_validator_init_exclude(tmpdir, yaml_validators_mixed):
+    tmpfile = tmpdir.join("settings.yaml")
+    tmpfile.write(YAML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        validators=yaml_validators_mixed,
+        validate_exclude=["missing", "app.missing", "app.args.missing"],
+    )
+    assert settings.server.hostname == "localhost"
+
+
+def test_validator_init_only(tmpdir, yaml_validators_mixed):
+    tmpfile = tmpdir.join("settings.yaml")
+    tmpfile.write(YAML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        validators=yaml_validators_mixed,
+        validate_only=["server"],
+    )
+    assert settings.server.hostname == "localhost"
+
+
+def test_validator_init_mixed(tmpdir, yaml_validators_mixed):
+    tmpfile = tmpdir.join("settings.yaml")
+    tmpfile.write(YAML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        validators=yaml_validators_mixed,
+        validate_only=["server", "app"],
+        validate_exclude=["app.missing", "app.args.missing"],
+    )
+    assert settings.server.hostname == "localhost"
+
+
+def test_validator_only_post_register(
+    tmpdir, yaml_validators_good, yaml_validators_bad
+):
+    tmpfile = tmpdir.join("settings.yaml")
+    tmpfile.write(YAML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        validators=yaml_validators_good,
+        validate_only=["server"],
+    )
+    assert settings.server.hostname == "localhost"
+    settings.validators.register(*yaml_validators_bad)
+    # call validation only on the server section
+    settings.validators.validate(only=["server"])
+
+
+def test_validator_exclude_post_register(
+    tmpdir, yaml_validators_good, yaml_validators_bad
+):
+    tmpfile = tmpdir.join("settings.yaml")
+    tmpfile.write(YAML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        validators=yaml_validators_good,
+        validate_only=["server", "app.path"],
+    )
+    assert settings.server.hostname == "localhost"
+    settings.validators.register(*yaml_validators_bad)
+    # call validation only on the server section
+    settings.validators.validate(
+        exclude=["missing", "app.missing", "app.args.missing"]
+    )
+    settings.app.path = "/tmp/app_startup"
