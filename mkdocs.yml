@@ -18,7 +18,6 @@ nav:
     - Flask: flask.md
     - Django: django.md
     - Advanced usage: advanced.md
-    - Release Notes: release_notes.md
 theme:
     language: en
     name: material
