@@ -14,6 +14,9 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+venv/
+.venv/
+.virtualenv/
 build/
 develop-eggs/
 dist/

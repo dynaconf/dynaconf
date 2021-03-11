@@ -135,7 +135,11 @@ class BaseLoader:
                 self._set_data_to_obj(data, identifier, file_merge, key)
 
     def _set_data_to_obj(
-        self, data, identifier, file_merge=None, key=False,
+        self,
+        data,
+        identifier,
+        file_merge=None,
+        key=False,
     ):
         """Calls setttings.set to add the keys"""
 
@@ -149,7 +153,9 @@ class BaseLoader:
 
         if not key:
             self.obj.update(
-                data, loader_identifier=identifier, merge=file_merge,
+                data,
+                loader_identifier=identifier,
+                merge=file_merge,
             )
         elif key in data:
             self.obj.set(

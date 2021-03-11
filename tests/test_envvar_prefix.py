@@ -19,7 +19,9 @@ def test_envvar_prefix_lazysettings(tmpdir):
     tmpfile.write(TOML)
 
     settings = LazySettings(
-        environments=True, envvar_prefix=False, settings_file=str(tmpfile),
+        environments=True,
+        envvar_prefix=False,
+        settings_file=str(tmpfile),
     )
 
     assert settings.VAR == "my value"
