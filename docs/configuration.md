@@ -415,7 +415,7 @@ When using a glob on `includes` you might want dynaconf to ignore some files tha
 - default: None
 
 ```py
-skip_filess=["path/to/ignored.toml"]
+skip_files=["path/to/ignored.toml"]
 
 ```
 
