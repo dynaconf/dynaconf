@@ -602,3 +602,15 @@ def test_validator_exclude_post_register(
         exclude=["missing", "app.missing", "app.args.missing"]
     )
     settings.app.path = "/tmp/app_startup"
+
+
+def test_raises_on_invalid_selective_args(tmpdir, yaml_validators_good):
+    settings = LazySettings(validators=yaml_validators_good, validate_only=int)
+    with pytest.raises(ValueError):
+        settings.validator_instance.validate()
+
+    settings = LazySettings(
+        validators=yaml_validators_good, validate_exclude=int
+    )
+    with pytest.raises(ValueError):
+        settings.validator_instance.validate()
