@@ -324,7 +324,7 @@ If set to `true` dynaconf will include `dynaconf.loaders.redis_loaders` in the `
 
 ### **redis**
 
-When `redis_enables` is true, a dictionary holding redis settings.
+When `redis_enabled` is true, a dictionary holding redis settings.
 
 - type: dict
 - default:
