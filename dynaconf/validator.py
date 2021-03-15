@@ -2,6 +2,7 @@ from itertools import chain
 from types import MappingProxyType
 
 from dynaconf import validator_conditions  # noqa
+from dynaconf.utils import ensure_a_list
 from dynaconf.utils.functional import empty
 
 
@@ -147,8 +148,16 @@ class Validator:
 
         return False
 
-    def validate(self, settings):
+    def validate(self, settings, only=None, exclude=None):
         """Raise ValidationError if invalid"""
+        # If only or exclude are not set, this value always passes startswith
+        only = ensure_a_list(only or [""])
+        if only and not isinstance(only[0], str):
+            raise ValueError("'only' must be a string or list of strings.")
+
+        exclude = ensure_a_list(exclude)
+        if exclude and not isinstance(exclude[0], str):
+            raise ValueError("'exclude' must be a string or list of strings.")
 
         if self.envs is None:
             self.envs = [settings.current_env]
@@ -159,7 +168,7 @@ class Validator:
                 if self.when.envs is None:
                     self.when.envs = self.envs
 
-                self.when.validate(settings)
+                self.when.validate(settings, only=only, exclude=exclude)
             except ValidationError:
                 # if when is invalid, return canceling validation flow
                 return
@@ -169,15 +178,25 @@ class Validator:
             len(self.envs) == 1
             and self.envs[0].upper() == settings.current_env.upper()
         ):
-            self._validate_items(settings, settings.current_env)
+            self._validate_items(
+                settings, settings.current_env, only=only, exclude=exclude
+            )
             return
 
         for env in self.envs:
-            self._validate_items(settings.from_env(env))
+            self._validate_items(
+                settings.from_env(env), only=only, exclude=exclude
+            )
 
-    def _validate_items(self, settings, env=None):
+    def _validate_items(self, settings, env=None, only=None, exclude=None):
         env = env or settings.current_env
         for name in self.names:
+            # Skip if only is set and name isn't in the only list
+            if not any(name.startswith(sub) for sub in only):
+                continue
+            # Skip if exclude is set and name is in the exclude list
+            if any(name.startswith(sub) for sub in exclude):
+                continue
             if self.default is not empty:
                 default_value = (
                     self.default(settings, self)
@@ -244,7 +263,7 @@ class CombinedValidator(Validator):
                 )
                 setattr(self, attr, value)
 
-    def validate(self, settings):  # pragma: no cover
+    def validate(self, settings, only=None, exclude=None):  # pragma: no cover
         raise NotImplementedError(
             "subclasses OrValidator or AndValidator implements this method"
         )
@@ -253,12 +272,12 @@ class CombinedValidator(Validator):
 class OrValidator(CombinedValidator):
     """Evaluates on Validator() | Validator()"""
 
-    def validate(self, settings):
+    def validate(self, settings, only=None, exclude=None):
         """Ensure at least one of the validators are valid"""
         errors = []
         for validator in self.validators:
             try:
-                validator.validate(settings)
+                validator.validate(settings, only=only, exclude=exclude)
             except ValidationError as e:
                 errors.append(e)
                 continue
@@ -278,12 +297,12 @@ class OrValidator(CombinedValidator):
 class AndValidator(CombinedValidator):
     """Evaluates on Validator() & Validator()"""
 
-    def validate(self, settings):
+    def validate(self, settings, only=None, exclude=None):
         """Ensure both the validators are valid"""
         errors = []
         for validator in self.validators:
             try:
-                validator.validate(settings)
+                validator.validate(settings, only=only, exclude=exclude)
             except ValidationError as e:
                 errors.append(e)
                 continue
@@ -303,6 +322,8 @@ class ValidatorList(list):
     def __init__(self, settings, validators=None, *args, **kwargs):
         if isinstance(validators, (list, tuple)):
             args = list(args) + list(validators)
+        self._only = kwargs.pop("validate_only", None)
+        self._exclude = kwargs.pop("validate_exclude", None)
         super(ValidatorList, self).__init__(args, **kwargs)
         self.settings = settings
 
@@ -313,6 +334,8 @@ class ValidatorList(list):
             if validator and validator not in self:
                 self.append(validator)
 
-    def validate(self):
+    def validate(self, only=None, exclude=None):
+        # only = only or self._only
+        # exclude = exclude or self._exclude
         for validator in self:
-            validator.validate(self.settings)
+            validator.validate(self.settings, only=only, exclude=exclude)
