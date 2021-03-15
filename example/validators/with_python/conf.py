@@ -45,6 +45,8 @@ settings.validators.register(
     Validator(
         "A_DICT.NESTED_1.NESTED_2.NESTED_3.NESTED_4", must_exist=True, eq=1
     ),
+    Validator("A_DICT.NESTED_1.NOT.YET.LOADED", must_exist=True, eq=1),
 )
 
-settings.validators.validate()
+# Validate settings except those that we don't want to validate yet
+settings.validators.validate(exclude="A_DICT.NESTED_1.NOT")

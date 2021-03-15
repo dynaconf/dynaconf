@@ -135,9 +135,7 @@ Validator('DATABASE.HOST', must_exist=True) & Validator('DATABASE.CONN', must_ex
 
 ## CLI and dynaconf_validators.toml
 
-> **NEW in 1.0.1**
-
-Starting on version 1.0.1 it is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same folder as your settings files.
+It is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same folder as your settings files.
 
 `dynaconf_validators.toml` equivalent to program above
 
@@ -167,3 +165,71 @@ $ dynaconf validate
 ```
 
 This returns code 0 (success) if validation is ok.
+
+
+## Selective Validation
+
+> **New in 3.2.0**
+
+You can also choose what sections of the settings you do or don't want to validate.
+This is useful when:
+
+ - You want to add additional validators after the settings object is created.
+ - You want settings validated only when certain sections of your project are loaded.
+ - You want to offer incremental configuration levels, validating only what is needed.
+
+Selective validation can be performed both when creating a settings object and when calling validate on a settings object's validators. The new arguments accept either a string representing a settings path or a list of strings representing settings paths.
+
+A settings path starts at the top level element and can be specified down to the lowest component. For example: `my_settings.server.user.password` can have the following settings paths passed in `server`, `server.user`, `server.user.password`.
+
+*Note:* Selective validation matches the passed in value(s) to settings paths that start with that value. This means that passing `exclude="FOO"` will exclude not only paths that start with `FOO` but also `FOOBAR`.
+
+Examples:
+
+**-- config.py --**
+```python
+...
+# create a settings object, validating only settings under settings.server
+settings = Dynaconf(
+    validators=[
+        Validator(
+            "server.hostname",
+            "server.port",
+            "server.auth",
+            must_exist=True
+        ),
+        Validator(
+            "module1.value1",
+            "module1.value2",
+            "module1.value3",
+            must_exist=True
+        ),
+        Validator(
+            "module2.value1",
+            "module2.value2",
+            "module2.bad",
+            must_exist=True
+        )
+    ],
+    validate_only="server"
+)
+```
+
+**-- module1.py --**
+```python
+...
+# call validation on module1 settings
+settings.validators.validate(only=["module1"])
+```
+
+**-- module2.py --**
+```python
+...
+# call validation on module2 settings
+# ignore validation for a subsection of module2's settings
+settings.validators.validate(
+    only=["module2"],
+    exclude=["module2.bad"]
+)
+
+```
