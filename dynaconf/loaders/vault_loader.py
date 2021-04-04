@@ -91,18 +91,10 @@ def load(obj, env=None, silent=None, key=None):
                     path=path,
                     mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
                 )
-                # data = {'data': {env: data}}
-                # data = client.secrets.kv.read_secret(
-                #     "data/" + path,
-                #     mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
-                # )
+                data = {env: data}
         except InvalidPath:
             # If the path doesn't exist, ignore it and set data to None
             data = None
-        # if data:
-        # There seems to be a data dict within a data dict,
-        # extract the inner data
-        # data = data.get("data", {})
         try:
             if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2 and data:
                 data = data.get("data", {}).get("data", {})
