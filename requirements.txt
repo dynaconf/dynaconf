@@ -1,7 +1,7 @@
 # This file exists only for netlify
 mkdocs==1.1.2
 mkdocs-git-revision-date-localized-plugin==0.7.3
-mkdocs-material==7.0.6
+mkdocs-material==7.1.11
 mkdocs-material-extensions==1.0.1
 mkdocs-multilang==0.1.3
 mkdocs-nav-enhancements==0.9.1
