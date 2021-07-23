@@ -47,6 +47,12 @@ class BaseLoader:
         :param silent: if load erros should be silenced
         :param prefix: load only keys with specified prefix
         """
+        if prefix:
+            if not isinstance(prefix, str):
+                raise TypeError("`SETTINGS_FILE_PREFIX` must be str")
+            prefix = upperfy(prefix)
+            prefix += "_"
+
         filename = filename or self.obj.get(self.identifier.upper())
         if not filename:
             return
@@ -101,11 +107,17 @@ class BaseLoader:
     def _envless_load(self, source_data, silent=True, key=None, prefix=None):
         """Load all the keys from each file without env separation"""
         for file_data in source_data.values():
+            if prefix:
+                file_data = {
+                    upperfy(
+                        k[len(prefix):]
+                    ): v for k, v in file_data.items()
+                    if upperfy(k[:len(prefix)]) == prefix
+                }
             self._set_data_to_obj(
                 file_data,
                 self.identifier,
                 key=key,
-                prefix=prefix,
             )
 
     def _load_all_envs(self, source_data, silent=True, key=None, prefix=None):
@@ -121,10 +133,15 @@ class BaseLoader:
 
             for env in build_env_list(self.obj, self.env):
                 env = env.lower()  # lower for better comparison
-                data = {}
-
                 try:
                     data = file_data[env] or {}
+                    if prefix:
+                        data = {
+                            upperfy(
+                                k[len(prefix):]
+                            ): v for k, v in data.items()
+                            if upperfy(k[:len(prefix)]) == prefix
+                        }
                 except KeyError:
                     if silent:
                         continue
@@ -137,13 +154,11 @@ class BaseLoader:
                     identifier = f"{self.identifier}_{env}"
                 else:
                     identifier = self.identifier
-
                 self._set_data_to_obj(
                     data,
                     identifier,
                     file_merge,
                     key,
-                    prefix=prefix,
                 )
 
     def _set_data_to_obj(
@@ -152,23 +167,10 @@ class BaseLoader:
         identifier,
         file_merge=None,
         key=False,
-        prefix=None,
     ):
         """Calls setttings.set to add the keys"""
-        if prefix:
-            if not isinstance(prefix, str):
-                raise TypeError("`SETTINGS_FILE_PREFIX` must be str")
-            prefix = upperfy(prefix)
-            prefix += "_"
-
         # data 1st level keys should be transformed to upper case.
-        if prefix:
-            data = {
-                upperfy(k[len(prefix):]): v for k, v in data.items()
-                if upperfy(k[:len(prefix)]) == prefix
-            }
-        else:
-            data = {upperfy(k): v for k, v in data.items()}
+        data = {upperfy(k): v for k, v in data.items()}
         if key:
             key = upperfy(key)
 
