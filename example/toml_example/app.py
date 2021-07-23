@@ -1,4 +1,4 @@
-from dynaconf import settings, LazySettings
+from dynaconf import settings, Dynaconf
 
 # print all values in the file
 # using [default] + [development] + [global] values
@@ -82,9 +82,11 @@ for key, value in assertions.items():
     assert found == value, f"expected: {key}: [{value}] found: [{found}]"
 
 
-settings = LazySettings(
-    settings_file="settings.toml",
+settings_with_prefix = Dynaconf(
+    settings_files=["settings.toml"],
     settings_file_prefix="prefix",
+    environments=True,
 )
-settings.from_env("default")
-assert settings.custom == "this is custom when we set a prefix"
+with settings_with_prefix.using_env("default"):
+    assert settings_with_prefix.CUSTOM == "this is custom when we set a prefix"
+assert settings_with_prefix.from_env("production").CUSTOM == "this is custom when we set a prefix"

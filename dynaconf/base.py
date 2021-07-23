@@ -35,7 +35,7 @@ from dynaconf.vendor.box.box_list import BoxList
 
 
 class LazySettings(LazyObject):
-    """Loads settings lazily from multple sources::
+    """Loads settings lazily from multiple sources::
 
         settings = Dynaconf(
             settings_files=["settings.toml"],  # path/glob
@@ -203,6 +203,7 @@ class Settings:
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
+        self._settings_file_prefix = kwargs.get("settings_file_prefix", None)
 
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
@@ -537,6 +538,10 @@ class Settings:
             for key in UPPER_DEFAULT_SETTINGS
             if key not in RENAMED_VARS
         }
+
+        if self._settings_file_prefix:
+            # We need to retain the prefix when switching environments
+            new_data["settings_file_prefix"] = self._settings_file_prefix
 
         # This is here for backwards compatibility
         # To be removed on 4.x.x
@@ -1180,5 +1185,6 @@ RESERVED_ATTRS = (
         "validators",
         "_validate_only",
         "_validate_exclude",
+        "_settings_file_prefix",
     ]
 )

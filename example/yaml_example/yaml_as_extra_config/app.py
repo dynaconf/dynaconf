@@ -1,4 +1,4 @@
-from dynaconf import settings, LazySettings
+from dynaconf import settings
 
 print(settings.YAML)
 print(settings.HOST)
@@ -34,7 +34,6 @@ assertions = {
     "HOST": "prod_server.com",
     "PORT": 5000,
     "ENVIRONMENT": "this is production",
-    "PREFIX_CUSTOM": "this is custom when prefix is set",
 }
 
 
@@ -42,6 +41,3 @@ for key, value in assertions.items():
     found = settings.from_env("production").get(key)
     assert found == getattr(settings.from_env("production"), key)
     assert found == value, f"expected: {key}: [{value}] found: [{found}]"
-
-settings = LazySettings(settings_file_prefix="prefix")
-assert settings.CUSTOM == "this is custom when prefix is set"
