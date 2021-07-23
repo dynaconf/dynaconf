@@ -754,6 +754,45 @@ def test_from_env_method(clean_env, tmpdir):
     assert settings.A_DEFAULT == "From default env"
 
 
+def test_from_env_method_with_prefix(clean_env, tmpdir):
+    data = {
+        "default": {"prefix_a_default": "From default env"},
+        "development": {
+            "prefix_value": "From development env",
+            "prefix_only_in_development": True,
+        },
+        "other": {"prefix_value": "From other env", "prefix_only_in_other": True, "not_prefixed": "no prefix"},
+    }
+    toml_path = str(tmpdir.join("base_settings.toml"))
+    toml_loader.write(toml_path, data, merge=False)
+    settings = LazySettings(settings_file=toml_path, environments=True, settings_file_prefix="prefix")
+    settings.set("ARBITRARY_KEY", "arbitrary value")
+
+    assert settings.VALUE == "From development env"
+    assert settings.A_DEFAULT == "From default env"
+    assert settings.ONLY_IN_DEVELOPMENT is True
+    assert settings.ARBITRARY_KEY == "arbitrary value"
+    assert settings.get("ONLY_IN_OTHER") is None
+
+    # clone the settings object pointing to a new env
+    other_settings = settings.from_env("other")
+    assert other_settings.VALUE == "From other env"
+    assert other_settings.A_DEFAULT == "From default env"
+    assert other_settings.ONLY_IN_OTHER is True
+    assert other_settings.get("ARBITRARY_KEY") is None
+    assert other_settings.get("ONLY_IN_DEVELOPMENT") is None
+    with pytest.raises(AttributeError):
+        other_settings.not_prefixed
+    with pytest.raises(AttributeError):
+        # values set programatically are not cloned
+        other_settings.ARBITRARY_KEY
+    with pytest.raises(AttributeError):
+        # values set only in a specific env not cloned
+        other_settings.ONLY_IN_DEVELOPMENT
+    # assert it is cached not created twice
+    assert other_settings is settings.from_env("other")
+
+
 def test_preload(tmpdir):
     data = {
         "data": {"links": {"twitter": "rochacbruno", "site": "brunorocha.org"}}
