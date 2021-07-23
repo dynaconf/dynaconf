@@ -82,7 +82,13 @@ for key, value in assertions.items():
     assert found == getattr(settings.from_env("production"), key)
     assert found == value, f"expected: {key}: [{value}] found: [{found}]"
 
-settings = LazySettings(settings_files=["settings.yaml"], settings_file_prefix="prefix", environments=True)
+settings = LazySettings(
+    settings_files=["settings.yaml"],
+    settings_file_prefix="prefix",
+    environments=True,
+)
 with settings.using_env("default"):
     assert settings.CUSTOM == "this is custom when prefix is set"
-assert settings.from_env("production").CUSTOM == "this is custom when prefix is set"
+assert settings.from_env(
+    "production"
+).CUSTOM == "this is custom when prefix is set"
