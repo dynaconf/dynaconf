@@ -956,3 +956,10 @@ def test_settings_dict_like_iteration(tmpdir):
 
     for key, value in settings.items():
         assert settings._store[key] == value
+
+
+def test_prefix_is_not_str_raises():
+    with pytest.raises(TypeError):
+        toml_loader.load(LazySettings(settings_file_prefix=int))
+    with pytest.raises(TypeError):
+        toml_loader.load(LazySettings(settings_file_prefix=True))
