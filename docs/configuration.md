@@ -407,6 +407,17 @@ Read more on [settings_files](/settings_files/)
 
 ---
 
+### **settings_file_prefix**
+
+The prefix for dynaconf to load values from settings files (ini, json, toml and yaml). If this is not set it will
+import everything found in the settings file as is.
+
+
+- type: str
+- default: None
+
+---
+
 ### **skip_files**
 
 When using a glob on `includes` you might want dynaconf to ignore some files that matches.
