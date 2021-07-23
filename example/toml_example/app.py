@@ -82,6 +82,9 @@ for key, value in assertions.items():
     assert found == value, f"expected: {key}: [{value}] found: [{found}]"
 
 
-settings = LazySettings(settings_file="settings.toml", settings_file_prefix="prefix")
+settings = LazySettings(
+    settings_file="settings.toml",
+    settings_file_prefix="prefix",
+)
 settings.from_env("default")
 assert settings.custom == "this is custom when we set a prefix"
