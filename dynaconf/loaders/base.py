@@ -107,17 +107,11 @@ class BaseLoader:
     def _envless_load(self, source_data, silent=True, key=None, prefix=None):
         """Load all the keys from each file without env separation"""
         for file_data in source_data.values():
-            if prefix:
-                file_data = {
-                    upperfy(
-                        k[len(prefix):]
-                    ): v for k, v in file_data.items()
-                    if upperfy(k[:len(prefix)]) == prefix
-                }
             self._set_data_to_obj(
                 file_data,
                 self.identifier,
                 key=key,
+                prefix=prefix,
             )
 
     def _load_all_envs(self, source_data, silent=True, key=None, prefix=None):
@@ -135,13 +129,6 @@ class BaseLoader:
                 env = env.lower()  # lower for better comparison
                 try:
                     data = file_data[env] or {}
-                    if prefix:
-                        data = {
-                            upperfy(
-                                k[len(prefix):]
-                            ): v for k, v in data.items()
-                            if upperfy(k[:len(prefix)]) == prefix
-                        }
                 except KeyError:
                     if silent:
                         continue
@@ -159,6 +146,7 @@ class BaseLoader:
                     identifier,
                     file_merge,
                     key,
+                    prefix=prefix,
                 )
 
     def _set_data_to_obj(
@@ -167,6 +155,7 @@ class BaseLoader:
         identifier,
         file_merge=None,
         key=False,
+        prefix=None,
     ):
         """Calls setttings.set to add the keys"""
         # data 1st level keys should be transformed to upper case.
@@ -174,9 +163,16 @@ class BaseLoader:
         if key:
             key = upperfy(key)
 
+        if prefix:
+            data = {
+                upperfy(
+                    k[len(prefix):]
+                ): v for k, v in data.items()
+                if upperfy(k[:len(prefix)]) == prefix
+            }
+
         # is there a `dynaconf_merge` inside an `[env]`?
         file_merge = file_merge or data.pop("DYNACONF_MERGE", False)
-
         if not key:
             self.obj.update(
                 data,
