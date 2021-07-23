@@ -842,6 +842,26 @@ def test_envless_mode(tmpdir):
     assert settings.DATABASES.default.port == 8080
 
 
+def test_envless_mode_with_prefix(tmpdir):
+    data = {
+        "prefix_foo": "bar",
+        "hello": "world",
+        "prefix_default": 1,
+        "prefix_databases": {"default": {"port": 8080}},
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data)
+
+    settings = LazySettings(
+        settings_file="settings.toml",
+        SETTINGS_FILE_PREFIX="prefix",
+    )  # already the default
+    assert settings.FOO == "bar"
+    with pytest.raises(AttributeError):
+        settings.HELLO
+    assert settings.DEFAULT == 1
+    assert settings.DATABASES.default.port == 8080
+
+
 def test_lowercase_read_mode(tmpdir):
     """
     Starting on 3.0.0 lowercase keys are enabled by default

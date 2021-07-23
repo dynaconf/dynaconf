@@ -13,6 +13,7 @@ age = 42.0
 enabled = true
 works = "toml_example"
 custom = 'this is custom from [default]'
+prefix_custom = "this is custom when we set a prefix"
 
   [default.test_loaders]
   dev = "test_dev"

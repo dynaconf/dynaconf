@@ -297,6 +297,20 @@ def test_envless():
     assert settings.COLORS.white.name == "white"
 
 
+def test_prefix():
+    settings = LazySettings(settings_file_prefix="prefix")
+    _yaml = """
+    prefix_a: a,b
+    prefix_colors__white__code: "#FFFFFF"
+    COLORS__white__name: "white"
+    """
+    load(settings, filename=_yaml)
+    assert settings.a == "a,b"
+    assert settings.COLORS.white.code == "#FFFFFF"
+    with pytest.raises(AttributeError):
+        settings.COLORS.white.name
+
+
 def test_empty_env():
     settings = LazySettings(environments=True)
     _yaml = """

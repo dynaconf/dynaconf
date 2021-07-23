@@ -189,3 +189,17 @@ def test_envless():
     assert settings.a == "a,b"
     assert settings.COLORS.white.code == "#FFFFFF"
     assert settings.COLORS.white.name == "white"
+
+
+def test_prefix():
+    settings = LazySettings(settings_file_prefix="prefix")
+    ini = """
+    prefix_a = "a,b"
+    prefix_colors__white__code = '#FFFFFF'
+    COLORS__white__name = 'white'
+    """
+    load(settings, filename=ini)
+    assert settings.a == "a,b"
+    assert settings.COLORS.white.code == "#FFFFFF"
+    with pytest.raises(AttributeError):
+        settings.COLORS.white.name

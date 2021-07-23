@@ -212,3 +212,17 @@ def test_envless():
     load(settings, filename=_json)
     assert settings.COLORS.yellow.code == "#FFCC00"
     assert settings.COLORS.yellow.name == "Yellow"
+
+
+def test_prefix():
+    settings = LazySettings(settings_file_prefix="prefix")
+    _json = """
+    {
+        "prefix_colors__yellow__code": "#FFCC00",
+        "COLORS__yellow__name": "Yellow"
+    }
+    """
+    load(settings, filename=_json)
+    assert settings.COLORS.yellow.code == "#FFCC00"
+    with pytest.raises(AttributeError):
+        settings.COLORS.yellow.name

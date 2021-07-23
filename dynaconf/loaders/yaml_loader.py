@@ -40,6 +40,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
             " Please read https://msg.pyyaml.org/load for full details."
             " Try to use full_load or safe_load."
         )
+    settings_file_prefix = obj.get("SETTINGS_FILE_PREFIX", None)
 
     loader = BaseLoader(
         obj=obj,
@@ -49,7 +50,12 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         file_reader=yaml_reader,
         string_reader=yaml_reader,
     )
-    loader.load(filename=filename, key=key, silent=silent)
+    loader.load(
+        filename=filename,
+        key=key,
+        silent=silent,
+        prefix=settings_file_prefix,
+    )
 
 
 def write(settings_path, settings_data, merge=True):

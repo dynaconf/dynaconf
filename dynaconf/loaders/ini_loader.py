@@ -26,6 +26,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     if ConfigObj is None:  # pragma: no cover
         BaseLoader.warn_not_installed(obj, "ini")
         return
+    settings_file_prefix = obj.get("SETTINGS_FILE_PREFIX", None)
 
     loader = BaseLoader(
         obj=obj,
@@ -35,7 +36,12 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         file_reader=lambda fileobj: ConfigObj(fileobj).dict(),
         string_reader=lambda strobj: ConfigObj(strobj.split("\n")).dict(),
     )
-    loader.load(filename=filename, key=key, silent=silent)
+    loader.load(
+        filename=filename,
+        key=key,
+        silent=silent,
+        prefix=settings_file_prefix,
+    )
 
 
 def write(settings_path, settings_data, merge=True):
