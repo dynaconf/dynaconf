@@ -251,6 +251,15 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     click.echo("-" * 42)
     path = Path(path)
 
+    if env is not None:
+        click.secho(
+            "⚠  The --env/-e option is deprecated (kept for\n"
+            "   compatibility but unused)\n",
+            fg="red",
+            bold=True,
+            stderr=True,
+        )
+
     if settings.get("create_new_settings") is True:
         filename = Path("config.py")
         if not filename.exists():
