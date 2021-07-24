@@ -216,7 +216,7 @@ def main(ctx, instance):
     default=None,
     help=(
         "extra values to write to settings file "
-        "file e.g: `dynaconf init -v NAME=foo -v X=2"
+        "e.g: `dynaconf init -v NAME=foo -v X=2"
     ),
 )
 @click.option(
