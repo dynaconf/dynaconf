@@ -1,0 +1,14 @@
+[default]
+log_level = "info"
+workspace= "."
+data_folder= ".teflo"
+
+[ansible]
+data_folder = "ansible/.teflo"
+log_remove = true
+verbosity = "v"
+
+[puppet]
+data_folder = "puppet/.teflo"
+log_remove = false
+verbosity = "vvv"

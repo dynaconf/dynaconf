@@ -1,9 +1,14 @@
+from collections import namedtuple
+
 import pytest
 
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.box import Box
 from dynaconf.vendor.box import BoxKeyError
 from dynaconf.vendor.box import BoxList
+
+
+DBDATA = namedtuple("DbData", ["server", "port"])
 
 
 box = DynaBox(
@@ -16,9 +21,16 @@ box = DynaBox(
                 "PASSWORD": "secret",
                 "token": {"TYPE": 1, "value": 2},
             },
-        }
+        },
+        "database": DBDATA(server="db.com", port=3306),
     },
 )
+
+
+def test_named_tuple_is_not_transformed():
+    """Issue: https://github.com/rochacbruno/dynaconf/issues/595"""
+    assert isinstance(box.database, DBDATA)
+    assert isinstance(box.database, tuple)
 
 
 def test_datatypes():

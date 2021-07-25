@@ -366,3 +366,20 @@ def recursively_evaluate_lazy_format(value, settings):
         )
 
     return value
+
+
+def isnamedtupleinstance(value):
+    """Check if value is a namedtuple instance
+
+    stackoverflow.com/questions/2166818/
+    how-to-check-if-an-object-is-an-instance-of-a-namedtuple
+    """
+
+    t = type(value)
+    b = t.__bases__
+    if len(b) != 1 or b[0] != tuple:
+        return False
+    f = getattr(t, "_fields", None)
+    if not isinstance(f, tuple):
+        return False
+    return all(type(n) == str for n in f)
