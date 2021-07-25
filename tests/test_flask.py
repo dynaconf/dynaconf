@@ -1,8 +1,31 @@
+from collections import namedtuple
+
 import pytest
 from flask import Flask
 
 from dynaconf.contrib import FlaskDynaconf
 from example.flask_with_dotenv.app import app as flask_app
+
+
+DBDATA = namedtuple("DbData", ["server", "port"])
+
+
+def test_named_tuple_config():
+    app = Flask(__name__)
+    app.config["DBDATA"] = DBDATA(server="localhost", port=5432)
+    FlaskDynaconf(app)
+    assert app.config["DBDATA"].server == "localhost"
+    assert app.config["DBDATA"].port == 5432
+    assert isinstance(app.config["DBDATA"], DBDATA)
+
+
+def test_named_tuple_config_using_initapp():
+    app = Flask(__name__)
+    FlaskDynaconf(app)
+    app.config["DBDATA"] = DBDATA(server="localhost", port=5432)
+    assert app.config["DBDATA"].server == "localhost"
+    assert app.config["DBDATA"].port == 5432
+    assert isinstance(app.config["DBDATA"], DBDATA)
 
 
 def test_dynamic_load_exts(settings):
@@ -78,6 +101,14 @@ def test_flask_dynaconf(settings):
 
     assert "MY_VAR" in app.config
     assert "MY_VAR2" in app.config
+    assert "MY_VAR" in app.config.keys()
+    assert "MY_VAR2" in app.config.keys()
+    assert ("MY_VAR", "foo") in app.config.items()
+    assert ("MY_VAR2", "bar") in app.config.items()
+    assert "foo" in app.config.values()
+    assert "bar" in app.config.values()
+    assert "MY_VAR" in list(app.config)
+    assert "MY_VAR2" in list(app.config)
 
     with pytest.raises(KeyError):
         app.config["NONEXISTENETVAR"]
