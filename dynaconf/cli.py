@@ -206,7 +206,10 @@ def main(ctx, instance):
     "--path", "-p", default=CWD, help="defaults to current directory"
 )
 @click.option(
-    "--env", "-e", default=None, help="Sets the working env in `.env` file"
+    "--env",
+    "-e",
+    default=None,
+    help="deprecated command (kept for compatibility but unused)",
 )
 @click.option(
     "--vars",
@@ -216,7 +219,7 @@ def main(ctx, instance):
     default=None,
     help=(
         "extra values to write to settings file "
-        "e.g: `dynaconf init -v NAME=foo -v X=2"
+        "e.g: `dynaconf init -v NAME=foo -v X=2`"
     ),
 )
 @click.option(
