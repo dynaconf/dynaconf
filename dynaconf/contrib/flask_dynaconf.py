@@ -1,4 +1,5 @@
 import warnings
+from collections import ChainMap
 from contextlib import suppress
 
 try:
@@ -164,6 +165,21 @@ class DynaconfConfig(Config):
         Allows app.config['key'] = 'foo'
         """
         return self._settings.__setitem__(key, value)
+
+    def _chain_map(self):
+        return ChainMap(self._settings, dict(dict.items(self)))
+
+    def keys(self):
+        return self._chain_map().keys()
+
+    def values(self):
+        return self._chain_map().values()
+
+    def items(self):
+        return self._chain_map().items()
+
+    def __iter__(self):
+        return self._chain_map().__iter__()
 
     def __getattr__(self, name):
         """
