@@ -892,7 +892,7 @@ def test_envless_mode_with_prefix(tmpdir):
 
     settings = LazySettings(
         settings_file="settings.toml",
-        SETTINGS_FILE_PREFIX="prefix",
+        settings_file_prefix="prefix",
     )  # already the default
     assert settings.FOO == "bar"
     with pytest.raises(AttributeError):

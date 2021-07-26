@@ -40,7 +40,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
             " Please read https://msg.pyyaml.org/load for full details."
             " Try to use full_load or safe_load."
         )
-    settings_file_prefix = obj.get("SETTINGS_FILE_PREFIX", None)
+    settings_file_prefix = obj.settings_file_prefix
 
     loader = BaseLoader(
         obj=obj,

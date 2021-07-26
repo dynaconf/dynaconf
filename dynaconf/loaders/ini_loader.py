@@ -26,7 +26,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     if ConfigObj is None:  # pragma: no cover
         BaseLoader.warn_not_installed(obj, "ini")
         return
-    settings_file_prefix = obj.get("SETTINGS_FILE_PREFIX", None)
+    settings_file_prefix = obj.settings_file_prefix
 
     loader = BaseLoader(
         obj=obj,

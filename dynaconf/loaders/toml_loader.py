@@ -19,7 +19,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :param filename: Optional custom filename to load
     :return: None
     """
-    settings_file_prefix = obj.get("SETTINGS_FILE_PREFIX", None)
+    settings_file_prefix = obj.settings_file_prefix
 
     loader = BaseLoader(
         obj=obj,
