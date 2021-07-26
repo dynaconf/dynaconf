@@ -39,6 +39,10 @@ def set_settings(ctx, instance=None):
     settings = None
 
     if instance is not None:
+        if ctx.invoked_subcommand in ["init"]:
+            raise click.UsageError(
+                "-i/--instance option is not allowed for `init` command"
+            )
         sys.path.insert(0, ".")
         settings = import_settings(instance)
     elif "FLASK_APP" in os.environ:  # pragma: no cover
