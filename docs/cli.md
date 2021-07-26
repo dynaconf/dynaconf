@@ -40,10 +40,8 @@ Commands:
 
 Use init to easily configure your application configuration, once dynaconf is installed go to the root directory of your application and run:
 
-creates settings files in current directory
-
 ```
-$ dynaconf -i init -v key=value -v foo=bar -s token=1234 -e production
+$ dynaconf init -v key=value -v foo=bar -s token=1234
 ```
 
 The above command will create in the current directory
@@ -51,11 +49,6 @@ The above command will create in the current directory
 `settings.toml`
 
 ```ini
-[default]
-KEY = "default"
-FOO = "default"
-
-[production]
 KEY = "value"
 FOO = "bar"
 ```
@@ -63,20 +56,10 @@ FOO = "bar"
 also `.secrets.toml`
 
 ```ini
-[default]
-TOKEN = "default"
-
-[production]
 TOKEN = "1234"
 ```
 
-The command will also create a `.env` setting the working environment to **[production]**
-
-```bash
-ENV_FOR_DYNACONF="PRODUCTION"
-```
-
-And will include the `.secrets.toml` in the `.gitignore`
+as well as `.gitignore` file ignoring the generated `.secrets.toml`
 
 ```ini
 # Ignore dynaconf secret files
@@ -114,6 +97,8 @@ Options:
   --django TEXT
   --help                          Show this message and exit.
 ```
+
+Note that `-i`/`--instance` cannot be used with `init` as `-i` must point to an existing instance of the settings.
 
 ### dynaconf list
 
