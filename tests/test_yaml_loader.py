@@ -3,6 +3,7 @@ import os
 import pytest
 
 from dynaconf import LazySettings
+from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.loaders.yaml_loader import load
 
 settings = LazySettings(
@@ -298,7 +299,7 @@ def test_envless():
 
 
 def test_prefix():
-    settings = LazySettings(settings_file_prefix="prefix")
+    settings = LazySettings(filter_strategy=PrefixFilter("prefix"))
     _yaml = """
     prefix_a: a,b
     prefix_colors__white__code: "#FFFFFF"

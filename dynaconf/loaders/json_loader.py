@@ -33,7 +33,6 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     else:
         file_reader = json.load
         string_reader = json.loads
-    settings_file_prefix = obj.settings_file_prefix
 
     loader = BaseLoader(
         obj=obj,
@@ -47,7 +46,6 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         filename=filename,
         key=key,
         silent=silent,
-        prefix=settings_file_prefix,
     )
 
 

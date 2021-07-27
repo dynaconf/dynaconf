@@ -1,4 +1,5 @@
 from dynaconf import settings, LazySettings
+from dynaconf.strategies.filtering import PrefixFilter
 
 # print all values in the file
 # using [default] + [development] + [global] values
@@ -84,7 +85,7 @@ for key, value in assertions.items():
 
 settings = LazySettings(
     settings_files=["settings.yaml"],
-    settings_file_prefix="prefix",
+    filter_strategy=PrefixFilter("prefix"),
     environments=True,
 )
 with settings.using_env("default"):

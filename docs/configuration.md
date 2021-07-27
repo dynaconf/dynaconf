@@ -407,13 +407,12 @@ Read more on [settings_files](/settings_files/)
 
 ---
 
-### **settings_file_prefix**
+### **filtering_strategy**
 
-The prefix for dynaconf to load values from settings files (ini, json, toml and yaml). If this is not set it will
-import everything found in the settings file as is.
+Callable accepting data to be filtered, inbuilts currently include [PrefixFilter](/dynaconf/strategies/filtering.py)
 
 
-- type: str
+- type: class
 - default: None
 
 ---

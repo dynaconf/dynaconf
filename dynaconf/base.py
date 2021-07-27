@@ -200,7 +200,7 @@ class Settings:
         self._defaults = DynaBox(box_settings=self)
         self.environ = os.environ
         self.SETTINGS_MODULE = None
-        self.settings_file_prefix = kwargs.get("settings_file_prefix", None)
+        self.filter_strategy = kwargs.get("filter_strategy", None)
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
@@ -539,9 +539,9 @@ class Settings:
             if key not in RENAMED_VARS
         }
 
-        if self.settings_file_prefix:
-            # We need to retain the prefix when switching environments
-            new_data["settings_file_prefix"] = self.settings_file_prefix
+        if self.filter_strategy:
+            # Retain the filtering strategy when switching environments
+            new_data["filter_strategy"] = self.filter_strategy
 
         # This is here for backwards compatibility
         # To be removed on 4.x.x
@@ -1182,7 +1182,7 @@ RESERVED_ATTRS = (
         "_warn_dynaconf_global_settings",
         "environ",
         "SETTINGS_MODULE",
-        "settings_file_prefix",
+        "filter_strategy",
         "validators",
         "_validate_only",
         "_validate_exclude",

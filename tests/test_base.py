@@ -3,6 +3,7 @@ import os
 import pytest
 
 from dynaconf import Dynaconf
+from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf import LazySettings
 from dynaconf.loaders import toml_loader
 from dynaconf.utils.parse_conf import true_values
@@ -765,7 +766,7 @@ def test_from_env_method_with_prefix(clean_env, tmpdir):
     }
     toml_path = str(tmpdir.join("base_settings.toml"))
     toml_loader.write(toml_path, data, merge=False)
-    settings = LazySettings(settings_file=toml_path, environments=True, settings_file_prefix="prefix")
+    settings = LazySettings(settings_file=toml_path, environments=True, filter_strategy=PrefixFilter("prefix"))
     settings.set("ARBITRARY_KEY", "arbitrary value")
 
     assert settings.VALUE == "From development env"
@@ -892,7 +893,7 @@ def test_envless_mode_with_prefix(tmpdir):
 
     settings = LazySettings(
         settings_file="settings.toml",
-        settings_file_prefix="prefix",
+        filter_strategy=PrefixFilter("prefix")
     )  # already the default
     assert settings.FOO == "bar"
     with pytest.raises(AttributeError):
@@ -960,6 +961,6 @@ def test_settings_dict_like_iteration(tmpdir):
 
 def test_prefix_is_not_str_raises():
     with pytest.raises(TypeError):
-        toml_loader.load(LazySettings(settings_file_prefix=int))
+        toml_loader.load(LazySettings(filter_strategy=PrefixFilter(int)))
     with pytest.raises(TypeError):
-        toml_loader.load(LazySettings(settings_file_prefix=True))
+        toml_loader.load(LazySettings(filter_strategy=PrefixFilter(True)))
