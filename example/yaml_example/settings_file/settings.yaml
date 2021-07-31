@@ -12,6 +12,7 @@ default:
   enabled: true
   works: yaml_example
   custom: 'this is custom from [default]'
+  prefix_custom: "this is custom when prefix is set"
   test_loaders:
     dev: test_dev
     prod: test_prod

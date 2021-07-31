@@ -1,6 +1,7 @@
 import pytest
 
 from dynaconf import LazySettings
+from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.loaders.ini_loader import load
 
 settings = LazySettings(environments=True, ENV_FOR_DYNACONF="PRODUCTION")
@@ -189,3 +190,17 @@ def test_envless():
     assert settings.a == "a,b"
     assert settings.COLORS.white.code == "#FFFFFF"
     assert settings.COLORS.white.name == "white"
+
+
+def test_prefix():
+    settings = LazySettings(filter_strategy=PrefixFilter("prefix"))
+    ini = """
+    prefix_a = "a,b"
+    prefix_colors__white__code = '#FFFFFF'
+    COLORS__white__name = 'white'
+    """
+    load(settings, filename=ini)
+    assert settings.a == "a,b"
+    assert settings.COLORS.white.code == "#FFFFFF"
+    with pytest.raises(AttributeError):
+        settings.COLORS.white.name

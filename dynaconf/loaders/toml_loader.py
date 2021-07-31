@@ -28,7 +28,11 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         file_reader=toml.load,
         string_reader=toml.loads,
     )
-    loader.load(filename=filename, key=key, silent=silent)
+    loader.load(
+        filename=filename,
+        key=key,
+        silent=silent,
+    )
 
 
 def write(settings_path, settings_data, merge=True):

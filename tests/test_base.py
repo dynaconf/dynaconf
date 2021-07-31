@@ -3,6 +3,7 @@ import os
 import pytest
 
 from dynaconf import Dynaconf
+from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf import LazySettings
 from dynaconf.loaders import toml_loader
 from dynaconf.utils.parse_conf import true_values
@@ -754,6 +755,45 @@ def test_from_env_method(clean_env, tmpdir):
     assert settings.A_DEFAULT == "From default env"
 
 
+def test_from_env_method_with_prefix(clean_env, tmpdir):
+    data = {
+        "default": {"prefix_a_default": "From default env"},
+        "development": {
+            "prefix_value": "From development env",
+            "prefix_only_in_development": True,
+        },
+        "other": {"prefix_value": "From other env", "prefix_only_in_other": True, "not_prefixed": "no prefix"},
+    }
+    toml_path = str(tmpdir.join("base_settings.toml"))
+    toml_loader.write(toml_path, data, merge=False)
+    settings = LazySettings(settings_file=toml_path, environments=True, filter_strategy=PrefixFilter("prefix"))
+    settings.set("ARBITRARY_KEY", "arbitrary value")
+
+    assert settings.VALUE == "From development env"
+    assert settings.A_DEFAULT == "From default env"
+    assert settings.ONLY_IN_DEVELOPMENT is True
+    assert settings.ARBITRARY_KEY == "arbitrary value"
+    assert settings.get("ONLY_IN_OTHER") is None
+
+    # clone the settings object pointing to a new env
+    other_settings = settings.from_env("other")
+    assert other_settings.VALUE == "From other env"
+    assert other_settings.A_DEFAULT == "From default env"
+    assert other_settings.ONLY_IN_OTHER is True
+    assert other_settings.get("ARBITRARY_KEY") is None
+    assert other_settings.get("ONLY_IN_DEVELOPMENT") is None
+    with pytest.raises(AttributeError):
+        other_settings.not_prefixed
+    with pytest.raises(AttributeError):
+        # values set programatically are not cloned
+        other_settings.ARBITRARY_KEY
+    with pytest.raises(AttributeError):
+        # values set only in a specific env not cloned
+        other_settings.ONLY_IN_DEVELOPMENT
+    # assert it is cached not created twice
+    assert other_settings is settings.from_env("other")
+
+
 def test_preload(tmpdir):
     data = {
         "data": {"links": {"twitter": "rochacbruno", "site": "brunorocha.org"}}
@@ -842,6 +882,26 @@ def test_envless_mode(tmpdir):
     assert settings.DATABASES.default.port == 8080
 
 
+def test_envless_mode_with_prefix(tmpdir):
+    data = {
+        "prefix_foo": "bar",
+        "hello": "world",
+        "prefix_default": 1,
+        "prefix_databases": {"default": {"port": 8080}},
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data)
+
+    settings = LazySettings(
+        settings_file="settings.toml",
+        filter_strategy=PrefixFilter("prefix")
+    )  # already the default
+    assert settings.FOO == "bar"
+    with pytest.raises(AttributeError):
+        settings.HELLO
+    assert settings.DEFAULT == 1
+    assert settings.DATABASES.default.port == 8080
+
+
 def test_lowercase_read_mode(tmpdir):
     """
     Starting on 3.0.0 lowercase keys are enabled by default
@@ -897,3 +957,10 @@ def test_settings_dict_like_iteration(tmpdir):
 
     for key, value in settings.items():
         assert settings._store[key] == value
+
+
+def test_prefix_is_not_str_raises():
+    with pytest.raises(TypeError):
+        toml_loader.load(LazySettings(filter_strategy=PrefixFilter(int)))
+    with pytest.raises(TypeError):
+        toml_loader.load(LazySettings(filter_strategy=PrefixFilter(True)))

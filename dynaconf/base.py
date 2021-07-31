@@ -35,7 +35,7 @@ from dynaconf.vendor.box.box_list import BoxList
 
 
 class LazySettings(LazyObject):
-    """Loads settings lazily from multple sources::
+    """Loads settings lazily from multiple sources::
 
         settings = Dynaconf(
             settings_files=["settings.toml"],  # path/glob
@@ -200,6 +200,7 @@ class Settings:
         self._defaults = DynaBox(box_settings=self)
         self.environ = os.environ
         self.SETTINGS_MODULE = None
+        self.filter_strategy = kwargs.get("filter_strategy", None)
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
@@ -537,6 +538,10 @@ class Settings:
             for key in UPPER_DEFAULT_SETTINGS
             if key not in RENAMED_VARS
         }
+
+        if self.filter_strategy:
+            # Retain the filtering strategy when switching environments
+            new_data["filter_strategy"] = self.filter_strategy
 
         # This is here for backwards compatibility
         # To be removed on 4.x.x
@@ -1177,6 +1182,7 @@ RESERVED_ATTRS = (
         "_warn_dynaconf_global_settings",
         "environ",
         "SETTINGS_MODULE",
+        "filter_strategy",
         "validators",
         "_validate_only",
         "_validate_exclude",

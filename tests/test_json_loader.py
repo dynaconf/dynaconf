@@ -3,6 +3,7 @@ import json
 import pytest
 
 from dynaconf import LazySettings
+from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.loaders.json_loader import load
 
@@ -212,3 +213,17 @@ def test_envless():
     load(settings, filename=_json)
     assert settings.COLORS.yellow.code == "#FFCC00"
     assert settings.COLORS.yellow.name == "Yellow"
+
+
+def test_prefix():
+    settings = LazySettings(filter_strategy=PrefixFilter("prefix"))
+    _json = """
+    {
+        "prefix_colors__yellow__code": "#FFCC00",
+        "COLORS__yellow__name": "Yellow"
+    }
+    """
+    load(settings, filename=_json)
+    assert settings.COLORS.yellow.code == "#FFCC00"
+    with pytest.raises(AttributeError):
+        settings.COLORS.yellow.name
