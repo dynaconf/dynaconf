@@ -1,4 +1,5 @@
-from dynaconf import settings, Dynaconf
+from dynaconf import Dynaconf
+from dynaconf import settings
 from dynaconf.strategies.filtering import PrefixFilter
 
 # print all values in the file
@@ -90,6 +91,7 @@ settings_with_prefix = Dynaconf(
 )
 with settings_with_prefix.using_env("default"):
     assert settings_with_prefix.CUSTOM == "this is custom when we set a prefix"
-assert settings_with_prefix.from_env(
-    "production"
-).CUSTOM == "this is custom when we set a prefix"
+assert (
+    settings_with_prefix.from_env("production").CUSTOM
+    == "this is custom when we set a prefix"
+)

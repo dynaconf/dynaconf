@@ -3,8 +3,8 @@ import os
 import pytest
 
 from dynaconf import LazySettings
-from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.loaders.yaml_loader import load
+from dynaconf.strategies.filtering import PrefixFilter
 
 settings = LazySettings(
     environments=True,

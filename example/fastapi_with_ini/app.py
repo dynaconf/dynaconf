@@ -1,6 +1,8 @@
-from dynaconf import Dynaconf
 from typing import Optional
+
 from fastapi import FastAPI
+
+from dynaconf import Dynaconf
 
 settings = Dynaconf(
     settings_file="config.toml",  # location of config file
@@ -12,13 +14,16 @@ settings = Dynaconf(
 
 app = FastAPI()
 
+
 @app.get("/settings")
 def read_root():
     return settings
 
+
 @app.get("/settings/{setting_name}")
 def read_item(setting_name: str):
     return {setting_name: settings.setting_name}
+
 
 if settings.current_env == "ANSIBLE":  # this is the initial default
     assert settings.data_folder == "ansible/.teflo"

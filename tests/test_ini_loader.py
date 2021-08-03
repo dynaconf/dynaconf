@@ -1,8 +1,8 @@
 import pytest
 
 from dynaconf import LazySettings
-from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.loaders.ini_loader import load
+from dynaconf.strategies.filtering import PrefixFilter
 
 settings = LazySettings(environments=True, ENV_FOR_DYNACONF="PRODUCTION")
 

@@ -2,7 +2,6 @@ from dynaconf.utils import upperfy
 
 
 class PrefixFilter:
-
     def __init__(self, prefix):
         if not isinstance(prefix, str):
             raise TypeError("`SETTINGS_FILE_PREFIX` must be str")
@@ -10,10 +9,9 @@ class PrefixFilter:
 
     def __call__(self, data):
         """Filter incoming data by prefix"""
-        prefix = self.prefix
+        len_prefix = len(self.prefix)
         return {
-                upperfy(
-                    k[len(prefix):]
-                ): v for k, v in data.items()
-                if upperfy(k[:len(prefix)]) == prefix
-         }
+            upperfy(key[len_prefix:]): value
+            for key, value in data.items()
+            if upperfy(key[:len_prefix]) == self.prefix
+        }
