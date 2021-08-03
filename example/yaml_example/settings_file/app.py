@@ -1,4 +1,5 @@
-from dynaconf import settings, LazySettings
+from dynaconf import LazySettings
+from dynaconf import settings
 from dynaconf.strategies.filtering import PrefixFilter
 
 # print all values in the file
@@ -90,6 +91,7 @@ settings = LazySettings(
 )
 with settings.using_env("default"):
     assert settings.CUSTOM == "this is custom when prefix is set"
-assert settings.from_env(
-    "production"
-).CUSTOM == "this is custom when prefix is set"
+assert (
+    settings.from_env("production").CUSTOM
+    == "this is custom when prefix is set"
+)
