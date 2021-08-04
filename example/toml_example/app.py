@@ -1,4 +1,6 @@
+from dynaconf import Dynaconf
 from dynaconf import settings
+from dynaconf.strategies.filtering import PrefixFilter
 
 # print all values in the file
 # using [default] + [development] + [global] values
@@ -51,6 +53,7 @@ assertions = {
     "ENABLED": True,
     "WORKS": "toml_example in dev env",
     "CUSTOM": "this is custom from [development]",
+    "PREFIX_CUSTOM": "this is custom when we set a prefix",
     "TEST_LOADERS": {"dev": "test_dev", "prod": "test_prod"},
 }
 
@@ -79,3 +82,16 @@ for key, value in assertions.items():
     found = settings.from_env("production").get(key)
     assert found == getattr(settings.from_env("production"), key)
     assert found == value, f"expected: {key}: [{value}] found: [{found}]"
+
+
+settings_with_prefix = Dynaconf(
+    settings_files=["settings.toml"],
+    filter_strategy=PrefixFilter("prefix"),
+    environments=True,
+)
+with settings_with_prefix.using_env("default"):
+    assert settings_with_prefix.CUSTOM == "this is custom when we set a prefix"
+assert (
+    settings_with_prefix.from_env("production").CUSTOM
+    == "this is custom when we set a prefix"
+)

@@ -48,6 +48,12 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
     work_dir = os.getcwd()
     skip_files = skip_files or []
 
+    # If filename is an absolute path and exists, just return it
+    # if the absolute path does not exist, return empty string so
+    # that it can be joined and avoid IoError
+    if os.path.isabs(filename):
+        return filename if os.path.exists(filename) else ""
+
     if project_root is not None:
         search_tree.extend(_walk_to_root(project_root, break_at=work_dir))
 

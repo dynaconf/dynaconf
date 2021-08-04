@@ -407,6 +407,16 @@ Read more on [settings_files](/settings_files/)
 
 ---
 
+### **filtering_strategy**
+
+Callable accepting data to be filtered, inbuilts currently include [PrefixFilter](/dynaconf/strategies/filtering.py)
+
+
+- type: class
+- default: None
+
+---
+
 ### **skip_files**
 
 When using a glob on `includes` you might want dynaconf to ignore some files that matches.
