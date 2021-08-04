@@ -260,11 +260,11 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
 
     if env is not None:
         click.secho(
-            "⚠  The --env/-e option is deprecated (kept for\n"
+            "⚠️ The --env/-e option is deprecated (kept for\n"
             "   compatibility but unused)\n",
             fg="red",
             bold=True,
-            stderr=True,
+            # stderr=True,
         )
 
     if settings.get("create_new_settings") is True:
