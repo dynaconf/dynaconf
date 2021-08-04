@@ -2,7 +2,8 @@ import io
 import os
 import sys
 
-from setuptools import setup, find_packages
+from setuptools import find_packages
+from setuptools import setup
 
 
 def read(*names, **kwargs):
@@ -87,7 +88,6 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
