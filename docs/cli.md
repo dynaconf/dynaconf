@@ -18,28 +18,30 @@ Usage: dynaconf [OPTIONS] COMMAND [ARGS]...
 
   Dynaconf - Command Line Interface
 
+  Documentation: https://dynaconf.com/
+
 Options:
-  --version  Show dynaconf version
-  --docs     Open documentation in browser
-  --banner   Show awesome banner
+  --version            Show dynaconf version
+  --docs               Open documentation in browser
+  --banner             Show awesome banner
   -i, --instance TEXT  Custom instance of LazySettings
-  --help     Show this message and exit.
+  --help               Show this message and exit.
 
 Commands:
-  init      Inits a dynaconf project By default it...
-  list      Lists all defined config values
+  init      Inits a dynaconf project By default it creates a settings.toml...
+  list      Lists all user defined config values and if `--all` is passed
+            it...
+
+  validate  Validates Dynaconf settings based on rules defined in...
   write     Writes data to specific source
-  validate  Validates based on dynaconf_validators.toml file
 ```
 
 ### dynaconf init
 
 Use init to easily configure your application configuration, once dynaconf is installed go to the root directory of your application and run:
 
-creates settings files in current directory
-
 ```
-$ dynaconf -i init -v key=value -v foo=bar -s token=1234 -e production
+$ dynaconf init -v key=value -v foo=bar -s token=1234
 ```
 
 The above command will create in the current directory
@@ -47,11 +49,6 @@ The above command will create in the current directory
 `settings.toml`
 
 ```ini
-[default]
-KEY = "default"
-FOO = "default"
-
-[production]
 KEY = "value"
 FOO = "bar"
 ```
@@ -59,20 +56,10 @@ FOO = "bar"
 also `.secrets.toml`
 
 ```ini
-[default]
-TOKEN = "default"
-
-[production]
 TOKEN = "1234"
 ```
 
-The command will also create a `.env` setting the working environment to **[production]**
-
-```bash
-ENV_FOR_DYNACONF="PRODUCTION"
-```
-
-And will include the `.secrets.toml` in the `.gitignore`
+as well as `.gitignore` file ignoring the generated `.secrets.toml`
 
 ```ini
 # Ignore dynaconf secret files
@@ -93,24 +80,25 @@ Usage: dynaconf init [OPTIONS]
   This command must run on the project's root folder or you must pass
   --path=/myproject/root/folder.
 
-  If you want to have a .env created with the ENV defined there e.g:
-  `ENV_FOR_DYNACONF=production` just pass --env=production and then .env
-  will also be created and the env defined to production.
+  The --env/-e is deprecated (kept for compatibility but unused)
 
 Options:
   -f, --format [ini|toml|yaml|json|py|env]
   -p, --path TEXT                 defaults to current directory
   -e, --env TEXT                  Sets the working env in `.env` file
-  -v, --vars TEXT                 extra values to write to settings file file
-                                  e.g: `dynaconf init -v NAME=foo -v X=2
+  -v, --vars TEXT                 extra values to write to settings file e.g:
+                                  `dynaconf init -v NAME=foo -v X=2
+
   -s, --secrets TEXT              secret key values to be written in .secrets
                                   e.g: `dynaconf init -s TOKEN=kdslmflds
+
   --wg / --no-wg
   -y
   --django TEXT
   --help                          Show this message and exit.
-
 ```
+
+Note that `-i`/`--instance` cannot be used with `init` as `-i` must point to an existing instance of the settings.
 
 ### dynaconf list
 
@@ -150,19 +138,22 @@ dynaconf list -o path/to/file.py --output-flat
 ### dynaconf write
 
 ```
-Usage: dynaconf write [OPTIONS] TO
+Usage: dynaconf write [OPTIONS] [ini|toml|yaml|json|py|redis|vault|env]
 
   Writes data to specific source
 
 Options:
-  -v, --vars TEXT     key values to be written e.g: `dynaconf write toml
-                      -e NAME=foo -e X=2
+  -v, --vars TEXT     key values to be written e.g: `dynaconf write toml -e
+                      NAME=foo -e X=2
+
   -s, --secrets TEXT  secret key values to be written in .secrets e.g:
                       `dynaconf write toml -s TOKEN=kdslmflds -s X=2
+
   -p, --path TEXT     defaults to current directory/settings.{ext}
   -e, --env TEXT      env to write to defaults to DEVELOPMENT for files for
                       external sources like Redis and Vault it will be
                       DYNACONF or the value set in $ENVVAR_PREFIX_FOR_DYNACONF
+
   -y
   --help              Show this message and exit.
 ```

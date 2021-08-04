@@ -35,6 +35,25 @@ def test_banner(clean_env):
     assert "Learn more at:" in run(["--banner"])
 
 
+def test_init_with_instance_raises(tmpdir):
+    result = run(
+        [
+            "-i",
+            "tests.test_cli.settings",
+            "init",
+            "--env",
+            "test",
+            f"--path={str(tmpdir)}",
+        ]
+    )
+    assert "-i/--instance option is not allowed for `init` command" in result
+
+
+def test_init_with_env_warns(tmpdir):
+    result = run(["init", "--env", "test", f"--path={str(tmpdir)}"])
+    assert "The --env/-e option is deprecated" in result
+
+
 @pytest.mark.parametrize("fileformat", EXTS)
 def test_init_with_path(fileformat, tmpdir):
     # run twice to force load of existing files
