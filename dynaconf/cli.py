@@ -39,6 +39,10 @@ def set_settings(ctx, instance=None):
     settings = None
 
     if instance is not None:
+        if ctx.invoked_subcommand in ["init"]:
+            raise click.UsageError(
+                "-i/--instance option is not allowed for `init` command"
+            )
         sys.path.insert(0, ".")
         settings = import_settings(instance)
     elif "FLASK_APP" in os.environ:  # pragma: no cover
@@ -206,7 +210,10 @@ def main(ctx, instance):
     "--path", "-p", default=CWD, help="defaults to current directory"
 )
 @click.option(
-    "--env", "-e", default=None, help="Sets the working env in `.env` file"
+    "--env",
+    "-e",
+    default=None,
+    help="deprecated command (kept for compatibility but unused)",
 )
 @click.option(
     "--vars",
@@ -216,7 +223,7 @@ def main(ctx, instance):
     default=None,
     help=(
         "extra values to write to settings file "
-        "file e.g: `dynaconf init -v NAME=foo -v X=2"
+        "e.g: `dynaconf init -v NAME=foo -v X=2`"
     ),
 )
 @click.option(
@@ -250,6 +257,15 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     click.echo("⚙️  Configuring your Dynaconf environment")
     click.echo("-" * 42)
     path = Path(path)
+
+    if env is not None:
+        click.secho(
+            "⚠️ The --env/-e option is deprecated (kept for\n"
+            "   compatibility but unused)\n",
+            fg="red",
+            bold=True,
+            # stderr=True,
+        )
 
     if settings.get("create_new_settings") is True:
         filename = Path("config.py")
