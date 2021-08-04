@@ -1,6 +1,6 @@
 ## Template substitutions
 
-Dynaconf has 2 tokens to enable string substitutions `@format` and `@jinja`.
+Dynaconf has 2 tokens to enable string substitutions, the interpolation works with `@format` and `@jinja`.
 
 ### @format token
 

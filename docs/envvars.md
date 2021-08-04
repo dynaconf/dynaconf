@@ -50,9 +50,9 @@ assert settings.STRING_NUM == "76"
 ```
 
 !!! tip
-    Dynaconf has multiple valid ways to access settings keys so it is compatible with your 
-    existing settings solution. You can access using `.notation`, `[item] indexing`, `.get method` 
-    and also it allows `.notation.nested` for data structures like dicts.  
+    Dynaconf has multiple valid ways to access settings keys so it is compatible with your
+    existing settings solution. You can access using `.notation`, `[item] indexing`, `.get method`
+    and also it allows `.notation.nested` for data structures like dicts.
     **Also variable access is case insensitive for the first level key**
 
 ## Custom Prefix
@@ -80,6 +80,14 @@ assert settings.PASSWD == 1234
 assert settings.db.name == "foo"
 assert settings.db.port == 2000
 assert settings.db.scheme == 'main'
+```
+
+If you don't want to use any prefix (load unprefixed variables) the correct
+way is to set it like so:
+```py
+from dynaconf import Dynaconf
+
+settings = Dynaconf(envvar_prefix=False)
 ```
 
 ## Dot env
@@ -125,3 +133,21 @@ export PREFIX_PATH='@format {env{"HOME"}/.config/{this.DB_NAME}'
 export PREFIX_PATH='@jinja {{env.HOME}}/.config/{{this.DB_NAME}} | abspath'
 ```
 
+## Environment variables filtering
+
+All environment variables (naturally, accounting for prefix rules) will be
+used and pulled into the settings space.
+
+You can change that behaviour by enabling the filtering of unknown environment
+variables:
+
+```py
+from dynaconf import Dynaconf
+
+settings = Dynaconf(ignore_unknown_envvars=True)
+```
+
+In that case, only previously defined variables (e.g. specified in
+`settings_file`/`settings_files`, `preload` or `includes`) will be loaded
+from the environment. This way your setting space can avoid pollution
+or potentially loading of sensitive information.

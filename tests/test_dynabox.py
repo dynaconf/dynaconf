@@ -1,4 +1,14 @@
+from collections import namedtuple
+
+import pytest
+
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.vendor.box import Box
+from dynaconf.vendor.box import BoxKeyError
+from dynaconf.vendor.box import BoxList
+
+
+DBDATA = namedtuple("DbData", ["server", "port"])
 
 
 box = DynaBox(
@@ -11,9 +21,16 @@ box = DynaBox(
                 "PASSWORD": "secret",
                 "token": {"TYPE": 1, "value": 2},
             },
-        }
+        },
+        "database": DBDATA(server="db.com", port=3306),
     },
 )
+
+
+def test_named_tuple_is_not_transformed():
+    """Issue: https://github.com/rochacbruno/dynaconf/issues/595"""
+    assert isinstance(box.database, DBDATA)
+    assert isinstance(box.database, tuple)
 
 
 def test_datatypes():
@@ -73,3 +90,17 @@ def test_get():
 def test_copy_no_cause_inf_recursion():
     box.__copy__()
     box.copy()
+
+
+def test_accessing_dynabox_inside_boxlist_inside_dynabox():
+    data = DynaBox({"nested": [{"deeper": "nest"}]})
+    assert data.nested[0].deeper == "nest"
+    assert data.NESTED[0].deeper == "nest"
+    assert data.NESTED[0].DEEPER == "nest"
+
+    data = DynaBox({"nested": BoxList([DynaBox({"deeper": "nest"})])})
+    assert data.nested[0].deeper == "nest"
+    assert data.NESTED[0].deeper == "nest"
+    assert isinstance(data.NESTED, BoxList)
+    assert isinstance(data.NESTED[0], DynaBox)
+    assert data.NESTED[0].DEEPER == "nest"

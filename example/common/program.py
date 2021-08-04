@@ -169,3 +169,8 @@ with settings.using_env("testing"):
     assert settings.SERVER == "testserver.com"
 
 assert settings.SERVER == "customserver.com"
+
+assert isinstance(settings.THING_ENABLED, bool), (
+    settings.THING_ENABLED,
+    type(settings.THING_ENABLED),
+)

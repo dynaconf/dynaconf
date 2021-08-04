@@ -5,6 +5,7 @@ import os
 import warnings
 from contextlib import contextmanager
 from contextlib import suppress
+from pathlib import Path
 
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
@@ -30,63 +31,21 @@ from dynaconf.utils.parse_conf import get_converter
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidatorList
+from dynaconf.vendor.box.box_list import BoxList
 
 
 class LazySettings(LazyObject):
-    """When you do::
+    """Loads settings lazily from multiple sources::
 
-        >>> from dynaconf import Dynaconf
-        >>> settings = Dynaconf(*options)
+        settings = Dynaconf(
+            settings_files=["settings.toml"],  # path/glob
+            environments=True,                 # activate layered environments
+            envvar_prefix="MYAPP",             # `export MYAPP_FOO=bar`
+            env_switcher="MYAPP_MODE",         # `export MYAPP_MODE=production`
+            load_dotenv=True,                  # read a .env file
+        )
 
-    a LazySettings is initialized with only default_settings and all the
-    parameters passed to *options.
-
-    Then when you first access a value, this will be set up and loaders will
-    be executed looking for defined config files or the file defined in
-    SETTINGS_FILE_FOR_DYNACONF environment variable::
-
-        $ export SETTINGS_FILE_FOR_DYNACONF=path
-
-        >>> settings.FOO
-
-    Or when you call::
-
-        >>> settings.configure(settings_module='/tmp/settings.py')
-
-    You can define in your settings module a list of loaders to get values
-    from different stores. By default it will try environment variables
-    starting with ENVVAR_PREFIX_FOR_DYNACONF (by defaulf `DYNACONF_`)
-
-    You can also customize specific parameters.
-
-    Exmaple: `proj/config.py`::
-
-        >>> from dynaconf import Dynaconf
-        >>> settings = Dynaconf(
-        ...    env='production',
-        ...    loaders=[
-        ...        'dynaconf.loaders.env_loader',
-        ...        'dynaconf.loaders.redis_loader'
-        ...    ]
-        ... )
-
-    save common values in a settings file::
-
-        $ echo "SERVER_IP = '10.10.10.10'" > proj/settings.py
-
-    or use `.toml|.yaml|.ini|.json`
-
-    save sensitive values in .secrets.{py|toml|yaml|ini|json}
-    or export as DYNACONF global environment variable::
-
-        $ export DYNACONF_SERVER_PASSWD='super_secret'
-
-        >>> # from proj.config import settings
-        >>> print settings.SERVER_IP
-        >>> print settings.SERVER_PASSWD
-
-    and now it reads all variables starting with `DYNACONF_` from envvars
-    and all values in a hash called DYNACONF_PROJ in redis
+    More options available on https://www.dynaconf.com/configuration/
     """
 
     def __init__(self, **kwargs):
@@ -114,6 +73,8 @@ class LazySettings(LazyObject):
         mispells = {
             "settings_files": "settings_file",
             "SETTINGS_FILES": "SETTINGS_FILE",
+            "environment": "environments",
+            "ENVIRONMENT": "ENVIRONMENTS",
         }
         for mispell, correct in mispells.items():
             if mispell in kwargs:
@@ -121,7 +82,7 @@ class LazySettings(LazyObject):
 
         for_dynaconf_keys = {
             key
-            for key in dir(default_settings)
+            for key in UPPER_DEFAULT_SETTINGS
             if key.endswith("_FOR_DYNACONF")
         }
         aliases = {
@@ -158,7 +119,7 @@ class LazySettings(LazyObject):
                 self._wrapped._fresh
                 or name in self._wrapped.FRESH_VARS_FOR_DYNACONF
             )
-            and name not in dir(default_settings)
+            and name not in UPPER_DEFAULT_SETTINGS
         ):
             return self._wrapped.get_fresh(name)
         value = getattr(self._wrapped, name)
@@ -239,7 +200,10 @@ class Settings:
         self._defaults = DynaBox(box_settings=self)
         self.environ = os.environ
         self.SETTINGS_MODULE = None
+        self.filter_strategy = kwargs.get("filter_strategy", None)
         self._not_installed_warnings = []
+        self._validate_only = kwargs.pop("validate_only", None)
+        self._validate_exclude = kwargs.pop("validate_exclude", None)
 
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
@@ -254,7 +218,9 @@ class Settings:
         self._defaults = kwargs
         self.execute_loaders()
 
-        self.validators.validate()
+        self.validators.validate(
+            only=self._validate_only, exclude=self._validate_exclude
+        )
 
     def __call__(self, *args, **kwargs):
         """Allow direct call of `settings('val')`
@@ -277,8 +243,24 @@ class Settings:
             super(Settings, self).__delattr__(name)
 
     def __contains__(self, item):
-        "Respond to `item in settings`"
+        """Respond to `item in settings`"""
         return item.upper() in self.store or item.lower() in self.store
+
+    def __getattribute__(self, name):
+        if name not in RESERVED_ATTRS and name not in UPPER_DEFAULT_SETTINGS:
+            with suppress(KeyError):
+                # self._store has Lazy values already evaluated
+                if (
+                    name.islower()
+                    and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty)
+                    is False
+                ):
+                    # only matches exact casing, first levels always upper
+                    return self._store.to_dict()[name]
+                # perform lookups for upper, and casefold
+                return self._store[name]
+        # in case of RESERVED_ATTRS or KeyError above, keep default behaviour
+        return super().__getattribute__(name)
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
@@ -345,7 +327,7 @@ class Settings:
             data = self.store.to_dict().copy()
             # if not internal remove internal settings
             if not internal:
-                for name in dir(default_settings):
+                for name in UPPER_DEFAULT_SETTINGS:
                     data.pop(name, None)
             return data
 
@@ -414,6 +396,13 @@ class Settings:
                 parent=parent,
             )
 
+        if default is not None:
+            # default values should behave exactly Dynaconf parsed values
+            if isinstance(default, list):
+                default = BoxList(default)
+            elif isinstance(default, dict):
+                default = DynaBox(default)
+
         key = upperfy(key)
         if key in self._deleted:
             return default
@@ -422,7 +411,7 @@ class Settings:
             fresh
             or self._fresh
             or key in getattr(self, "FRESH_VARS_FOR_DYNACONF", ())
-        ) and key not in dir(default_settings):
+        ) and key not in UPPER_DEFAULT_SETTINGS:
             self.unset(key)
             self.execute_loaders(key=key)
 
@@ -546,9 +535,13 @@ class Settings:
 
         new_data = {
             key: self.get(key)
-            for key in dir(default_settings)
-            if key.isupper() and key not in RENAMED_VARS
+            for key in UPPER_DEFAULT_SETTINGS
+            if key not in RENAMED_VARS
         }
+
+        if self.filter_strategy:
+            # Retain the filtering strategy when switching environments
+            new_data["filter_strategy"] = self.filter_strategy
 
         # This is here for backwards compatibility
         # To be removed on 4.x.x
@@ -730,7 +723,7 @@ class Settings:
         """
         key = upperfy(key.strip())
         if (
-            key not in dir(default_settings)
+            key not in UPPER_DEFAULT_SETTINGS
             and key not in self._defaults
             or force
         ):
@@ -941,26 +934,36 @@ class Settings:
         self.clean()
         self.execute_loaders(env, silent)
 
-    def execute_loaders(self, env=None, silent=None, key=None, filename=None):
+    def execute_loaders(
+        self, env=None, silent=None, key=None, filename=None, loaders=None
+    ):
         """Execute all internal and registered loaders
 
         :param env: The environment to load
         :param silent: If loading erros is silenced
         :param key: if provided load a single key
         :param filename: optional custom filename to load
+        :param loaders: optional list of loader modules
         """
         if key is None:
             default_loader(self, self._defaults)
+
         env = (env or self.current_env).upper()
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
-        self.pre_load(env, silent=silent, key=key)
-        settings_loader(
-            self, env=env, silent=silent, key=key, filename=filename
-        )
-        self.load_extra_yaml(env, silent, key)  # DEPRECATED
-        enable_external_loaders(self)
-        for loader in self.loaders:
+
+        if loaders is None:
+            self.pre_load(env, silent=silent, key=key)
+            settings_loader(
+                self, env=env, silent=silent, key=key, filename=filename
+            )
+            self.load_extra_yaml(env, silent, key)  # DEPRECATED
+            enable_external_loaders(self)
+
+            loaders = self.loaders
+
+        for loader in loaders:
             loader.load(self, env, silent=silent, key=key)
+
         self.load_includes(env, silent=silent, key=key)
 
     def pre_load(self, env, silent, key):
@@ -1001,9 +1004,19 @@ class Settings:
                     # continue the loop.
                     continue
 
-                filepath = os.path.join(
-                    self._root_path or os.getcwd(), _filename
-                )
+                # python 3.6 does not resolve Pathlib basedirs
+                # issue #494
+                root_dir = str(self._root_path or os.getcwd())
+                if (
+                    isinstance(_filename, Path)
+                    and str(_filename.parent) in root_dir
+                ):  # pragma: no cover
+                    filepath = str(_filename)
+                else:
+                    filepath = os.path.join(
+                        self._root_path or os.getcwd(), str(_filename)
+                    )
+
                 paths = [
                     p
                     for p in sorted(glob.glob(filepath))
@@ -1139,6 +1152,9 @@ class Settings:
         return False
 
 
+"""Upper case default settings"""
+UPPER_DEFAULT_SETTINGS = [k for k in dir(default_settings) if k.isupper()]
+
 """Attributes created on Settings before 3.0.0"""
 RESERVED_ATTRS = (
     [
@@ -1166,6 +1182,9 @@ RESERVED_ATTRS = (
         "_warn_dynaconf_global_settings",
         "environ",
         "SETTINGS_MODULE",
+        "filter_strategy",
         "validators",
+        "_validate_only",
+        "_validate_exclude",
     ]
 )

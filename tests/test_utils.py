@@ -1,6 +1,7 @@
 import io
 import json
 import os
+from collections import namedtuple
 
 import pytest
 
@@ -8,6 +9,7 @@ from dynaconf import default_settings
 from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import extract_json_objects
+from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import Missing
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
@@ -21,6 +23,20 @@ from dynaconf.utils.parse_conf import Lazy
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import try_to_encode
 from dynaconf.utils.parse_conf import unparse_conf_data
+
+
+def test_isnamedtupleinstance():
+    """Assert that isnamedtupleinstance works as expected"""
+    Db = namedtuple("Db", ["host", "port"])
+    assert isnamedtupleinstance(Db(host="localhost", port=3306))
+    assert not isnamedtupleinstance(dict(host="localhost", port=3306.0))
+    assert not isnamedtupleinstance(("localhost", "3306"))
+
+    class Foo(tuple):
+        def _fields(self):
+            return ["a", "b"]
+
+    assert not isnamedtupleinstance(Foo())
 
 
 def test_unparse():
@@ -66,6 +82,12 @@ def test_find_file(tmpdir):
     child4 = dirs[-1]
 
     assert find_file("file-does-not-exist") == ""
+    assert find_file("/abs-file-does-not-exist") == ""
+
+    for _dir in dirs:
+        # search for abspath return the same path
+        assert os.path.isabs(_dir)
+        assert find_file(_dir) == _dir
 
     # now place a .env file a few levels up and make sure it's found
     filename = os.path.join(str(child4), ".env")

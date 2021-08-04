@@ -78,7 +78,7 @@ def load(obj, env=None, silent=None, key=None):
     except InvalidPath:
         # The given path is not a directory
         dirs = []
-    env_list = build_env_list(obj, env) + dirs
+    env_list = dirs + build_env_list(obj, env)
     for env in env_list:
         path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, env])
         try:

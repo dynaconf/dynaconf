@@ -1,0 +1,16 @@
+s3_protocol = 's3a'
+s3_url = '@format {this[s3_protocol]}://{this[s3_bucket]}'
+s3_url1 = '@format {this[S3_PROTOCOL]}://{this[S3_BUCKET]}'
+s3_url2 = '@format {this.s3_protocol}://{this.s3_bucket}'
+s3_url3 = '@format {this.S3_PROTOCOL}://{this.S3_BUCKET}'
+
+[nested]
+first_name = 'Bruno'
+
+[nested.morenested]
+last_name = 'Rocha'
+
+[nested.morenested.evenmore]
+full_name = '@format {this.nested.first_name} {this.nested.morenested.last_name}'
+full_name2 = '@format {this.nested[first_name]} {this.nested.morenested[last_name]}'
+full_name3 = '@format {this.NESTED[first_name]} {this.nested.morenested[LAST_NAME]}'

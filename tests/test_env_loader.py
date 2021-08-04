@@ -22,7 +22,7 @@ environ["DYNACONF_SHOULDBEFRESHINCONTEXT"] = "first"
 environ["DYNACONF_VALUE"] = "@float 42.1"
 
 # environ['FRESH_VARS_FOR_DYNACONF'] = '@json ["MUSTBEALWAYSFRESH"]'
-# settings.configure()
+# settings.configure(IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF=True)
 settings.configure(
     FRESH_VARS_FOR_DYNACONF=["MUSTBEALWAYSFRESH"],
     ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
@@ -439,3 +439,53 @@ def test_load_dunder(clean_env):
         silent=True,
     )
     assert "DATABASES" not in settings
+
+
+def test_filtering_unknown_variables():
+    # Predefine some known variable.
+    settings.MYCONFIG = "bar"
+    # Enable environment filtering.
+    settings.IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF = True
+
+    # Pollute the environment.
+    environ["IGNOREME"] = "foo"
+
+    load_from_env(
+        obj=settings,
+        prefix=False,
+        key=None,
+        silent=True,
+        identifier="env_global",
+        env=False,
+    )
+
+    # Verify the filter works.
+    assert not settings.get("IGNOREME")
+    # Smoke test.
+    assert settings.get("MYCONFIG") == "bar"
+
+
+def test_filtering_unknown_variables_with_prefix():
+    # Predefine some known variable.
+    settings.MYCONFIG = "bar"
+    # Enable environment filtering.
+    settings.IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF = True
+
+    # Pollute the environment.
+    environ["APP_IGNOREME"] = "foo"
+    # Also change legitimate variable.
+    environ["APP_MYCONFIG"] = "ham"
+
+    load_from_env(
+        obj=settings,
+        prefix="APP",
+        key=None,
+        silent=True,
+        identifier="env_global",
+        env=False,
+    )
+
+    # Verify the filter works.
+    assert not settings.get("IGNOREME")
+    # Smoke test.
+    assert settings.get("MYCONFIG") == "ham"

@@ -20,7 +20,9 @@ def test():
     return app.config["HELLO"]
 
 
-app.add_url_rule(app.config.TEST_RULE, view_func=lambda: "test")
+app.add_url_rule(
+    app.config.get("TEST_RULE", "/default_route"), view_func=lambda: "test"
+)
 
 
 if __name__ == "__main__":

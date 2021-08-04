@@ -1,0 +1,3 @@
+# Here pre-defining known variables.
+var1 = "foo"
+var2 = "qux"

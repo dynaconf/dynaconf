@@ -5,6 +5,7 @@ import warnings
 from functools import wraps
 
 from dynaconf.utils import extract_json_objects
+from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import multi_replace
 from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils.boxing import DynaBox
@@ -209,6 +210,7 @@ def evaluate_lazy_format(f):
 
 
 converters = {
+    "@str": str,
     "@int": int,
     "@float": float,
     "@bool": lambda value: str(value).lower() in true_values,
@@ -287,10 +289,15 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
 
 def parse_conf_data(data, tomlfy=False, box_settings=None):
 
+    # fix for https://github.com/rochacbruno/dynaconf/issues/595
+    if isnamedtupleinstance(data):
+        return data
+
     # not enforced to not break backwards compatibility with custom loaders
     box_settings = box_settings or {}
 
     if isinstance(data, (tuple, list)):
+
         # recursively parse each sequence item
         return [
             parse_conf_data(item, tomlfy=tomlfy, box_settings=box_settings)

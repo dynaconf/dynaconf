@@ -15,7 +15,7 @@ assert app.config["MESSAGE"] == "hello"
 
 app.config.set("MESSAGE", "bye")
 
-assert app.config["MESSAGE"] == "bye"
+assert app.config["MESSAGE"] == "bye", app.config["MESSAGE"]
 
 
 app.config["MESSAGE"] = "bazinga"

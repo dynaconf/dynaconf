@@ -46,6 +46,7 @@ class BaseLoader:
         :param key: if provided load a single key
         :param silent: if load erros should be silenced
         """
+
         filename = filename or self.obj.get(self.identifier.upper())
         if not filename:
             return
@@ -100,7 +101,11 @@ class BaseLoader:
     def _envless_load(self, source_data, silent=True, key=None):
         """Load all the keys from each file without env separation"""
         for file_data in source_data.values():
-            self._set_data_to_obj(file_data, self.identifier, key=key)
+            self._set_data_to_obj(
+                file_data,
+                self.identifier,
+                key=key,
+            )
 
     def _load_all_envs(self, source_data, silent=True, key=None):
         """Load configs from files separating by each environment"""
@@ -115,7 +120,6 @@ class BaseLoader:
 
             for env in build_env_list(self.obj, self.env):
                 env = env.lower()  # lower for better comparison
-                data = {}
 
                 try:
                     data = file_data[env] or {}
@@ -131,25 +135,36 @@ class BaseLoader:
                     identifier = f"{self.identifier}_{env}"
                 else:
                     identifier = self.identifier
-
-                self._set_data_to_obj(data, identifier, file_merge, key)
+                self._set_data_to_obj(
+                    data,
+                    identifier,
+                    file_merge,
+                    key,
+                )
 
     def _set_data_to_obj(
-        self, data, identifier, file_merge=None, key=False,
+        self,
+        data,
+        identifier,
+        file_merge=None,
+        key=False,
     ):
         """Calls setttings.set to add the keys"""
-
         # data 1st level keys should be transformed to upper case.
         data = {upperfy(k): v for k, v in data.items()}
         if key:
             key = upperfy(key)
 
+        if self.obj.filter_strategy:
+            data = self.obj.filter_strategy(data)
+
         # is there a `dynaconf_merge` inside an `[env]`?
         file_merge = file_merge or data.pop("DYNACONF_MERGE", False)
-
         if not key:
             self.obj.update(
-                data, loader_identifier=identifier, merge=file_merge,
+                data,
+                loader_identifier=identifier,
+                merge=file_merge,
             )
         elif key in data:
             self.obj.set(

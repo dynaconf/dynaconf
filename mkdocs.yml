@@ -1,4 +1,4 @@
-site_name: Dynaconf - 3.1.2
+site_name: Dynaconf - 3.1.4
 site_url: https://dynaconf.com
 site_description: Configuration Management for Python
 site_author: Bruno Rocha
@@ -18,7 +18,6 @@ nav:
     - Flask: flask.md
     - Django: django.md
     - Advanced usage: advanced.md
-    - Release Notes: release_notes.md
 theme:
     language: en
     name: material

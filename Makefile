@@ -10,6 +10,7 @@ test_examples:
 	@echo '###############  Chdir to example directory  ###############'
 	cd example/common;pwd;python program.py
 	cd example/common-encoding;pwd;python program.py
+	cd example/simple_ini_example;pwd;TEFLO_LOG_LEVEL=debug python app.py
 	cd example/;pwd;python full_example.py
 	cd example/;pwd;python compat.py
 	cd example/app;pwd;python app.py
@@ -78,11 +79,13 @@ test_examples:
 	python example/specific_settings_files/app.py
 	python example/django_example/manage.py test polls -v 2
 	PYTHONPATH=example/django_example DJANGO_SETTINGS_MODULE=foo.settings python example/django_example/standalone_script.py
+	PYTHONPATH=example/issues/449_django_lazy_path DJANGO_SETTINGS_MODULE=foo.settings python example/django_example/standalone_script.py
 	PYTHONPATH=example/django_example_compat DJANGO_SETTINGS_MODULE=foo.settings python example/django_example_compat/standalone_script.py
 	python example/envvar_prefix/app.py
 
 	@echo '###############  Django Admin From root folder  ###############'
 	PYTHONPATH=./example/django_example/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
+	PYTHONPATH=./example/issues/449_django_lazy_path/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
 	PYTHONPATH=./example/django_example_compat/ DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
 
 	@echo '############ Issues  ##################'
@@ -107,6 +110,13 @@ test_examples:
 	cd example/issues/430_same_name;pwd;python app.py
 	cd example/issues/443_object_merge;pwd;python app.py
 	cd example/issues/445_casting;pwd;python app.py
+	cd example/issues/467_load_from_parent_folder/src;pwd;python app.py
+	cd example/issues/478_mispell_environments;pwd;python app.py
+	cd example/issues/482_layered_format;pwd;python app.py
+	cd example/issues/486_title_case_validation;pwd;python app.py
+	cd example/issues/494_using_pathlib;pwd;python app.py
+	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__device_id=42 EXPECTED_VALUE=42 python app.py
+	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__DEVICE_ID=42 EXPECTED_VALUE=42 python app.py
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
@@ -146,6 +156,9 @@ coverage-report:
 	coverage report --fail-under=100
 
 test: pep8 test_only
+
+test_all: test_examples test_integration test_redis test_vault test
+	@coverage html
 
 install:
 	pip install --upgrade pip

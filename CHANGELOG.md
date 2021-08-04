@@ -2,6 +2,290 @@ Changelog
 =========
 
 
+3.1.4 (2021-03-08)
+------------------
+- Release version 3.1.4. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (3):
+            Release version 3.1.3
+            HOTFIX for 501 (#540)
+            HOTFIX for 462 related issue, `default` on .get should be parsed as Box (#541)
+
+      dependabot-preview[bot] (2):
+            Bump mkdocs-material from 6.1.6 to 7.0.4 (#537)
+            Bump mkdocs-material from 7.0.4 to 7.0.5 (#539)
+- HOTFIX for 462 related issue, `default` on .get should be parsed as
+  Box (#541) [Bruno Rocha]
+
+  objects
+
+  In order to keep the same method api, default values should be parsed
+  and converted to Boxed objects.
+
+  https://github.com/rochacbruno/dynaconf/issues/462
+- HOTFIX for 501 (#540) [Bruno Rocha]
+
+  Flask still missing __contains__
+- Bump mkdocs-material from 7.0.4 to 7.0.5 (#539) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 7.0.4 to 7.0.5.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/7.0.4...7.0.5)
+- Bump mkdocs-material from 6.1.6 to 7.0.4 (#537) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 6.1.6 to 7.0.4.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.1.6...7.0.4)
+- Release version 3.1.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 3.1.3rc1
+            Fix #462 make DynaBox nested List to use DynaBox as default class (#533)
+            Fix #478 Make alias for environment -> environments (#534)
+            Test to ensure #467 is not an issue (#535)
+
+
+3.1.3 (2021-03-04)
+------------------
+
+Fix
+~~~
+- Environment variables filtering #470 (#474) [Michal Odnous]
+
+Other
+~~~~~
+- Release version 3.1.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 3.1.3rc1
+            Fix #462 make DynaBox nested List to use DynaBox as default class (#533)
+            Fix #478 Make alias for environment -> environments (#534)
+            Test to ensure #467 is not an issue (#535)
+- Test to ensure #467 is not an issue (#535) [Bruno Rocha]
+
+  Closes #467
+- Fix #478 Make alias for environment -> environments (#534) [Bruno
+  Rocha]
+
+  This is a commom mistake to pass `environment` so it is alias.
+
+  Fix #478
+- Fix #462 make DynaBox nested List to use DynaBox as default class
+  (#533) [Bruno Rocha]
+
+  Fix #462
+- Release version 3.1.3rc1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (11):
+            Release version 3.1.2
+            Fix #445 casting on dottet get. (#446)
+            Fix docs regarding --django argument on cli (#477)
+            Fix #521 - FlaskDynaconf should raise KeyError for non existing keys (#522)
+            Case insensitive envvar traversal (#524)
+            Allow load_file to accept pathlib.Path (#525)
+            Allow Title case lookup and validation. (#526)
+            Fix #482 - formatter case insensitive (#527)
+            Fix #449 - Django lazy templating Fix #449 (#528)
+            Added a test to reproduce #492 (not able to reproduce) (#530)
+            Fix #511 allow user to specify loaders argument to execute_loaders (#531)
+
+      FrankBattaglia (1):
+            Specify flask extension initializers by entry point object reference (#456)
+
+      Ilito Torquato (3):
+            fix merging hyperlink to fix  #454 (#458)
+            Changed enabled_core_loaders elements to be upper case to fix #455 (#457)
+            Fix doc secrets from vault #403 (#459)
+
+      Marcelo Lino (1):
+            Add __contains__ to Dynaconf (#502)
+
+      Michal Odnous (1):
+            Fix: Environment variables filtering #470 (#474)
+
+      dependabot-preview[bot] (5):
+            Bump mkdocs-material from 6.0.2 to 6.1.0 (#453)
+            Bump mkdocs-git-revision-date-localized-plugin from 0.5.2 to 0.7.3 (#463)
+            Bump mkdocs-material from 6.1.0 to 6.1.5 (#473)
+            Bump mkdocs-versioning from 0.2.1 to 0.3.1 (#475)
+            Bump mkdocs-material from 6.1.5 to 6.1.6 (#476)
+
+      mirrorrim (1):
+            Fix reading secret from Vault kv v2 (#483) (#487)
+- Fix #511 allow user to specify loaders argument to execute_loaders
+  (#531) [Bruno Rocha]
+
+  Fix #511
+
+  ```py
+  settings.execute_loaders(loaders=[dynaconf.loaders.env_loader])
+  ```
+- Added a test to reproduce #492 (not able to reproduce) (#530) [Bruno
+  Rocha]
+
+  I can't reproduce the bug #492 but I added a test to ensure.
+- Fix #449 - Django lazy templating Fix #449 (#528) [Bruno Rocha]
+
+  * Fix django laxy templates fix #449
+
+  * Delete unused files
+
+  * Fix LOADERS enabling
+- Fix #482 - formatter case insensitive (#527) [Bruno Rocha]
+
+  * Fix #482 - formatter using both upper and lowercase access
+
+  Fix #482
+
+  * add more testes covering nested formatting
+- Allow Title case lookup and validation. (#526) [Bruno Rocha]
+
+  Fix #486
+- Allow load_file to accept pathlib.Path (#525) [Bruno Rocha]
+
+  * Allow load_file to accept pathlib.Path
+
+  Fix #494
+
+  * python 3.6 can't handle Pathlib base path addition to os.path
+- Case insensitive envvar traversal (#524) [Bruno Rocha]
+
+  * Envvar traversal is now case insensitive - Fix #519 and fix #516
+
+  Fix #519
+  Fix #516
+
+  Now `export DYNACONF_FOO__bar__zaz` is the same as
+  `DYNACONF_FOO__BAR__ZAZ`
+
+  > first level prefix still needs to be uppercase!
+
+  Added a warning about django to the docs.
+
+  * Add functional test for issue #519
+- Fix #521 - FlaskDynaconf should raise KeyError for non existing keys
+  (#522) [Bruno Rocha]
+
+  * Fix #521 - FlaskDynaconf should raise KeyError for non existing keys
+
+  * Test coverage got dotted get
+- Add __contains__ to Dynaconf (#502) [Marcelo Lino, Marcelo Lino]
+
+  * Add __contains__ to Dynaconf
+
+  * Add contains assert for flask test
+
+  * Remove duplicated contains from dynaconf
+- Fix reading secret from Vault kv v2 (#483) (#487) [Alexey Tylindus,
+  mirrorrim]
+- Fix docs regarding --django argument on cli (#477) [Bruno Rocha]
+
+  fix #465
+  fix #451
+- Bump mkdocs-material from 6.1.5 to 6.1.6 (#476) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 6.1.5 to 6.1.6.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.1.5...6.1.6)
+- Bump mkdocs-versioning from 0.2.1 to 0.3.1 (#475) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-versioning](https://github.com/zayd62/mkdocs-versioning) from 0.2.1 to 0.3.1.
+  - [Release notes](https://github.com/zayd62/mkdocs-versioning/releases)
+  - [Commits](https://github.com/zayd62/mkdocs-versioning/compare/0.2.1...0.3.1)
+- Bump mkdocs-material from 6.1.0 to 6.1.5 (#473) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 6.1.0 to 6.1.5.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.1.0...6.1.5)
+- Bump mkdocs-git-revision-date-localized-plugin from 0.5.2 to 0.7.3
+  (#463) [dependabot-preview[bot]]
+
+  Bumps [mkdocs-git-revision-date-localized-plugin](https://github.com/timvink/mkdocs-git-revision-date-localized-plugin) from 0.5.2 to 0.7.3.
+  - [Release notes](https://github.com/timvink/mkdocs-git-revision-date-localized-plugin/releases)
+  - [Commits](https://github.com/timvink/mkdocs-git-revision-date-localized-plugin/compare/v0.5.2...v0.7.3)
+- Fix doc secrets from vault #403 (#459) [Bruno Rocha, Ilito Torquato,
+  Ilito Torquato]
+
+  * Fix secrets`s doc at Using Vault Server session
+
+  * Fix secrets`s doc at Using Vault Server session
+
+  * Revert "Fix secrets`s doc at Using Vault Server session"
+
+  This reverts commit c47cd986bf089b3528e5c0e7c5a914cb7c1e69c8.
+- Changed enabled_core_loaders elements to be upper case to fix #455
+  (#457) [Bruno Rocha, Ilito Torquato, Ilito Torquato]
+
+  * Changed enabled_core_loaders elements to be upper case to fix #455
+
+  * Change map to list comprehension and create empty [] as default value
+
+  * fix wrong identation
+- Fix merging hyperlink to fix  #454 (#458) [Ilito Torquato, Ilito
+  Torquato]
+- Specify flask extension initializers by entry point object reference
+  (#456) [FrankBattaglia]
+- Bump mkdocs-material from 6.0.2 to 6.1.0 (#453) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 6.0.2 to 6.1.0.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.0.2...6.1.0)
+- Fix #445 casting on dottet get. (#446) [Bruno Rocha]
+
+  * Fix #445 casting on dottet get.
+
+  Fix the rebound of `cast` on dotted get.
+
+  Fix #445
+
+  * better handling of casting data
+- Release version 3.1.2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (13):
+            Release version 3.1.1
+            Update diagram images
+            Update docs/release_notes
+            Fixing prospector warnings. (#425)
+            Fix mkdocs config problem found in #423
+            Signed in for https://xscode.com/rochacbruno/dynaconf (#426)
+            Remove links to outdated issues from guidelines
+            Fix colors and KEyError handling on cli.py (#429)
+            Fix #434 setenv failing to unset LazyValues (#437)
+            Fix #432 no need for warning when env is missing on a file (#438)
+            Add test to ensure fix #430 (#439)
+            Close #284 not a bug (#440)
+            Fix #443 object merge with same value on same level keys (#444)
+
+      dependabot-preview[bot] (6):
+            Bump mkdocs-material from 5.3.2 to 5.5.13 (#423)
+            Bump pymdown-extensions from 7.1 to 8.0 (#422)
+            Bump mkdocs-material-extensions from 1.0 to 1.0.1 (#427)
+            Bump pymdown-extensions from 8.0 to 8.0.1 (#435)
+            Bump mkdocs-material from 5.5.13 to 6.0.1 (#436)
+            Bump mkdocs-material from 6.0.1 to 6.0.2 (#442)
+
+
 3.1.2 (2020-10-08)
 ------------------
 - Release version 3.1.2. [Bruno Rocha]
