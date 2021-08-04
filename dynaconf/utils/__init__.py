@@ -1,20 +1,19 @@
 from __future__ import annotations
+
 import os
 import warnings
 from json import JSONDecoder
-from typing import (
-    Any,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
-    Union,
-    TYPE_CHECKING,
-)
+from typing import Any
+from typing import Dict
+from typing import Iterator
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import TYPE_CHECKING
+from typing import Union
 
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings, Settings
     from dynaconf.utils.boxing import DynaBox
 
