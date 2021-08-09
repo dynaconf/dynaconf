@@ -1,5 +1,15 @@
+from __future__ import annotations
+
 from itertools import chain
 from types import MappingProxyType
+from typing import Any
+from typing import AnyStr
+from typing import Callable
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Tuple
+from typing import Union
 
 from dynaconf import validator_conditions  # noqa
 from dynaconf.utils import ensure_a_list
@@ -89,16 +99,19 @@ class Validator:
 
     def __init__(
         self,
-        *names,
-        must_exist=None,
-        required=None,  # this is alias for `must_exist`
-        condition=None,
-        when=None,
-        env=None,
-        messages=None,
-        cast=None,
-        default=empty,  # Literal value or a callable
-        **operations
+        *names: List[AnyStr],
+        must_exist: Optional[bool] = None,
+        required: Optional[bool] = None,  # alias for `must_exist`
+        condition: Optional[Callable[[Any], bool]] = None,
+        when: Optional[Validator] = None,
+        env: Optional[Union[AnyStr, List, Tuple]] = None,
+        messages: Optional[Dict[AnyStr, AnyStr]] = None,
+        cast: Optional[AnyStr] = None,
+        default: Optional[
+            Union[Any, Callable[["LazySettings", Validator], Any]]
+        ] = empty,
+        description: Optional[AnyStr] = None,
+        **operations: Optional[Dict[AnyStr, Any]],
     ):
         # Copy immutable MappingProxyType as a mutable dict
         self.messages = dict(self.default_messages)
