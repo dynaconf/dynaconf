@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: all clean dist docs install pep8 publish run-pre-commit run-tox setup-pre-commit test test_examples test_only test_redis test_vault help coverage-report
+.PHONY: all citest clean mypy dist docs install pep8 publish run-pre-commit run-tox setup-pre-commit test test_examples test_only test_redis test_vault help coverage-report
 
 help:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
@@ -155,7 +155,13 @@ test_integration:
 coverage-report:
 	coverage report --fail-under=100
 
-test: pep8 test_only
+mypy:
+	mypy dynaconf/ --exclude '^dynaconf/vendor*'
+
+test: pep8 mypy test_only
+
+citest:
+	py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml
 
 test_all: test_examples test_integration test_redis test_vault test
 	@coverage html
