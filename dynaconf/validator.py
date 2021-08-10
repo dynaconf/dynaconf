@@ -390,8 +390,9 @@ class ValidatorList(list):
     def descriptions(
         self, flat: bool = False
     ) -> Dict[str, Union[str, List[str]]]:
+
         if flat:
-            descriptions = {}
+            descriptions: Dict[str, Union[str, List[str]]] = {}
         else:
             descriptions = defaultdict(list)
 
@@ -402,7 +403,9 @@ class ValidatorList(list):
                 if flat:
                     descriptions.setdefault(name, validator.description)
                 else:
-                    descriptions[name].append(validator.description)
+                    descriptions[name].append(  # type: ignore
+                        validator.description
+                    )
         return descriptions
 
     def validate(

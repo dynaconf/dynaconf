@@ -27,7 +27,7 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
-  - bash: make clean install
+  - bash: make clean install run-pre-commit
     displayName: 'Adequacy Tests'
 
 - job: 'LinuxInstall'
@@ -84,7 +84,7 @@ jobs:
   - script: source .ci/install_dev.sh
     displayName: 'Install dependencies'
 
-  - script: source .ci/test.sh
+  - bash: make citest
     displayName: 'tests'
 
   - script: codecov --token $(SECRET_CODECOV_TOKEN)
