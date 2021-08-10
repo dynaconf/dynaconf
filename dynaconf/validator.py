@@ -3,15 +3,14 @@ from __future__ import annotations
 from itertools import chain
 from types import MappingProxyType
 from typing import Any
-from typing import AnyStr
 from typing import Callable
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Tuple
+from typing import Sequence
 from typing import Union
 
-from dynaconf import validator_conditions  # noqa
+from dynaconf import validator_conditions
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils.functional import empty
 
@@ -99,20 +98,18 @@ class Validator:
 
     def __init__(
         self,
-        *names: List[AnyStr],
+        *names: str,
         must_exist: Optional[bool] = None,
         required: Optional[bool] = None,  # alias for `must_exist`
         condition: Optional[Callable[[Any], bool]] = None,
         when: Optional[Validator] = None,
-        env: Optional[Union[AnyStr, List, Tuple]] = None,
-        messages: Optional[Dict[AnyStr, AnyStr]] = None,
-        cast: Optional[AnyStr] = None,
-        default: Optional[
-            Union[Any, Callable[["LazySettings", Validator], Any]]
-        ] = empty,
-        description: Optional[AnyStr] = None,
-        **operations: Optional[Dict[AnyStr, Any]],
-    ):
+        env: Optional[Union[str, Sequence[str]]] = None,
+        messages: Optional[Dict[str, str]] = None,
+        cast: Optional[Callable[[Any], Any]] = None,
+        default: Optional[Union[Any, Callable[[Any, Validator], Any]]] = empty,
+        description: Optional[str] = None,
+        **operations: Any,
+    ) -> None:
         # Copy immutable MappingProxyType as a mutable dict
         self.messages = dict(self.default_messages)
         if messages:
@@ -131,21 +128,21 @@ class Validator:
         self.cast = cast or (lambda value: value)
         self.operations = operations
         self.default = default
+        self.description = description
+        self.envs: Optional[Sequence[str]] = None
 
         if isinstance(env, str):
             self.envs = [env]
         elif isinstance(env, (list, tuple)):
             self.envs = env
-        else:
-            self.envs = None
 
-    def __or__(self, other):
+    def __or__(self, other: Validator) -> CombinedValidator:
         return OrValidator(self, other)
 
-    def __and__(self, other):
+    def __and__(self, other: Validator) -> CombinedValidator:
         return AndValidator(self, other)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if self is other:
             return True
 
@@ -161,7 +158,12 @@ class Validator:
 
         return False
 
-    def validate(self, settings, only=None, exclude=None):
+    def validate(
+        self,
+        settings: Any,
+        only: Optional[Union[str, Sequence]] = None,
+        exclude: Optional[Union[str, Sequence]] = None,
+    ) -> None:
         """Raise ValidationError if invalid"""
         # If only or exclude are not set, this value always passes startswith
         only = ensure_a_list(only or [""])
@@ -201,15 +203,23 @@ class Validator:
                 settings.from_env(env), only=only, exclude=exclude
             )
 
-    def _validate_items(self, settings, env=None, only=None, exclude=None):
+    def _validate_items(
+        self,
+        settings: Any,
+        env: Optional[str] = None,
+        only: Optional[Union[str, Sequence]] = None,
+        exclude: Optional[Union[str, Sequence]] = None,
+    ) -> None:
         env = env or settings.current_env
         for name in self.names:
             # Skip if only is set and name isn't in the only list
-            if not any(name.startswith(sub) for sub in only):
+            if only and not any(name.startswith(sub) for sub in only):
                 continue
+
             # Skip if exclude is set and name is in the exclude list
-            if any(name.startswith(sub) for sub in exclude):
+            if exclude and any(name.startswith(sub) for sub in exclude):
                 continue
+
             if self.default is not empty:
                 default_value = (
                     self.default(settings, self)
@@ -265,7 +275,13 @@ class Validator:
 
 
 class CombinedValidator(Validator):
-    def __init__(self, validator_a, validator_b, *args, **kwargs):
+    def __init__(
+        self,
+        validator_a: Validator,
+        validator_b: Validator,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
         """Takes 2 validators and combines the validation"""
         self.validators = (validator_a, validator_b)
         super().__init__(*args, **kwargs)
@@ -276,7 +292,12 @@ class CombinedValidator(Validator):
                 )
                 setattr(self, attr, value)
 
-    def validate(self, settings, only=None, exclude=None):  # pragma: no cover
+    def validate(
+        self,
+        settings: Any,
+        only: Optional[Union[str, Sequence]] = None,
+        exclude: Optional[Union[str, Sequence]] = None,
+    ) -> None:  # pragma: no cover
         raise NotImplementedError(
             "subclasses OrValidator or AndValidator implements this method"
         )
@@ -285,7 +306,12 @@ class CombinedValidator(Validator):
 class OrValidator(CombinedValidator):
     """Evaluates on Validator() | Validator()"""
 
-    def validate(self, settings, only=None, exclude=None):
+    def validate(
+        self,
+        settings: Any,
+        only: Optional[Union[str, Sequence]] = None,
+        exclude: Optional[Union[str, Sequence]] = None,
+    ) -> None:
         """Ensure at least one of the validators are valid"""
         errors = []
         for validator in self.validators:
@@ -310,7 +336,12 @@ class OrValidator(CombinedValidator):
 class AndValidator(CombinedValidator):
     """Evaluates on Validator() & Validator()"""
 
-    def validate(self, settings, only=None, exclude=None):
+    def validate(
+        self,
+        settings: Any,
+        only: Optional[Union[str, Sequence]] = None,
+        exclude: Optional[Union[str, Sequence]] = None,
+    ) -> None:
         """Ensure both the validators are valid"""
         errors = []
         for validator in self.validators:
@@ -332,23 +363,33 @@ class AndValidator(CombinedValidator):
 
 
 class ValidatorList(list):
-    def __init__(self, settings, validators=None, *args, **kwargs):
+    def __init__(
+        self,
+        settings: Any,
+        validators: Optional[Sequence[Validator]] = None,
+        *args: Validator,
+        **kwargs: Any,
+    ) -> None:
         if isinstance(validators, (list, tuple)):
-            args = list(args) + list(validators)
+            args = list(args) + list(validators)  # type: ignore
         self._only = kwargs.pop("validate_only", None)
         self._exclude = kwargs.pop("validate_exclude", None)
-        super(ValidatorList, self).__init__(args, **kwargs)
+        super(ValidatorList, self).__init__(args, **kwargs)  # type: ignore
         self.settings = settings
 
-    def register(self, *args, **kwargs):
-        validators = list(chain.from_iterable(kwargs.values()))
+    def register(self, *args: Validator, **kwargs: Validator):
+        validators: List[Validator] = list(
+            chain.from_iterable(kwargs.values())  # type: ignore
+        )
         validators.extend(args)
         for validator in validators:
             if validator and validator not in self:
                 self.append(validator)
 
-    def validate(self, only=None, exclude=None):
-        # only = only or self._only
-        # exclude = exclude or self._exclude
+    def validate(
+        self,
+        only: Optional[Union[str, Sequence]] = None,
+        exclude: Optional[Union[str, Sequence]] = None,
+    ) -> None:
         for validator in self:
             validator.validate(self.settings, only=only, exclude=exclude)
