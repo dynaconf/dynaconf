@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from itertools import chain
 from types import MappingProxyType
 from typing import Any
@@ -137,10 +138,10 @@ class Validator:
             self.envs = env
 
     def __or__(self, other: Validator) -> CombinedValidator:
-        return OrValidator(self, other)
+        return OrValidator(self, other, description=self.description)
 
     def __and__(self, other: Validator) -> CombinedValidator:
-        return AndValidator(self, other)
+        return AndValidator(self, other, description=self.description)
 
     def __eq__(self, other: object) -> bool:
         if self is other:
@@ -385,6 +386,24 @@ class ValidatorList(list):
         for validator in validators:
             if validator and validator not in self:
                 self.append(validator)
+
+    def descriptions(
+        self, flat: bool = False
+    ) -> Dict[str, Union[str, List[str]]]:
+        if flat:
+            descriptions = {}
+        else:
+            descriptions = defaultdict(list)
+
+        for validator in self:
+            for name in validator.names:
+                if isinstance(name, tuple) and len(name) > 0:
+                    name = name[0]
+                if flat:
+                    descriptions.setdefault(name, validator.description)
+                else:
+                    descriptions[name].append(validator.description)
+        return descriptions
 
     def validate(
         self,

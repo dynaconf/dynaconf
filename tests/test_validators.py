@@ -5,6 +5,7 @@ import pytest
 from dynaconf import LazySettings
 from dynaconf import ValidationError
 from dynaconf import Validator
+from dynaconf.validator import ValidatorList
 
 
 TOML = """
@@ -614,3 +615,47 @@ def test_raises_on_invalid_selective_args(tmpdir, yaml_validators_good):
     )
     with pytest.raises(ValueError):
         settings.validator_instance.validate()
+
+
+def test_validator_descriptions(tmpdir):
+    validators = ValidatorList(
+        LazySettings(),
+        validators=[
+            Validator("foo", description="foo"),
+            Validator("bar", description="bar"),
+            Validator("baz", "zaz", description="baz zaz"),
+            Validator("foo", description="another message"),
+            Validator("a", description="a") & Validator("b"),
+        ],
+    )
+
+    assert validators.descriptions() == {
+        "bar": ["bar"],
+        "baz": ["baz zaz"],
+        "zaz": ["baz zaz"],
+        "foo": ["foo", "another message"],
+        "a": ["a"],
+        "b": ["a"],
+    }
+
+
+def test_validator_descriptions_flat(tmpdir):
+    validators = ValidatorList(
+        LazySettings(),
+        validators=[
+            Validator("foo", description="foo"),
+            Validator("bar", description="bar"),
+            Validator("baz", "zaz", description="baz zaz"),
+            Validator("foo", description="another message"),
+            Validator("a", description="a") & Validator("b"),
+        ],
+    )
+
+    assert validators.descriptions(flat=True) == {
+        "bar": "bar",
+        "baz": "baz zaz",
+        "zaz": "baz zaz",
+        "foo": "foo",
+        "a": "a",
+        "b": "a",
+    }
