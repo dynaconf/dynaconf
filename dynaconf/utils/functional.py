@@ -31,6 +31,7 @@ class LazyObject:
     # Avoid infinite recursion when tracing __init__.
     _wrapped = None
     _kwargs = None
+    _django_override = False
 
     def __init__(self):
         # Note: if a subclass overrides __init__(), it will likely need to

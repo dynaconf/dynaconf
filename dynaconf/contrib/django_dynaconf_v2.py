@@ -69,6 +69,9 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         "default_settings_paths", dynaconf.DEFAULT_SETTINGS_FILES
     )
 
+    class UserSettingsHolder(dynaconf.LazySettings):
+        _django_override = True
+
     lazy_settings = dynaconf.LazySettings(**options)
     dynaconf.settings = lazy_settings  # rebind the settings
 
@@ -100,6 +103,8 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         def __getattribute__(self, name):
             if name == "settings":
                 return lazy_settings
+            if name == "UserSettingsHolder":
+                return UserSettingsHolder
             return getattr(conf, name)
 
     # This implementation is recommended by Guido Van Rossum
