@@ -2,7 +2,10 @@ import os
 
 from dynaconf import Dynaconf
 
-config = Dynaconf(settings_files=["settings.yml"], envvar_prefix="ATC",)
+config = Dynaconf(
+    settings_files=["settings.yml"],
+    envvar_prefix="ATC",
+)
 
 # envvar set is case insensitive
 # ATC_BLE__DEVICE_ID=x and ATC_BLE__device_id=x are the same

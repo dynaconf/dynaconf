@@ -897,3 +897,58 @@ def test_settings_dict_like_iteration(tmpdir):
 
     for key, value in settings.items():
         assert settings._store[key] == value
+
+
+def test_clone():
+    # create a settings object
+    settings = LazySettings(FOO="bar")
+    assert settings.FOO == "bar"
+
+    # clone it
+    cloned = settings.dynaconf.clone()
+    assert cloned.FOO == "bar"
+
+    # modify the cloned settings
+    cloned.FOO = "baz"
+    assert cloned.FOO == "baz"
+
+    # assert original settings is not modified
+    assert settings.FOO == "bar"
+
+
+def test_wrap_existing_settings():
+    """
+    Wrap an existing settings object
+    """
+    settings = LazySettings(FOO="bar")
+    assert settings.FOO == "bar"
+
+    # wrap it
+    wrapped = LazySettings(settings._wrapped)
+    assert wrapped.FOO == "bar"
+
+    # modify the wrapped settings
+    wrapped.FOO = "baz"
+    assert wrapped.FOO == "baz"
+
+    # assert original settings is also modified as they have the same wrapped
+    assert settings.FOO == "baz"
+
+
+def test_wrap_existing_settings_clone():
+    """
+    Wrap an existing settings object
+    """
+    settings = LazySettings(FOO="bar")
+    assert settings.FOO == "bar"
+
+    # wrap it
+    wrapped = LazySettings(settings.dynaconf.clone())
+    assert wrapped.FOO == "bar"
+
+    # modify the wrapped settings
+    wrapped.FOO = "baz"
+    assert wrapped.FOO == "baz"
+
+    # assert original settings is not changes as we used a wrapped clone
+    assert settings.FOO == "bar"

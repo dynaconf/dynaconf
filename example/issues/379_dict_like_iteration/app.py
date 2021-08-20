@@ -1,6 +1,8 @@
 from dynaconf import Dynaconf
 
-settings = Dynaconf(settings_files=["settings.toml"],)
+settings = Dynaconf(
+    settings_files=["settings.toml"],
+)
 
 assert settings.key == "value"
 assert settings.number == 789
