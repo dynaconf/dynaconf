@@ -2,6 +2,112 @@ Changelog
 =========
 
 
+3.1.5 (2021-08-20)
+------------------
+- Release version 3.1.5. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Fix #595 namedtuples are no more converted to BoxList (#623)
+            fix #596 django override (#645)
+            fix #491 pytest django Fix #491 pytest and django (#646)
+            Delete requirements.txt
+
+      FrankBattaglia (1):
+            fix dict iterator methods for flask DynaconfConfig (#581)
+
+      Robert Rosca (1):
+            Add a warning if `--env` is passed to `init` (#629)
+
+      Tanya Tereshchenko (1):
+            Do not search anywhere if the absolute path to a file provided (#570)
+- Delete requirements.txt. [Bruno Rocha]
+- Fix #491 pytest django Fix #491 pytest and django (#646) [Bruno Rocha]
+- Fix #596 django override (#645) [Bruno Rocha]
+
+  * Fix #596 django.test.override issue
+
+  * Fix CI side effects
+- Add a warning if `--env` is passed to `init` (#629) [Bruno Rocha,
+  Bruno Rocha, Robert Rosca]
+
+  * Add a warning if `--env` is passed to `init`
+
+  * Fix typo, `file` was doubled in init help
+
+  * Update docstrings for CLI
+
+  * Raise error if using `-i` with `init` subcommand
+
+  * Update docs to match current behaviour
+
+  * add test coverage
+- Fix dict iterator methods for flask DynaconfConfig (#581) [Bruno
+  Rocha, Frank Battaglia, FrankBattaglia]
+- Fix #595 namedtuples are no more converted to BoxList (#623) [Bruno
+  Rocha]
+- Do not search anywhere if the absolute path to a file provided (#570)
+  [Bruno Rocha, Tanya Tereshchenko]
+
+  * Do not search anywhere if the absolute path to a file provided
+
+  fixes #569
+
+  * Fix test coverage and added some comments.
+
+
+3.1.4 (2021-03-08)
+------------------
+- Release version 3.1.4. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (3):
+            Release version 3.1.3
+            HOTFIX for 501 (#540)
+            HOTFIX for 462 related issue, `default` on .get should be parsed as Box (#541)
+
+      dependabot-preview[bot] (2):
+            Bump mkdocs-material from 6.1.6 to 7.0.4 (#537)
+            Bump mkdocs-material from 7.0.4 to 7.0.5 (#539)
+- HOTFIX for 462 related issue, `default` on .get should be parsed as
+  Box (#541) [Bruno Rocha]
+
+  objects
+
+  In order to keep the same method api, default values should be parsed
+  and converted to Boxed objects.
+
+  https://github.com/rochacbruno/dynaconf/issues/462
+- HOTFIX for 501 (#540) [Bruno Rocha]
+
+  Flask still missing __contains__
+- Bump mkdocs-material from 7.0.4 to 7.0.5 (#539) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 7.0.4 to 7.0.5.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/7.0.4...7.0.5)
+- Bump mkdocs-material from 6.1.6 to 7.0.4 (#537) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 6.1.6 to 7.0.4.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.1.6...7.0.4)
+- Release version 3.1.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 3.1.3rc1
+            Fix #462 make DynaBox nested List to use DynaBox as default class (#533)
+            Fix #478 Make alias for environment -> environments (#534)
+            Test to ensure #467 is not an issue (#535)
+
+
 3.1.3 (2021-03-04)
 ------------------
 
