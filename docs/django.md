@@ -209,6 +209,8 @@ print(settings.get('DATABASES'))
 
 Django testing must work out of the box!
 
+## Mocking envvars with django
+
 But in some cases when you `mock` stuff and need to add `environment variables` to `os.environ` on demand for test cases it may be needed to `reload` the `dynaconf`.
 
 To do that write up on your test case setup part:
@@ -225,6 +227,23 @@ class TestCase(...):
 
     def test_foo(self):
         self.assertEqual(settings.FOO, 'BAR')
+```
+
+## Using pytest and django
+
+Install `pip install pytest-django`
+
+Add to your conftest.py
+
+`project/tests/conftest.py`
+```py
+import pytest
+
+@pytest.fixture(scope="session", autouse=True)
+def set_test_settings():
+    # https://github.com/rochacbruno/dynaconf/issues/491#issuecomment-745391955
+    from django.conf import settings
+    settings.setenv('testing')  # force the environment to be whatever you want
 ```
 
 ## Explicit mode
