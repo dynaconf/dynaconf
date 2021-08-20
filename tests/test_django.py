@@ -6,7 +6,7 @@ import dynaconf
 
 def test_djdt_382(tmpdir):
     settings_file = tmpdir.join("settings.py")
-    settings_file.write("SECRET_KEY = 'dasfadfds2'")
+    settings_file.write("\n".join(["SECRET_KEY = 'dasfadfds2'"]))
     tmpdir.join("__init__.py").write("")
     os.environ["DJANGO_SETTINGS_MODULE"] = "settings"
     sys.path.append(str(tmpdir))
@@ -19,7 +19,7 @@ def test_djdt_382(tmpdir):
 
 def test_override_settings_596(tmpdir):
     settings_file = tmpdir.join("other_settings.py")
-    settings_file.write("SECRET_KEY = 'abcdef'")
+    settings_file.write("\n".join(["SECRET_KEY = 'abcdef'"]))
     tmpdir.join("__init__.py").write("")
     os.environ["DJANGO_SETTINGS_MODULE"] = "other_settings"
     sys.path.append(str(tmpdir))
