@@ -49,6 +49,7 @@ test_examples:
 	cd example/jenkins_secrets_file;pwd;python app.py
 	cd example/specific_settings_files;pwd;python app.py
 	cd example/django_example/;pwd;python manage.py test polls -v 2
+	cd example/django_pytest/;pwd;pip install pytest-django;DJANGO_SETTINGS_MODULE=project.settings DJANGO_ENVIRONMENT=default pytest;pip uninstall -y pytest-django
 	cd example/django_example_compat/;pwd;python manage.py test polls -v 2
 	cd example/django_example/;pwd;PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings django-admin test polls -v 2
 	cd example/project_root/;pwd;rm -rf /tmp/dynaconf_project_root_test/settings.py;mkdir -p /tmp/dynaconf_project_root_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/dynaconf_project_root_test/settings.py;python app.py;rm -rf /tmp/dynaconf_project_root_test/

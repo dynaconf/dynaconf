@@ -1,0 +1,7 @@
+default:
+  FOO: foo
+  TESTING: False
+
+pytest:
+  FOO: foo-test
+  TESTING: True
