@@ -1,3 +1,4 @@
+import copy
 import glob
 import importlib
 import inspect
@@ -91,10 +92,11 @@ class LazySettings(LazyObject):
     and all values in a hash called DYNACONF_PROJ in redis
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, wrapped=None, **kwargs):
         """
         handle initialization for the customization cases
 
+        :param wrapped: a deepcopy of this object will be wrapped (issue #596)
         :param kwargs: values that overrides default_settings
         """
 
@@ -106,6 +108,13 @@ class LazySettings(LazyObject):
         compat_kwargs(kwargs)
         self._kwargs = kwargs
         super(LazySettings, self).__init__()
+
+        if wrapped:
+            if self._django_override:
+                # This fixes django issue #596
+                self._wrapped = copy.deepcopy(wrapped)
+            else:
+                self._wrapped = wrapped
 
     def __resolve_config_aliases(self, kwargs):
         """takes aliases for _FOR_DYNACONF configurations
@@ -225,6 +234,7 @@ class Settings:
     """
 
     dynaconf_banner = BANNER
+    _store = DynaBox()
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         """Execute loaders and custom initialization
@@ -957,11 +967,9 @@ class Settings:
             return []
 
         if not self._loaders:
-            for loader_module_name in self.LOADERS_FOR_DYNACONF:
-                loader = importlib.import_module(loader_module_name)
-                self._loaders.append(loader)
+            self._loaders = self.LOADERS_FOR_DYNACONF
 
-        return self._loaders
+        return [importlib.import_module(loader) for loader in self._loaders]
 
     def reload(self, env=None, silent=None):  # pragma: no cover
         """Clean end Execute all loaders"""
@@ -1160,14 +1168,27 @@ class Settings:
             if value is not empty:
                 setattr(obj, key, value)
 
-    def dynaconf(self):  # pragma: no cover
+    def dynaconf_clone(self):
+        """Clone the current settings object."""
+        return copy.deepcopy(self)
+
+    @property
+    def dynaconf(self):
         """A proxy to access internal methods and attributes
 
         Starting in 3.0.0 Dynaconf now allows first level lower case
         keys that are not reserved keyword, so this is a proxy to
         internal methods and attrs.
         """
-        return  # TOBE IMPLEMENTED
+
+        class AttrProxy(object):
+            def __init__(self, obj):
+                self.obj = obj
+
+            def __getattr__(self, name):
+                return getattr(self.obj, f"dynaconf_{name}")
+
+        return AttrProxy(self)
 
     @property
     def logger(self):  # pragma: no cover

@@ -22,6 +22,9 @@ REST_FRAMEWORK = {
     "ANOTHER_DRF_KEY": "VALUE",
 }
 
+# 596
+TEST_VALUE = "a"
+COLORS = ["black", "green"]
 
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 # Read more at https://dynaconf.readthedocs.io/en/latest/guides/django.html
@@ -42,3 +45,4 @@ assert settings.USERNAME == "admin_user_from_env"
 assert settings.PASSWORD == "My5up3r53c4et"
 assert settings.get("PASSWORD") == "My5up3r53c4et"
 assert settings.FOO == "It overrides every other env"
+assert settings.TEST_VALUE == "a"

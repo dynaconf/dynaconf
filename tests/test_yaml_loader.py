@@ -5,11 +5,14 @@ import pytest
 from dynaconf import LazySettings
 from dynaconf.loaders.yaml_loader import load
 
-settings = LazySettings(
-    environments=True,
-    ENV_FOR_DYNACONF="PRODUCTION",
-    ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
-)
+
+@pytest.fixture(scope="module")
+def settings():
+    return LazySettings(
+        environments=True,
+        ENV_FOR_DYNACONF="PRODUCTION",
+        # ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
+    )
 
 
 YAML = """
@@ -51,7 +54,7 @@ global:
 YAMLS = [YAML, YAML2]
 
 
-def test_load_from_yaml():
+def test_load_from_yaml(settings):
     """Assert loads from YAML string"""
     load(settings, filename=YAML)
     assert settings.HOST == "prodserver.com"
@@ -68,7 +71,7 @@ def test_load_from_yaml():
     assert settings.HOST == "prodserver.com"
 
 
-def test_load_from_multiple_yaml():
+def test_load_from_multiple_yaml(settings):
     """Assert loads from YAML string"""
     load(settings, filename=YAMLS)
     assert settings.HOST == "otheryaml.com"
@@ -94,23 +97,23 @@ def test_load_from_multiple_yaml():
     assert settings.PASSWORD == 11111
 
 
-def test_no_filename_is_none():
+def test_no_filename_is_none(settings):
     """Assert if passed no filename return is None"""
     assert load(settings) is None
 
 
-def test_key_error_on_invalid_env():
+def test_key_error_on_invalid_env(settings):
     """Assert error raised if env is not found in YAML"""
     with pytest.raises(KeyError):
         load(settings, filename=YAML, env="FOOBAR", silent=False)
 
 
-def test_no_key_error_on_invalid_env():
+def test_no_key_error_on_invalid_env(settings):
     """Assert error raised if env is not found in YAML"""
     load(settings, filename=YAML, env="FOOBAR", silent=True)
 
 
-def test_load_single_key():
+def test_load_single_key(settings):
     """Test loading a single key"""
     yaml = """
     foo:
@@ -123,7 +126,7 @@ def test_load_single_key():
     assert settings.exists("ZAZ") is False
 
 
-def test_extra_yaml():
+def test_extra_yaml(settings):
     """Test loading extra yaml file"""
     load(settings, filename=YAML)
     yaml = """
@@ -135,15 +138,15 @@ def test_extra_yaml():
     assert settings.HELLOEXAMPLE == "world"
 
 
-def test_empty_value():
+def test_empty_value(settings):
     load(settings, filename="")
 
 
-def test_multiple_filenames():
+def test_multiple_filenames(settings):
     load(settings, filename="a.yaml,b.yml,c.yaml,d.yml")
 
 
-def test_cleaner():
+def test_cleaner(settings):
     load(settings, filename=YAML)
     assert settings.HOST == "prodserver.com"
     assert settings.PORT == 8080
@@ -163,7 +166,7 @@ def test_cleaner():
         assert settings.HOST == "prodserver.com"
 
 
-def test_using_env(tmpdir):
+def test_using_env(tmpdir, settings):
     load(settings, filename=YAML)
     assert settings.HOST == "prodserver.com"
 
@@ -174,7 +177,7 @@ def test_using_env(tmpdir):
     assert settings.HOST == "prodserver.com"
 
 
-def test_load_dunder():
+def test_load_dunder(settings):
     """Test load with dunder settings"""
     yaml = """
     foo:
