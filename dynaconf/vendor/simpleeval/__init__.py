@@ -1,2 +1,2 @@
-from .simpleeval import SimpleEval
-__all__=['SimpleEval']
+from .simpleeval import SimpleEval,simple_eval
+__all__=['SimpleEval','simple_eval']
