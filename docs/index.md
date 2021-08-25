@@ -358,7 +358,7 @@ pip install dynaconf
 ---
 
 !!! tip
-    The `dynaconf` CLI has more useful commands such as `list | export`, `init`, `write` and `validade` read more on [CLI](/cli/)
+    The `dynaconf` CLI has more useful commands such as `list | export`, `init`, `write` and `validate` read more on [CLI](/cli/)
 
 ## Defining your settings variables
 
