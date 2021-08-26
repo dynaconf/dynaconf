@@ -192,7 +192,7 @@ pip install dynaconf
         SQLALCHEMY_DB_URI = "postgresql://..."
         ```
 
-        > ℹ️ On Flask settings files are layered in multiple environments by default, you can disable it passing `environments=False` to FlaskDynaconf extension.
+        > ℹ️ On Flask, settings files are layered in multiple environments by default, you can disable it passing `environments=False` to FlaskDynaconf extension.
 
         More details in [Settings Files](/settings_files/)
 
