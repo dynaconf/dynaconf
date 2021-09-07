@@ -69,6 +69,7 @@ def get_module(obj, filename, silent=False):
     try:
         mod = importlib.import_module(filename)
         loaded_from = "module"
+        mod.is_error = False
     except (ImportError, TypeError):
         mod = import_from_filename(obj, filename, silent=silent)
         if mod and not mod._is_error:

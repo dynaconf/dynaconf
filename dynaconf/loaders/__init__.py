@@ -57,6 +57,56 @@ def default_loader(obj, defaults=None):
             obj.set(key, env_value, tomlfy=True)
 
 
+def execute_hooks(hook, obj, env=None, silent=True, key=None):
+    """Execute dynaconf_hooks:post.
+
+    loop the _loaded_files and searches for dynaconf_hooks.py at
+    the same folder.
+
+    if found, then look for a function named `post` and executes it passing
+    obj.dynaconf.clone() and takes a dictionary as return value,
+    use this dict to updade the obj.
+
+    hook: the name of the hook to execute supported: ["post"]
+          in future may have another hooks such as "pre" and "before_*"
+    obj: the dynaconf object
+
+    **_ other arguments are there only for compability.
+    """
+    if hook not in ["post"]:
+        raise ValueError(f"hook {hook} not supported yet.")
+
+    for loaded_file in obj._loaded_files:
+        hook_file = os.path.join(
+            os.path.dirname(loaded_file), "dynaconf_hooks.py"
+        )
+        if hook_file in obj._loaded_hooks:
+            continue
+
+        hook_module, _ = py_loader.get_module(obj, hook_file, silent=silent)
+
+        if hook_module and hook_module._is_error:
+            # PRINT? LOG?
+            continue
+
+        if hook_module and not hook_module._is_error:
+            try:
+                hook_func = getattr(hook_module, hook, None)
+                if hook_func:
+                    hook_dict = hook_func(obj.dynaconf.clone())
+                    if hook_dict:
+                        obj.update(hook_dict)
+                obj._loaded_hooks.append(hook_module.__file__)
+            except Exception as e:
+                if silent:
+                    pass
+                    # PRINT? LOG?
+                    # print(f"Error executing {hook_file} - {e}")
+                else:
+                    raise e
+            # print(f"hook {hook} executed")
+
+
 def settings_loader(
     obj, settings_module=None, env=None, silent=True, key=None, filename=None
 ):
