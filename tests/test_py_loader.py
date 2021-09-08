@@ -95,3 +95,93 @@ def test_py_loader_from_file_dunder(clean_env, tmpdir):
     assert settings.COLORS == {"white": {"code": "#FFFFFF"}}
     assert settings.DATABASES.default.NAME == "db"
     assert settings.DATABASES.default.ENGINE == "other.module"
+
+
+def test_post_load_hooks(clean_env, tmpdir):
+    """Test post load hooks works
+
+    This test uses 3 settings files
+
+    PRELOAD = "plugin_folder/plugin.py"
+    SETTINGS_FILE = "settings.py"
+    HOOKFILES = ["plugin_folder/dynaconf_hooks.py", "dynaconf_hooks.py"]
+
+    The hook file has a function called "post" which is called after
+    loading the settings, that function accepts the argument `settings`
+    which is a copy of the settings object, and returns a dictionary
+    of settings to be merged.
+    """
+
+    # Arrange
+    plugin_folder = tmpdir.mkdir("plugin_folder")
+    plugin_folder.join("__init__.py").write('print("initing plugin...")')
+
+    plugin_path = plugin_folder.join("plugin.py")
+    plugin_hook = plugin_folder.join("dynaconf_hooks.py")
+    settings_path = tmpdir.join("settings.py")
+    settings_hook = tmpdir.join("dynaconf_hooks.py")
+
+    to_write = {
+        str(plugin_path): ["PLUGIN_NAME = 'DummyPlugin'"],
+        str(settings_path): [
+            "INSTALLED_APPS = ['admin']",
+            "COLORS = ['red', 'green']",
+            "DATABASES = {'default': {'NAME': 'db'}}",
+            "BANDS = ['Rush', 'Yes']",
+        ],
+        str(plugin_hook): [
+            "post = lambda settings: "
+            "{"
+            "'PLUGIN_NAME': settings.PLUGIN_NAME.lower(),"
+            "'COLORS': '@merge blue',"
+            "'DATABASES__default': '@merge PORT=5151',"
+            "'DATABASES__default__VERSION': 42,"
+            "'DATABASES__default__FORCED_INT': '@int 12',",
+            "'BANDS': ['Anathema', 'dynaconf_merge']" "}",
+        ],
+        str(settings_hook): [
+            "post = lambda settings: "
+            "{"
+            "'INSTALLED_APPS': [settings.PLUGIN_NAME],"
+            "'dynaconf_merge': True,"
+            "}"
+        ],
+    }
+
+    for path, lines in to_write.items():
+        with io.open(
+            str(path), "w", encoding=default_settings.ENCODING_FOR_DYNACONF
+        ) as f:
+            for line in lines:
+                f.write(line)
+                f.write("\n")
+
+    # Act
+    settings = LazySettings(
+        preload=["plugin_folder.plugin"], settings_file="settings.py"
+    )
+
+    # Assert
+    assert settings.PLUGIN_NAME == "dummyplugin"
+    assert settings.INSTALLED_APPS == ["admin", "dummyplugin"]
+    assert settings.COLORS == ["red", "green", "blue"]
+    assert settings.DATABASES.default.NAME == "db"
+    assert settings.DATABASES.default.PORT == 5151
+    assert settings.DATABASES.default.VERSION == 42
+    assert settings.DATABASES.default.FORCED_INT == 12
+    assert settings.BANDS == ["Rush", "Yes", "Anathema"]
+    assert settings._loaded_hooks[str(plugin_hook)] == {
+        "post": {
+            "PLUGIN_NAME": "dummyplugin",
+            "COLORS": "@merge blue",
+            "DATABASES__default": "@merge PORT=5151",
+            "DATABASES__default__VERSION": 42,
+            "DATABASES__default__FORCED_INT": "@int 12",
+            "BANDS": ["Anathema", "dynaconf_merge"],
+        }
+    }
+    assert settings._loaded_hooks[str(settings_hook)] == {
+        "post": {
+            "INSTALLED_APPS": ["dummyplugin"],
+        }
+    }

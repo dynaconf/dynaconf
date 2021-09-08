@@ -28,8 +28,11 @@ def load_from_python_object(
         mod, "DYNACONF_MERGE", False
     )
     for setting in dir(mod):
-        # at least 3 first chars should be upper to be considered a setting var
-        if setting[:3].isupper():
+        # A setting var in a Python file should start with upper case
+        # valid: A_value=1, ABC_value=3 A_BBB__default=1
+        # invalid: a_value=1, MyValue=3
+        # This is to avoid loading functions, classes and built-ins
+        if setting.split("__")[0].isupper():
             if key is None or key == setting:
                 setting_value = getattr(mod, setting)
                 obj.set(
@@ -38,6 +41,8 @@ def load_from_python_object(
                     loader_identifier=identifier,
                     merge=file_merge,
                 )
+
+    obj._loaded_py_modules.append(mod.__name__)
     obj._loaded_files.append(mod.__file__)
 
 
@@ -69,6 +74,7 @@ def get_module(obj, filename, silent=False):
     try:
         mod = importlib.import_module(filename)
         loaded_from = "module"
+        mod.is_error = False
     except (ImportError, TypeError):
         mod = import_from_filename(obj, filename, silent=silent)
         if mod and not mod._is_error:
@@ -100,6 +106,7 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
     mod = types.ModuleType(filename.rstrip(".py"))
     mod.__file__ = filename
     mod._is_error = False
+    mod._error = None
     try:
         with io.open(
             _find_file(filename),
@@ -113,6 +120,7 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return
         mod._is_error = True
+        mod._error = e
     return mod
 
 

@@ -1,3 +1,4 @@
+import importlib
 import os
 
 from dynaconf import constants as ct
@@ -55,6 +56,75 @@ def default_loader(obj, defaults=None):
 
         if env_value != "_not_found":
             obj.set(key, env_value, tomlfy=True)
+
+
+def _run_hook_module(hook, hook_module, obj, key=None):
+    """Run the hook function from the settings obj.
+
+    given a hook name, a hook_module and a settings object
+    load the function and execute if found.
+    """
+    if hook in obj._loaded_hooks.get(hook_module.__file__, {}):
+        # already loaded
+        return
+
+    if hook_module and getattr(hook_module, "_error", False):
+        raise hook_module._error
+
+    hook_func = getattr(hook_module, hook, None)
+    if hook_func:
+        hook_dict = hook_func(obj.dynaconf.clone())
+        if hook_dict:
+            merge = hook_dict.pop(
+                "dynaconf_merge", hook_dict.pop("DYNACONF_MERGE", False)
+            )
+            if key and key in hook_dict:
+                obj.set(key, hook_dict[key], tomlfy=False, merge=merge)
+            elif not key:
+                obj.update(hook_dict, tomlfy=False, merge=merge)
+        obj._loaded_hooks[hook_module.__file__][hook] = hook_dict
+
+
+def execute_hooks(hook, obj, env=None, silent=True, key=None):
+    """Execute dynaconf_hooks from module or filepath."""
+    if hook not in ["post"]:
+        raise ValueError(f"hook {hook} not supported yet.")
+
+    # try to load hooks using python module __name__
+    for loaded_module in obj._loaded_py_modules:
+        hook_module_name = ".".join(
+            loaded_module.split(".")[:-1] + ["dynaconf_hooks"]
+        )
+        try:
+            hook_module = importlib.import_module(hook_module_name)
+        except (ImportError, TypeError):
+            # There was no hook on the same path as a python module
+            continue
+        else:
+            _run_hook_module(
+                hook=hook,
+                hook_module=hook_module,
+                obj=obj,
+                key=key,
+            )
+
+    # Try to load from python filename path
+    for loaded_file in obj._loaded_files:
+        hook_file = os.path.join(
+            os.path.dirname(loaded_file), "dynaconf_hooks.py"
+        )
+        hook_module = py_loader.import_from_filename(
+            obj, hook_file, silent=silent
+        )
+        if not hook_module:
+            # There was no hook on the same path as a python file
+            continue
+        _run_hook_module(
+            hook=hook,
+            hook_module=hook_module,
+            obj=obj,
+            key=key,
+        )
 
 
 def settings_loader(

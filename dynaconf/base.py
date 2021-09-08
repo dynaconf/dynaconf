@@ -4,6 +4,7 @@ import importlib
 import inspect
 import os
 import warnings
+from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
 from pathlib import Path
@@ -12,6 +13,7 @@ from dynaconf import default_settings
 from dynaconf.loaders import default_loader
 from dynaconf.loaders import enable_external_loaders
 from dynaconf.loaders import env_loader
+from dynaconf.loaders import execute_hooks
 from dynaconf.loaders import py_loader
 from dynaconf.loaders import settings_loader
 from dynaconf.loaders import yaml_loader
@@ -201,6 +203,8 @@ class Settings:
         """
         self._fresh = False
         self._loaded_envs = []
+        self._loaded_hooks = defaultdict(dict)
+        self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
         self._store = DynaBox(box_settings=self)
@@ -973,6 +977,7 @@ class Settings:
             loader.load(self, env, silent=silent, key=key)
 
         self.load_includes(env, silent=silent, key=key)
+        execute_hooks("post", self, env, silent=silent, key=key)
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
@@ -1196,6 +1201,8 @@ RESERVED_ATTRS = (
         "_kwargs",
         "_loaded_by_loaders",
         "_loaded_envs",
+        "_loaded_hooks",
+        "_loaded_py_modules",
         "_loaded_files",
         "_loaders",
         "_not_installed_warnings",

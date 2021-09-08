@@ -1,4 +1,5 @@
 import os
+import sys
 
 # Where is all the Django's settings?
 # Take a look at ../settings.yaml and ../.secrets.yaml
@@ -26,13 +27,19 @@ REST_FRAMEWORK = {
 TEST_VALUE = "a"
 COLORS = ["black", "green"]
 
+sys.path.append(".")
+
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 # Read more at https://dynaconf.readthedocs.io/en/latest/guides/django.html
 import dynaconf  # noqa
 
 settings = dynaconf.DjangoDynaconf(
     __name__,
-    PRELOAD_FOR_DYNACONF=["../settings.yaml", "../.secrets.yaml"],
+    PRELOAD_FOR_DYNACONF=[
+        "../settings.yaml",
+        "../.secrets.yaml",
+        "foo.a_plugin_folder.settings",
+    ],
     ENVVAR_FOR_DYNACONF="PULP_SETTINGS",
 )  # noqa
 # HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)

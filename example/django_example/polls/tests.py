@@ -87,3 +87,11 @@ class TestModifySettingsContextManager(TestCase):
             }
         ):
             self.assertEqual(settings.COLORS, ["red", "green", "blue"])
+
+
+class TestHookExecutes(TestCase):
+    def test_hooks(self):
+        self.assertEqual(
+            settings.BANDS,
+            ["Metallica", "Black Sabbath", "Iron Maiden", "Beatles"],
+        )

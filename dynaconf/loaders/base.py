@@ -149,7 +149,7 @@ class BaseLoader:
         file_merge=None,
         key=False,
     ):
-        """Calls setttings.set to add the keys"""
+        """Calls settings.set to add the keys"""
         # data 1st level keys should be transformed to upper case.
         data = {upperfy(k): v for k, v in data.items()}
         if key:
