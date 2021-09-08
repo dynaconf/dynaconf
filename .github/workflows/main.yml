@@ -1,0 +1,190 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  linter:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install and lint
+        run: make clean install run-pre-commit
+
+  install_test:
+    needs: linter
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install project and test cli
+        run: |
+          python setup.py install
+          dynaconf init -v FOO=running_on_ci -y
+          dynaconf write toml -v OTHERVALUE=Hello_CI -y
+          dynaconf list | grep -c running_on_ci
+          dynaconf list | grep -c Hello_CI
+          dynaconf --version
+
+  unit_tests_linux:
+    needs: install_test
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install project
+        run: .ci/install_dev.sh
+        shell: bash
+      - name: Run tests
+        run: make citest
+      # - name: "Upload coverage to Codecov"
+      #   uses: codecov/codecov-action@v1
+      #   with:
+      #     fail_ci_if_error: true
+
+  unit_tests_mac:
+    needs: install_test
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+        os: [macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install project
+        run: .ci/install_dev.sh
+        shell: bash
+      - name: Run tests
+        run: py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml -m "not integration"
+
+  functional_tests_linux_mac:
+    needs:
+      - unit_tests_linux
+      - unit_tests_mac
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8]
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install project
+        run: .ci/install_dev.sh
+        shell: bash
+      - name: Run functional tests
+        run: make test_examples
+
+  unit_tests_windows:
+    needs: install_test
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Pip
+        run: pip install --user --upgrade pip
+      - name: Install project
+        run: pip install -r requirements_dev.txt
+      - name: run tests
+        run: py.test -v -l tests --junitxml=junit/test-results.xml -m "not integration"
+
+  functional_tests_windows:
+    needs: unit_tests_windows
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.8]
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Pip
+        run: pip install --user --upgrade pip
+      - name: Install project
+        run: |
+          python -m pip install -r requirements_dev.txt
+          python setup.py install
+      - name: run tests
+        run: |
+          setlocal enableextensions enabledelayedexpansion
+          @echo on
+          pushd example\common & cd & python program.py & popd
+          pushd example\common-encoding & cd & python program.py & popd
+          pushd example\ & cd & python full_example.py & popd
+          pushd example\ & cd & python compat.py & popd
+          pushd example\app & cd & python app.py  & popd
+          pushd example\app_with_dotenv & cd & python app.py & popd
+          pushd example\merge_enabled & cd & python app.py & popd
+          pushd example\new_merge & cd & python app.py & popd
+          pushd example\dynaconf_merge & cd & python app.py & popd
+          pushd example\multiple_sources & cd & python app.py & popd
+          pushd example\multiple_folders & cd & python app.py & popd
+          pushd example\toml_example\ & cd & python app.py & popd
+          pushd example\yaml_example\settings_file\ & cd & python app.py & popd
+          pushd example\yaml_example\yaml_as_extra_config\ & cd & python app.py & popd
+          pushd example\flask_with_dotenv & cd & flask routes & popd
+          pushd example\flask_with_toml & cd & flask routes & popd
+          pushd example\flask_with_yaml & cd & flask routes & popd
+          pushd example\flask_with_json & cd & flask routes & popd
+          pushd example\flask_with_commentjson & cd & flask routes & popd
+          pushd example\flask_with_ini & cd & flask routes & popd
+          pushd example\validators\with_python\ & cd & python app.py & popd
+          pushd example\validators\with_toml\ & cd & dynaconf validate & popd
+          pushd example\toml_with_secrets\ & cd & python program.py & popd
+          pushd example\envs & cd & python app.py & popd
+          pushd example\custom_loader & cd & python app.py & popd
+          pushd example\get_fresh & cd & python app.py & popd
+          pushd example\includes & cd & python app.py & popd
+          pushd example\jenkins_secrets_file & cd & python app.py & popd
+          pushd example\specific_settings_files & cd & python app.py & popd
+          pushd example\django_example\ & cd & python manage.py test polls -v 2 & popd
+          pushd example\django_example\ & cd & django-admin test polls -v 2 & popd
