@@ -34,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -46,9 +46,9 @@ jobs:
         run: |
           python setup.py install
           dynaconf init -v FOO=running_on_ci -y
-          dynaconf write toml -v OTHERVALUE=Hello_CI -y
-          dynaconf list | grep -c running_on_ci
-          dynaconf list | grep -c Hello_CI
+          dynaconf -i config.settings write toml -v OTHERVALUE=Hello_CI -y
+          dynaconf -i config.settings list | grep -c running_on_ci
+          dynaconf -i config.settings list | grep -c Hello_CI
           dynaconf --version
 
   unit_tests_linux:
@@ -56,7 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -65,21 +65,26 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install project
-        run: .ci/install_dev.sh
-        shell: bash
+        run: make ciinstall
       - name: Run tests
         run: make citest
-      # - name: "Upload coverage to Codecov"
-      #   uses: codecov/codecov-action@v1
-      #   with:
-      #     fail_ci_if_error: true
+      - name: Test Results (${{ matrix.python-version }})
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: junit/**/*.xml
+      - name: "Upload coverage to Codecov"
+        if: ${{ matrix.python-version == 3.9 }}
+        uses: codecov/codecov-action@v1
+        with:
+          fail_ci_if_error: true
 
   unit_tests_mac:
     needs: install_test
     strategy:
       fail-fast: false
       matrix:
-        python-version: [3.7, 3.8, 3.9]
+        python-version: [3.8, 3.9]
         os: [macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -88,8 +93,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install project
-        run: .ci/install_dev.sh
-        shell: bash
+        run: make ciinstall
       - name: Run tests
         run: py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml -m "not integration"
 
@@ -109,8 +113,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install project
-        run: .ci/install_dev.sh
-        shell: bash
+        run: make ciinstall
       - name: Run functional tests
         run: make test_examples
 
@@ -155,8 +158,6 @@ jobs:
           python setup.py install
       - name: run tests
         run: |
-          setlocal enableextensions enabledelayedexpansion
-          @echo on
           pushd example\common & cd & python program.py & popd
           pushd example\common-encoding & cd & python program.py & popd
           pushd example\ & cd & python full_example.py & popd
@@ -188,3 +189,68 @@ jobs:
           pushd example\specific_settings_files & cd & python app.py & popd
           pushd example\django_example\ & cd & python manage.py test polls -v 2 & popd
           pushd example\django_example\ & cd & django-admin test polls -v 2 & popd
+
+  redis:
+    needs: functional_tests_linux_mac
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    services:
+      redis:
+        image: redis
+        ports:
+           - 6379:6379
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install project
+        run: make ciinstall
+      - name: Run functional tests
+        run: make test_redis
+
+  vault:
+    needs: functional_tests_linux_mac
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    services:
+      vault:
+        image: vault
+        ports:
+           - 8200:8200
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: myroot
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install project
+        run: make ciinstall
+      - name: Run functional tests
+        run: make test_vault
+
+  checkpoint:
+    runs-on: ubuntu-latest
+    needs:
+      - linter
+      - install_test
+      - unit_tests_windows
+      - unit_tests_mac
+      - unit_tests_linux
+      - functional_tests_linux_mac
+      - functional_tests_windows
+      - redis
+      - vault
+    steps:
+      - name: All tests has passed
+        run: echo "All tests has passed"
