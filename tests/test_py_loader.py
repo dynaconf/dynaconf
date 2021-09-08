@@ -123,14 +123,28 @@ def test_post_load_hooks(clean_env, tmpdir):
 
     to_write = {
         str(plugin_path): ["PLUGIN_NAME = 'DummyPlugin'"],
-        str(settings_path): ["INSTALLED_APPS = ['admin']"],
+        str(settings_path): [
+            "INSTALLED_APPS = ['admin']",
+            "COLORS = ['red', 'green']",
+            "DATABASES = {'default': {'NAME': 'db'}}",
+            "BANDS = ['Rush', 'Yes']",
+        ],
         str(plugin_hook): [
             "post = lambda settings: "
-            "{'PLUGIN_NAME': settings.PLUGIN_NAME.lower()}"
+            "{"
+            "'PLUGIN_NAME': settings.PLUGIN_NAME.lower(),"
+            "'COLORS': '@merge blue',"
+            "'DATABASES__default': '@merge PORT=5151',"
+            "'DATABASES__default__VERSION': 42,"
+            "'DATABASES__default__FORCED_INT': '@int 12',",
+            "'BANDS': ['Anathema', 'dynaconf_merge']" "}",
         ],
         str(settings_hook): [
             "post = lambda settings: "
-            "{'INSTALLED_APPS': [settings.PLUGIN_NAME, 'dynaconf_merge']}"
+            "{"
+            "'INSTALLED_APPS': [settings.PLUGIN_NAME],"
+            "'dynaconf_merge': True,"
+            "}"
         ],
     }
 
@@ -150,4 +164,24 @@ def test_post_load_hooks(clean_env, tmpdir):
     # Assert
     assert settings.PLUGIN_NAME == "dummyplugin"
     assert settings.INSTALLED_APPS == ["admin", "dummyplugin"]
-    assert settings._loaded_hooks == [str(plugin_hook), str(settings_hook)]
+    assert settings.COLORS == ["red", "green", "blue"]
+    assert settings.DATABASES.default.NAME == "db"
+    assert settings.DATABASES.default.PORT == 5151
+    assert settings.DATABASES.default.VERSION == 42
+    assert settings.DATABASES.default.FORCED_INT == 12
+    assert settings.BANDS == ["Rush", "Yes", "Anathema"]
+    assert settings._loaded_hooks[str(plugin_hook)] == {
+        "post": {
+            "PLUGIN_NAME": "dummyplugin",
+            "COLORS": "@merge blue",
+            "DATABASES__default": "@merge PORT=5151",
+            "DATABASES__default__VERSION": 42,
+            "DATABASES__default__FORCED_INT": "@int 12",
+            "BANDS": ["Anathema", "dynaconf_merge"],
+        }
+    }
+    assert settings._loaded_hooks[str(settings_hook)] == {
+        "post": {
+            "INSTALLED_APPS": ["dummyplugin"],
+        }
+    }

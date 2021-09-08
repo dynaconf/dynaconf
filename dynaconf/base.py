@@ -4,6 +4,7 @@ import importlib
 import inspect
 import os
 import warnings
+from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
 from pathlib import Path
@@ -202,7 +203,8 @@ class Settings:
         """
         self._fresh = False
         self._loaded_envs = []
-        self._loaded_hooks = []
+        self._loaded_hooks = defaultdict(dict)
+        self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
         self._store = DynaBox(box_settings=self)
@@ -1200,6 +1202,7 @@ RESERVED_ATTRS = (
         "_loaded_by_loaders",
         "_loaded_envs",
         "_loaded_hooks",
+        "_loaded_py_modules",
         "_loaded_files",
         "_loaders",
         "_not_installed_warnings",

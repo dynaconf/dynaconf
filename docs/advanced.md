@@ -1,5 +1,64 @@
 # advanced usage
 
+## Hooks 
+
+> **NEW** in version 3.1.6
+
+Hooks are useful when you need to conditionally load data that depends on the
+previously loaded settings.
+
+Before getting into hooks, lets understand why they are useful.
+
+Imagine your application uses 2 settings modules: `plugin_settings.py` and `settings.py`.
+
+`plugin_settings.py`
+```py
+DEBUG = True
+```
+
+`settings.py`
+```py
+if DEBUG:
+    # do something
+```
+
+`app.py`
+```py
+from dynaconf import Dynaconf
+settings = Dynaconf(
+    preload=['plugin_settings.py'], 
+    settings_file="settings.py"
+)
+```
+
+The above code will fail with NameError: name 'DEBUG' is not defined on settings.py
+that happens because `plugin_settings.py` is loaded before `settings.py` but also
+before the `app.py` is fully loaded.
+
+### Hooks for the solution
+
+In the same path of any settings file, you can create a `dynaconf_hooks.py` file
+this file will be loaded after all the settings files are loaded.
+
+`dynaconf_hooks.py`
+```py
+
+def post(settings):
+    data = {"dynaconf_merge": True}
+    if settings.DEBUG:
+        data["DATABASE_URL"] = "sqlite://"
+    return data
+
+```
+
+Dynaconf will execute the `post` function and will merge the returned data with
+the existing settings.
+
+To disable the merging of the data, you can set the `dynaconf_merge` to False.
+
+You can also set the merging individually for each settings variable as seen on
+[merging](/merging/) documentation.
+
 ## Programmatically loading a settings file
 
 ```python

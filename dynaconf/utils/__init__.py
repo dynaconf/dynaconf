@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import warnings
+from collections import defaultdict
 from json import JSONDecoder
 from typing import Any
 from typing import Dict
@@ -14,8 +15,8 @@ from typing import Union
 
 
 if TYPE_CHECKING:  # pragma: no cover
-    from dynaconf.base import LazySettings, Settings
     from dynaconf.utils.boxing import DynaBox
+    from dynaconf.base import LazySettings, Settings
 
 
 BANNER = """
@@ -160,7 +161,23 @@ class DynaconfDict(dict):
     useful to run loaders in to a dict for testing"""
 
     def __init__(self, *args, **kwargs):
+        self._fresh = False
+        self._loaded_envs = []
+        self._loaded_hooks = defaultdict(dict)
+        self._loaded_py_modules = []
         self._loaded_files = []
+        self._deleted = set()
+        self._store = {}
+        self._env_cache = {}
+        self._loaded_by_loaders = {}
+        self._loaders = []
+        self._defaults = {}
+        self.environ = os.environ
+        self.SETTINGS_MODULE = None
+        self.filter_strategy = kwargs.get("filter_strategy", None)
+        self._not_installed_warnings = []
+        self._validate_only = kwargs.pop("validate_only", None)
+        self._validate_exclude = kwargs.pop("validate_exclude", None)
         super(DynaconfDict, self).__init__(*args, **kwargs)
 
     def set(self, key: str, value: str, *args, **kwargs) -> None:
