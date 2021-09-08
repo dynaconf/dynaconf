@@ -121,18 +121,18 @@ test_examples:
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
-	docker run --rm --name dynaconf_with_vault -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
+	docker run --rm --name dynaconf_with_vault -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault || true
 	@sleep 5
 	@cd example/vault;pwd;dynaconf -i dynaconf.settings write vault -s SECRET=vault_works_in_default -s FOO=foo_is_default
 	@cd example/vault;pwd;dynaconf -i dynaconf.settings write vault -e dev -s SECRET=vault_works_in_dev
 	@cd example/vault;pwd;dynaconf -i dynaconf.settings write vault -e prod -s SECRET=vault_works_in_prod
 	@sleep 2
 	@cd example/vault;pwd;python vault_example.py
-	docker stop dynaconf_with_vault
+	docker stop dynaconf_with_vault  || true
 
 test_redis:
 	# @cd example/redis_example;pwd;python write.py
-	docker run --rm --name dynaconf_with_redis -d -p 6379:6379 redis:alpine
+	docker run --rm --name dynaconf_with_redis -d -p 6379:6379 redis:alpine || true
 	@sleep 2
 	@cd example/redis_example;pwd;dynaconf -i dynaconf.settings write redis -s FOO=foo_is_default
 	@cd example/redis_example;pwd;dynaconf -i dynaconf.settings write redis -s SECRET=redis_works_in_default
@@ -140,7 +140,7 @@ test_redis:
 	@cd example/redis_example;pwd;dynaconf -i dynaconf.settings write redis -e production -s SECRET=redis_works_in_production
 	@sleep 2
 	@cd example/redis_example;pwd;python redis_example.py
-	docker stop dynaconf_with_redis
+	docker stop dynaconf_with_redis || true
 
 watch:
 	ls **/**.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/
@@ -169,6 +169,10 @@ test: pep8 mypy test_only
 
 citest:
 	py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml
+
+ciinstall:
+	python -m pip install --upgrade pip
+	python -m pip install -r requirements_dev.txt
 
 test_all: test_examples test_integration test_redis test_vault test
 	@coverage html
