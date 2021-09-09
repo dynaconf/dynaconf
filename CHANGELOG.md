@@ -2,6 +2,264 @@ Changelog
 =========
 
 
+3.1.6 (2021-09-09)
+------------------
+- Release version 3.1.6. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Ambient Lighter (1):
+            Fix typo (#647)
+
+      Bruno Rocha (19):
+            Release version 3.1.4
+            demo link (#546)
+            removed release_notes from the docs. (#550)
+            HOTFIX: Add coverage for 2 lines on validators.
+            Fix #595 namedtuples are no more converted to BoxList (#623)
+            Fix black issues (#631)
+            Update FUNDING.yml
+            description and type annotation for validator (#634)
+            Add myoy and pre-commit to CI (#635)
+            Update codaci badge (#636)
+            Remove dependabot (this project has no dependencies)
+            fix #596 django override (#645)
+            fix #491 pytest django Fix #491 pytest and django (#646)
+            Delete requirements.txt
+            Update FUNDING.yml
+            Add support for dynaconf_hooks(post) issue #654 (#655)
+            Move to Github Actions (#656)
+            Bye Azure (#657)
+            Bump dev version
+
+      FrankBattaglia (1):
+            fix dict iterator methods for flask DynaconfConfig (#581)
+
+      Jacob Callahan (1):
+            Add the ability for selective validation (#549)
+
+      Kamil Gałuszka (1):
+            Add support for Python 3.9 and remove Ubuntu 16.04 that is deprecated in Azure Pipelines (#618)
+
+      Konstantin (2):
+            Update configuration.md (#553)
+            Update configuration.md (#554)
+
+      Linus Torvalds (1):
+            Fix a typo in the docs
+
+      Martin Thoma (1):
+            Add type annotations for dynaconf.utils (#450)
+
+      Nicholas Dentandt (1):
+            feat: add filter strategy with PrefixFilter (#625)
+
+      Robert Rosca (1):
+            Add a warning if `--env` is passed to `init` (#629)
+
+      Tanya Tereshchenko (1):
+            Do not search anywhere if the absolute path to a file provided (#570)
+
+      Yusuf Kaka (1):
+            Added an example using FastAPI (#571)
+
+      dependabot-preview[bot] (2):
+            Bump mkdocs-material from 7.0.5 to 7.0.6 (#552)
+            Upgrade to GitHub-native Dependabot (#574)
+
+      puntonim (1):
+            Fix typo (#588)
+- Bump dev version. [Bruno Rocha]
+
+  [skip ci]
+- Bye Azure (#657) [Bruno Rocha]
+- Move to Github Actions (#656) [Bruno Rocha]
+
+  * Move to Github Actions
+
+  - [ ] Codecov
+
+  Fix #640
+
+  * Enabled Vault and REdis
+- Add support for dynaconf_hooks(post) issue #654 (#655) [Bruno Rocha]
+- Update FUNDING.yml. [Bruno Rocha]
+- Fix a typo in the docs. [Linus Torvalds]
+- Fix typo (#647) [Ambient Lighter]
+- Delete requirements.txt. [Bruno Rocha]
+- Fix #491 pytest django Fix #491 pytest and django (#646) [Bruno Rocha]
+- Fix #596 django override (#645) [Bruno Rocha]
+
+  * Fix #596 django.test.override issue
+
+  * Fix CI side effects
+- Remove dependabot (this project has no dependencies) [Bruno Rocha]
+- Update codaci badge (#636) [Bruno Rocha]
+- Add myoy and pre-commit to CI (#635) [Bruno Rocha]
+- Description and type annotation for validator (#634) [Bruno Rocha]
+- Add a warning if `--env` is passed to `init` (#629) [Bruno Rocha,
+  Bruno Rocha, Robert Rosca]
+
+  * Add a warning if `--env` is passed to `init`
+
+  * Fix typo, `file` was doubled in init help
+
+  * Update docstrings for CLI
+
+  * Raise error if using `-i` with `init` subcommand
+
+  * Update docs to match current behaviour
+
+  * add test coverage
+- Add type annotations for dynaconf.utils (#450) [Bruno Rocha, Bruno
+  Rocha, Martin Thoma]
+
+  * Add type annotations for dynaconf.utils
+
+  Make 'mypy .' succeed; to a big extend by ignoring errors
+
+  * Manually format line length
+
+  * Drop Python 3.6
+
+  * Coverage fix
+- Do not search anywhere if the absolute path to a file provided (#570)
+  [Bruno Rocha, Tanya Tereshchenko]
+
+  * Do not search anywhere if the absolute path to a file provided
+
+  fixes #569
+
+  * Fix test coverage and added some comments.
+- Update FUNDING.yml. [Bruno Rocha]
+- Fix black issues (#631) [Bruno Rocha]
+- Feat: add filter strategy with PrefixFilter (#625) [Nicholas Dentandt]
+- Fix typo (#588) [Bruno Rocha, puntonim]
+- Added an example using FastAPI (#571) [Bruno Rocha, Yusuf Kaka]
+- Fix dict iterator methods for flask DynaconfConfig (#581) [Bruno
+  Rocha, Frank Battaglia, FrankBattaglia]
+- Fix #595 namedtuples are no more converted to BoxList (#623) [Bruno
+  Rocha]
+- Add support for Python 3.9 and remove Ubuntu 16.04 that is deprecated
+  in Azure Pipelines (#618) [Kamil Gałuszka]
+- Upgrade to GitHub-native Dependabot (#574) [dependabot-preview[bot],
+  dependabot-preview[bot]]
+- Update configuration.md (#554) [Bruno Rocha, Konstantin]
+
+  Remove redundant `s` (spelling error)
+- Update configuration.md (#553) [Bruno Rocha, Konstantin]
+
+  Change spelling error
+- HOTFIX: Add coverage for 2 lines on validators. [Bruno Rocha]
+- Add the ability for selective validation (#549) [Bruno Rocha, Jacob
+  Callahan]
+
+  This change introduces the ability to control which sections of a
+  settings object are subject to validation.
+  This is controlled primarily by two mechanisms.
+  1: When creating a settings object, new arguments `validate_only`
+     and `validate_exclude` have been added which receive a list of settings
+     paths.
+  2: When manually calling validate, new arguments `only` and `exclude`
+     have been added.
+  All of these allow for either a string or list of strings representing
+  settings paths. For example:
+      `settings.validators.validate(only=["settings.something",
+      "settings.another"])`
+
+      settings = Dynaconf(..., validate_exclude="settings.bad")
+
+  Fixes #508
+- Bump mkdocs-material from 7.0.5 to 7.0.6 (#552) [dependabot-
+  preview[bot]]
+
+  Bumps [mkdocs-material](https://github.com/squidfunk/mkdocs-material) from 7.0.5 to 7.0.6.
+  - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
+  - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
+  - [Commits](https://github.com/squidfunk/mkdocs-material/compare/7.0.5...7.0.6)
+- Removed release_notes from the docs. (#550) [Bruno Rocha]
+
+  * removed release_notes from the docs.
+
+  towncrier will be implemented soon
+
+  * fix #551
+- Demo link (#546) [Bruno Rocha]
+
+  * Add demo link, add better docstring.
+
+  > **DEMO:** You can see a working demo here: https://github.com/rochacbruno/learndynaconf
+
+  * add reference to Rust hydroconf
+- Release version 3.1.4. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (3):
+            Release version 3.1.3
+            HOTFIX for 501 (#540)
+            HOTFIX for 462 related issue, `default` on .get should be parsed as Box (#541)
+
+      dependabot-preview[bot] (2):
+            Bump mkdocs-material from 6.1.6 to 7.0.4 (#537)
+            Bump mkdocs-material from 7.0.4 to 7.0.5 (#539)
+
+
+3.1.5 (2021-08-20)
+------------------
+- Release version 3.1.5. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Fix #595 namedtuples are no more converted to BoxList (#623)
+            fix #596 django override (#645)
+            fix #491 pytest django Fix #491 pytest and django (#646)
+            Delete requirements.txt
+
+      FrankBattaglia (1):
+            fix dict iterator methods for flask DynaconfConfig (#581)
+
+      Robert Rosca (1):
+            Add a warning if `--env` is passed to `init` (#629)
+
+      Tanya Tereshchenko (1):
+            Do not search anywhere if the absolute path to a file provided (#570)
+- Delete requirements.txt. [Bruno Rocha]
+- Fix #491 pytest django Fix #491 pytest and django (#646) [Bruno Rocha]
+- Fix #596 django override (#645) [Bruno Rocha]
+
+  * Fix #596 django.test.override issue
+
+  * Fix CI side effects
+- Add a warning if `--env` is passed to `init` (#629) [Bruno Rocha,
+  Bruno Rocha, Robert Rosca]
+
+  * Add a warning if `--env` is passed to `init`
+
+  * Fix typo, `file` was doubled in init help
+
+  * Update docstrings for CLI
+
+  * Raise error if using `-i` with `init` subcommand
+
+  * Update docs to match current behaviour
+
+  * add test coverage
+- Fix dict iterator methods for flask DynaconfConfig (#581) [Bruno
+  Rocha, Frank Battaglia, FrankBattaglia]
+- Fix #595 namedtuples are no more converted to BoxList (#623) [Bruno
+  Rocha]
+- Do not search anywhere if the absolute path to a file provided (#570)
+  [Bruno Rocha, Tanya Tereshchenko]
+
+  * Do not search anywhere if the absolute path to a file provided
+
+  fixes #569
+
+  * Fix test coverage and added some comments.
+
+
 3.1.4 (2021-03-08)
 ------------------
 - Release version 3.1.4. [Bruno Rocha]
