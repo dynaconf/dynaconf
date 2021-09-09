@@ -169,7 +169,7 @@ This returns code 0 (success) if validation is ok.
 
 ## Selective Validation
 
-> **New in 3.2.0**
+> **New in 3.1.6**
 
 You can also choose what sections of the settings you do or don't want to validate.
 This is useful when:
