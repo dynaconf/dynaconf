@@ -2,6 +2,83 @@ Changelog
 =========
 
 
+3.1.7 (2021-09-09)
+------------------
+- Release version 3.1.7. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.6
+            Add missing docs and missing python_requires (#659)
+- Add missing docs and missing python_requires (#659) [Bruno Rocha]
+- Release version 3.1.6. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Ambient Lighter (1):
+            Fix typo (#647)
+
+      Bruno Rocha (19):
+            Release version 3.1.4
+            demo link (#546)
+            removed release_notes from the docs. (#550)
+            HOTFIX: Add coverage for 2 lines on validators.
+            Fix #595 namedtuples are no more converted to BoxList (#623)
+            Fix black issues (#631)
+            Update FUNDING.yml
+            description and type annotation for validator (#634)
+            Add myoy and pre-commit to CI (#635)
+            Update codaci badge (#636)
+            Remove dependabot (this project has no dependencies)
+            fix #596 django override (#645)
+            fix #491 pytest django Fix #491 pytest and django (#646)
+            Delete requirements.txt
+            Update FUNDING.yml
+            Add support for dynaconf_hooks(post) issue #654 (#655)
+            Move to Github Actions (#656)
+            Bye Azure (#657)
+            Bump dev version
+
+      FrankBattaglia (1):
+            fix dict iterator methods for flask DynaconfConfig (#581)
+
+      Jacob Callahan (1):
+            Add the ability for selective validation (#549)
+
+      Kamil Gałuszka (1):
+            Add support for Python 3.9 and remove Ubuntu 16.04 that is deprecated in Azure Pipelines (#618)
+
+      Konstantin (2):
+            Update configuration.md (#553)
+            Update configuration.md (#554)
+
+      Linus Torvalds (1):
+            Fix a typo in the docs
+
+      Martin Thoma (1):
+            Add type annotations for dynaconf.utils (#450)
+
+      Nicholas Dentandt (1):
+            feat: add filter strategy with PrefixFilter (#625)
+
+      Robert Rosca (1):
+            Add a warning if `--env` is passed to `init` (#629)
+
+      Tanya Tereshchenko (1):
+            Do not search anywhere if the absolute path to a file provided (#570)
+
+      Yusuf Kaka (1):
+            Added an example using FastAPI (#571)
+
+      dependabot-preview[bot] (2):
+            Bump mkdocs-material from 7.0.5 to 7.0.6 (#552)
+            Upgrade to GitHub-native Dependabot (#574)
+
+      puntonim (1):
+            Fix typo (#588)
+
+
 3.1.6 (2021-09-09)
 ------------------
 - Release version 3.1.6. [Bruno Rocha]
