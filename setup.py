@@ -73,10 +73,9 @@ setup(
         "configobj": ["configobj"],
         "all": ["redis", "ruamel.yaml", "configobj", "hvac"],
     },
+    python_requires=">=3.7",
     entry_points={"console_scripts": ["dynaconf=dynaconf.cli:main"]},
-    setup_requires=["setuptools>=38.6.0"]
-    if sys.version_info >= (3, 6, 0)
-    else [],
+    setup_requires=["setuptools>=38.6.0"],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Framework :: Django",
