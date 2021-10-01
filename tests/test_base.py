@@ -1,12 +1,14 @@
 import os
 
 import pytest
+import yaml
 
 from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf.loaders import toml_loader
 from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils.parse_conf import true_values
+from dynaconf.vendor_src.box.box_list import BoxList
 
 
 def test_deleted_raise(settings):
@@ -1026,3 +1028,34 @@ def test_wrap_existing_settings_clone():
 
     # assert original settings is not changes as we used a wrapped clone
     assert settings.FOO == "bar"
+
+
+@pytest.fixture()
+def resource():
+    settings_test = {
+        "default": {
+            "SOME_KEY": "value",
+            "SOME_LIST": ["item_1", "item_2", "item_3"],
+        },
+        "other": {"SOME_KEY": "new_value", "SOME_LIST": ["item_4", "item_5"]},
+    }
+
+    settings_yaml = yaml.dump(settings_test)
+    with open("test_settings.yaml", "w") as file:
+        file.write(settings_yaml)
+
+
+def test_list_entries_from_yaml_should_not_duplicate_when_merged(resource):
+    settings = Dynaconf(
+        settings_files="test_settings.yaml",
+        environments=True,
+        merge_enabled=True,
+    )
+
+    expected_default_value = BoxList(["item_1", "item_2", "item_3"])
+    expected_other_value = BoxList(
+        ["item_1", "item_2", "item_3", "item_4", "item_5"]
+    )
+
+    assert settings.from_env("default").SOME_LIST == expected_default_value
+    assert settings.from_env("other").SOME_LIST == expected_other_value
