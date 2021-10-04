@@ -918,9 +918,10 @@ class Settings:
             local_merge = (
                 "dynaconf_merge" in value or "dynaconf_merge_unique" in value
             )
+            default_env = self.DEFAULT_ENV_FOR_DYNACONF == "DEFAULT"
             if global_merge or local_merge:
                 value = list(value)
-                unique = False
+                unique = True if default_env else False
                 if local_merge:
                     try:
                         value.remove("dynaconf_merge")
