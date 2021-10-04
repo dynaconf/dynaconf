@@ -305,27 +305,27 @@ def build_env_list(
         [str] -- A list of string names of the envs to load.
     """
     # add the [default] env
-    env_list = [obj.get("DEFAULT_ENV_FOR_DYNACONF")]
+    env_list = [(obj.get("DEFAULT_ENV_FOR_DYNACONF") or "default").lower()]
 
     # compatibility with older versions that still uses [dynaconf] as
     # [default] env
-    global_env = obj.get("ENVVAR_PREFIX_FOR_DYNACONF") or "DYNACONF"
+    global_env = (obj.get("ENVVAR_PREFIX_FOR_DYNACONF") or "dynaconf").lower()
     if global_env not in env_list:
         env_list.append(global_env)
 
     # add the current env
-    if obj.current_env and obj.current_env not in env_list:
-        env_list.append(obj.current_env)
+    current_env = obj.current_env
+    if current_env and current_env.lower() not in env_list:
+        env_list.append(current_env.lower())
 
     # add a manually set env
-    if env and env not in env_list:
-        env_list.append(env)
+    if env and env.lower() not in env_list:
+        env_list.append(env.lower())
 
     # add the [global] env
-    env_list.append("GLOBAL")
+    env_list.append("global")
 
-    # loaders are responsible to change to lower/upper cases
-    return [env.lower() for env in env_list]
+    return env_list
 
 
 def upperfy(key: str) -> str:
