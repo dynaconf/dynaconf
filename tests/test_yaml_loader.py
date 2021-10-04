@@ -337,3 +337,157 @@ def test_empty_env_from_file(tmpdir):
     settings = LazySettings(environments=True, settings_file="settings.yaml")
     settings.reload()
     assert settings.FOO == "bar"
+
+
+def test_merge_unique_in_a_first_level(tmpdir):
+    """Assert merge unique in a first level."""
+    settings_file_yaml = """
+    default:
+        colors: "@merge_unique green,blue"
+        non_exist: "@merge_unique item1,item2"
+    """
+    tmpdir.join("settings.yaml").write(settings_file_yaml)
+    settings = LazySettings(
+        environments=True,
+        settings_file="settings.yaml",
+        COLORS=["red", "green"],
+    )
+    settings.reload()
+    assert settings.COLORS == ["red", "green", "blue"]
+    assert settings.NON_EXIST == ["item1", "item2"]
+
+
+def test_should_not_merge_if_merge_is_not_explicit_set(tmpdir):
+    """Should not merge if merge is not explicit set."""
+    settings_file_yaml = """
+    default:
+      SOME_KEY: "value"
+      SOME_LIST:
+        - "item_1"
+        - "item_2"
+        - "item_3"
+    other:
+      SOME_KEY: "new_value"
+      SOME_LIST:
+        - "item_4"
+        - "item_5"
+    """
+    tmpdir.join("settings.yaml").write(settings_file_yaml)
+    settings = LazySettings(
+        environments=True,
+        settings_files=["settings.yaml"],
+    )
+    settings.reload()
+    assert settings.SOME_KEY == "value"
+    assert settings.SOME_LIST == ["item_1", "item_2", "item_3"]
+
+    other_settings = settings.from_env("other")
+    assert other_settings.SOME_KEY == "new_value"
+    assert other_settings.SOME_LIST == ["item_4", "item_5"]
+
+
+def test_should_not_duplicate_with_global_merge(tmpdir):
+    """Assert merge unique in a first level. Issue #653"""
+    settings_file_yaml = """
+    default:
+      SOME_KEY: "value"
+      SOME_LIST:
+        - "item_1"
+        - "item_2"
+        - "item_3"
+    other:
+      SOME_KEY: "new_value"
+      SOME_LIST:
+        - "item_4"
+        - "item_5"
+    even_other:
+      SOME_KEY: "new_value_2"
+      SOME_LIST:
+        - "item_6"
+        - "item_7"
+    """
+    tmpdir.join("settings.yaml").write(settings_file_yaml)
+    settings = LazySettings(
+        environments=True, settings_files=["settings.yaml"], merge_enabled=True
+    )
+    # settings.reload()
+    assert settings.SOME_KEY == "value"
+    assert settings.SOME_LIST == ["item_1", "item_2", "item_3"]
+
+    other_settings = settings.from_env("other")
+    assert other_settings.SOME_KEY == "new_value"
+    assert other_settings.SOME_LIST == [
+        "item_1",
+        "item_2",
+        "item_3",
+        "item_4",
+        "item_5",
+    ]
+
+
+def test_should_duplicate_when_explicit_set(tmpdir):
+    """ Issue #653"""
+    settings_file_yaml = """
+    default:
+      SCRIPTS:
+        - "script1.sh"
+        - "script2.sh"
+        - "script3.sh"
+    other:
+      SCRIPTS:
+        - "script4.sh"
+        - "script1.sh"
+        - "dynaconf_merge"
+    """
+    tmpdir.join("settings.yaml").write(settings_file_yaml)
+    settings = LazySettings(
+        environments=True, settings_files=["settings.yaml"]
+    )
+    assert settings.SCRIPTS == [
+        "script1.sh",
+        "script2.sh",
+        "script3.sh",
+    ]
+
+    other_settings = settings.from_env("other")
+    assert other_settings.SCRIPTS == [
+        "script1.sh",
+        "script2.sh",
+        "script3.sh",
+        "script4.sh",
+        "script1.sh",  # explicit wants to duplicate
+    ]
+
+
+def test_should_NOT_duplicate_when_explicit_set(tmpdir):
+    """ Issue #653"""
+    settings_file_yaml = """
+    default:
+      SCRIPTS:
+        - "script1.sh"
+        - "script2.sh"
+        - "script3.sh"
+    other:
+      SCRIPTS:
+        - "script4.sh"
+        - "script1.sh"
+        - "dynaconf_merge_unique"  # NO DUPLICATE
+    """
+    tmpdir.join("settings.yaml").write(settings_file_yaml)
+    settings = LazySettings(
+        environments=True, settings_files=["settings.yaml"]
+    )
+    assert settings.SCRIPTS == [
+        "script1.sh",
+        "script2.sh",
+        "script3.sh",
+    ]
+
+    other_settings = settings.from_env("other")
+    assert other_settings.SCRIPTS == [
+        "script2.sh",
+        "script3.sh",
+        "script4.sh",
+        "script1.sh",
+        # merge_unique does not duplicate, but overrides the order
+    ]

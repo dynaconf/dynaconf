@@ -1,3 +1,6 @@
+import os
+import tempfile
+
 from dynaconf import LazySettings
 from dynaconf.utils import RENAMED_VARS
 
@@ -16,12 +19,19 @@ for old, new in RENAMED_VARS.items():
     assert getattr(settings, new) == getattr(settings, old)
 
 
+tempdir = tempfile.mkdtemp()
+temptoml = tempfile.mktemp(".toml", dir=tempdir)
+temptomlfilename = os.path.basename(temptoml)
+temppy = tempfile.mktemp(".py", dir=tempdir)
+temppyfilename = os.path.basename(temppy)
+
+
 # 0 given a full old-style configured setting
 settings = LazySettings(
     environments=True,
     DYNACONF_NAMESPACE="FOO",
-    DYNACONF_SETTINGS_MODULE="/tmp/foo.toml",
-    PROJECT_ROOT="/tmp/",
+    DYNACONF_SETTINGS_MODULE=str(temptoml),
+    PROJECT_ROOT=str(tempdir),
     DYNACONF_SILENT_ERRORS=False,
     DYNACONF_ALWAYS_FRESH_VARS=["baz", "zaz", "caz"],
     BASE_NAMESPACE_FOR_DYNACONF="original",
@@ -51,8 +61,8 @@ for old, new in RENAMED_VARS.items():
 settings = LazySettings(
     environments=True,
     DYNACONF_NAMESPACE="FOO",
-    DYNACONF_SETTINGS_MODULE="foo.py",
-    PROJECT_ROOT="/tmp",
+    DYNACONF_SETTINGS_MODULE=temppyfilename,
+    PROJECT_ROOT=str(tempdir),
     DYNACONF_SILENT_ERRORS=True,
     DYNACONF_ALWAYS_FRESH_VARS=["BAR"],
     GLOBAL_ENV_FOR_DYNACONF="BLARG",
@@ -60,8 +70,8 @@ settings = LazySettings(
 
 
 assert settings.ENV_FOR_DYNACONF == "FOO"
-assert settings.SETTINGS_FILE_FOR_DYNACONF == "foo.py"
-assert settings.ROOT_PATH_FOR_DYNACONF == "/tmp"
+assert settings.SETTINGS_FILE_FOR_DYNACONF == temppyfilename
+assert settings.ROOT_PATH_FOR_DYNACONF == str(tempdir)
 assert settings.SILENT_ERRORS_FOR_DYNACONF is True
 assert settings.FRESH_VARS_FOR_DYNACONF == ["BAR"]
 assert settings.ENVVAR_PREFIX_FOR_DYNACONF == "BLARG"
@@ -76,16 +86,16 @@ print(settings.FRESH_VARS_FOR_DYNACONF)
 settings = LazySettings(
     environments=True,
     NAMESPACE="FOO",
-    SETTINGS_MODULE="foo.py",
-    PROJECT_ROOT="/tmp",
+    SETTINGS_MODULE=temppyfilename,
+    PROJECT_ROOT=str(tempdir),
     DYNACONF_SILENT_ERRORS=True,
     DYNACONF_ALWAYS_FRESH_VARS=["BAR"],
 )
 
 
 assert settings.ENV_FOR_DYNACONF == "FOO"
-assert settings.SETTINGS_FILE_FOR_DYNACONF == "foo.py"
-assert settings.ROOT_PATH_FOR_DYNACONF == "/tmp"
+assert settings.SETTINGS_FILE_FOR_DYNACONF == temppyfilename
+assert settings.ROOT_PATH_FOR_DYNACONF == str(tempdir)
 assert settings.SILENT_ERRORS_FOR_DYNACONF is True
 assert settings.FRESH_VARS_FOR_DYNACONF == ["BAR"]
 

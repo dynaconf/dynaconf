@@ -7,6 +7,7 @@ import pytest
 
 from dynaconf import default_settings
 from dynaconf.loaders.json_loader import DynaconfEncoder
+from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import extract_json_objects
 from dynaconf.utils import isnamedtupleinstance
@@ -169,7 +170,6 @@ def test_meta_values(settings):
     reset = parse_conf_data(
         "@reset [1, 2]", tomlfy=True, box_settings=settings
     )
-    # @reset is DEPRECATED in v3.0.0 but kept for backwards compatibility
     assert reset.value == [1, 2]
     assert reset._dynaconf_reset is True
     assert "Reset([1, 2])" in repr(reset)
@@ -373,3 +373,17 @@ def test_extract_json():
     assert list(extract_json_objects('foo bar {"a": 1}')) == [{"a": 1}]
     assert list(extract_json_objects("foo bar {'a': 2{")) == []
     assert list(extract_json_objects('{{{"x": {}}}}')) == [{"x": {}}]
+
+
+def test_env_list():
+    class Obj(dict):
+        @property
+        def current_env(self):
+            return "other"
+
+    assert build_env_list(Obj(), env="OTHER") == [
+        "default",
+        "dynaconf",
+        "other",
+        "global",
+    ]

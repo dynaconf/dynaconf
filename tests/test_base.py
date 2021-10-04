@@ -6,6 +6,7 @@ import yaml
 from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf.loaders import toml_loader
+from dynaconf.loaders import yaml_loader
 from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.vendor_src.box.box_list import BoxList
@@ -1030,22 +1031,16 @@ def test_wrap_existing_settings_clone():
     assert settings.FOO == "bar"
 
 
-@pytest.fixture()
-def resource():
-    settings_test = {
+def test_list_entries_from_yaml_should_not_duplicate_when_merged(tmpdir):
+    data = {
         "default": {
             "SOME_KEY": "value",
             "SOME_LIST": ["item_1", "item_2", "item_3"],
         },
         "other": {"SOME_KEY": "new_value", "SOME_LIST": ["item_4", "item_5"]},
     }
+    yaml_loader.write(str(tmpdir.join("test_settings.yaml")), data)
 
-    settings_yaml = yaml.dump(settings_test)
-    with open("test_settings.yaml", "w") as file:
-        file.write(settings_yaml)
-
-
-def test_list_entries_from_yaml_should_not_duplicate_when_merged(resource):
     settings = Dynaconf(
         settings_files="test_settings.yaml",
         environments=True,

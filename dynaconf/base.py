@@ -826,8 +826,14 @@ class Settings:
 
         if getattr(value, "_dynaconf_reset", False):  # pragma: no cover
             # just in case someone use a `@reset` in a first level var.
-            # NOTE: @reset/Reset is deprecated in v3.0.0
             value = value.unwrap()
+
+        if getattr(value, "_dynaconf_merge_unique", False):
+            # just in case someone use a `@merge_unique` in a first level var
+            if existing:
+                value = object_merge(existing, value.unwrap(), unique=True)
+            else:
+                value = value.unwrap()
 
         if getattr(value, "_dynaconf_merge", False):
             # just in case someone use a `@merge` in a first level var
@@ -842,6 +848,7 @@ class Settings:
                 value = object_merge(existing, value)
             else:
                 # `dynaconf_merge` may be used within the key structure
+                # Or merge_enabled is set to True
                 value = self._merge_before_set(existing, value)
 
         if isinstance(value, dict):
@@ -918,10 +925,9 @@ class Settings:
             local_merge = (
                 "dynaconf_merge" in value or "dynaconf_merge_unique" in value
             )
-            default_env = self.DEFAULT_ENV_FOR_DYNACONF == "DEFAULT"
             if global_merge or local_merge:
                 value = list(value)
-                unique = True if default_env else False
+                unique = False
                 if local_merge:
                     try:
                         value.remove("dynaconf_merge")
@@ -974,8 +980,8 @@ class Settings:
 
             loaders = self.loaders
 
-        for loader in loaders:
-            loader.load(self, env, silent=silent, key=key)
+        for core_loader in loaders:
+            core_loader.load(self, env, silent=silent, key=key)
 
         self.load_includes(env, silent=silent, key=key)
         execute_hooks("post", self, env, silent=silent, key=key)
