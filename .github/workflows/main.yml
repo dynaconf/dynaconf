@@ -144,7 +144,7 @@ jobs:
       - name: Install Pip
         run: pip install --user --upgrade pip
       - name: Install project
-        run: pip install -r requirements_dev.txt
+        run: pip install --use-deprecated=legacy-resolver .[test]
       - name: run tests
         run: py.test -v -l tests --junitxml=junit/test-results.xml -m "not integration"
 
@@ -164,9 +164,7 @@ jobs:
       - name: Install Pip
         run: pip install --user --upgrade pip
       - name: Install project
-        run: |
-          python -m pip install -r requirements_dev.txt
-          python setup.py install
+        run: pip install --use-deprecated=legacy-resolver .[test]
       - name: run tests
         run: |
           pushd example\common & cd & python program.py & popd
