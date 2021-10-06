@@ -26,6 +26,8 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade PIP
+        run: pip install --user --upgrade pip
       - name: Install and lint
         run: make clean install run-pre-commit
 
@@ -42,6 +44,8 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade PIP
+        run: pip install --user --upgrade pip
       - name: Install project and test cli
         run: |
           python setup.py install
@@ -64,6 +68,8 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade PIP
+        run: pip install --user --upgrade pip
       - name: Install project
         run: make ciinstall
       - name: Run tests
@@ -93,6 +99,8 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade PIP
+        run: pip install --user --upgrade pip
       - name: Install project
         run: make ciinstall
       - name: Run tests
@@ -113,6 +121,8 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade PIP
+        run: pip install --user --upgrade pip
       - name: Install project
         run: make ciinstall
       - name: Run functional tests
@@ -209,6 +219,8 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade PIP
+        run: pip install --user --upgrade pip
       - name: Install project
         run: make ciinstall
       - name: Run functional tests
@@ -235,6 +247,8 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Upgrade PIP
+        run: pip install --user --upgrade pip
       - name: Install project
         run: make ciinstall
       - name: Run functional tests
