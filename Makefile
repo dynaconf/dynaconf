@@ -217,11 +217,11 @@ clean:
 	rm -rf *.egg-info
 	rm -rf htmlcov
 	rm -rf .tox/
-	rm -rf docs/_build
+	rm -rf site
 
 docs:
-	rm -rf legacy_docs/_build
-	@cd legacy_docs;make html
+	rm -rf site
+	mkdocs build --clean
 
 run-tox:
 	tox --recreate

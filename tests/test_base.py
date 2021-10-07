@@ -1,7 +1,6 @@
 import os
 
 import pytest
-import yaml
 
 from dynaconf import Dynaconf
 from dynaconf import LazySettings
