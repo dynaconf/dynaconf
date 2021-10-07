@@ -131,13 +131,9 @@ class BaseLoader:
                 if not data:
                     continue
 
-                if env != self.obj.get("DEFAULT_ENV_FOR_DYNACONF").lower():
-                    identifier = f"{self.identifier}_{env}"
-                else:
-                    identifier = self.identifier
                 self._set_data_to_obj(
                     data,
-                    identifier,
+                    f"{self.identifier}_{env}",
                     file_merge,
                     key,
                 )

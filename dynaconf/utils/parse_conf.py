@@ -80,6 +80,9 @@ class Merge(MetaValue):
     _dynaconf_merge = True
 
     def __init__(self, value, box_settings, unique=False):
+        if unique:
+            self._dynaconf_merge_unique = True
+
         self.box_settings = box_settings
 
         self.value = parse_conf_data(

@@ -192,7 +192,7 @@ settings.SCRIPTS == ['install.sh', 'dev.sh', 'test.sh', 'deploy.sh', 'run.sh']
 ```
 
 > Note that `deploy.sh` is set 3 times but it is not repeated in the final settings.
-
+> **also note** that it avoids duplication but overrides the order of the elements.
 
 ## Local configuration files and merging to existing data
 

@@ -17,6 +17,28 @@ def read(*names, **kwargs):
     return content
 
 
+test_requirements = [
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "pytest-mock",
+    "flake8",
+    "pep8-naming",
+    "flake8-debugger",
+    "flake8-print",
+    "flake8-todo",
+    "radon",
+    "flask>=0.12",
+    "django",
+    "python-dotenv",
+    "toml",
+    "codecov",
+    "redis",
+    "hvac",
+    "configobj",
+]
+
+
 setup(
     name="dynaconf",
     version=read("dynaconf", "VERSION"),
@@ -48,22 +70,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     platforms="any",
-    install_requires=["typing; python_version<'3.5'"],
-    tests_require=[
-        "pytest",
-        "pytest-cov",
-        "pytest-xdist",
-        "flake8",
-        "pep8-naming",
-        "flake8-debugger",
-        "flake8-print",
-        "flake8-todo",
-        "radon",
-        "flask>=0.12",
-        "python-dotenv",
-        "toml",
-        "codecov",
-    ],
+    tests_require=test_requirements,
     extras_require={
         "redis": ["redis"],
         "vault": ["hvac"],
@@ -72,6 +79,7 @@ setup(
         "ini": ["configobj"],
         "configobj": ["configobj"],
         "all": ["redis", "ruamel.yaml", "configobj", "hvac"],
+        "test": test_requirements,
     },
     python_requires=">=3.7",
     entry_points={"console_scripts": ["dynaconf=dynaconf.cli:main"]},
@@ -90,6 +98,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
         "Topic :: Utilities",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
