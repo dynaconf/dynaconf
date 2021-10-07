@@ -2,6 +2,7 @@ from types import MappingProxyType
 
 import pytest
 
+from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf import ValidationError
 from dynaconf import Validator
@@ -659,3 +660,19 @@ def test_validator_descriptions_flat(tmpdir):
         "a": "a",
         "b": "a",
     }
+
+
+def test_toml_should_not_change_validator_type_with_is_type_set():
+    settings = Dynaconf(
+        validators=[Validator("TEST", is_type_of=str, default="+172800")]
+    )
+
+    assert settings.test == "+172800"
+
+
+def test_toml_should_not_change_validator_type_using_at_sign():
+    settings = Dynaconf(
+        validators=[Validator("TEST", is_type_of=str, default="@str +172800")]
+    )
+
+    assert settings.test == "+172800"
