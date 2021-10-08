@@ -23,6 +23,7 @@ from dynaconf.validator import Validator
 from dynaconf.vendor import click
 from dynaconf.vendor import toml
 
+os.environ["PYTHONIOENCODING"] = "utf-8"
 
 CWD = Path.cwd()
 EXTS = ["ini", "toml", "yaml", "json", "py", "env"]
