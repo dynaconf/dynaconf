@@ -1,6 +1,6 @@
 [build]
-# assuming the Zola site is in a docs folder, if it isn't you don't need
-# to have a `base` variable but you do need the `publish` and `command`
+# if commit is not tagged don't build
+ignore = "git describe --exact-match && exit 1 || exit 0"
 publish = "site"
 command = "mkdocs build --clean"
 
@@ -13,4 +13,5 @@ command = "mkdocs build --clean"
 # `$DEPLOY_PRIME_URL`.
 
 [context.deploy-preview]
+ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF"
 command = "mkdocs build --clean"
