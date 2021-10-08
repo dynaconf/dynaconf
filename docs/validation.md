@@ -167,6 +167,23 @@ $ dynaconf validate
 This returns code 0 (success) if validation is ok.
 
 
+!!! info
+    All values in dynaconf are parsed using toml format, TOML tries to be smart
+    and infer the type of the settings variables, some variables will be automatically
+    converted to integer:
+
+    FOO = "0x..."  # hexadecimal
+    FOO = "0o..."  # Octal
+    FOO = "0b..."  # Binary
+
+All cases are on toml specs https://github.com/toml-lang/toml/blob/master/toml.abnf
+
+If you need to force a specific type casting there are 2 options.
+
+1. Use double quoted for strings ex: `FOO = "'0x...'"  will be string.
+2. Specify the type using `@`  ex: FOO = "@str 0x..."
+(available converters are `@int, @float, @bool, @json`)
+
 ## Selective Validation
 
 > **New in 3.1.6**
