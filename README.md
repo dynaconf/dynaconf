@@ -1,4 +1,4 @@
-[![Dynaconf](docs/img/logo.svg?sanitize=true)](http://dynaconf.com)
+[![Dynaconf](docs/img/readme.svg?sanitize=true)](http://dynaconf.com)
 
 > **dynaconf** - Configuration Management for Python.
 
