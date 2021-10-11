@@ -9,6 +9,7 @@ from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import multi_replace
 from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils.functional import empty
 from dynaconf.vendor import toml
 
 try:
@@ -165,7 +166,7 @@ class Lazy:
 
     _dynaconf_lazy_format = True
 
-    def __init__(self, value, formatter=Formatters.python_formatter):
+    def __init__(self, value=empty, formatter=Formatters.python_formatter):
         self.value = value
         self.formatter = formatter
 
@@ -174,9 +175,10 @@ class Lazy:
         """Builds a context for formatting."""
         return {"env": os.environ, "this": self.settings}
 
-    def __call__(self, settings):
+    def __call__(self, settings, validator_object=None):
         """LazyValue triggers format lazily."""
         self.settings = settings
+        self.context["_validator_object"] = validator_object
         return self.formatter(self.value, **self.context)
 
     def __str__(self):

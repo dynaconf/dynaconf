@@ -23,6 +23,7 @@ assertions = {
     "VERSION": 1,
     "WORKS": "validator",
     "MYSQL_PASSWD": "SuperSecret",
+    "FOOBAR": "EMPTY",
 }
 
 

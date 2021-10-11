@@ -1,5 +1,6 @@
 from dynaconf import LazySettings
 from dynaconf import Validator
+from dynaconf.utils.parse_conf import Lazy
 
 settings = LazySettings(
     environments=True,
@@ -46,6 +47,7 @@ settings.validators.register(
         "A_DICT.NESTED_1.NESTED_2.NESTED_3.NESTED_4", must_exist=True, eq=1
     ),
     Validator("A_DICT.NESTED_1.NOT.YET.LOADED", must_exist=True, eq=1),
+    Validator("FOOBAR", default=Lazy(formatter=lambda x, **y: str(x))),
 )
 
 # Validate settings except those that we don't want to validate yet
