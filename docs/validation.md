@@ -89,13 +89,26 @@ def my_function(settings, validator):
 
 ```
 
-If you want to be lazy evaluated
+If you want to be lazily evaluated, `my_function` has to be redefined as
 
 ```py
+def my_lazy_function(value, **context):
+    """
+    value: Default value passed to the validator, defaults to `empty`
+    context: A dictionary containing
+            env: All the environment variables
+            this: The settings instance
+    """
+    return "When the first value is accessed, then the my_lazy_function will be called"
+```
 
-from dynaconf.utils.parse_conf import empty, Lazy
+Subsequently
 
-Validator("FOO", default=Lazy(empty, formatter=my_function))
+```py
+from dynaconf.utils.functional import empty
+from dynaconf.utils.parse_conf import Lazy
+
+Validator("FOO", default=Lazy(empty, formatter=my_lazy_function))
 
 ```
 
