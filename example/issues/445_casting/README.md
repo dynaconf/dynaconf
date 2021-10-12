@@ -45,4 +45,3 @@ build_rook_from_git = true
 **Expected behavior**
 
 `settings.as_bool('UPSTREAM_ROOK.BUILD_ROOK_FROM_GIT')` returns `True`.
-

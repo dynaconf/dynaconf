@@ -1,5 +1,5 @@
 #!/bin/bash
-for direc in box click dotenv ruamel/yaml toml
+for direc in box click dotenv ruamel/yaml toml jinja2
 do
 
    for eachfile in `ls dynaconf/vendor_src/$direc/*.py`

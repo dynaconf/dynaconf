@@ -57,11 +57,16 @@ class LazySettings(LazyObject):
 
         :param wrapped: a deepcopy of this object will be wrapped (issue #596)
         :param kwargs: values that overrides default_settings
+        :param validators: a list of validators to run on the settings
+        :param schema: A Schema class to validate the settings
         """
 
         self._warn_dynaconf_global_settings = kwargs.pop(
             "warn_dynaconf_global_settings", None
         )  # in 3.0.0 global settings is deprecated
+
+        if "schema" in kwargs:
+            kwargs["dynaconf_schema"] = kwargs.pop("schema")
 
         self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
@@ -218,7 +223,7 @@ class Settings:
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
-
+        self._dynaconf_schema = kwargs.pop("dynaconf_schema", None)
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
         )
@@ -330,19 +335,39 @@ class Settings:
             return default
         return value
 
-    def as_dict(self, env=None, internal=False):
+    def as_dict(self, env=None, internal=False, exclude=None, include=None):
         """Returns a dictionary with set key and values.
 
         :param env: Str env name, default self.current_env `DEVELOPMENT`
         :param internal: bool - should include dynaconf internal vars?
+        :param exclude: list of keys to exclude
+        :param include: list of keys to include
         """
+        if include and exclude:
+            raise ValueError("include and exclude cannot be used together")
+
         ctx_mgr = suppress() if env is None else self.using_env(env)
         with ctx_mgr:
             data = self.store.to_dict().copy()
-            # if not internal remove internal settings
+
+            if include:
+                data = {
+                    k: v
+                    for k, v in data.items()
+                    if k in include or k.swapcase() in include
+                }
+                return data
+
+            # Remove internal dynaconf configurations
             if not internal:
                 for name in UPPER_DEFAULT_SETTINGS:
                     data.pop(name, None)
+
+            if exclude:
+                for key in exclude:
+                    data.pop(key, None)
+                    data.pop(key.swapcase(), None)
+
             return data
 
     to_dict = as_dict  # backwards compatibility
@@ -986,6 +1011,10 @@ class Settings:
         self.load_includes(env, silent=silent, key=key)
         execute_hooks("post", self, env, silent=silent, key=key)
 
+        # Validate Schema after every loading.
+        if self._dynaconf_schema is not None:
+            self._dynaconf_schema.validate(self)
+
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
         preloads = self.get("PRELOAD_FOR_DYNACONF", [])
@@ -1221,5 +1250,6 @@ RESERVED_ATTRS = (
         "validators",
         "_validate_only",
         "_validate_exclude",
+        "_dynaconf_schema",
     ]
 )

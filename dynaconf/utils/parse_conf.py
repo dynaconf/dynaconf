@@ -10,15 +10,13 @@ from dynaconf.utils import multi_replace
 from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor import toml
+from dynaconf.vendor.jinja2 import Environment
 
-try:
-    from jinja2 import Environment
 
-    jinja_env = Environment()
-    for p_method in ("abspath", "realpath", "relpath", "dirname", "basename"):
-        jinja_env.filters[p_method] = getattr(os.path, p_method)
-except ImportError:  # pragma: no cover
-    jinja_env = None
+jinja_env = Environment()
+for p_method in ("abspath", "realpath", "relpath", "dirname", "basename"):
+    jinja_env.filters[p_method] = getattr(os.path, p_method)
+
 
 true_values = ("t", "true", "enabled", "1", "on", "yes", "True")
 false_values = ("f", "false", "disabled", "0", "off", "no", "False", "")
@@ -146,10 +144,6 @@ class BaseFormatter:
 
 
 def _jinja_formatter(value, **context):
-    if jinja_env is None:  # pragma: no cover
-        raise ImportError(
-            "jinja2 must be installed to enable '@jinja' settings in dynaconf"
-        )
     return jinja_env.from_string(value).render(**context)
 
 
@@ -221,7 +215,7 @@ converters = {
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
-    "@reset": Reset,  # @reset is DEPRECATED on v3.0.0
+    "@reset": Reset,
     "@del": Del,
     "@merge": Merge,
     "@merge_unique": lambda value, box_settings: Merge(

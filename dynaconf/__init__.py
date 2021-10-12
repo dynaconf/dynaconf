@@ -2,8 +2,11 @@ from dynaconf.base import LazySettings  # noqa
 from dynaconf.constants import DEFAULT_SETTINGS_FILES
 from dynaconf.contrib import DjangoDynaconf  # noqa
 from dynaconf.contrib import FlaskDynaconf  # noqa
+from dynaconf.schema import Field  # noqa
+from dynaconf.schema import Schema  # noqa
 from dynaconf.validator import ValidationError  # noqa
 from dynaconf.validator import Validator  # noqa
+
 
 settings = LazySettings(
     # This global `settings` is deprecated from v3.0.0+
