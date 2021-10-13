@@ -1115,7 +1115,7 @@ class MarkSafeIfAutoescape(Expr):
 class ContextReference(Expr):
     """Returns the current template context.  It can be used like a
     :class:`Name` node, with a ``'load'`` ctx and will return the
-    current :class:`~dynaconf.vendor.markupsafe.Context` object.
+    current :class:`~jinja2.runtime.Context` object.
 
     Here an example that assigns the current template name to a
     variable named `foo`::

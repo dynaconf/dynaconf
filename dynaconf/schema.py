@@ -90,8 +90,7 @@ class Schema:
     class Config:
         ...
 
-    @classmethod
-    @property
+    @classmethod  # cant be a property because of Python 3.8
     def config(cls) -> SchemaConfig:
         custom_config = {
             k: v
@@ -100,8 +99,7 @@ class Schema:
         }
         return SchemaConfig(**custom_config)
 
-    @classmethod
-    @property
+    @classmethod  # cant be a property because of Python 3.8
     def allowed_fields(cls) -> Dict[str, Any]:
         return cls.__dataclass_fields__  # type: ignore
 
@@ -115,7 +113,7 @@ class Schema:
         Returns:
             dict: filtered dict
         """
-        allowed_keys = cls.allowed_fields
+        allowed_keys = cls.allowed_fields()
         return {
             k: v
             for k, v in d.items()
@@ -135,7 +133,7 @@ class Schema:
             if not hasattr(cls, key):
                 kwargs[key.swapcase()] = kwargs.pop(key)
 
-        if cls.config.extra_fields_policy != "forbid":  # type: ignore
+        if cls.config().extra_fields_policy != "forbid":  # type: ignore
             kwargs = cls.filter_dict(kwargs)
 
         try:
