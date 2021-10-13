@@ -163,7 +163,7 @@ class LazySettings(LazyObject):
                 DeprecationWarning,
             )
 
-        default_settings.reload(self._kwargs.get("load_dotenv"))
+        default_settings.reload(self._kwargs.get("LOAD_DOTENV_FOR_DYNACONF"))
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
@@ -180,7 +180,7 @@ class LazySettings(LazyObject):
         :param settings_module: defines the setttings file
         :param kwargs:  override default settings
         """
-        default_settings.reload(self._kwargs.get("load_dotenv"))
+        default_settings.reload(self._kwargs.get("LOAD_DOTENV_FOR_DYNACONF"))
         environment_var = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
@@ -234,9 +234,8 @@ class Settings:
         compat_kwargs(kwargs)
         if settings_module:
             self.set("SETTINGS_FILE_FOR_DYNACONF", settings_module)
-        for key, value in kwargs.items():
-            print(f"######### Setting {key} to {value}")
-            self.set(key, value)
+        self.update(**kwargs, loader_identifier="__init__")
+
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
         self.execute_loaders()
@@ -844,8 +843,34 @@ class Settings:
                 key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
             )
 
-        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
+
+        if self._dynaconf_schema:
+            allowed_fields = self._dynaconf_schema.allowed_fields
+            dc_field = allowed_fields.get(
+                key, allowed_fields.get(key.swapcase())
+            )
+            if (
+                dc_field
+                and getattr(dc_field.default, "force_default", False)
+                and loader_identifier != "schema_default"
+            ):
+                # If the field is marked as force_default, it means that
+                # the user wants the default from the schema not from loaders
+                return
+
+            if self._dynaconf_schema.config.extra_fields_policy == "ignore":
+                # when `ignore` is the policy we just dont set the extra fields
+                # otherwise (forbid, allow) we let the Schema handle it later
+                allowed_keys = list(allowed_fields.keys())
+                allowed_keys += UPPER_DEFAULT_SETTINGS
+                if (
+                    key not in allowed_keys
+                    and key.swapcase() not in allowed_keys
+                ):
+                    return
+
+        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         existing = getattr(self, key, None)
 
         if getattr(value, "_dynaconf_del", None):

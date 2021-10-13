@@ -3,6 +3,7 @@ import inspect
 from dataclasses import dataclass
 from typing import Any
 from typing import Callable
+from typing import Dict
 from typing import List
 from typing import Optional
 
@@ -100,6 +101,11 @@ class Schema:
         return SchemaConfig(**custom_config)
 
     @classmethod
+    @property
+    def allowed_fields(cls) -> Dict[str, Any]:
+        return cls.__dataclass_fields__  # type: ignore
+
+    @classmethod
     def filter_dict(cls, d: dict) -> dict:
         """Filter the dict to only keep the schema fields.
 
@@ -109,13 +115,13 @@ class Schema:
         Returns:
             dict: filtered dict
         """
+        allowed_keys = cls.allowed_fields
         return {
             k: v
             for k, v in d.items()
-            if (
-                k in cls.__dataclass_fields__  # type: ignore
-                or k.swapcase() in cls.__dataclass_fields__  # type: ignore
-            )
+            if k in allowed_keys  # type: ignore
+            or k.swapcase() in allowed_keys  # type: ignore
+            or k.upper().endswith("FOR_DYNACONF")  # Dynaconf internal config
         }
 
     @classmethod
@@ -165,7 +171,7 @@ class Schema:
 
     @classmethod
     def validate(cls, settings) -> None:
-        data = settings.as_dict(exclude=["dynaconf_schema", "load_dotenv"])
+        data = settings.as_dict(exclude=["dynaconf_schema"])
         instance = cls._create(**data)
         fields = cls.__dataclass_fields__.items()  # type: ignore
         for dc_name, dc_field in fields:
@@ -202,6 +208,9 @@ class Schema:
 
             try:
                 dc_field.type(value)
+            except TypeError as e:
+                # NOTE: implement type validator here
+                pass
             except ValueError:
                 raise SchemaError(
                     f"Invalid type for {dc_name} "

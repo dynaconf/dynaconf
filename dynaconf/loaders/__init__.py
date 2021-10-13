@@ -36,7 +36,7 @@ def default_loader(obj, defaults=None):
 
     # start dotenv to get default env vars from there
     # check overrides in env vars
-    if obj.get("load_dotenv") is True:
+    if obj.get("LOAD_DOTENV_FOR_DYNACONF") is True:
         default_settings.start_dotenv(obj)
 
     # Deal with cases where a custom ENV_SWITCHER_IS_PROVIDED
