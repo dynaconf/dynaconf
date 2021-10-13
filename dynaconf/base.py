@@ -6,6 +6,7 @@ import os
 import warnings
 from collections import defaultdict
 from contextlib import contextmanager
+from contextlib import nullcontext
 from contextlib import suppress
 from pathlib import Path
 
@@ -46,6 +47,7 @@ class LazySettings(LazyObject):
             envvar_prefix="MYAPP",             # `export MYAPP_FOO=bar`
             env_switcher="MYAPP_MODE",         # `export MYAPP_MODE=production`
             load_dotenv=True,                  # read a .env file
+            schema=MySchema,                   # validate settings with schema
         )
 
     More options available on https://www.dynaconf.com/configuration/
@@ -58,14 +60,15 @@ class LazySettings(LazyObject):
         :param wrapped: a deepcopy of this object will be wrapped (issue #596)
         :param kwargs: values that overrides default_settings
         :param validators: a list of validators to run on the settings
-        :param schema: A Schema class to validate the settings
+        :param schema (alias): Set the dynaconf_schema
+        :param dynaconf_schema: A Schema class to validate the settings
         """
 
         self._warn_dynaconf_global_settings = kwargs.pop(
             "warn_dynaconf_global_settings", None
         )  # in 3.0.0 global settings is deprecated
 
-        if "schema" in kwargs:
+        if "schema" in kwargs and isinstance(kwargs["schema"], type):
             kwargs["dynaconf_schema"] = kwargs.pop("schema")
 
         self.__resolve_config_aliases(kwargs)
@@ -232,6 +235,7 @@ class Settings:
         if settings_module:
             self.set("SETTINGS_FILE_FOR_DYNACONF", settings_module)
         for key, value in kwargs.items():
+            print(f"######### Setting {key} to {value}")
             self.set(key, value)
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
@@ -346,7 +350,7 @@ class Settings:
         if include and exclude:
             raise ValueError("include and exclude cannot be used together")
 
-        ctx_mgr = suppress() if env is None else self.using_env(env)
+        ctx_mgr = nullcontext() if env is None else self.using_env(env)
         with ctx_mgr:
             data = self.store.to_dict().copy()
 

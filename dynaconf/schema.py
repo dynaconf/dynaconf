@@ -1,24 +1,51 @@
+import enum
+import inspect
 from dataclasses import dataclass
 from typing import Any
+from typing import Callable
 from typing import List
 from typing import Optional
 
 from .validator import ValidationError
 from .validator import Validator
 from dynaconf.utils.functional import empty
+from dynaconf.utils.parse_conf import jinja_env
 
 
 class SchemaError(Exception):
     ...
 
 
+class ExtraFields(str, enum.Enum):
+    allow = "allow"  # Load from settings even if not in schema
+    forbid = "forbid"  # Raise error if not in schema but found in settings
+    ignore = "ignore"  # Do not load from settings if not on schema
+
+
 class Field:
     def __init__(
         self,
         default: Optional[Any] = empty,
+        default_factory: Optional[Callable] = None,
+        default_expr: Optional[str] = None,
+        force_default: bool = False,
         validators: Optional[List[Validator]] = None,
     ):
+
+        if default_expr is not None and default_factory is not None:
+            raise SchemaError(
+                "You can't use both default_expr and default_factory"
+            )
+
+        if default is not empty and any((default_expr, default_factory)):
+            raise SchemaError(
+                "You can't define default with default_expr or default_factory"
+            )
+
         self.default = default
+        self.default_factory = default_factory
+        self.default_expr = default_expr
+        self.force_default = force_default
         self.validators = validators or []
 
     def __set_name__(self, owner: Any, name: str):
@@ -31,6 +58,11 @@ class Field:
 
     def __set__(self, instance: Any, value: Any):
         instance.__dict__[self.name] = value
+
+
+@dataclass
+class SchemaConfig:
+    extra_fields_policy: ExtraFields = ExtraFields.allow
 
 
 @dataclass
@@ -54,6 +86,38 @@ class Schema:
     No one is allowed to instantiate a Schema object directly.
     """
 
+    class Config:
+        ...
+
+    @classmethod
+    @property
+    def config(cls) -> SchemaConfig:
+        custom_config = {
+            k: v
+            for k, v in vars(cls.Config).items()
+            if k in SchemaConfig.__dataclass_fields__  # type: ignore
+        }
+        return SchemaConfig(**custom_config)
+
+    @classmethod
+    def filter_dict(cls, d: dict) -> dict:
+        """Filter the dict to only keep the schema fields.
+
+        Args:
+            d: dict to filter
+
+        Returns:
+            dict: filtered dict
+        """
+        return {
+            k: v
+            for k, v in d.items()
+            if (
+                k in cls.__dataclass_fields__  # type: ignore
+                or k.swapcase() in cls.__dataclass_fields__  # type: ignore
+            )
+        }
+
     @classmethod
     def _create(cls, **kwargs) -> "Schema":
         for key in list(kwargs.keys()):
@@ -64,49 +128,101 @@ class Schema:
                 )
             if not hasattr(cls, key):
                 kwargs[key.swapcase()] = kwargs.pop(key)
-        return cls(**kwargs)  # type: ignore
+
+        if cls.config.extra_fields_policy != "forbid":  # type: ignore
+            kwargs = cls.filter_dict(kwargs)
+
+        try:
+            return cls(**kwargs)  # type: ignore
+        except TypeError as e:
+            raise SchemaError(e)
+
+    @classmethod
+    def _get_default_value(
+        cls, field: Field, settings: Any, schema: "Schema"
+    ) -> Any:
+        """Get the default value for a field."""
+        if field.default_expr:
+            return jinja_env.compile_expression(field.default_expr)(
+                this=settings,
+                schema=schema,
+            )
+        elif field.default_factory:
+            default_kwargs = {}
+            default_params = inspect.signature(
+                field.default_factory
+            ).parameters
+            if "this" in default_params:
+                default_kwargs["this"] = settings
+            elif "settings" in default_params:
+                default_kwargs["settings"] = settings
+            elif "st" in default_params:
+                default_kwargs["st"] = settings
+            if "schema" in default_params:
+                default_kwargs["schema"] = schema
+            return field.default_factory(**default_kwargs)
+        return field.default
 
     @classmethod
     def validate(cls, settings) -> None:
         data = settings.as_dict(exclude=["dynaconf_schema", "load_dotenv"])
         instance = cls._create(**data)
-        fields = instance.__dataclass_fields__.items()  # type: ignore
-        for name, field in fields:
+        fields = cls.__dataclass_fields__.items()  # type: ignore
+        for dc_name, dc_field in fields:
+            field = dc_field.default  # _MISSING_TYPE or Field
+            force_default = getattr(field, "force_default", False)
 
-            value = getattr(
-                instance, name, getattr(instance, name.swapcase(), None)
+            instance_value = getattr(
+                instance, dc_name, getattr(instance, dc_name.swapcase(), None)
             )
 
-            dynaconf_validators = []
-            if isinstance(field.default, Field):
-                if value is field.default:
-                    value = value.default
-                dynaconf_validators = field.default.validators
+            # by default value takes the value defined
+            # on dataclass or loaded from settings
+            value = instance_value
+
+            # if the field is an instance of our Field class
+            if isinstance(field, Field):
+                # Then we see if the value must be overridden by `default` args
+                if instance_value is field or force_default:
+                    value = cls._get_default_value(
+                        field,
+                        settings=settings,
+                        schema=instance,
+                    )
 
             if value is empty:
                 raise SchemaError(
-                    f"Missing required field `{name}`` in `{cls.__name__}`. "
-                    f"Please check your settings files, environment, "
-                    f"or privide a default value, "
-                    f"`{name}: {field.type.__name__} = Field(default, ...)` "
+                    f"Missing required field `{dc_name}`` in `{cls.__name__}`."
+                    f" Please check your settings files, environment, "
+                    f" or privide a default value, "
+                    f"`{dc_name}: {dc_field.type.__name__} = Field(default)` "
                     f"if the field is not required you can set it to None "
-                    f"`{name}: {field.type.__name__} = None`"
+                    f"`{dc_name}: {dc_field.type.__name__} = None`"
                 )
 
             try:
-                field.type(value)
+                dc_field.type(value)
             except ValueError:
                 raise SchemaError(
-                    f"Invalid type for {name} "
-                    f"expected `{field.type.__name__}` "
+                    f"Invalid type for {dc_name} "
+                    f"expected `{dc_field.type.__name__}` "
                     f"got `{type(value).__name__}`"
                 )
 
-            if name not in settings:
-                settings.set(name, value)
+            if dc_name not in settings or force_default:
+                settings.set(
+                    dc_name, value, loader_identifier="schema_default"
+                )
 
-            for validator in dynaconf_validators:
-                validator.names = (name,)
+            for validator in getattr(field, "validators", []):
+
+                if isinstance(validator, Validator):
+                    validator.names = (dc_name,)
+                elif isinstance(validator, str):
+                    validator = Validator(dc_name, expr=validator)
+                elif callable(validator):
+                    validator = Validator(dc_name, condition=validator)
+
                 try:
                     validator.validate(settings)
                 except ValidationError as e:

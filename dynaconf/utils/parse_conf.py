@@ -14,6 +14,7 @@ from dynaconf.vendor.jinja2 import Environment
 
 
 jinja_env = Environment()
+jinja_env.globals["env"] = os.environ
 for p_method in ("abspath", "realpath", "relpath", "dirname", "basename"):
     jinja_env.filters[p_method] = getattr(os.path, p_method)
 
