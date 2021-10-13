@@ -208,7 +208,7 @@ class Schema:
 
             try:
                 dc_field.type(value)
-            except TypeError as e:
+            except TypeError:
                 # NOTE: implement type validator here
                 pass
             except ValueError:
