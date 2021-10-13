@@ -11,9 +11,9 @@ import math,random,re,typing,typing as t,warnings
 from collections import abc
 from itertools import chain
 from itertools import groupby
-from markupsafe import escape
-from markupsafe import Markup
-from markupsafe import soft_str
+from dynaconf.vendor.markupsafe import escape
+from dynaconf.vendor.markupsafe import Markup
+from dynaconf.vendor.markupsafe import soft_str
 from .async_utils import async_variant
 from .async_utils import auto_aiter
 from .async_utils import auto_await

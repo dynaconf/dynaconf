@@ -12,7 +12,7 @@ from functools import lru_cache
 from functools import partial
 from functools import reduce
 from types import CodeType
-from markupsafe import Markup
+from dynaconf.vendor.markupsafe import Markup
 from .  import nodes
 from .compiler import CodeGenerator
 from .compiler import generate

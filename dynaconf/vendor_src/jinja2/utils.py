@@ -12,7 +12,7 @@ from threading import Lock
 from types import CodeType
 from urllib.parse import quote_from_bytes
 
-import markupsafe
+import dynaconf.vendor.markupsafe as markupsafe
 
 if t.TYPE_CHECKING:
     import typing_extensions as te

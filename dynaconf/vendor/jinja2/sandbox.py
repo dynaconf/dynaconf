@@ -13,8 +13,8 @@ from _string import formatter_field_name_split
 from collections import abc
 from collections import deque
 from string import Formatter
-from markupsafe import EscapeFormatter
-from markupsafe import Markup
+from dynaconf.vendor.markupsafe import EscapeFormatter
+from dynaconf.vendor.markupsafe import Markup
 from .environment import Environment
 from .exceptions import SecurityError
 from .runtime import Context

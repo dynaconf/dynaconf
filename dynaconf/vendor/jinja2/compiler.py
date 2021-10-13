@@ -23,8 +23,8 @@ from functools import update_wrapper
 from io import StringIO
 from itertools import chain
 from keyword import iskeyword as is_python_keyword
-from markupsafe import escape
-from markupsafe import Markup
+from dynaconf.vendor.markupsafe import escape
+from dynaconf.vendor.markupsafe import Markup
 from .  import nodes
 from .exceptions import TemplateAssertionError
 from .idtracking import Symbols
@@ -269,7 +269,7 @@ class CodeGenerator(NodeVisitor):
 		K='super';F='self';E=node;C=frame;assert C is _A,'no root frame allowed';L=EvalContext(A.environment,A.name);from .runtime import exported as M,async_exported as S
 		if A.environment.is_async:N=sorted(M+S)
 		else:N=sorted(M)
-		A.writeline('from __future__ import generator_stop');A.writeline('from jinja2.runtime import '+_E.join(N));O=''if A.defer_init else', environment=environment';J=E.find(nodes.Extends)is not _A
+		A.writeline('from __future__ import generator_stop');A.writeline('from dynaconf.vendor.jinja2.runtime import '+_E.join(N));O=''if A.defer_init else', environment=environment';J=E.find(nodes.Extends)is not _A
 		for B in E.find_all(nodes.Block):
 			if B.name in A.blocks:A.fail(f"block {B.name!r} defined twice",B.lineno)
 			A.blocks[B.name]=B

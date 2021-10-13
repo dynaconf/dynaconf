@@ -6,8 +6,8 @@ from io import StringIO
 from itertools import chain
 from keyword import iskeyword as is_python_keyword
 
-from markupsafe import escape
-from markupsafe import Markup
+from dynaconf.vendor.markupsafe import escape
+from dynaconf.vendor.markupsafe import Markup
 
 from . import nodes
 from .exceptions import TemplateAssertionError
@@ -836,7 +836,7 @@ class CodeGenerator(NodeVisitor):
             exported_names = sorted(exported)
 
         self.writeline("from __future__ import generator_stop")  # Python < 3.7
-        self.writeline("from jinja2.runtime import " + ", ".join(exported_names))
+        self.writeline("from dynaconf.vendor.jinja2.runtime import " + ", ".join(exported_names))
 
         # if we want a deferred initialization we cannot move the
         # environment into a local name

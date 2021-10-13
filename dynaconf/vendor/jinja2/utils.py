@@ -9,7 +9,7 @@ from random import randrange
 from threading import Lock
 from types import CodeType
 from urllib.parse import quote_from_bytes
-import markupsafe
+import dynaconf.vendor.markupsafe as markupsafe
 if t.TYPE_CHECKING:import typing_extensions as te
 F=t.TypeVar('F',bound=t.Callable[...,t.Any])
 missing=type('MissingType',(),{'__repr__':lambda x:'missing'})()

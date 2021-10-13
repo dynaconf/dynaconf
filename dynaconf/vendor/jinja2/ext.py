@@ -13,7 +13,7 @@ _C='num'
 _B=True
 _A=None
 import pprint,re,typing as t,warnings
-from markupsafe import Markup
+from dynaconf.vendor.markupsafe import Markup
 from .  import defaults
 from .  import nodes
 from .environment import Environment
