@@ -1,6 +1,6 @@
 # Alternative 1
 # This works
-# https://dynaconf.readthedocs.io/en/latest/guides/environment_variables.html#merging-new-data-to-existing-variables
+# https://www.dynaconf.com/merging/#merging-existing-data-structures
 
 REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES = [
     "rest_framework.authentication.SessionAuthentication",

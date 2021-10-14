@@ -12,7 +12,7 @@ You can manually append at the bottom of your django project's `settings.py` the
 
 ```python
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
-# Read more at https://dynaconf.readthedocs.io/en/latest/guides/django.html
+# Read more at https://www.dynaconf.com/django/
 import dynaconf  # noqa
 settings = dynaconf.DjangoDynaconf(__name__)  # noqa
 # HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
@@ -89,7 +89,7 @@ DATABASES = {
 !!! warning
     Notice that casing is important for Django settings, so `DYNACONF_DATABASES__default__ENGINE` is not the same as `DYNACONF_DATABASES__DEFAULT__ENGINE` you must use the first which matched the proper django settings.
 
-Read more on [environment variables](https://dynaconf.readthedocs.io/en/latest/guides/environment_variables.html#nested-keys-in-dictionaries-via-environment-variables)
+Read more on [environment variables](https://www.dynaconf.com/merging/#nested-keys-in-dictionaries-via-environment-variables)
 
 ## Settings files
 
