@@ -5,6 +5,9 @@ from dynaconf.contrib import FlaskDynaconf  # noqa
 from dynaconf.schema import ExtraFields  # noqa
 from dynaconf.schema import Field  # noqa
 from dynaconf.schema import Schema  # noqa
+from dynaconf.schema import SchemaEnvHolder  # noqa
+from dynaconf.schema import SchemaError  # noqa
+from dynaconf.schema import SchemaValidationMode  # noqa
 from dynaconf.validator import ValidationError  # noqa
 from dynaconf.validator import Validator  # noqa
 
@@ -33,4 +36,7 @@ __all__ = [
     "Field",
     "Schema",
     "ExtraFields",
+    "SchemaEnvHolder",
+    "SchemaError",
+    "SchemaValidationMode",
 ]

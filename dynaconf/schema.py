@@ -1,14 +1,17 @@
 import enum
 import inspect
+import typing
 from dataclasses import dataclass
 from typing import Any
 from typing import Callable
 from typing import Dict
+from typing import get_origin
 from typing import List
 from typing import Optional
 
 from .validator import ValidationError
 from .validator import Validator
+from dynaconf import default_settings
 from dynaconf.utils.functional import empty
 from dynaconf.utils.parse_conf import jinja_env
 
@@ -21,6 +24,11 @@ class ExtraFields(str, enum.Enum):
     allow = "allow"  # Load from settings even if not in schema
     forbid = "forbid"  # Raise error if not in schema but found in settings
     ignore = "ignore"  # Do not load from settings if not on schema
+
+
+class SchemaValidationMode(str, enum.Enum):
+    eager = "eager"  # trigger loading and validation as soon as possible
+    lazy = "lazy"  # trigger loading and validation only fist access
 
 
 class Field:
@@ -64,6 +72,7 @@ class Field:
 @dataclass
 class SchemaConfig:
     extra_fields_policy: ExtraFields = ExtraFields.allow
+    validation_mode: SchemaValidationMode = SchemaValidationMode.eager
 
 
 @dataclass
@@ -91,7 +100,7 @@ class Schema:
         ...
 
     @classmethod  # cant be a property because of Python 3.8
-    def config(cls) -> SchemaConfig:
+    def config(cls, settings=None) -> SchemaConfig:
         custom_config = {
             k: v
             for k, v in vars(cls.Config).items()
@@ -100,11 +109,11 @@ class Schema:
         return SchemaConfig(**custom_config)
 
     @classmethod  # cant be a property because of Python 3.8
-    def allowed_fields(cls) -> Dict[str, Any]:
+    def allowed_fields(cls, settings=None) -> Dict[str, Any]:
         return cls.__dataclass_fields__  # type: ignore
 
     @classmethod
-    def filter_dict(cls, d: dict) -> dict:
+    def filter_dict(cls, d: dict, settings=None) -> dict:
         """Filter the dict to only keep the schema fields.
 
         Args:
@@ -126,7 +135,7 @@ class Schema:
     def _create(cls, **kwargs) -> "Schema":
         for key in list(kwargs.keys()):
             if not any([key.isupper(), key.islower()]):
-                raise ValueError(
+                raise SchemaError(
                     f"Invalid key {key} in schema. "
                     "keys must be lowercase or UPPERCASE."
                 )
@@ -149,6 +158,7 @@ class Schema:
         if field.default_expr:
             return jinja_env.compile_expression(field.default_expr)(
                 this=settings,
+                settings=settings,
                 schema=schema,
             )
         elif field.default_factory:
@@ -205,16 +215,24 @@ class Schema:
                 )
 
             try:
-                dc_field.type(value)
-            except TypeError:
-                # NOTE: implement type validator here
-                pass
-            except ValueError:
-                raise SchemaError(
-                    f"Invalid type for {dc_name} "
-                    f"expected `{dc_field.type.__name__}` "
-                    f"got `{type(value).__name__}`"
+                if isinstance(value, dict):
+                    # NOTE: Better handling of compound types here
+                    value = dc_field.type._create(**value)
+                else:
+                    dc_field.type(value)
+            except (TypeError, ValueError) as e:
+                # NOTE: Find a way to evaluate typing at runtime here
+                special_type = dc_field.type.__class__ in (
+                    typing._SpecialForm,
+                    typing._UnionGenericAlias,  # type: ignore
                 )
+                if not special_type and get_origin(dc_field.type) is None:
+                    raise SchemaError(
+                        f"Invalid type for `{cls.__name__}.{dc_name}` "
+                        f"expected `{dc_field.type.__name__}` "
+                        f"got `{type(value).__name__}` "
+                        f"error: {e}"
+                    )
 
             if dc_name not in settings or force_default:
                 settings.set(
@@ -253,5 +271,23 @@ class SchemaEnvHolder:
         self.schemas = kwargs
 
     def validate(self, settings) -> None:
-        if schema := self.schemas.get(settings.current_env):
+        if schema := self.schemas.get(settings.current_env.lower()):
             schema.validate(settings)
+
+    def config(self, settings=None) -> SchemaConfig:
+        try:
+            return self.schemas.get(settings.current_env.lower()).config()
+        except AttributeError:
+            return self.schemas.get(
+                default_settings.ENV_FOR_DYNACONF.lower()
+            ).config()
+
+    def allowed_fields(self, settings=None) -> Dict[str, Any]:
+        try:
+            return self.schemas.get(
+                settings.current_env.lower()
+            ).allowed_fields()
+        except AttributeError:
+            return self.schemas.get(
+                default_settings.ENV_FOR_DYNACONF.lower()
+            ).allowed_fields()

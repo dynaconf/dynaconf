@@ -308,7 +308,10 @@ class Validator:
 
             # is there a Jinja Expression?
             if self.expr is not None:
-                result = jinja_env.compile_expression(self.expr)(this=settings)
+                result = jinja_env.compile_expression(self.expr)(
+                    this=settings,
+                    value=value,
+                )
                 if not result:
                     raise ValidationError(
                         self.messages["expr"].format(name=name, expr=self.expr)

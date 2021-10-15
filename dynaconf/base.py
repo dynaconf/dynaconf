@@ -68,8 +68,10 @@ class LazySettings(LazyObject):
             "warn_dynaconf_global_settings", None
         )  # in 3.0.0 global settings is deprecated
 
-        if "schema" in kwargs and isinstance(kwargs["schema"], type):
-            kwargs["dynaconf_schema"] = kwargs.pop("schema")
+        if "schema" in kwargs:
+            schema = kwargs["schema"]
+            if isinstance(schema, type) or hasattr(schema, "validate"):
+                kwargs["dynaconf_schema"] = kwargs.pop("schema")
 
         self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
@@ -82,6 +84,10 @@ class LazySettings(LazyObject):
                 self._wrapped = copy.deepcopy(wrapped)
             else:
                 self._wrapped = wrapped
+
+        if (schema := kwargs.get("dynaconf_schema")) is not None:
+            if schema.config(self).validation_mode == "eager":
+                self._setup()
 
     def __resolve_config_aliases(self, kwargs):
         """takes aliases for _FOR_DYNACONF configurations
@@ -846,7 +852,7 @@ class Settings:
         key = upperfy(key.strip())
 
         if self._dynaconf_schema:
-            allowed_fields = self._dynaconf_schema.allowed_fields()
+            allowed_fields = self._dynaconf_schema.allowed_fields(self)
             dc_field = allowed_fields.get(
                 key, allowed_fields.get(key.swapcase())
             )
@@ -859,7 +865,10 @@ class Settings:
                 # the user wants the default from the schema not from loaders
                 return
 
-            if self._dynaconf_schema.config().extra_fields_policy == "ignore":
+            if (
+                self._dynaconf_schema.config(self).extra_fields_policy
+                == "ignore"
+            ):
                 # when `ignore` is the policy we just dont set the extra fields
                 # otherwise (forbid, allow) we let the Schema handle it later
                 allowed_keys = list(allowed_fields.keys())

@@ -1053,3 +1053,24 @@ def test_list_entries_from_yaml_should_not_duplicate_when_merged(tmpdir):
 
     assert settings.from_env("default").SOME_LIST == expected_default_value
     assert settings.from_env("other").SOME_LIST == expected_other_value
+
+
+def test_as_dict(tmpdir, clean_env):
+    data = {
+        "foo": "bar",
+        "hello": "world",
+        "default": 1,
+        "databases": {"default": {"port": 8080}},
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data)
+
+    # settings_files mispelled.. should be `settings_file`
+    settings = Dynaconf(settings_files="settings.toml")
+    assert settings.as_dict() == {k.upper(): v for k, v in data.items()}
+
+    with pytest.raises(ValueError):
+        # include and exclude cannot be used together
+        settings.as_dict(include=["FOO"], exclude=["HELLO"])
+
+    assert "FOO" not in settings.as_dict(exclude=["FOO"])
+    assert "HELLO" not in settings.as_dict(include=["FOO"])
