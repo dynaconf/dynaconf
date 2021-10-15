@@ -414,17 +414,46 @@ def test_multi_env_schema(tmpdir, clean_env):
 
 
 def test_compound_schema(tmpdir, clean_env):
+    class CustomListOfThings:
+        def __init__(self, value):
+            self.value = value
+
+    @dataclass
+    class Options(Schema):
+        option1: str
+        option2: str
+        option3: int = Field(default=42)
+        option4: int = Field(validators=[Validator(gt=50)])
+        option5: Any = Field(default=None)
+        option6: CustomListOfThings = Field(default=[1, 2, 3])
+
     @dataclass
     class Server(Schema):
         host: str
         port: int
+        options: Options
+        another: int = Field(default=99)
+        tags: CustomListOfThings = Field(default=["a", "b", "c"])
 
     @dataclass
     class MySchema(Schema):
         server: Server
+        debug: bool = True
+        colors: CustomListOfThings = Field(default=["red", "green", "blue"])
 
     os.environ["TEST_COMPOUND_SERVER__HOST"] = "localhost"
     os.environ["TEST_COMPOUND_SERVER__PORT"] = "1234"
+
+    # NOTE: make it work with mixed keys
+    # os.environ["TEST_COMPOUND_SERVER__options__OPTION1"] = "option1"
+    # os.environ["TEST_COMPOUND_SERVER__OPTIONS__option2"] = "option2"
+    # os.environ["TEST_COMPOUND_SERVER__options__option4"] = "51"
+    # os.environ["TEST_COMPOUND_SERVER__options__BLA"] = "Hello"
+
+    os.environ["TEST_COMPOUND_SERVER__OPTIONS__option1"] = "option1"
+    os.environ["TEST_COMPOUND_SERVER__OPTIONS__option2"] = "option2"
+    os.environ["TEST_COMPOUND_SERVER__OPTIONS__option4"] = "51"
+    os.environ["TEST_COMPOUND_SERVER__OPTIONS__BLA"] = "Hello"
 
     settings = Dynaconf(
         schema=MySchema,
@@ -433,3 +462,9 @@ def test_compound_schema(tmpdir, clean_env):
 
     assert settings.server.host == "localhost"
     assert settings.server.port == 1234
+    assert settings.server.options.option1 == "option1"
+    assert settings.server.options.option2 == "option2"
+    assert settings.server.options.option3 == 42
+    assert settings.server.options.option4 == 51
+    assert settings.server.options.option5 is None
+    assert settings.server.another == 99

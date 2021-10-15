@@ -132,15 +132,43 @@ class Schema:
         }
 
     @classmethod
-    def _create(cls, **kwargs) -> "Schema":
-        for key in list(kwargs.keys()):
-            if not any([key.isupper(), key.islower()]):
+    def adjust_key_case(cls, d: dict, settings=None) -> dict:
+        """Adjust the key case of the dict to match the schema fields.
+
+        Args:
+            d: dict to adjust
+
+        Returns:
+            dict: adjusted dict
+        """
+        new_d = {}
+        allowed_keys = cls.allowed_fields()
+        for key, value in d.items():
+            if key in allowed_keys:  # nothing to do
+                new_d[key] = value
+            elif not any([key.isupper(), key.islower()]):  # invalid for adjust
                 raise SchemaError(
                     f"Invalid key {key} in schema. "
                     "keys must be lowercase or UPPERCASE."
                 )
-            if not hasattr(cls, key):
-                kwargs[key.swapcase()] = kwargs.pop(key)
+            elif key.swapcase() in allowed_keys:  # inverse case is present
+                new_d[key.swapcase()] = value
+            else:
+                new_d[key] = value  # key is extra_field
+        return new_d
+
+    @classmethod
+    def _create(cls, **kwargs) -> "Schema":
+        # for key in list(kwargs.keys()):
+        #     if not any([key.isupper(), key.islower()]):
+        #         raise SchemaError(
+        #             f"Invalid key {key} in schema. "
+        #             "keys must be lowercase or UPPERCASE."
+        #         )
+        #     if not hasattr(cls, key):
+        #         kwargs[key.swapcase()] = kwargs.pop(key)
+
+        kwargs = cls.adjust_key_case(kwargs)
 
         if cls.config().extra_fields_policy != "forbid":  # type: ignore
             kwargs = cls.filter_dict(kwargs)
@@ -178,11 +206,15 @@ class Schema:
         return field.default
 
     @classmethod
-    def validate(cls, settings) -> None:
-        data = settings.as_dict(exclude=["dynaconf_schema"])
+    def validate(
+        cls, settings, subschema_data: dict = None, parent_name: str = None
+    ) -> Optional[Dict]:
+        data = subschema_data or settings.as_dict(exclude=["dynaconf_schema"])
         instance = cls._create(**data)
         fields = cls.__dataclass_fields__.items()  # type: ignore
         for dc_name, dc_field in fields:
+            _names = [parent_name] if parent_name else []
+            long_name = ".".join(_names + [dc_name])
             field = dc_field.default  # _MISSING_TYPE or Field
             force_default = getattr(field, "force_default", False)
 
@@ -197,7 +229,7 @@ class Schema:
             # if the field is an instance of our Field class
             if isinstance(field, Field):
                 # Then we see if the value must be overridden by `default` args
-                if instance_value is field or force_default:
+                if value is field or force_default:
                     value = cls._get_default_value(
                         field,
                         settings=settings,
@@ -215,16 +247,27 @@ class Schema:
                 )
 
             try:
-                if isinstance(value, dict):
-                    # NOTE: Better handling of compound types here
-                    value = dc_field.type._create(**value)
+                if issubclass(dc_field.type, Schema) and isinstance(
+                    value, dict
+                ):
+                    value = dc_field.type.validate(
+                        settings,
+                        subschema_data=value,
+                        parent_name=long_name,
+                    )
+                    if parent_name is None:
+                        # NOTE: upper/lower, force default?
+                        settings.set(
+                            dc_name, value, loader_identifier="schema_default"
+                        )
                 else:
                     dc_field.type(value)
             except (TypeError, ValueError) as e:
                 # NOTE: Find a way to evaluate typing at runtime here
+                # debug(e)
                 special_type = dc_field.type.__class__ in (
                     typing._SpecialForm,
-                    typing._UnionGenericAlias,  # type: ignore
+                    typing._GenericAlias,  # type: ignore
                 )
                 if not special_type and get_origin(dc_field.type) is None:
                     raise SchemaError(
@@ -234,24 +277,36 @@ class Schema:
                         f"error: {e}"
                     )
 
-            if dc_name not in settings or force_default:
+            if not subschema_data and (
+                dc_name not in settings or force_default
+            ):
                 settings.set(
                     dc_name, value, loader_identifier="schema_default"
                 )
 
+            if subschema_data and (
+                dc_name not in subschema_data or force_default
+            ):
+                # NOTE: handle upper/lower case
+                # debug(dc_name)
+                # debug(subschema_data)
+                subschema_data[dc_name.upper()] = value
+
             for validator in getattr(field, "validators", []):
 
                 if isinstance(validator, Validator):
-                    validator.names = (dc_name,)
+                    validator.names = (long_name,)
                 elif isinstance(validator, str):
-                    validator = Validator(dc_name, expr=validator)
+                    validator = Validator(long_name, expr=validator)
                 elif callable(validator):
-                    validator = Validator(dc_name, condition=validator)
+                    validator = Validator(long_name, condition=validator)
 
                 try:
                     validator.validate(settings)
                 except ValidationError as e:
                     raise SchemaError(str(e))
+
+        return subschema_data
 
 
 class SchemaEnvHolder:

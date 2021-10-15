@@ -81,7 +81,7 @@ setup(
         "all": ["redis", "ruamel.yaml", "configobj", "hvac"],
         "test": test_requirements,
     },
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     entry_points={"console_scripts": ["dynaconf=dynaconf.cli:main"]},
     setup_requires=["setuptools>=38.6.0"],
     classifiers=[
@@ -95,7 +95,6 @@ setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
