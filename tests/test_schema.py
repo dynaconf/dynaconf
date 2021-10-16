@@ -445,15 +445,15 @@ def test_compound_schema(tmpdir, clean_env):
     os.environ["TEST_COMPOUND_SERVER__PORT"] = "1234"
 
     # NOTE: make it work with mixed keys
-    # os.environ["TEST_COMPOUND_SERVER__options__OPTION1"] = "option1"
-    # os.environ["TEST_COMPOUND_SERVER__OPTIONS__option2"] = "option2"
-    # os.environ["TEST_COMPOUND_SERVER__options__option4"] = "51"
-    # os.environ["TEST_COMPOUND_SERVER__options__BLA"] = "Hello"
-
-    os.environ["TEST_COMPOUND_SERVER__OPTIONS__option1"] = "option1"
+    os.environ["TEST_COMPOUND_SERVER__options__OPTION1"] = "option1"
     os.environ["TEST_COMPOUND_SERVER__OPTIONS__option2"] = "option2"
-    os.environ["TEST_COMPOUND_SERVER__OPTIONS__option4"] = "51"
-    os.environ["TEST_COMPOUND_SERVER__OPTIONS__BLA"] = "Hello"
+    os.environ["TEST_COMPOUND_SERVER__options__option4"] = "51"
+    os.environ["TEST_COMPOUND_SERVER__options__BLA"] = "Hello"
+
+    # os.environ["TEST_COMPOUND_SERVER__OPTIONS__option1"] = "option1"
+    # os.environ["TEST_COMPOUND_SERVER__OPTIONS__option2"] = "option2"
+    # os.environ["TEST_COMPOUND_SERVER__OPTIONS__option4"] = "51"
+    # os.environ["TEST_COMPOUND_SERVER__OPTIONS__BLA"] = "Hello"
 
     settings = Dynaconf(
         schema=MySchema,
