@@ -113,7 +113,7 @@ class Schema:
         return cls.__dataclass_fields__  # type: ignore
 
     @classmethod
-    def filter_dict(cls, d: dict, settings=None) -> dict:
+    def _filter_dict(cls, d: dict, settings=None) -> dict:
         """Filter the dict to only keep the schema fields.
 
         Args:
@@ -211,11 +211,10 @@ class Schema:
         data = cls.adjust_key_case(data)
         # 3
         if cls.config().extra_fields_policy != "forbid":  # type: ignore
-            data = cls.filter_dict(data)
+            data = cls._filter_dict(data)
 
         instance = cls._create(**data)
-        fields = cls.__dataclass_fields__.items()  # type: ignore
-        for dc_name, dc_field in fields:
+        for dc_name, dc_field in cls.allowed_fields().items():
             long_name = cls.get_long_name(parent_name, dc_name)
             field = dc_field.default  # _MISSING_TYPE or Field
             force_default = getattr(field, "force_default", False)
