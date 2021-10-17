@@ -13,7 +13,7 @@ In addition to that Dynaconf offers some approaches you may want to **Optionally
 
 ## Environment variables
 
-You can override any setting key by exporting an environment variable prefixed by `DYNACONF_` (or by the [custom prefix](configuration/#envvar_prefix))
+You can override any setting key by exporting an environment variable prefixed by `DYNACONF_` (or by the [custom prefix](configuration/#custom-prefix))
 
 ### Example
 
