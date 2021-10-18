@@ -132,7 +132,7 @@ There is a lot more you can do, **read the docs:** http://dynaconf.com
 
 ## Contribute
 
-Main discussions happens on [t.me/dynaconf](https://t.me/dynaconf) learn more about how to get involved on [CONTRIBUTING.md guide](CONTRIBUTING.md)
+Main discussions happens on [Discussions Tab](https://github.com/rochacbruno/dynaconf/discussions) learn more about how to get involved on [CONTRIBUTING.md guide](CONTRIBUTING.md)
 
 
 ## more
