@@ -61,17 +61,26 @@ class LazySettings(LazyObject):
         :param kwargs: values that overrides default_settings
         :param validators: a list of validators to run on the settings
         :param schema (alias): Set the dynaconf_schema
-        :param dynaconf_schema: A Schema class to validate the settings
+                               Schema can be a Schema instance or a dictionary
+        :param dynaconf_schema: A Schema to validate the settings
+
         """
 
         self._warn_dynaconf_global_settings = kwargs.pop(
             "warn_dynaconf_global_settings", None
         )  # in 3.0.0 global settings is deprecated
 
-        if "schema" in kwargs:
-            schema = kwargs["schema"]
-            if isinstance(schema, type) or hasattr(schema, "validate"):
-                kwargs["dynaconf_schema"] = kwargs.pop("schema")
+        is_eager = kwargs.pop("is_eager", False)  # imeadiatly load & validate?
+        if schema := kwargs.get("schema", kwargs.get("dynaconf_schema")):
+            if hasattr(schema, "config"):
+                is_eager = schema.config(self).validation_mode == "eager"
+                kwargs.setdefault("dynaconf_schema", schema)
+                kwargs.pop("schema", None)
+            elif isinstance(schema, dict) and "config" in schema:
+                # NOTE: How to build a Schema dataclass from a dict?
+                is_eager = schema["config"].get("validation_mode") == "eager"
+                kwargs.setdefault("dynaconf_schema", schema)
+                kwargs.pop("schema", None)
 
         self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
@@ -85,9 +94,8 @@ class LazySettings(LazyObject):
             else:
                 self._wrapped = wrapped
 
-        if (schema := kwargs.get("dynaconf_schema")) is not None:
-            if schema.config(self).validation_mode == "eager":
-                self._setup()
+        if is_eager:
+            self._setup()
 
     def __resolve_config_aliases(self, kwargs):
         """takes aliases for _FOR_DYNACONF configurations
@@ -218,6 +226,7 @@ class Settings:
         self._fresh = False
         self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)
+        self._ignored_keys = defaultdict(dict)
         self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
@@ -851,33 +860,11 @@ class Settings:
 
         key = upperfy(key.strip())
 
-        if self._dynaconf_schema:
-            allowed_fields = self._dynaconf_schema.allowed_fields(self)
-            dc_field = allowed_fields.get(
-                key, allowed_fields.get(key.swapcase())
-            )
-            if (
-                dc_field
-                and getattr(dc_field.default, "force_default", False)
-                and loader_identifier != "schema_default"
-            ):
-                # If the field is marked as force_default, it means that
-                # the user wants the default from the schema not from loaders
+        # check if user wants default to be forced or ignore unknown keys
+        if self._dynaconf_schema and key not in UPPER_DEFAULT_SETTINGS:
+            if self._dynaconf_schema.should_skip_set(key, loader_identifier):
+                self._ignored_keys[key] = value
                 return
-
-            if (
-                self._dynaconf_schema.config(self).extra_fields_policy
-                == "ignore"
-            ):
-                # when `ignore` is the policy we just dont set the extra fields
-                # otherwise (forbid, allow) we let the Schema handle it later
-                allowed_keys = list(allowed_fields.keys())
-                allowed_keys += UPPER_DEFAULT_SETTINGS
-                if (
-                    key not in allowed_keys
-                    and key.swapcase() not in allowed_keys
-                ):
-                    return
 
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         existing = getattr(self, key, None)
@@ -1052,6 +1039,7 @@ class Settings:
         # Validate Schema after every loading.
         if self._dynaconf_schema is not None:
             self._dynaconf_schema.validate(self)
+            self.__annotations__ = self._dynaconf_schema.__annotations__
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
@@ -1289,5 +1277,7 @@ RESERVED_ATTRS = (
         "_validate_only",
         "_validate_exclude",
         "_dynaconf_schema",
+        "_ignored_keys",
+        "__annotations__",
     ]
 )

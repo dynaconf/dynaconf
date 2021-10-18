@@ -11,7 +11,6 @@ from dynaconf import Dynaconf
 from dynaconf import ExtraFields
 from dynaconf import Field
 from dynaconf import Schema
-from dynaconf import SchemaEnvHolder
 from dynaconf import SchemaError
 from dynaconf import SchemaValidationMode
 from dynaconf import Validator
@@ -22,6 +21,8 @@ def test_schema_full(tmpdir, clean_env):
     os.environ["TLD"] = ".com"
     os.environ["TEST_SCHEMA_ONE_EMAIL"] = "not_be_loaded_default_is_forced"
     os.environ["TEST_SCHEMA_ONE_IGNORED"] = "this-is-not-loaded"
+    os.environ["TEST_SCHEMA_ONE_DAY"] = "saturday"
+    # os.environ["TEST_SCHEMA_ONE_CITY"] = "Rio"
     email_expr = "(this.name + '@' + this.company + env.TLD) | lower"
 
     settings_data = {
@@ -35,6 +36,7 @@ def test_schema_full(tmpdir, clean_env):
     class MySchema(Schema):
         city: str
         schema: int
+        day: str
         a_thing: list = Field(default_factory=list)
         random_thing: bool = False  # will come from settings.json
         computed: int = Field(default_factory=lambda: 40 + 2)
@@ -47,6 +49,8 @@ def test_schema_full(tmpdir, clean_env):
         )
         age: int = Field(18, validators=[Validator(gt=1, lt=16)])
         banana: str = Field(validators=[lambda this: this.city == "Rio"])
+        b: str = "aaaa"
+        a: int = Field(default_factory=lambda this: this.b.count("a"))
 
         class Config:
             extra_fields_policy = ExtraFields.ignore
@@ -79,8 +83,10 @@ def test_schema_full(tmpdir, clean_env):
 
     assert settings.load_dotenv_for_dynaconf is False
 
+    # NOTE: FROM env vars this is not currently ignored (TBI)
     assert "ABCD" not in settings, settings.ABCD
     assert "IGNORED" not in settings, settings.IGNORED
+    # but on files it is ignored
     assert "IGNORED_FROM_JSON" not in settings, settings.IGNORED_FROM_JSON
 
 
@@ -101,6 +107,57 @@ def test_schema_with_default_expr(tmpdir, clean_env):
     @dataclass
     class MySchema(Schema):
         number: int = Field(default_expr="40 + 2")
+
+    settings = Dynaconf(
+        schema=MySchema,
+    )
+
+    assert settings.number == 42
+
+
+def test_schema_with_default_expr_raises_for_wrong_order(tmpdir, clean_env):
+
+    # Wrong ordering
+    @dataclass
+    class MySchema(Schema):
+        number: int = Field(default_expr="this.truth + 2")
+        truth: int = 40
+
+    with pytest.raises(SchemaError):
+        settings = Dynaconf(
+            schema=MySchema,
+        )
+
+    # good ordering
+    @dataclass
+    class MySchema(Schema):
+        truth: int = 40
+        number: int = Field(default_expr="this.truth + 2")
+
+    settings = Dynaconf(
+        schema=MySchema,
+    )
+    assert settings.number == 42
+
+
+def test_schema_with_default_factory_raises_for_wrong_order(tmpdir, clean_env):
+
+    # Wrong ordering
+    @dataclass
+    class MySchema(Schema):
+        number: int = Field(default_factory=lambda this: this.truth + 2)
+        truth: int = 40
+
+    with pytest.raises(SchemaError):
+        Dynaconf(
+            schema=MySchema,
+        )
+
+    # Good ordering
+    @dataclass
+    class MySchema(Schema):
+        truth: int = 40
+        number: int = Field(default_factory=lambda this: this.truth + 2)
 
     settings = Dynaconf(
         schema=MySchema,
@@ -180,15 +237,6 @@ def test_schema_raise_only_on_access_on_lazy_mode(tmpdir, clean_env):
         settings.number  # number is missing
 
 
-def test_schema_fails_if_key_not_upper_or_lower(tmpdir, clean_env):
-    @dataclass
-    class MySchema(Schema):
-        number: int
-
-    with pytest.raises(SchemaError):
-        MySchema._create(NumBer=10)
-
-
 def test_schema_raises_with_forbid_policy(tmpdir, clean_env):
     @dataclass
     class MySchema(Schema):
@@ -197,12 +245,33 @@ def test_schema_raises_with_forbid_policy(tmpdir, clean_env):
         class Config:
             extra_fields_policy = ExtraFields.forbid
 
-    with pytest.raises(SchemaError):
+    with pytest.raises(SchemaError) as excinfo:
         Dynaconf(
             schema=MySchema,
             number=10,
             other_thing_not_in_schema=10,
         )
+
+    assert "other_thing_not_in_schema" in str(excinfo.value).lower()
+
+
+def test_schema_do_not_raises_with_forbid_policy_from_env(tmpdir, clean_env):
+
+    os.environ["TEST_FORBID_COISA"] = "NADA"
+
+    @dataclass
+    class MySchema(Schema):
+        number: int
+
+        class Config:
+            extra_fields_policy = ExtraFields.forbid
+
+    settings = Dynaconf(
+        schema=MySchema, envvar_prefix="TEST_FORBID", number=10
+    )
+
+    # No error, but unknowm field is not set
+    assert "COISA" not in settings
 
 
 def test_schema_with_allow_policy(tmpdir, clean_env):
@@ -254,7 +323,7 @@ def test_different_forms_of_default_factories(tmpdir, clean_env):
     assert settings.number2 == 44
     assert settings.number3 == 44
     assert settings.number4 == 44
-    assert settings.instance.__class__ == MySchema
+    assert settings.instance == MySchema
     assert settings.name == "Bruno"
     assert settings.name2 == "Bruno"
     assert settings.boolean1 is True
@@ -360,56 +429,14 @@ def test_dynaconf_legacy_validators_raises(tmpdir, clean_env):
         )
 
 
-def test_multi_env_schema(tmpdir, clean_env):
-    settings_data = {
-        "development": {
-            "user": "dev_user",
-            "port": 1234,  # on dev port is int
-        },
-        "production": {
-            "user": "prod_user",
-            "port": [5675, 5676],  # on prod port is list
-        },
-    }
-    settings_file = tmpdir.join("settings.json")
-    settings_file.write(json.dumps(settings_data))
-
+def test_dynaconf_invalid_validator_raises(tmpdir, clean_env):
     @dataclass
-    class DevSchema(Schema):
-        user: str
-        port: int
+    class MySchema(Schema):
+        number: str = Field(validators=[1, True, {}])  # invalid validators
 
-        class Config:
-            extra_fields_policy = ExtraFields.ignore
-
-    @dataclass
-    class ProdSchema(Schema):
-        user: int  # wrong on purpose to trigger error
-        port: List[int]
-
-    settings = Dynaconf(
-        settings_files=[str(settings_file)],
-        environments=True,
-        extra_field=134,
-        schema=SchemaEnvHolder(
-            development=DevSchema,
-            production=ProdSchema,
-        ),
-    )
-
-    assert settings.user == "dev_user"
-    assert "extra_field" not in settings
-
-    os.environ["MULTI_ENV_ENV"] = "production"
     with pytest.raises(SchemaError):
-        settings = Dynaconf(
-            settings_files=[str(settings_file)],
-            env_switcher="MULTI_ENV_ENV",
-            environments=True,
-            schema=SchemaEnvHolder(
-                development=DevSchema,
-                production=ProdSchema,
-            ),
+        Dynaconf(
+            dynaconf_schema=MySchema,
         )
 
 
@@ -426,6 +453,8 @@ def test_compound_schema(tmpdir, clean_env):
         option4: int = Field(validators=[Validator(gt=50)])
         option5: Any = Field(default=None)
         option6: CustomListOfThings = Field(default=[1, 2, 3])
+        option7: str = Field(validators=["value.startswith('banana')"])
+        default_forced: str = Field(default="forced", force_default=True)
 
     @dataclass
     class Server(Schema):
@@ -434,6 +463,7 @@ def test_compound_schema(tmpdir, clean_env):
         options: Options
         another: int = Field(default=99)
         tags: CustomListOfThings = Field(default=["a", "b", "c"])
+        default_forced: str = Field(default="forced", force_default=True)
 
     @dataclass
     class MySchema(Schema):
@@ -444,11 +474,15 @@ def test_compound_schema(tmpdir, clean_env):
     os.environ["TEST_COMPOUND_SERVER__HOST"] = "localhost"
     os.environ["TEST_COMPOUND_SERVER__PORT"] = "1234"
 
-    # NOTE: make it work with mixed keys
+    os.environ["TEST_COMPOUND_FOO"] = "bar"
+    os.environ["TEST_COMPOUND_SERVER__FOO"] = "bar"
+    os.environ["TEST_COMPOUND_SERVER__DEFAULT_FORCED"] = "bar"
     os.environ["TEST_COMPOUND_SERVER__options__OPTION1"] = "option1"
-    os.environ["TEST_COMPOUND_SERVER__OPTIONS__option2"] = "option2"
-    os.environ["TEST_COMPOUND_SERVER__options__option4"] = "51"
+    os.environ["TEST_COMPOUND_SERVER__OPTIONS__opTion2"] = "option2"
+    os.environ["TEST_COMPOUND_SERVER__optIons__optiOn4"] = "51"
+    os.environ["TEST_COMPOUND_SERVER__options__Option7"] = "banana is good"
     os.environ["TEST_COMPOUND_SERVER__options__BLA"] = "Hello"
+    os.environ["TEST_COMPOUND_SERVER__options__default_forced"] = "Hello"
 
     # os.environ["TEST_COMPOUND_SERVER__OPTIONS__option1"] = "option1"
     # os.environ["TEST_COMPOUND_SERVER__OPTIONS__option2"] = "option2"
@@ -468,3 +502,94 @@ def test_compound_schema(tmpdir, clean_env):
     assert settings.server.options.option4 == 51
     assert settings.server.options.option5 is None
     assert settings.server.another == 99
+    assert settings.server.tags == ["a", "b", "c"]
+    assert settings.server.options.option7 == "banana is good"
+    assert settings.debug is True
+    assert settings.colors == ["red", "green", "blue"]
+    assert settings.server.default_forced == "forced"
+    assert settings.server.options.default_forced == "forced"
+
+
+def test_schema_as_a_dict(tmpdir, clean_env):
+
+    Dynaconf(
+        schema={
+            "config": {
+                "validation_mode": SchemaValidationMode.lazy,
+                "extra_fields_policy": ExtraFields.ignore,
+            }
+        }
+    )
+
+    # NOTE: Not implemented yet
+
+
+def test_instantiate_schema():
+    # this is not really used yet
+    @dataclass
+    class MySchema(Schema):
+        email: str = Field(default="bruno@foo.bar")
+
+    schema = MySchema()
+    assert schema.email.default == "bruno@foo.bar"
+
+
+def test_multi_case_list_value(tmpdir, clean_env):
+    settings_data = {
+        "COLORS": ["white", "dynaconf_merge"],
+    }
+    settings_file = tmpdir.join("settings.json")
+    settings_file.write(json.dumps(settings_data))
+
+    os.environ["TEST_MULTI_COLORS"] = "@merge blue"
+    os.environ["TEST_MULTI_SUB"] = "{colors=['gray', 'cyan']}"
+
+    # NOTE: TBI: when there is a schema, env loader must load only matching
+    # if extra_fields_policy is != allow
+    # Also this must find closer match on casing if exact is not present.
+    os.environ["TEST_MULTI_SUB__colors"] = "@merge green"
+
+    # NOTE: should be ignored because is default for envvars
+    os.environ["TEST_MULTI_COLORS_2"] = "red"
+    os.environ["TEST_MULTI_COLORS_4"] = "red"
+    os.environ["TEST_MULTI_COLORS_4"] = "red"
+    os.environ["TEST_MULTI_HAUDFAJHBDJHBFSFHSDF"] = "red"
+
+    @dataclass
+    class Sub(Schema):
+        colors: list
+
+    @dataclass
+    class MySchema(Schema):
+        colors: list
+        sub: Sub
+
+        class Config:
+            extra_fields_policy = ExtraFields.forbid  # only count for files
+
+    settings = Dynaconf(
+        schema=MySchema,
+        envvar_prefix="TEST_MULTI",
+        settings_file=str(settings_file),
+        colors=["red", "green"],
+    )
+
+    assert settings.colors == ["red", "green", "white", "blue"]
+    assert settings.sub.colors == ["gray", "cyan", "green"]
+
+
+def test_dir_method_includes_schema_data(tmpdir, clean_env):
+    @dataclass
+    class MySchema(Schema):
+        number: int = 1
+        other: int = 2
+        name: str = "foo"
+
+    settings = Dynaconf(
+        dynaconf_schema=MySchema,
+    )
+
+    dir_keys = dir(settings)
+    assert "number" in dir_keys
+    assert "other" in dir_keys
+    assert "name" in dir_keys

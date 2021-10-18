@@ -1,6 +1,7 @@
 import enum
 import inspect
 import typing
+from dataclasses import _MISSING_TYPE
 from dataclasses import dataclass
 from typing import Any
 from typing import Callable
@@ -8,12 +9,13 @@ from typing import Dict
 from typing import get_origin
 from typing import List
 from typing import Optional
+from typing import Tuple
 
 from .validator import ValidationError
 from .validator import Validator
-from dynaconf import default_settings
 from dynaconf.utils.functional import empty
 from dynaconf.utils.parse_conf import jinja_env
+from dynaconf.vendor.jinja2.exceptions import UndefinedError
 
 
 class SchemaError(Exception):
@@ -99,7 +101,7 @@ class Schema:
     class Config:
         ...
 
-    @classmethod  # cant be a property because of Python 3.8
+    @classmethod
     def config(cls, settings=None) -> SchemaConfig:
         custom_config = {
             k: v
@@ -108,28 +110,79 @@ class Schema:
         }
         return SchemaConfig(**custom_config)
 
-    @classmethod  # cant be a property because of Python 3.8
+    @classmethod
+    def should_skip_set(
+        cls,
+        key,
+        loader_identifier=None,
+    ) -> bool:
+        """Return True if the key must be filtered out
+        this method is called on Dynaconf.set()
+        """
+        # being set by the schema so always allow
+        # or coming from envvar so we allow to never break by external
+        # interference on environment.
+        if loader_identifier in ("schema_default",):
+            return False
+
+        # Try to get field from schema case insensitive
+        # key, Key, KEY, kEY, KEy, KEy, keY will match
+        dc_field = cls.allowed_fields().get(
+            key,
+            cls.allowed_fields().get(
+                cls.normalized_allowed_keys().get(key.lower(), key.upper()),
+            ),
+        )
+
+        # Field is part of the schema, but being set by a loader
+        # does user wants default from schema forced?
+        if dc_field and getattr(dc_field.default, "force_default", False):
+            return True
+
+        # Value comming from loaders
+        # key is not defined on schema
+        # does user wants to ignore or allow this value?
+        if cls.config().extra_fields_policy == ExtraFields.ignore:
+            return dc_field is None
+
+        if cls.config().extra_fields_policy == ExtraFields.forbid:
+            # Do not raise when there is a key in env var but raise for
+            # other sources.
+            if dc_field is None:
+                if loader_identifier == "env_global":
+                    return True
+                raise SchemaError(
+                    f"Extra field '{key}' is not allowed in schema"
+                )
+
+        # extra_fields_policy is allow
+        return False
+
+    @classmethod
     def allowed_fields(cls, settings=None) -> Dict[str, Any]:
         return cls.__dataclass_fields__  # type: ignore
 
+    # @classmethod
+    # def known_long_names(cls, parent: str=None) -> List[str]:
+    #     names = []
+    #     normalized_allowed_keys = cls.normalized_allowed_keys()
+    #     for dc_name, dc_field in cls.allowed_fields().items():
+    #         name = normalized_allowed_keys.get(dc_name, dc_name)
+    #         if issubclass(dc_field.type, Schema):
+    #             names.extend(dc_field.type.known_long_names(name))
+    #         long_name = [parent, name] if parent else [name]
+    #         names.append("__".join(long_name).lower())
+    #     return names
+
     @classmethod
-    def _filter_dict(cls, d: dict, settings=None) -> dict:
-        """Filter the dict to only keep the schema fields.
-
-        Args:
-            d: dict to filter
-
-        Returns:
-            dict: filtered dict
-        """
-        allowed_keys = cls.allowed_fields()
-        return {
-            k: v
-            for k, v in d.items()
-            if k in allowed_keys  # type: ignore
-            or k.swapcase() in allowed_keys  # type: ignore
-            or k.upper().endswith("FOR_DYNACONF")  # Dynaconf internal config
+    def normalized_allowed_keys(cls) -> Dict[str, str]:
+        # a lower only list pointing to schema defined fields
+        # {"mykey": "MyKey"}
+        # So we know which key to set independent of case
+        normalized_allowed_keys = {
+            k.lower(): k for k in cls.allowed_fields().keys()
         }
+        return normalized_allowed_keys
 
     @classmethod
     def adjust_key_case(cls, d: dict) -> dict:
@@ -143,38 +196,44 @@ class Schema:
         """
         new_d = {}
         allowed_keys = cls.allowed_fields()
+        normalized_allowed_keys = cls.normalized_allowed_keys()
+
         for key, value in d.items():
-            if key in allowed_keys:  # nothing to do
+            if key in allowed_keys:  # already there, nothing to do
                 new_d[key] = value
-            elif not any([key.isupper(), key.islower()]):  # invalid for adjust
-                raise SchemaError(
-                    f"Invalid key {key} in schema. "
-                    "keys must be lowercase or UPPERCASE."
-                )
-            elif key.swapcase() in allowed_keys:  # inverse case is present
-                new_d[key.swapcase()] = value
+            else:  # can be a case of case mismatch lets find a match
+                key = normalized_allowed_keys.get(key.lower(), key)
+
+            if key in new_d:
+                # if isinstance(value, (list, tuple)):
+                #     new_d[key] += value
+                if isinstance(value, dict):
+                    new_d[key].update(value)
+                else:
+                    new_d[key] = value
             else:
-                new_d[key] = value  # key is extra_field
+                new_d[key] = value
+
         return new_d
 
     @classmethod
-    def _create(cls, **kwargs) -> "Schema":
-        try:
-            return cls(**kwargs)  # type: ignore
-        except TypeError as e:
-            raise SchemaError(e)
-
-    @classmethod
-    def _get_default_value(
-        cls, field: Field, settings: Any, schema: "Schema"
-    ) -> Any:
+    def _get_default_value(cls, field: Field, settings: Any) -> Any:
         """Get the default value for a field."""
         if field.default_expr:
-            return jinja_env.compile_expression(field.default_expr)(
-                this=settings,
-                settings=settings,
-                schema=schema,
-            )
+            try:
+                return jinja_env.compile_expression(field.default_expr)(
+                    this=settings,
+                    settings=settings,
+                    schema=cls,
+                )
+            except UndefinedError as e:
+                raise SchemaError(
+                    f"default_expr failed: {e} "
+                    f"HINT: Check the order of field definition in "
+                    f"`{cls.__name__}`, "
+                    f"`{field.name}` field must go after the fields used in "
+                    f"default_expr: '{field.default_expr}'"
+                )
         elif field.default_factory:
             default_kwargs = {}
             default_params = inspect.signature(
@@ -187,14 +246,23 @@ class Schema:
             elif "st" in default_params:
                 default_kwargs["st"] = settings
             if "schema" in default_params:
-                default_kwargs["schema"] = schema
-            return field.default_factory(**default_kwargs)
+                default_kwargs["schema"] = cls
+            try:
+                return field.default_factory(**default_kwargs)
+            except AttributeError as e:
+                raise SchemaError(
+                    f"default_factory failed: {e} "
+                    f"HINT: Check the order of field definition in "
+                    f"`{cls.__name__}`, "
+                    f"`{field.name}` field must go after the fields used in "
+                    f"default_factory: '{field.default_factory}'"
+                )
         return field.default
 
     @classmethod
     def validate(
         cls, settings, subschema_data: dict = None, parent_name: str = None
-    ) -> Optional[Dict]:
+    ) -> Tuple[Optional[Dict[str, Any]], List]:
         """Validate settings based on the schema.
 
         1. Get the data to validade, if root object it is settings as dict,
@@ -203,53 +271,68 @@ class Schema:
            because dynaconf allows UPPER and lowercase keys.
         3. depending on the extra_fields_policy, filter the data to:
            `ignore|allow`: filter out extra fields from validation.
-           `forbid`: keep extra fields and raise an error on instantiation.
+           `forbid`: keep extra fields to raise an error on instantiation.
+        4. Iterate over the schema fields to perform:
+           - custom validators accumulation
+           - default value assignment or calculation
+           - Schema type cast validation
+             - if the type is a SubSchema, then recursively validate it.
+        5. Attemp to instantiate the object.
+        6. Custom validators
+        7. Return the validated data.
         """
-        # 1
-        data = subschema_data or settings.as_dict(exclude=["dynaconf_schema"])
-        # 2
-        data = cls.adjust_key_case(data)
-        # 3
-        if cls.config().extra_fields_policy != "forbid":  # type: ignore
-            data = cls._filter_dict(data)
+        custom_validators = []  # to accumulate from schema iteration
+        final_data = {}  # to accumulate from schema iteration
 
-        instance = cls._create(**data)
+        # value coming from settings loader or subschema data
+        loaded_data = subschema_data or settings.as_dict(
+            exclude=["dynaconf_schema"]
+        )
+        loaded_data = cls.adjust_key_case(loaded_data)
+
         for dc_name, dc_field in cls.allowed_fields().items():
+            # build the dotted name ex: "my_schema.name.name"
             long_name = cls.get_long_name(parent_name, dc_name)
-            field = dc_field.default  # _MISSING_TYPE or Field
-            force_default = getattr(field, "force_default", False)
 
-            instance_value = getattr(
-                instance, dc_name, getattr(instance, dc_name.swapcase(), None)
-            )
+            # Get the value from the schema if set
+            value = dc_field.default
+            force_default = getattr(value, "force_default", False)
 
-            # by default value takes the value defined
-            # on dataclass or loaded from settings
-            value = instance_value
-
-            # if the field is an instance of our Field class
-            if isinstance(field, Field):
-                # Then we see if the value must be overridden by `default` args
-                if value is field or force_default:
-                    value = cls._get_default_value(
-                        field,
-                        settings=settings,
-                        schema=instance,
+            if isinstance(value, Field):
+                # If there are validators, then accumulate them
+                if value.validators:
+                    custom_validators.extend(
+                        cls.build_named_validators(value.validators, long_name)
                     )
 
-            if value is empty:
-                raise SchemaError(
-                    f"Missing required field `{dc_name}`` in `{cls.__name__}`."
-                    f" Please check your settings files, environment, "
-                    f" or privide a default value, "
-                    f"`{dc_name}: {dc_field.type.__name__} = Field(default)` "
-                    f"if the field is not required you can set it to None "
-                    f"`{dc_name}: {dc_field.type.__name__} = None`"
-                )
+                # Then we see if the value must be overridden by
+                # `default` or `default_factory` or `default_expr`
+                if dc_name not in loaded_data or force_default:
+                    value = cls._get_default_value(value, settings=settings)
+                elif dc_name in loaded_data:
+                    value = loaded_data[dc_name]
 
-            value = cls.validate_field_type(
+                # If schema does't provide a default and it is not loaded
+                if value is empty:
+                    cls.raise_for_missing(long_name, dc_field)
+
+            elif isinstance(value, _MISSING_TYPE):
+                # If the value is missing ex: dataclass has only `key:type`
+                # then we see if it is
+                # defined in the loaded data
+                if dc_name in loaded_data:
+                    value = loaded_data[dc_name]
+                else:
+                    cls.raise_for_missing(long_name, dc_field)
+
+            # Schema type cast validation
+            value, validators = cls.validate_field_type(
                 settings, parent_name, dc_name, dc_field, long_name, value
             )
+            custom_validators.extend(validators)
+
+            # Reaching this line means we have the final value to set.
+            final_data[dc_name] = value
 
             if not subschema_data and (
                 dc_name not in settings or force_default
@@ -258,53 +341,66 @@ class Schema:
                     dc_name, value, loader_identifier="schema_default"
                 )
 
-            # if subschema_data:
-            #     subschema_data = cls.adjust_key_case(subschema_data)
-            #     if dc_name not in subschema_data or force_default:
-            #         # NOTE: handle upper/lower case
-            #         # PROBLEM: HERE
-            #         debug(dc_name)
-            #         debug(subschema_data)
-            #         subschema_data[dc_name] = value
+        # if cls.config().extra_fields_policy == "forbid":
+        #     # No extra fields is allowed on loaded settings
+        #     if extra := set(loaded_data.keys()) - set(final_data.keys()):
+        #         raise SchemaError(
+        #             f"Extra fields {extra} are not allowed on "
+        #             f"{cls.__name__} because extra_fields_policy = 'forbid' "
+        #             f"to allow extra fields change it to 'allow' or "
+        #             f"'ignore' to ignore extra fields."
+        #         )
 
-            cls.run_dynaconf_validators(settings, long_name, field)
+        if not parent_name:
+            cls.run_dynaconf_validators(custom_validators, settings=settings)
 
-        return subschema_data
+        return final_data, custom_validators
+
+    @classmethod
+    def raise_for_missing(cls, dc_name, dc_field):
+        raise SchemaError(
+            f"Missing `{dc_name}` in `{cls.__name__}`. "
+            f"check your settings files, environment variables "
+            f"or provide a default value, `{dc_name}"
+            f": {dc_field.type.__name__} = Field(default)` "
+            f"if field is not required set it to None "
+            f"`{dc_name}: {dc_field.type.__name__} = None`"
+        )
 
     @classmethod
     def validate_field_type(
         cls, settings, parent_name, dc_name, dc_field, long_name, value
-    ) -> Any:
+    ) -> Tuple[Any, List]:
+        validators = []
+
         try:
             if issubclass(dc_field.type, Schema) and isinstance(value, dict):
-                value = dc_field.type.validate(
+                value, validators = dc_field.type.validate(
                     settings,
                     subschema_data=value,
                     parent_name=long_name,
                 )
                 if parent_name is None:
-                    # NOTE: upper/lower, force default?
                     settings.set(
-                        dc_name, value, loader_identifier="schema_default"
+                        long_name, value, loader_identifier="schema_default"
                     )
             else:
                 dc_field.type(value)
         except (TypeError, ValueError) as e:
             # NOTE: Find a way to evaluate typing at runtime here
-            # debug(e)
             special_type = dc_field.type.__class__ in (
                 typing._SpecialForm,
                 typing._GenericAlias,  # type: ignore
             )
             if not special_type and get_origin(dc_field.type) is None:
                 raise SchemaError(
-                    f"Invalid type for `{cls.__name__}.{dc_name}` "
+                    f"Invalid type for `{cls.__name__}.{long_name}` "
                     f"expected `{dc_field.type.__name__}` "
                     f"got `{type(value).__name__}` "
                     f"error: {e}"
                 )
 
-        return value
+        return value, validators
 
     @classmethod
     def get_long_name(cls, parent_name: Optional[str], dc_name: str) -> str:
@@ -313,55 +409,33 @@ class Schema:
         return long_name
 
     @classmethod
-    def run_dynaconf_validators(cls, settings, long_name, field):
-        for validator in getattr(field, "validators", []):
+    def build_named_validators(
+        cls, validators: List[Any], long_name: str
+    ) -> List[Validator]:
+        accumulation = []
+        for validator in validators:
             if isinstance(validator, Validator):
                 validator.names = (long_name,)
+                validator.must_exist = True
             elif isinstance(validator, str):
-                validator = Validator(long_name, expr=validator)
+                validator = Validator(long_name, expr=validator, required=True)
             elif callable(validator):
-                validator = Validator(long_name, condition=validator)
+                validator = Validator(
+                    long_name, condition=validator, required=True
+                )
+            else:
+                raise SchemaError(
+                    f"Invalid validator type: {type(validator).__name__}"
+                )
+            accumulation.append(validator)
+        return accumulation
 
+    @classmethod
+    def run_dynaconf_validators(
+        cls, validators: List[Validator], settings: Any
+    ):
+        for validator in validators:
             try:
                 validator.validate(settings)
             except ValidationError as e:
                 raise SchemaError(str(e))
-
-
-class SchemaEnvHolder:
-    """A class to hold multiple schemas to be validated on environments
-
-    Usage:
-        >>> from dynaconf import SchemaEnvHolder, Schema, Field, Dynaconf
-        >>> class MySchema(Schema):
-        ...     name: str = Field()
-        ...     age: int = Field()
-        >>> settings = Dynaconf(
-        ...     schema=SchemaEnvHolder(production=MySchema)
-        ... )
-    """
-
-    def __init__(self, /, **kwargs):
-        self.schemas = kwargs
-
-    def validate(self, settings) -> None:
-        if schema := self.schemas.get(settings.current_env.lower()):
-            schema.validate(settings)
-
-    def config(self, settings=None) -> SchemaConfig:
-        try:
-            return self.schemas.get(settings.current_env.lower()).config()
-        except AttributeError:
-            return self.schemas.get(
-                default_settings.ENV_FOR_DYNACONF.lower()
-            ).config()
-
-    def allowed_fields(self, settings=None) -> Dict[str, Any]:
-        try:
-            return self.schemas.get(
-                settings.current_env.lower()
-            ).allowed_fields()
-        except AttributeError:
-            return self.schemas.get(
-                default_settings.ENV_FOR_DYNACONF.lower()
-            ).allowed_fields()
