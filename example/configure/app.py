@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 settings.configure(settings_module="/tmp/configure_test/settings.py")
 

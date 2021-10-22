@@ -12,9 +12,9 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 import os
 import sys
 
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 
-settings = LazySettings(environments=True)
+settings = Dynaconf(environments=True)
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)

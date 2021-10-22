@@ -2,13 +2,13 @@ import json
 
 import pytest
 
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.loaders.json_loader import load
 from dynaconf.strategies.filtering import PrefixFilter
 
 
-settings = LazySettings(environments=True, ENV_FOR_DYNACONF="PRODUCTION")
+settings = Dynaconf(environments=True, ENV_FOR_DYNACONF="PRODUCTION")
 
 
 JSON = """
@@ -203,7 +203,7 @@ def test_dynaconf_encoder():
 
 
 def test_envless():
-    settings = LazySettings()
+    settings = Dynaconf()
     _json = """
     {
         "colors__yellow__code": "#FFCC00",
@@ -216,7 +216,7 @@ def test_envless():
 
 
 def test_prefix():
-    settings = LazySettings(filter_strategy=PrefixFilter("prefix"))
+    settings = Dynaconf(filter_strategy=PrefixFilter("prefix"))
     _json = """
     {
         "prefix_colors__yellow__code": "#FFCC00",

@@ -24,7 +24,7 @@ Options:
   --version            Show dynaconf version
   --docs               Open documentation in browser
   --banner             Show awesome banner
-  -i, --instance TEXT  Custom instance of LazySettings
+  -i, --instance TEXT  Custom instance of Dynaconf
   --help               Show this message and exit.
 
 Commands:

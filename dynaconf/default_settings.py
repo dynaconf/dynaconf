@@ -203,8 +203,8 @@ DOTENV_VERBOSE_FOR_DYNACONF = get("DOTENV_VERBOSE_FOR_DYNACONF", False)
 DOTENV_OVERRIDE_FOR_DYNACONF = get("DOTENV_OVERRIDE_FOR_DYNACONF", False)
 
 # Currently this is only used by cli. INSTANCE_FOR_DYNACONF specifies python
-# dotted path to custom LazySettings instance. Last dotted path item should be
-# instance of LazySettings.
+# dotted path to custom Dynaconf instance. Last dotted path item should be
+# instance of Dynaconf.
 INSTANCE_FOR_DYNACONF = get("INSTANCE_FOR_DYNACONF", None)
 
 # https://msg.pyyaml.org/load

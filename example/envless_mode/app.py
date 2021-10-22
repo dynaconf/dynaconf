@@ -1,8 +1,8 @@
 import os
 
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 
-settings = LazySettings(settings_file="settings.yaml")
+settings = Dynaconf(settings_file="settings.yaml")
 
 
 assert settings.FOO == "bar"

@@ -52,7 +52,7 @@ def try_to_load_from_py_module_name(
     """Try to load module by its string name.
 
     Arguments:
-        obj {LAzySettings} -- Dynaconf settings instance
+        obj {Dynaconf} -- Dynaconf settings instance
         name {str} -- Name of the module e.g: foo.bar.zaz
 
     Keyword Arguments:

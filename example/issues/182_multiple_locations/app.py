@@ -1,6 +1,8 @@
 import os
 
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 # This is the main settings file
 os.environ["SETTINGS_FILE_FOR_DYNACONF"] = "default.toml"

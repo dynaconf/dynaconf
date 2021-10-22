@@ -1,8 +1,8 @@
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 
 
 # No prefix.
-settings = LazySettings(
+settings = Dynaconf(
     settings_file="settings.toml",
     load_dotenv=True,
     ignore_unknown_envvars=True,
@@ -14,7 +14,7 @@ assert not settings.get("SECRET")
 
 
 # MYAPP_ prefix.
-settings = LazySettings(
+settings = Dynaconf(
     settings_file="settings.toml",
     load_dotenv=True,
     ignore_unknown_envvars=True,

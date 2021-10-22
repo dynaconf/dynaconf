@@ -1,7 +1,9 @@
 from flask import Flask
 
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 from dynaconf import FlaskDynaconf
-from dynaconf import settings
 
 
 app = Flask(__name__)

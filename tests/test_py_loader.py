@@ -4,7 +4,7 @@ import os
 import pytest
 
 from dynaconf import default_settings
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 from dynaconf.loaders.py_loader import load
 from dynaconf.loaders.py_loader import try_to_load_from_py_module_name
 from dynaconf.utils import DynaconfDict
@@ -67,7 +67,7 @@ def test_silently_try_to_load_from_py_module_name(tmpdir):
 def test_py_loader_from_file_dunder(clean_env, tmpdir):
     """Test load with dunder settings"""
 
-    settings = LazySettings(
+    settings = Dynaconf(
         DATABASES={
             "default": {
                 "NAME": "db",
@@ -157,7 +157,7 @@ def test_post_load_hooks(clean_env, tmpdir):
                 f.write("\n")
 
     # Act
-    settings = LazySettings(
+    settings = Dynaconf(
         preload=["plugin_folder.plugin"], settings_file="settings.py"
     )
 

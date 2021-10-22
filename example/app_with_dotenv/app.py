@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 print(settings.MYSQL_HOST)  # noqa
 print(settings.MYSQL_PASSWD)  # noqa

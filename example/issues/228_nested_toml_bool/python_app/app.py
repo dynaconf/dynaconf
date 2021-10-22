@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 print(settings.DEBUG.enabled)
 assert settings.DEBUG.enabled is False

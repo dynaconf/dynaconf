@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 assert settings["NULLED_VALUE_PYTHON"] is None
 assert settings["nulled_value_json"] is None

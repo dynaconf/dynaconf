@@ -7,6 +7,7 @@ import warnings
 from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
+from operator import ipow
 from pathlib import Path
 
 from dynaconf import default_settings
@@ -51,6 +52,8 @@ class LazySettings(LazyObject):
     More options available on https://www.dynaconf.com/configuration/
     """
 
+    __schema_based__ = False  # to use schema users must use schema.Dynaconf
+
     def __init__(self, wrapped=None, **kwargs):
         """
         handle initialization for the customization cases
@@ -59,9 +62,9 @@ class LazySettings(LazyObject):
         :param kwargs: values that overrides default_settings
         """
 
-        self._warn_dynaconf_global_settings = kwargs.pop(
-            "warn_dynaconf_global_settings", None
-        )  # in 3.0.0 global settings is deprecated
+        is_eager = kwargs.pop("is_eager", False)
+        if self.__schema_based__ is True:
+            kwargs["__schema__"] = type(self)
 
         self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
@@ -147,14 +150,6 @@ class LazySettings(LazyObject):
     def _setup(self):
         """Initial setup, run once."""
 
-        if self._warn_dynaconf_global_settings:
-            warnings.warn(
-                "Usage of `from dynaconf import settings` is now "
-                "DEPRECATED in 3.0.0+. You are encouraged to change it to "
-                "your own instance e.g: `settings = Dynaconf(*options)`",
-                DeprecationWarning,
-            )
-
         default_settings.reload(self._kwargs.get("load_dotenv"))
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
@@ -193,7 +188,7 @@ class Settings:
     """
 
     dynaconf_banner = BANNER
-    _store = DynaBox()
+    # _store = DynaBox()
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         """Execute loaders and custom initialization
@@ -204,6 +199,7 @@ class Settings:
         self._fresh = False
         self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)
+        self._ignored_keys = defaultdict(dict)
         self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
@@ -218,6 +214,8 @@ class Settings:
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
+
+        self.__schema__ = kwargs.pop("__schema__", None)
 
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
@@ -385,7 +383,8 @@ class Settings:
         """
         Get a value from settings store, this is the prefered way to access::
 
-            >>> from dynaconf import settings
+            >>> from dynaconf import Dynaconf
+            >>> settings = Dynaconf(**options)
             >>> settings.get('KEY')
 
         :param key: The name of the setting value, will always be upper case
@@ -527,7 +526,8 @@ class Settings:
 
         Program::
 
-            >>> from dynaconf import settings
+            >>> from dynaconf import Dynaconf
+            >>> settings = Dynaconf(**options)
             >>> print(settings.MESSAGE)
             'This is in dev'
             >>> print(settings.from_env('other').MESSAGE)
@@ -592,7 +592,8 @@ class Settings:
 
         Program::
 
-            >>> from dynaconf import settings
+            >>> from dynaconf import Dynaconf
+            >>> settings = Dynaconf(**options)
             >>> print settings.MESSAGE
             'This is in dev'
             >>> with settings.using_env('OTHER'):
@@ -622,7 +623,8 @@ class Settings:
         this context manager force the load of a key direct from the store::
 
             $ export DYNACONF_VALUE='Original'
-            >>> from dynaconf import settings
+            >>> from dynaconf import Dynaconf
+            >>> settings = Dynaconf(**options)
             >>> print settings.VALUE
             'Original'
             $ export DYNACONF_VALUE='Changed Value'
@@ -692,7 +694,8 @@ class Settings:
 
         Program::
 
-            >>> from dynaconf import settings
+            >>> from dynaconf import Dynaconf
+            >>> settings = Dynaconf(**options)
             >>> print settings.MESSAGE
             'This is in dev'
             >>> with settings.using_env('OTHER'):
@@ -815,8 +818,14 @@ class Settings:
                 key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
             )
 
-        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
+
+        if self.__schema__ and key not in UPPER_DEFAULT_SETTINGS:
+            if self.__schema__.__schema_skip_set__(key, loader_identifier):
+                self._ignored_keys[key] = value
+                return
+
+        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         existing = getattr(self, key, None)
 
         if getattr(value, "_dynaconf_del", None):
@@ -880,7 +889,8 @@ class Settings:
         """
         Update values in the current settings object without saving in stores::
 
-            >>> from dynaconf import settings
+            >>> from dynaconf import Dynaconf
+            >>> settings = Dynaconf(**options)
             >>> print settings.NAME
             'Bruno'
             >>> settings.update({'NAME': 'John'}, other_value=1)
@@ -985,6 +995,9 @@ class Settings:
 
         self.load_includes(env, silent=silent, key=key)
         execute_hooks("post", self, env, silent=silent, key=key)
+
+        if self.__schema__:
+            self.__schema__.__schema_validate__(self)
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
@@ -1221,5 +1234,7 @@ RESERVED_ATTRS = (
         "validators",
         "_validate_only",
         "_validate_exclude",
+        "_ignored_keys",
+        "__schema__",
     ]
 )

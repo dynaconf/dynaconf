@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 print("EXAMPLE_ prefix")
 settings.configure(ENVVAR_PREFIX_FOR_DYNACONF="EXAMPLE")

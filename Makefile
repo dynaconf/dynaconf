@@ -143,7 +143,7 @@ test_redis:
 	docker stop dynaconf_with_redis || true
 
 watch:
-	ls **/**.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/
+	ptw --onpass "notify-send Passing ✅" --onfail "notify-send Fail 🛑" --runner "pytest -m \"not integration\" -s -vvv -l --tb=long --maxfail=1 tests/"
 
 watch_django:
 	ls {**/**.py,~/.virtualenvs/dynaconf/**/**.py,.venv/**/**.py} | PYTHON_PATH=. DJANGO_SETTINGS_MODULE=foo.settings entr example/django_example/manage.py test polls -v 2

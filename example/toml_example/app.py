@@ -1,5 +1,4 @@
 from dynaconf import Dynaconf
-from dynaconf import settings
 from dynaconf.strategies.filtering import PrefixFilter
 
 # print all values in the file

@@ -20,7 +20,9 @@ def connect(server, port, username, password):
 
 # Dynaconf takes care of it!
 
-from dynaconf import settings  # noqa
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)  # noqa
 
 print(settings.dynaconf_banner)
 

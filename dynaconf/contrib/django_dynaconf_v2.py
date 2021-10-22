@@ -69,10 +69,10 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         "default_settings_paths", dynaconf.DEFAULT_SETTINGS_FILES
     )
 
-    class UserSettingsHolder(dynaconf.LazySettings):
+    class UserSettingsHolder(dynaconf.Dynaconf):
         _django_override = True
 
-    lazy_settings = dynaconf.LazySettings(**options)
+    lazy_settings = dynaconf.Dynaconf(**options)
     dynaconf.settings = lazy_settings  # rebind the settings
 
     # 2) Set all settings back to django_settings_module for 'django check'
@@ -116,7 +116,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     # on external `scripts` (out of Django's lifetime)
     for stack_item in reversed(inspect.stack()):
         if isinstance(
-            stack_item.frame.f_globals.get("settings"), conf.LazySettings
+            stack_item.frame.f_globals.get("settings"), conf.Dynaconf
         ):
             stack_item.frame.f_globals["settings"] = lazy_settings
 

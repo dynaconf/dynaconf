@@ -110,7 +110,7 @@ class FlaskDynaconf:
     def init_app(self, app, **kwargs):
         """kwargs holds initial dynaconf configuration"""
         self.kwargs.update(kwargs)
-        self.settings = self.dynaconf_instance or dynaconf.LazySettings(
+        self.settings = self.dynaconf_instance or dynaconf.Dynaconf(
             **self.kwargs
         )
         dynaconf.settings = self.settings  # rebind customized settings

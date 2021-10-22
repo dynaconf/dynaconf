@@ -16,7 +16,7 @@ from typing import Union
 
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.utils.boxing import DynaBox
-    from dynaconf.base import LazySettings, Settings
+    from dynaconf.base import Dynaconf, Settings
 
 
 BANNER = """
@@ -293,12 +293,12 @@ def ensure_a_list(data: Any) -> Union[List[int], List[str]]:
 
 
 def build_env_list(
-    obj: Union[Settings, LazySettings], env: Optional[str]
+    obj: Union[Settings, Dynaconf], env: Optional[str]
 ) -> List[str]:
     """Build env list for loaders to iterate.
 
     Arguments:
-        obj {LazySettings} -- A Dynaconf settings instance
+        obj {Dynaconf} -- A Dynaconf settings instance
         env {str} -- The current env to be loaded
 
     Returns:
@@ -393,7 +393,7 @@ def extract_json_objects(
 
 
 def recursively_evaluate_lazy_format(
-    value: Any, settings: Union[Settings, LazySettings]
+    value: Any, settings: Union[Settings, Dynaconf]
 ) -> Any:
     """Given a value as a data structure, traverse all its members
     to find Lazy values and evaluate it.

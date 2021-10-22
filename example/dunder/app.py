@@ -1,6 +1,8 @@
 from pprint import pprint
 
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 settings.FILES
 

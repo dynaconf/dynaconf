@@ -29,7 +29,7 @@ def test_override_settings_596(tmpdir):
     assert settings.SECRET_KEY == "abcdef"
 
     # mimic what django.test.utils.override_settings does
-    class UserSettingsHolder(dynaconf.LazySettings):
+    class UserSettingsHolder(dynaconf.Dynaconf):
         _django_override = True
 
     override = UserSettingsHolder(settings._wrapped)

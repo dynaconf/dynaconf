@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from dynaconf import default_settings
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 from dynaconf.cli import EXTS
 from dynaconf.cli import main
 from dynaconf.cli import read_file_in_root_directory
@@ -15,7 +15,7 @@ from dynaconf.vendor.click.testing import CliRunner
 
 
 runner = CliRunner()
-settings = LazySettings(OPTION_FOR_TESTS=True, environments=True)
+settings = Dynaconf(OPTION_FOR_TESTS=True, environments=True)
 
 
 def run(cmd, env=None, attr="output"):

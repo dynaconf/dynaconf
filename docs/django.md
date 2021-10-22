@@ -257,9 +257,9 @@ Dynaconf will be available only on `settings.py` scope, on the rest of your appl
 `settings.py`
 ```py
 import sys
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 
-settings = LazySettings(**YOUR_OPTIONS_HERE)
+settings = Dynaconf(**YOUR_OPTIONS_HERE)
 
 DEBUG = settings.get('DEBUG', False)
 DATABASES = settings.get('DATABASES', {

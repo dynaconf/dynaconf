@@ -9,7 +9,7 @@ from dynaconf.utils import upperfy
 class BaseLoader:
     """Base loader for dynaconf source files.
 
-    :param obj: {[LazySettings]} -- [Dynaconf settings]
+    :param obj: {[Dynaconf]} -- [Dynaconf settings]
     :param env: {[string]} -- [the current env to be loaded defaults to
       [development]]
     :param identifier: {[string]} -- [identifier ini, yaml, json, py, toml]

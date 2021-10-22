@@ -91,7 +91,7 @@ $ dynaconf -i config.settings write vault -s password=777777 -s username=produse
 then you can access values normally in your program
 
 ```py
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 settings.PASSWORD == 555555  # if ENV_FOR_DYNACONF is the default `development`
 settings.USERNAME == 'admin'  # if ENV_FOR_DYNACONF is the default `development`
@@ -213,7 +213,7 @@ You can access the fresh value using **settings.get_fresh(key)**
 There is also the **fresh** context manager
 
 ```python
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 print(settings.FOO)  # this data was loaded once on import
 
@@ -238,7 +238,7 @@ export FRESH_VARS_FOR_DYNACONF='["MYSQL_HOST", "OTHERVAR"]'
 Then
 
 ```python
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 print(settings.FOO)         # This data was loaded once on import
 

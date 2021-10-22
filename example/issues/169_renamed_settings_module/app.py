@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 assert settings.ENVVAR_PREFIX_FOR_DYNACONF == "GREATAPP"
 assert settings.GLOBAL_ENV_FOR_DYNACONF == "GREATAPP"

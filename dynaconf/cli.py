@@ -3,16 +3,14 @@ import io
 import os
 import pprint
 import sys
-import warnings
 import webbrowser
 from contextlib import suppress
 from pathlib import Path
 
 from dynaconf import constants
 from dynaconf import default_settings
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 from dynaconf import loaders
-from dynaconf import settings as legacy_settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
@@ -65,7 +63,7 @@ def set_settings(ctx, instance=None):
 
             settings.DYNACONF.configure()
         except AttributeError:
-            settings = LazySettings()
+            settings = Dynaconf()
 
         if settings is not None:
             click.echo(
@@ -80,16 +78,14 @@ def set_settings(ctx, instance=None):
             if ctx.invoked_subcommand and ctx.invoked_subcommand not in [
                 "init",
             ]:
-                warnings.warn(
-                    "Starting on 3.x the param --instance/-i is now required. "
+                raise RuntimeError(
+                    "Param --instance/-i is required. "
                     "try passing it `dynaconf -i path.to.settings <cmd>` "
                     "Example `dynaconf -i config.settings list` "
+                    "or export INSTANCE_FOR_DYNACONF variable"
                 )
-                settings = legacy_settings
-            else:
-                settings = LazySettings(create_new_settings=True)
         else:
-            settings = LazySettings()
+            settings = Dynaconf()
 
 
 def import_settings(dotted_path):
@@ -193,7 +189,7 @@ def show_banner(ctx, param, value):
     "-i",
     default=None,
     envvar="INSTANCE_FOR_DYNACONF",
-    help="Custom instance of LazySettings",
+    help="Custom instance of Dynaconf",
 )
 @click.pass_context
 def main(ctx, instance):

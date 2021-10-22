@@ -1,6 +1,6 @@
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 
-settings = LazySettings(
+settings = Dynaconf(
     environments=True,
     ENV_FOR_DYNACONF="example",
     ENVVAR_PREFIX_FOR_DYNACONF="PROGRAM",

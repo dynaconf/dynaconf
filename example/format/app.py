@@ -1,6 +1,8 @@
 import os
 
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 assert settings.get("USERNAME") is None
 assert settings.DATABASE_NAME == "my_database.db"
