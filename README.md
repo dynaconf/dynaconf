@@ -1,4 +1,6 @@
-[![Dynaconf](docs/img/logo_400.svg?sanitize=true)](http://dynaconf.com)
+<!-- [![Dynaconf](docs/img/logo_400.svg?sanitize=true)](http://dynaconf.com) -->
+
+<p align="center"><img src="/art/header.png?v2" alt="dynaconf. new logo"></p>
 
 > **dynaconf** - Configuration Management for Python.
 
@@ -134,7 +136,8 @@ There is a lot more you can do, **read the docs:** http://dynaconf.com
 
 Main discussions happens on [Discussions Tab](https://github.com/rochacbruno/dynaconf/discussions) learn more about how to get involved on [CONTRIBUTING.md guide](CONTRIBUTING.md)
 
-
-## more
+## More
 
 If you are looking for something similar to Dynaconf to use in your Rust projects: https://github.com/rubik/hydroconf
+
+And a special thanks to [Caneco](https://twitter.com/caneco) for the logo.
