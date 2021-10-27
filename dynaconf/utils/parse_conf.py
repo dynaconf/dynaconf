@@ -16,6 +16,7 @@ try:
     from jinja2 import Environment
 
     jinja_env = Environment()
+    jinja_env.globals["env"] = os.environ
     for p_method in ("abspath", "realpath", "relpath", "dirname", "basename"):
         jinja_env.filters[p_method] = getattr(os.path, p_method)
 except ImportError:  # pragma: no cover
@@ -223,7 +224,7 @@ converters = {
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
-    "@reset": Reset,  # @reset is DEPRECATED on v3.0.0
+    "@reset": Reset,
     "@del": Del,
     "@merge": Merge,
     "@merge_unique": lambda value, box_settings: Merge(

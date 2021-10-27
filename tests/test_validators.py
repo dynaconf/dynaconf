@@ -3,6 +3,7 @@ from types import MappingProxyType
 import pytest
 
 from dynaconf import Dynaconf
+from dynaconf import LazySettings
 from dynaconf import ValidationError
 from dynaconf import Validator
 from dynaconf.validator import ValidatorList
@@ -108,7 +109,7 @@ def test_validators_on_init(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True,
         settings_file=str(tmpfile),
         validators=(
@@ -126,7 +127,7 @@ def test_validators_register(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True,
         ENV_FOR_DYNACONF="EXAMPLE",
         SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
@@ -143,7 +144,13 @@ def test_validators_register(tmpdir):
         Validator(
             "MYSQL_HOST", env="PRODUCTION", is_not_in=settings.DEV_SERVERS
         ),
+        Validator("NAME", condition=lambda value: value in ("BRUNO", "MIKE")),
         Validator("NAME", condition=lambda x: x in ("BRUNO", "MIKE")),
+        Validator(
+            "NAME", condition=lambda settings, x: x in ("BRUNO", "MIKE")
+        ),
+        Validator("NAME", condition=lambda this, x: x in ("BRUNO", "MIKE")),
+        Validator("NAME", condition=lambda st, x: x in ("BRUNO", "MIKE")),
         Validator(
             "IMAGE_1",
             "IMAGE_2",
@@ -225,7 +232,7 @@ def test_validation_error(validator_instance, tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True,
         ENV_FOR_DYNACONF="EXAMPLE",
         SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
@@ -245,7 +252,7 @@ def test_no_reload_on_single_env(tmpdir, mocker):
     )
     other_env_validator = Validator("NAME", must_exist=True, env="production")
 
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True,
         ENV_FOR_DYNACONF="DEVELOPMENt",
         SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
@@ -315,7 +322,7 @@ def test_ignoring_duplicate_validators(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True,
         ENV_FOR_DYNACONF="EXAMPLE",
         SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
@@ -345,7 +352,7 @@ def test_validator_custom_message(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
 
@@ -369,7 +376,7 @@ def test_validator_subclass_messages(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
 
@@ -436,7 +443,7 @@ def test_validator_subclass_messages(tmpdir):
 def test_positive_combined_validators(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
     settings.validators.register(
@@ -449,7 +456,7 @@ def test_positive_combined_validators(tmpdir):
 def test_negative_combined_or_validators(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
     settings.validators.register(
@@ -462,7 +469,7 @@ def test_negative_combined_or_validators(tmpdir):
 def test_negative_combined_and_validators(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
-    settings = Dynaconf(
+    settings = LazySettings(
         environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
     )
     settings.validators.register(
@@ -480,7 +487,9 @@ def test_envless_and_combined_validators(tmpdir):
     name = 'Bruno'
     """
     tmpfile.write(TOML)
-    settings = Dynaconf(SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True)
+    settings = LazySettings(
+        SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+    )
     settings.validators.register(
         Validator("VERSION", ne=1) & Validator("value", ne=True),
     )
@@ -495,7 +504,7 @@ def test_cast_before_validate(tmpdir):
     colors = ['red', 'green', 'blue']
     """
     tmpfile.write(TOML)
-    settings = Dynaconf(
+    settings = LazySettings(
         settings_file=str(tmpfile),
         silent=True,
         lowercase_read=True,
@@ -519,12 +528,15 @@ def test_validator_can_provide_default(tmpdir):
     colors = ['red', 'green', 'blue']
     """
     tmpfile.write(TOML)
-    settings = Dynaconf(
+    settings = LazySettings(
         settings_file=str(tmpfile),
         validators=[
             Validator("name", required=True),
             Validator("FOO", default="BAR"),
             Validator("COMPUTED", default=lambda st, va: "I am computed"),
+            Validator("COMPUTED1", default=lambda this: "I am computed"),
+            Validator("COMPUTED2", default=lambda settings: "I am computed"),
+            Validator("COMPUTED3", default=lambda validator: "I am computed"),
         ],
     )
     assert settings.name == "Bruno"
@@ -537,7 +549,7 @@ def test_validator_can_provide_default(tmpdir):
 def test_validator_init_exclude(tmpdir, yaml_validators_mixed):
     tmpfile = tmpdir.join("settings.yaml")
     tmpfile.write(YAML)
-    settings = Dynaconf(
+    settings = LazySettings(
         settings_file=str(tmpfile),
         validators=yaml_validators_mixed,
         validate_exclude=["missing", "app.missing", "app.args.missing"],
@@ -548,7 +560,7 @@ def test_validator_init_exclude(tmpdir, yaml_validators_mixed):
 def test_validator_init_only(tmpdir, yaml_validators_mixed):
     tmpfile = tmpdir.join("settings.yaml")
     tmpfile.write(YAML)
-    settings = Dynaconf(
+    settings = LazySettings(
         settings_file=str(tmpfile),
         validators=yaml_validators_mixed,
         validate_only=["server"],
@@ -559,7 +571,7 @@ def test_validator_init_only(tmpdir, yaml_validators_mixed):
 def test_validator_init_mixed(tmpdir, yaml_validators_mixed):
     tmpfile = tmpdir.join("settings.yaml")
     tmpfile.write(YAML)
-    settings = Dynaconf(
+    settings = LazySettings(
         settings_file=str(tmpfile),
         validators=yaml_validators_mixed,
         validate_only=["server", "app"],
@@ -573,7 +585,7 @@ def test_validator_only_post_register(
 ):
     tmpfile = tmpdir.join("settings.yaml")
     tmpfile.write(YAML)
-    settings = Dynaconf(
+    settings = LazySettings(
         settings_file=str(tmpfile),
         validators=yaml_validators_good,
         validate_only=["server"],
@@ -589,7 +601,7 @@ def test_validator_exclude_post_register(
 ):
     tmpfile = tmpdir.join("settings.yaml")
     tmpfile.write(YAML)
-    settings = Dynaconf(
+    settings = LazySettings(
         settings_file=str(tmpfile),
         validators=yaml_validators_good,
         validate_only=["server", "app.path"],
@@ -604,18 +616,20 @@ def test_validator_exclude_post_register(
 
 
 def test_raises_on_invalid_selective_args(tmpdir, yaml_validators_good):
-    settings = Dynaconf(validators=yaml_validators_good, validate_only=int)
+    settings = LazySettings(validators=yaml_validators_good, validate_only=int)
     with pytest.raises(ValueError):
         settings.validator_instance.validate()
 
-    settings = Dynaconf(validators=yaml_validators_good, validate_exclude=int)
+    settings = LazySettings(
+        validators=yaml_validators_good, validate_exclude=int
+    )
     with pytest.raises(ValueError):
         settings.validator_instance.validate()
 
 
 def test_validator_descriptions(tmpdir):
     validators = ValidatorList(
-        Dynaconf(),
+        LazySettings(),
         validators=[
             Validator("foo", description="foo"),
             Validator("bar", description="bar"),
@@ -637,7 +651,7 @@ def test_validator_descriptions(tmpdir):
 
 def test_validator_descriptions_flat(tmpdir):
     validators = ValidatorList(
-        Dynaconf(),
+        LazySettings(),
         validators=[
             Validator("foo", description="foo"),
             Validator("bar", description="bar"),
@@ -671,3 +685,22 @@ def test_toml_should_not_change_validator_type_using_at_sign():
     )
 
     assert settings.test == "+172800"
+
+
+def test_jinja_expressions(tmpdir, clean_env):
+    tmpfile = tmpdir.join("settings.yaml")
+    tmpfile.write(
+        """
+        foo: bar
+        baz: zaz
+        """
+    )
+
+    with pytest.raises(ValidationError):
+        settings = Dynaconf(
+            settings_file=str(tmpfile),
+            validators=[
+                Validator("foo", is_type_of=str, expr="value != 'bar'"),
+            ],
+        )
+        settings.validators.validate()

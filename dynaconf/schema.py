@@ -1,6 +1,7 @@
 import enum
 import inspect
 import typing
+from collections import defaultdict
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -26,7 +27,7 @@ class SchemaError(Exception):
     ...
 
 
-class ExtraFields(str, enum.Enum):
+class SchemaExtraFields(str, enum.Enum):
     allow = "allow"  # Load from settings even if not in schema
     forbid = "forbid"  # Raise error if not in schema but found in settings
     ignore = "ignore"  # Do not load from settings if not on schema
@@ -38,6 +39,16 @@ class SchemaValidationMode(str, enum.Enum):
 
 
 class Field:
+    __slots__ = [
+        "name",
+        "default",
+        "default_factory",
+        "default_expr",
+        "force_default",
+        "validators",
+        "datatype",
+    ]
+
     def __init__(
         self,
         default: Optional[Any] = empty,
@@ -82,9 +93,12 @@ class Field:
     def __set__(self, instance: Any, value: Any):
         instance.__dict__[self.name] = value
 
+    def __repr__(self):
+        return f"<Field {self.name}>"
+
 
 class SchemaConfig:
-    extra_fields_policy: ExtraFields = ExtraFields.allow
+    extra_fields_policy: SchemaExtraFields = SchemaExtraFields.allow
     validation_mode: SchemaValidationMode = SchemaValidationMode.eager
 
     def __init__(self, **kwargs: Any):
@@ -95,13 +109,33 @@ class SchemaConfig:
 class Schema:
     """A Schema to define settings and validate them."""
 
-    __schema_fields_cache__: Dict[str, Field] = None
+    __schema_fields_cache__: Dict[type, Dict[str, Field]] = defaultdict(dict)
+    """
+    After resolving the schema defined fields and transforming all the
+    definitions into `Field` objects, we cache the fields in the class.
+    """
+
+    def __getattribute__(self, name: str):
+        """
+        When acessing a setting value, `settings.name` or `settings.NAME`
+        if the `name` is defined in the schema whe avoid returning the
+        value from the schema, but we go to the settings loaded from the
+        environment and files.
+
+        This means that there is no way from the instance to access
+        the schema fields, those are available only from the class.
+        """
+        fields = object.__getattribute__(self, "__schema_fields__")().keys()
+        if name in fields:
+            return object.__getattribute__(self, "_wrapped").get(name)
+        return super().__getattribute__(name)
 
     class SchemaConfig:
-        """Subclasses may override this parameters"""
+        """Subclasses may override local variables here"""
 
     @classmethod
     def __schema_config__(cls) -> SchemaConfig:
+        """Returns the default values from SchemaConfig + User customizations"""
         custom_config = {
             k: v
             for k, v in vars(cls.SchemaConfig).items()
@@ -117,13 +151,17 @@ class Schema:
         3. If value is not a Field, creates a Field with default value
         4. If value is a Field, defined its type attribute
         """
-        __import__("ipdb").set_trace()
-        if cls.__schema_fields_cache__ is None:
+        if cls not in cls.__schema_fields_cache__:
             hints = typing.get_type_hints(cls)
-            debug(hints)
             class_vars = vars(cls)
-            debug(class_vars)
             fields = {}
+
+            for name, hint in hints.items():
+                if name.startswith(("_", "SchemaConfig")):
+                    continue
+                if name not in class_vars:
+                    fields[name] = Field(datatype=hint)
+
             for k, v in class_vars.items():
                 if k.startswith(("_", "SchemaConfig")):
                     continue
@@ -139,8 +177,10 @@ class Schema:
                             "and no default value"
                         )
                     fields[k] = v
-            cls.__schema_fields_cache__ = fields
-        return cls.__schema_fields_cache__
+            cls.__schema_fields_cache__[cls] = fields
+            # DOCS: Order is respected only when all fields are typed
+            # or all fields have a default value.
+        return cls.__schema_fields_cache__[cls]
 
     # @classmethod
     # def known_long_names(cls, parent: str=None) -> List[str]:
@@ -198,10 +238,16 @@ class Schema:
         # Value comming from loaders
         # key is not defined on schema
         # does user wants to ignore or allow this value?
-        if cls.__schema_config__().extra_fields_policy == ExtraFields.ignore:
+        if (
+            cls.__schema_config__().extra_fields_policy
+            == SchemaExtraFields.ignore
+        ):
             return dc_field is None
 
-        if cls.__schema_config__().extra_fields_policy == ExtraFields.forbid:
+        if (
+            cls.__schema_config__().extra_fields_policy
+            == SchemaExtraFields.forbid
+        ):
             # Do not raise when there is a key in env var but raise for
             # other sources.
             if dc_field is None:
@@ -315,9 +361,7 @@ class Schema:
         final_data = {}  # to accumulate from schema iteration
 
         # value coming from settings loader or subschema data
-        loaded_data = subschema_data or settings.as_dict(
-            # exclude=["dynaconf_schema"]
-        )
+        loaded_data = subschema_data or settings.as_dict()
         loaded_data = cls.__schema_adjust_key_case__(loaded_data)
 
         for dc_name, dc_field in cls.__schema_fields__().items():
@@ -328,36 +372,35 @@ class Schema:
             value = dc_field.default
             force_default = getattr(value, "force_default", False)
 
-            if isinstance(value, Field):
-                # If there are validators, then accumulate them
-                if value.validators:
-                    custom_validators.extend(
-                        cls.__schema_build_named_validators__(
-                            value.validators, long_name
-                        )
+            # If there are validators, then accumulate them
+            if dc_field.validators:
+                custom_validators.extend(
+                    cls.__schema_build_named_validators__(
+                        dc_field.validators, long_name
                     )
+                )
 
-                # Then we see if the value must be overridden by
-                # `default` or `default_factory` or `default_expr`
-                if dc_name not in loaded_data or force_default:
-                    value = cls.__schema_get_default_value__(
-                        value, settings=settings
-                    )
-                elif dc_name in loaded_data:
-                    value = loaded_data[dc_name]
+            # Then we see if the value must be overridden by
+            # `default` or `default_factory` or `default_expr`
+            if dc_name not in loaded_data or force_default:
+                value = cls.__schema_get_default_value__(
+                    dc_field, settings=settings
+                )
+            elif dc_name in loaded_data:
+                value = loaded_data[dc_name]
 
-                # If schema does't provide a default and it is not loaded
-                if value is empty:
-                    cls.__schema_raise_for_missing__(long_name, dc_field)
+            # If schema does't provide a default and it is not loaded
+            if value is empty:
+                cls.__schema_raise_for_missing__(long_name, dc_field)
 
-            elif isinstance(value, _MISSING_TYPE):
-                # If the value is missing ex: dataclass has only `key:type`
-                # then we see if it is
-                # defined in the loaded data
-                if dc_name in loaded_data:
-                    value = loaded_data[dc_name]
-                else:
-                    cls.__schema_raise_for_missing__(long_name, dc_field)
+            # elif isinstance(value, (_MISSING_TYPE, Empty)):
+            #     # If the value is missing ex: dataclass has only `key:type`
+            #     # then we see if it is
+            #     # defined in the loaded data
+            #     if dc_name in loaded_data:
+            #         value = loaded_data[dc_name]
+            #     else:
+            #         cls.__schema_raise_for_missing__(long_name, dc_field)
 
             # Schema type cast validation
             value, validators = cls.__schema_validate_type__(
@@ -368,8 +411,9 @@ class Schema:
             # Reaching this line means we have the final value to set.
             final_data[dc_name] = value
 
+            # First set it to the `settings` wrapped object
             if not subschema_data and (
-                dc_name not in settings or force_default
+                dc_name not in loaded_data or force_default
             ):
                 settings.set(
                     dc_name, value, loader_identifier="schema_default"
@@ -396,9 +440,9 @@ class Schema:
             f"Missing `{dc_name}` in `{cls.__name__}`. "
             f"check your settings files, environment variables "
             f"or provide a default value, `{dc_name}"
-            f": {dc_field.type.__name__} = Field(default)` "
+            f": {dc_field.datatype.__name__} = Field(default)` "
             f"if field is not required set it to None "
-            f"`{dc_name}: {dc_field.type.__name__} = None`"
+            f"`{dc_name}: {dc_field.datatype.__name__} = None`"
         )
 
     @classmethod
@@ -407,7 +451,6 @@ class Schema:
     ) -> Tuple[Any, List]:
         validators = []
 
-        debug(dc_field.datatype)
         if runtype.issubclass(dc_field.datatype, Schema) and isinstance(
             value, dict
         ):
@@ -416,17 +459,19 @@ class Schema:
                 subschema_data=value,
                 parent_name=long_name,
             )
-            if parent_name is None:
-                settings.set(
-                    long_name, value, loader_identifier="schema_default"
-                )
+            # if parent_name is None:
+            #     settings.set(
+            #         long_name, value, loader_identifier="schema_default"
+            #     )
         else:
             if dc_field.datatype is _MISSING_TYPE:
-                raise SchemaError("MIssing type, how to infer???")
+                raise SchemaError(
+                    f"Cannot determine datatype for field {dc_name}"
+                )
             if not runtype.isa(value, dc_field.datatype):
                 raise SchemaError(
-                    f"{long_name} must be of type {dc_field.datatype} "
-                    f"got {type(value)} instead"
+                    f"`{cls.__name__}.{long_name}` must be of type "
+                    f"`{dc_field.datatype}` got `{type(value)}` instead"
                 )
         return value, validators
 

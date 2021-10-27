@@ -20,6 +20,9 @@ def load(obj, env=None, silent=True, key=None):
     # Load the global env if exists and overwrite everything
     load_from_env(obj, global_prefix, key, silent, IDENTIFIER + "_global")
 
+    # NOTE: Must remove the always load of DYNACONF_ when alternative
+    # envvar_prefix is set (in 4.0)
+
 
 def load_from_env(
     obj,

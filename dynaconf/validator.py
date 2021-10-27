@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from collections import defaultdict
 from itertools import chain
 from types import MappingProxyType
@@ -14,6 +15,7 @@ from typing import Union
 from dynaconf import validator_conditions
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils.functional import empty
+from dynaconf.utils.parse_conf import jinja_env
 
 
 EQUALITY_ATTRS = (
@@ -94,6 +96,7 @@ class Validator:
                 "but it is {value} in env {env}"
             ),
             "combined": "combined validators failed {errors}",
+            "expr": "Expression {expr} failed for {name}",
         }
     )
 
@@ -109,6 +112,7 @@ class Validator:
         cast: Optional[Callable[[Any], Any]] = None,
         default: Optional[Union[Any, Callable[[Any, Validator], Any]]] = empty,
         description: Optional[str] = None,
+        expr: Optional[str] = None,
         **operations: Any,
     ) -> None:
         # Copy immutable MappingProxyType as a mutable dict
@@ -130,6 +134,7 @@ class Validator:
         self.operations = operations
         self.default = default
         self.description = description
+        self.expr = expr
         self.envs: Optional[Sequence[str]] = None
 
         if isinstance(env, str):
@@ -222,11 +227,30 @@ class Validator:
                 continue
 
             if self.default is not empty:
-                default_value = (
-                    self.default(settings, self)
-                    if callable(self.default)
-                    else self.default
-                )
+                # This was made to keep backward compatibility
+                # default can accept a callable that receives
+                # this or settings pointing to the settings instance
+                # some current users shorted to `st` and `va`
+                if callable(self.default):
+                    default_kwargs = {}
+                    default_params = inspect.signature(self.default).parameters
+                    if "this" in default_params:
+                        default_kwargs["this"] = settings
+                    elif "settings" in default_params:
+                        default_kwargs["settings"] = settings
+                    elif "st" in default_params:
+                        default_kwargs["st"] = settings
+
+                    if "validator" in default_params:
+                        default_kwargs["validator"] = self
+                    elif "va" in default_params:
+                        default_kwargs["va"] = self
+
+                    default_value = self.default(  # type: ignore
+                        **default_kwargs
+                    )
+                else:
+                    default_value = self.default
             else:
                 default_value = empty
 
@@ -250,7 +274,29 @@ class Validator:
 
             # is there a callable condition?
             if self.condition is not None:
-                if not self.condition(value):
+                # This was made to keep backward compatibility
+                # condition can accept a callable that receives
+                # this or settings pointing to the settings instance
+                # some current users shorted to `st`
+                # also the condition value has been shorted as `x`
+                condition_kwargs = {}
+                condition_params = inspect.signature(self.condition).parameters
+
+                if "value" in condition_params:
+                    condition_kwargs["value"] = value
+                else:
+                    for param in condition_params:
+                        if param not in ("this", "settings", "st"):
+                            condition_kwargs[param] = value  # handle `x` case
+
+                if "this" in condition_params:
+                    condition_kwargs["this"] = settings
+                elif "settings" in condition_params:
+                    condition_kwargs["settings"] = settings
+                elif "st" in condition_params:
+                    condition_kwargs["st"] = settings
+
+                if not self.condition(**condition_kwargs):  # type: ignore
                     raise ValidationError(
                         self.messages["condition"].format(
                             name=name,
@@ -258,6 +304,18 @@ class Validator:
                             value=value,
                             env=env,
                         )
+                    )
+
+            # is there a Jinja Expression?
+            if self.expr is not None:
+                result = jinja_env.compile_expression(self.expr)(
+                    this=settings,
+                    settings=settings,
+                    value=value,
+                )
+                if not result:
+                    raise ValidationError(
+                        self.messages["expr"].format(name=name, expr=self.expr)
                     )
 
             # operations

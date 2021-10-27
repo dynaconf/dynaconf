@@ -6,8 +6,8 @@ import os
 import warnings
 from collections import defaultdict
 from contextlib import contextmanager
+from contextlib import nullcontext
 from contextlib import suppress
-from operator import ipow
 from pathlib import Path
 
 from dynaconf import default_settings
@@ -61,7 +61,6 @@ class LazySettings(LazyObject):
         :param wrapped: a deepcopy of this object will be wrapped (issue #596)
         :param kwargs: values that overrides default_settings
         """
-
         is_eager = kwargs.pop("is_eager", False)
         if self.__schema_based__ is True:
             kwargs["__schema__"] = type(self)
@@ -77,6 +76,9 @@ class LazySettings(LazyObject):
                 self._wrapped = copy.deepcopy(wrapped)
             else:
                 self._wrapped = wrapped
+
+        if is_eager:
+            self._setup()
 
     def __resolve_config_aliases(self, kwargs):
         """takes aliases for _FOR_DYNACONF configurations
@@ -150,7 +152,7 @@ class LazySettings(LazyObject):
     def _setup(self):
         """Initial setup, run once."""
 
-        default_settings.reload(self._kwargs.get("load_dotenv"))
+        default_settings.reload(self._kwargs.get("LOAD_DOTENV_FOR_DYNACONF"))
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
@@ -167,7 +169,7 @@ class LazySettings(LazyObject):
         :param settings_module: defines the setttings file
         :param kwargs:  override default settings
         """
-        default_settings.reload(self._kwargs.get("load_dotenv"))
+        default_settings.reload(self._kwargs.get("LOAD_DOTENV_FOR_DYNACONF"))
         environment_var = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
@@ -224,8 +226,7 @@ class Settings:
         compat_kwargs(kwargs)
         if settings_module:
             self.set("SETTINGS_FILE_FOR_DYNACONF", settings_module)
-        for key, value in kwargs.items():
-            self.set(key, value)
+        self.update(**kwargs, loader_identifier="__init__")
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
         self.execute_loaders()
@@ -334,7 +335,7 @@ class Settings:
         :param env: Str env name, default self.current_env `DEVELOPMENT`
         :param internal: bool - should include dynaconf internal vars?
         """
-        ctx_mgr = suppress() if env is None else self.using_env(env)
+        ctx_mgr = nullcontext() if env is None else self.using_env(env)
         with ctx_mgr:
             data = self.store.to_dict().copy()
             # if not internal remove internal settings
