@@ -32,14 +32,14 @@ The mechanism to evaluate `Lazy` values has been refactored and now `@format` an
 Fixed a problem when multiple combined validators are registered and fixed
 duplication of ValidationError messages.
 
-All names in a must_exist clausule are now tested, before it wes stopping
+All names in a must_exist clause are now tested, before it was stopping
 validation on the first failure.
 
 ### Fixes
 
 - Cli now accepts dotted keys ex: `dynaconf -i config.settings list -k foo.bar.zaz`
 - boto is now optional for vault authentication
-- a `.formatter` attrbute lookup was conflicting with Django logging so argument has
+- a `.formatter` attribute lookup was conflicting with Django logging so argument has
 been renamed.
 - box_settings made optional to DynaBox
 - Included an example of SOPS custom loader
@@ -161,7 +161,7 @@ key = 'value'
 key = 'value'
 ```
 
-**Now starting on 3.0.0** the environments are disabled by default, so the same file can be crated as.
+**Now starting on 3.0.0** the environments are disabled by default, so the same file can be created as.
 
 ```toml
 key = 'value'
