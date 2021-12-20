@@ -82,7 +82,12 @@ setup(
         "test": test_requirements,
     },
     python_requires=">=3.7",
-    entry_points={"console_scripts": ["dynaconf=dynaconf.cli:main"]},
+    entry_points={
+        "console_scripts": ["dynaconf=dynaconf.cli:main"],
+        "pytest11": [
+            "dynaconf = dynaconf.pytest",
+        ],
+    },
     setup_requires=["setuptools>=38.6.0"],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
