@@ -104,6 +104,7 @@ def test_find_file(tmpdir):
         project_root=str(child4), skip_files=[filename]
     ) == os.path.join(str(tmpdir), ".env")
 
+
 def test_jinja_casting_int():
     res = parse_conf_data("@jinja_int {{ this.value }}")({"value": 2})
     assert isinstance(res, int) and res == 2
@@ -116,12 +117,13 @@ def test_jinja_casting_float():
 
 def test_jinja_casting_bool():
     res = parse_conf_data("@jinja_bool {{ this.value }}")({"value": "true"})
-    assert isinstance(res, bool) and res == True
+    assert isinstance(res, bool) and res is True
 
 
 def test_jinja_casting_json():
     res = parse_conf_data("@jinja_json {{ this.value }}")({"value": "{'FOO': 'bar'}"})
-    assert isinstance(res, dict) and "FOO" in res and "bar" in res.values()
+    assert isinstance(res, dict) 
+    assert "FOO" in res and "bar" in res.values()
 
 
 def test_disable_cast(monkeypatch):

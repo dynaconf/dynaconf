@@ -40,7 +40,9 @@ class MetaValue:
 
     def __init__(self, value, box_settings):
         self.box_settings = box_settings
-        self.value = parse_conf_data(value, tomlfy=True, box_settings=box_settings)
+        self.value = parse_conf_data(
+            value, tomlfy=True, box_settings=box_settings
+        )
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}) on {id(self)}"
@@ -82,7 +84,9 @@ class Merge(MetaValue):
 
         self.box_settings = box_settings
 
-        self.value = parse_conf_data(value, tomlfy=True, box_settings=box_settings)
+        self.value = parse_conf_data(
+            value, tomlfy=True, box_settings=box_settings
+        )
 
         if isinstance(self.value, (int, float, bool)):
             # @merge 1, @merge 1.1, @merge False
@@ -114,7 +118,9 @@ class Merge(MetaValue):
                         k.strip(): parse_conf_data(
                             v, tomlfy=True, box_settings=box_settings
                         )
-                        for k, v in (match.strip().split("=") for match in matches)
+                        for k, v in (
+                            match.strip().split("=") for match in matches
+                        )
                     }
                 elif "," in self.value:
                     # @merge foo,bar
