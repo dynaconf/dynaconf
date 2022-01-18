@@ -120,7 +120,6 @@ def test_jinja_casting_json():
     res = parse_conf_data("@jinja_json {{ this.value }}")({"value": "{'FOO': 'bar'}"})
     assert isinstance(res, dict) and "FOO" in res and "bar" in res.values() 
 
-
 def test_disable_cast(monkeypatch):
     # this casts for int
     assert parse_conf_data("@int 42", box_settings={}) == 42
