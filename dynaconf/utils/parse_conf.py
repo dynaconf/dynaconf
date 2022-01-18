@@ -40,9 +40,7 @@ class MetaValue:
 
     def __init__(self, value, box_settings):
         self.box_settings = box_settings
-        self.value = parse_conf_data(
-            value, tomlfy=True, box_settings=box_settings
-        )
+        self.value = parse_conf_data(value, tomlfy=True, box_settings=box_settings)
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}) on {id(self)}"
@@ -60,9 +58,7 @@ class Reset(MetaValue):
 
     def __init__(self, value, box_settings):
         self.box_settings = box_settings
-        self.value = parse_conf_data(
-            value, tomlfy=True, box_settings=self.box_settings
-        )
+        self.value = parse_conf_data(value, tomlfy=True, box_settings=self.box_settings)
         warnings.warn(f"{self.value} does not need `@reset` anymore.")
 
 
@@ -86,9 +82,7 @@ class Merge(MetaValue):
 
         self.box_settings = box_settings
 
-        self.value = parse_conf_data(
-            value, tomlfy=True, box_settings=box_settings
-        )
+        self.value = parse_conf_data(value, tomlfy=True, box_settings=box_settings)
 
         if isinstance(self.value, (int, float, bool)):
             # @merge 1, @merge 1.1, @merge False
@@ -120,9 +114,7 @@ class Merge(MetaValue):
                         k.strip(): parse_conf_data(
                             v, tomlfy=True, box_settings=box_settings
                         )
-                        for k, v in (
-                            match.strip().split("=") for match in matches
-                        )
+                        for k, v in (match.strip().split("=") for match in matches)
                     }
                 elif "," in self.value:
                     # @merge foo,bar
@@ -166,7 +158,9 @@ class Lazy:
 
     _dynaconf_lazy_format = True
 
-    def __init__(self, value=empty, formatter=Formatters.python_formatter, casting=None):
+    def __init__(
+        self, value=empty, formatter=Formatters.python_formatter, casting=None
+    ):
         self.value = value
         self.formatter = formatter
         self.casting = casting
@@ -226,10 +220,22 @@ converters = {
     "@json": json.loads,
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
-    "@jinja_int": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=int),
-    "@jinja_float": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=float),
-    "@jinja_bool": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=lambda value: str(value).lower() in true_values),
-    "@jinja_json": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=lambda x: json.loads(x.replace("'", '"'))),
+    "@jinja_int": lambda value: Lazy(
+        value, formatter=Formatters.jinja_formatter, casting=int
+    ),
+    "@jinja_float": lambda value: Lazy(
+        value, formatter=Formatters.jinja_formatter, casting=float
+    ),
+    "@jinja_bool": lambda value: Lazy(
+        value,
+        formatter=Formatters.jinja_formatter,
+        casting=lambda value: str(value).lower() in true_values,
+    ),
+    "@jinja_json": lambda value: Lazy(
+        value,
+        formatter=Formatters.jinja_formatter,
+        casting=lambda x: json.loads(x.replace("'", '"')),
+    ),
     # Meta Values to trigger pre assignment actions
     "@reset": Reset,  # @reset is DEPRECATED on v3.0.0
     "@del": Del,

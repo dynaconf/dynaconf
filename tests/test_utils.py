@@ -106,19 +106,23 @@ def test_find_file(tmpdir):
 
 def test_jinja_casting_int():
     res = parse_conf_data("@jinja_int {{ this.value }}")({"value": 2})
-    assert isinstance(res, int) and res == 2 
+    assert isinstance(res, int) and res == 2
+
 
 def test_jinja_casting_float():
     res = parse_conf_data("@jinja_float {{ this.value }}")({"value": 0.3})
-    assert isinstance(res, float) and abs(res - 0.3) < 1E-6 
+    assert isinstance(res, float) and abs(res - 0.3) < 1e-6
+
 
 def test_jinja_casting_bool():
     res = parse_conf_data("@jinja_bool {{ this.value }}")({"value": "true"})
-    assert isinstance(res, bool) and res == True 
+    assert isinstance(res, bool) and res == True
+
 
 def test_jinja_casting_json():
     res = parse_conf_data("@jinja_json {{ this.value }}")({"value": "{'FOO': 'bar'}"})
-    assert isinstance(res, dict) and "FOO" in res and "bar" in res.values() 
+    assert isinstance(res, dict) and "FOO" in res and "bar" in res.values()
+
 
 def test_disable_cast(monkeypatch):
     # this casts for int
