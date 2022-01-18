@@ -121,8 +121,10 @@ def test_jinja_casting_bool():
 
 
 def test_jinja_casting_json():
-    res = parse_conf_data("@jinja_json {{ this.value }}")({"value": "{'FOO': 'bar'}"})
-    assert isinstance(res, dict) 
+    res = parse_conf_data("@jinja_json {{ this.value }}")(
+        {"value": "{'FOO': 'bar'}"}
+    )
+    assert isinstance(res, dict)
     assert "FOO" in res and "bar" in res.values()
 
 
