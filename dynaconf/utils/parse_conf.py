@@ -60,7 +60,9 @@ class Reset(MetaValue):
 
     def __init__(self, value, box_settings):
         self.box_settings = box_settings
-        self.value = parse_conf_data(value, tomlfy=True, box_settings=self.box_settings)
+        self.value = parse_conf_data(
+            value, tomlfy=True, box_settings=self.box_settings
+        )
         warnings.warn(f"{self.value} does not need `@reset` anymore.")
 
 
