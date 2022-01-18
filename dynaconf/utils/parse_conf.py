@@ -166,9 +166,10 @@ class Lazy:
 
     _dynaconf_lazy_format = True
 
-    def __init__(self, value=empty, formatter=Formatters.python_formatter):
+    def __init__(self, value=empty, formatter=Formatters.python_formatter, casting=None):
         self.value = value
         self.formatter = formatter
+        self.casting = casting
 
     @property
     def context(self):
@@ -179,7 +180,10 @@ class Lazy:
         """LazyValue triggers format lazily."""
         self.settings = settings
         self.context["_validator_object"] = validator_object
-        return self.formatter(self.value, **self.context)
+        result = self.formatter(self.value, **self.context)
+        if self.casting is not None:
+            result = self.casting(result)
+        return result
 
     def __str__(self):
         """Gives string representation for the object."""
@@ -222,6 +226,10 @@ converters = {
     "@json": json.loads,
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
+    "@jinja_int": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=int),
+    "@jinja_float": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=float),
+    "@jinja_bool": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=lambda value: str(value).lower() in true_values),
+    "@jinja_json": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=lambda x: json.loads(x.replace("'", '"'))),
     # Meta Values to trigger pre assignment actions
     "@reset": Reset,  # @reset is DEPRECATED on v3.0.0
     "@del": Del,
