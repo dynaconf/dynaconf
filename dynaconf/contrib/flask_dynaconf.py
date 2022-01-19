@@ -178,6 +178,9 @@ class DynaconfConfig(Config):
     def items(self):
         return self._chain_map().items()
 
+    def setdefault(self, key, value=None):
+        return self._chain_map().setdefault(key, value)
+
     def __iter__(self):
         return self._chain_map().__iter__()
 
