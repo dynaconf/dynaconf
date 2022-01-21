@@ -226,9 +226,12 @@ def evaluate_lazy_format(f):
 
 
 converters = {
-    "@str": lambda value: value.set_casting(str) if isinstance(value, Lazy) else str(value),
-    "@int": lambda value: value.set_casting(int) if isinstance(value, Lazy) else int(value),
-    "@float": lambda value: value.set_casting(float) if isinstance(value, Lazy) else float(value),
+    "@str": lambda value: value.set_casting(str) 
+    if isinstance(value, Lazy) else str(value),
+    "@int": lambda value: value.set_casting(int) 
+    if isinstance(value, Lazy) else int(value),
+    "@float": lambda value: value.set_casting(float) 
+    if isinstance(value, Lazy) else float(value),
     "@bool": lambda value: value.set_casting(lambda x: str(x).lower() in true_values)
     if isinstance(value, Lazy) else str(value).lower() in true_values,
     "@json": lambda value: value.set_casting(lambda x: json.loads(x.replace("'", '"')))
