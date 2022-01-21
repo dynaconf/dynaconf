@@ -229,10 +229,10 @@ converters = {
     "@str": lambda value: value.set_casting(str) if isinstance(value, Lazy) else str(value),
     "@int": lambda value: value.set_casting(int) if isinstance(value, Lazy) else int(value),
     "@float": lambda value: value.set_casting(float) if isinstance(value, Lazy) else float(value),
-    "@bool": lambda value: value.set_casting(lambda x: str(x).lower() in true_values) 
-        if isinstance(value, Lazy) else str(value).lower() in true_values,
-    "@json": lambda value: value.set_casting(lambda x: json.loads(x.replace("'", '"'))) 
-        if isinstance(value, Lazy) else json.loads(value),
+    "@bool": lambda value: value.set_casting(lambda x: str(x).lower() in true_values)
+    if isinstance(value, Lazy) else str(value).lower() in true_values,
+    "@json": lambda value: value.set_casting(lambda x: json.loads(x.replace("'", '"')))
+    if isinstance(value, Lazy) else json.loads(value),
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
@@ -296,7 +296,7 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
         num_converters = data.count("@")
         parts = data.split(" ", num_converters)
         converter_key_list = parts[:num_converters]
-        value = parts[-1] if len(parts) > 1 else "" # for @del
+        value = parts[-1] if len(parts) > 1 else ""  # for @del
         for converter_key in converter_key_list[::-1]:
             value = get_converter(converter_key, value, box_settings)
     else:
