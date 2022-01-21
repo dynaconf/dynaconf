@@ -199,6 +199,11 @@ class Lazy:
         """Encodes this object values to be serializable to json"""
         return f"@{self.formatter} {self.value}"
 
+    def set_casting(self, casting):
+        """Set the casting and return the instance."""
+        self.casting = casting
+        return self
+
 
 def try_to_encode(value, callback=str):
     """Tries to encode a value by verifying existence of `_dynaconf_encode`"""
@@ -221,29 +226,15 @@ def evaluate_lazy_format(f):
 
 
 converters = {
-    "@str": str,
-    "@int": int,
-    "@float": float,
-    "@bool": lambda value: str(value).lower() in true_values,
-    "@json": json.loads,
+    "@str": lambda value: value.set_casting(str) if isinstance(value, Lazy) else str(value),
+    "@int": lambda value: value.set_casting(int) if isinstance(value, Lazy) else int(value),
+    "@float": lambda value: value.set_casting(float) if isinstance(value, Lazy) else float(value),
+    "@bool": lambda value: value.set_casting(lambda x: str(x).lower() in true_values) 
+        if isinstance(value, Lazy) else str(value).lower() in true_values,
+    "@json": lambda value: value.set_casting(lambda x: json.loads(x.replace("'", '"'))) 
+        if isinstance(value, Lazy) else json.loads(value),
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
-    "@jinja_int": lambda value: Lazy(
-        value, formatter=Formatters.jinja_formatter, casting=int
-    ),
-    "@jinja_float": lambda value: Lazy(
-        value, formatter=Formatters.jinja_formatter, casting=float
-    ),
-    "@jinja_bool": lambda value: Lazy(
-        value,
-        formatter=Formatters.jinja_formatter,
-        casting=lambda value: str(value).lower() in true_values,
-    ),
-    "@jinja_json": lambda value: Lazy(
-        value,
-        formatter=Formatters.jinja_formatter,
-        casting=lambda x: json.loads(x.replace("'", '"')),
-    ),
     # Meta Values to trigger pre assignment actions
     "@reset": Reset,  # @reset is DEPRECATED on v3.0.0
     "@del": Del,
@@ -301,10 +292,13 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
         and isinstance(data, str)
         and data.startswith(tuple(converters.keys()))
     ):
-        parts = data.partition(" ")
-        converter_key = parts[0]
-        value = parts[-1]
-        value = get_converter(converter_key, value, box_settings)
+        # Parse the converters iteratively
+        num_converters = data.count("@")
+        parts = data.split(" ", num_converters)
+        converter_key_list = parts[:num_converters]
+        value = parts[-1] if len(parts) > 1 else "" # for @del
+        for converter_key in converter_key_list[::-1]:
+            value = get_converter(converter_key, value, box_settings)
     else:
         value = parse_with_toml(data) if tomlfy else data
 
