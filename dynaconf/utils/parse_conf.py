@@ -234,7 +234,7 @@ converters = {
     if isinstance(value, Lazy) else float(value),
     "@bool": lambda value: value.set_casting(
         lambda x: str(x).lower() in true_values
-    ) 
+    )
     if isinstance(value, Lazy) else str(value).lower() in true_values,
     "@json": lambda value: value.set_casting(
         lambda x: json.loads(x.replace("'", '"'))
