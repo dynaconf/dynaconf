@@ -2,9 +2,9 @@ import os
 
 from dynaconf import settings
 
-assert settings.get("CURRENTUSER") is None
+assert settings.get("FORMAT_USERNAME") is None
 assert settings.DATABASE_NAME == "my_database.db"
-assert os.environ["CURRENTUSER"] == "robert_plant"
+assert os.environ["FORMAT_USERNAME"] == "robert_plant"
 
 DB_PATH = "/home/robert_plant/databases/my_database.db"
 assert settings.DATABASE_PATH == DB_PATH, settings.DATABASE_PATH

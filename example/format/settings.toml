@@ -2,5 +2,5 @@
 database_name = 'my_database.db'
 
 [development]
-database_path = '@format /home/{env[CURRENTUSER]}/databases/{this[database_name]}'
-database_path_jinja = '@jinja /home/{{env.CURRENTUSER}}/{{this.current_env | lower}}/{{this["database_name"] }}'
+database_path = '@format /home/{env[FORMAT_USERNAME]}/databases/{this[database_name]}'
+database_path_jinja = '@jinja /home/{{env.FORMAT_USERNAME}}/{{this.current_env | lower}}/{{this["database_name"] }}'
