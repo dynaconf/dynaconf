@@ -105,6 +105,83 @@ def test_find_file(tmpdir):
     ) == os.path.join(str(tmpdir), ".env")
 
 
+def test_casting_str(settings):
+    res = parse_conf_data("@str 7")
+    assert isinstance(res, str) and res == "7"
+
+    settings.set("value", 7)
+    res = parse_conf_data("@str @jinja {{ this.value }}")(settings)
+    assert isinstance(res, str) and res == "7"
+
+    res = parse_conf_data("@str @format {this.value}")(settings)
+    assert isinstance(res, str) and res == "7"
+
+
+def test_casting_int(settings):
+    res = parse_conf_data("@int 2")
+    assert isinstance(res, int) and res == 2
+
+    settings.set("value", 2)
+    res = parse_conf_data("@int @jinja {{ this.value }}")(settings)
+    assert isinstance(res, int) and res == 2
+
+    res = parse_conf_data("@int @format {this.value}")(settings)
+    assert isinstance(res, int) and res == 2
+
+
+def test_casting_float(settings):
+    res = parse_conf_data("@float 0.3")
+    assert isinstance(res, float) and abs(res - 0.3) < 1e-6
+
+    settings.set("value", 0.3)
+    res = parse_conf_data("@float @jinja {{ this.value }}")(settings)
+    assert isinstance(res, float) and abs(res - 0.3) < 1e-6
+
+    res = parse_conf_data("@float @format {this.value}")(settings)
+    assert isinstance(res, float) and abs(res - 0.3) < 1e-6
+
+
+def test_casting_bool(settings):
+    res = parse_conf_data("@bool true")
+    assert isinstance(res, bool) and res is True
+
+    settings.set("value", "true")
+    res = parse_conf_data("@bool @jinja {{ this.value }}")(settings)
+    assert isinstance(res, bool) and res is True
+
+    settings.set("value", "false")
+    res = parse_conf_data("@bool @format {this.value}")(settings)
+    assert isinstance(res, bool) and res is False
+
+
+def test_casting_json(settings):
+    res = parse_conf_data("""@json {"FOO": "bar"}""")
+    assert isinstance(res, dict)
+    assert "FOO" in res and "bar" in res.values()
+
+    # Test how single quotes cases are handled.
+    # When jinja uses `attr` to render a json string,
+    # it may covnert double quotes to single quotes.
+    settings.set("value", "{'FOO': 'bar'}")
+    res = parse_conf_data("@json @jinja {{ this.value }}")(settings)
+    assert isinstance(res, dict)
+    assert "FOO" in res and "bar" in res.values()
+
+    res = parse_conf_data("@json @format {this.value}")(settings)
+    assert isinstance(res, dict)
+    assert "FOO" in res and "bar" in res.values()
+
+    # Test jinja rendering a dict
+    settings.set("value", "OPTION1")
+    settings.set("OPTION1", {"bar": 1})
+    settings.set("OPTION2", {"bar": 2})
+    res = parse_conf_data("@jinja {{ this|attr(this.value) }}")(settings)
+    assert isinstance(res, str)
+    res = parse_conf_data("@json @jinja {{ this|attr(this.value) }}")(settings)
+    assert isinstance(res, dict)
+    assert "bar" in res and res["bar"] == 1
+
+
 def test_disable_cast(monkeypatch):
     # this casts for int
     assert parse_conf_data("@int 42", box_settings={}) == 42
