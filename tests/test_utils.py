@@ -155,10 +155,13 @@ def test_casting_bool(settings):
 
 
 def test_casting_json(settings):
-    res = parse_conf_data("@json {'FOO': 'bar'}")
+    res = parse_conf_data("""@json {"FOO": "bar"}""")
     assert isinstance(res, dict)
     assert "FOO" in res and "bar" in res.values()
 
+    # Test how single quotes cases are handled.
+    # When jinja uses `attr` to render a json string,
+    # it may covnert double quotes to single quotes.
     settings.set("value", "{'FOO': 'bar'}")
     res = parse_conf_data("@json @jinja {{ this.value }}")(settings)
     assert isinstance(res, dict)
@@ -167,6 +170,16 @@ def test_casting_json(settings):
     res = parse_conf_data("@json @format {this.value}")(settings)
     assert isinstance(res, dict)
     assert "FOO" in res and "bar" in res.values()
+
+    # Test jinja rendering a dict
+    settings.set("value", "OPTION1")
+    settings.set("OPTION1", {"bar": 1})
+    settings.set("OPTION2", {"bar": 2})
+    res = parse_conf_data("@jinja {{ this|attr(this.value) }}")(settings)
+    assert isinstance(res, str)
+    res = parse_conf_data("@json @jinja {{ this|attr(this.value) }}")(settings)
+    assert isinstance(res, dict)
+    assert "bar" in res and res["bar"] == 1
 
 
 def test_disable_cast(monkeypatch):
