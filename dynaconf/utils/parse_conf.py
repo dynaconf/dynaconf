@@ -244,7 +244,7 @@ converters = {
         lambda x: json.loads(x.replace("'", '"'))
     )
     if isinstance(value, Lazy)
-    else json.loads(value.replace("'", '"')),
+    else json.loads(value),
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
