@@ -80,6 +80,10 @@ from dynaconf import Dynaconf
 settings = Dynaconf(settings_files=["settings.toml", "/etc/program/foo.yaml"])
 ```
 
+!!! info
+    To use `python -m module`, where the module uses dynaconf you will need to
+    specify your `settings.toml` path, for example, like this: `settings_file="module/config/settings.toml"`.
+
 ### settings.toml
 
 In the above example, dynaconf will try to load `settings.toml` from the same
