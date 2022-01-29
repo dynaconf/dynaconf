@@ -306,7 +306,7 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
     ):
         # Check combination token is used
         comb_token = re.match(
-            r"@(str|int|float|bool|json) @(jinja|format)", data
+            r"^@(str|int|float|bool|json) @(jinja|format)", data
         )
         if comb_token:
             tokens = comb_token.group(0)
