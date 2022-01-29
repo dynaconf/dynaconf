@@ -304,11 +304,20 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
         and isinstance(data, str)
         and data.startswith(tuple(converters.keys()))
     ):
+        # Check combination token is used
+        comb_token = re.match(
+            r"@(str|int|float|bool|json) @(jinja|format)", data
+        )
+        if comb_token:
+            tokens = comb_token.group(0)
+            converter_key_list = tokens.split(" ")
+            value = data.replace(tokens, "").strip()
+        else:
+            parts = data.partition(" ")
+            converter_key_list = [parts[0]]
+            value = parts[-1]
+
         # Parse the converters iteratively
-        num_converters = data.count("@")
-        parts = data.split(" ", num_converters)
-        converter_key_list = parts[:num_converters]
-        value = parts[-1] if len(parts) > 1 else ""  # for @del
         for converter_key in converter_key_list[::-1]:
             value = get_converter(converter_key, value, box_settings)
     else:
