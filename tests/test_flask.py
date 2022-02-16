@@ -109,6 +109,10 @@ def test_flask_dynaconf(settings):
     assert "bar" in app.config.values()
     assert "MY_VAR" in list(app.config)
     assert "MY_VAR2" in list(app.config)
+    assert app.config.setdefault("MY_VAR", "default") == "foo"
+    assert app.config.setdefault("MY_VAR2", "default") == "bar"
+    assert app.config.setdefault("DEFAULT_VAR", "default") == "default"
+    assert app.config["DEFAULT_VAR"] == "default"
 
     with pytest.raises(KeyError):
         app.config["NONEXISTENETVAR"]
