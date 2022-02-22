@@ -30,6 +30,28 @@ export FLASK_INTVALUE=1              # app.config['INTVALUE']
 export FLASK_MAIL_SERVER='host.com'  # app.config.get('MAIL_SERVER')
 ```
 
+You can also leverage custom environment variables just as in the default Dynaconf class, like so:
+
+Example:
+```python
+from flask import Flask
+from dynaconf import FlaskDynaconf
+
+app = Flask(__name__)
+FlaskDynaconf(app, envvar_prefix="PEANUT")
+```
+
+Now you can declare your variables with your custom prefix, and it will be normally available withing Flask's native configuration `app.config`.
+
+```bash
+export PEANUT_DEBUG=true              # app.config.DEBUG
+export PEANUT_INTVALUE=1              # app.config['INTVALUE']
+export PEANUT_MAIL_SERVER='host.com'  # app.config.get('MAIL_SERVER')
+```
+
+!!! info
+    Version 3.1.7 backwads was case sensitive on defining `ENVVAR_PREFIX` and would only accept uppsercase kwargs (different from `Dynaconf(envvar_prefix)`). Starting from version X.X.X, kwargs should be case insensitive to improve consistency between Dynaconf and Flask/Django extensions, while keeping backwards compatibility.
+
 ## Settings files
 
 You can also have settings files for your Flask app, in the root directory (the same where you execute `flask run`) put your `settings.toml` and `.secrets.toml` files and then define your environments `[default]`, `[development]` and `[production]`.
@@ -40,7 +62,6 @@ in development mode or `FLASK_ENV=production` to switch to production.
 > **IMPORTANT**: To use `$ dynaconf` CLI the `FLASK_APP` must be defined.
 
 IF you don't want to manually create your config files take a look at the [CLI](/cli/)
-
 
 ## Loading Flask Extensions Dynamically
 
@@ -90,7 +111,6 @@ export FLASK_EXTENSIONS="['flask_admin:Admin']"
 ```
 
 The extensions will be loaded in order.
-
 
 ### Development extensions
 
