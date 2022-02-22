@@ -54,7 +54,9 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
 
     # 1) Create the lazy settings object reusing settings_module consts
     options = {
-        k: v for k, v in django_settings_module.__dict__.items() if k.isupper()
+        k.upper(): v
+        for k, v in django_settings_module.__dict__.items()
+        if k.isupper()
     }
     options.update(kwargs)
     options.setdefault(
