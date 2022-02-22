@@ -51,7 +51,7 @@ export PEANUT_MAIL_SERVER='host.com'  # app.config.get('MAIL_SERVER')
 ```
 
 !!! info
-    Version 3.1.7 backwads was case sensitive on defining `ENVVAR_PREFIX` and would only accept uppsercase kwargs (different from `Dynaconf(envvar_prefix)`). Starting from version X.X.X, kwargs should be case insensitive to improve consistency between Dynaconf and Flask/Django extensions, while keeping backwards compatibility.
+    Version 3.1.7 backwards was case sensitive on defining `ENVVAR_PREFIX` and would only accept uppsercase kwargs (different from `Dynaconf(envvar_prefix)`). Starting from version X.X.X, kwargs should be case insensitive to improve consistency between Dynaconf and Flask/Django extensions, while keeping backwards compatibility.
 
 ## Settings files
 
