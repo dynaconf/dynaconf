@@ -33,6 +33,7 @@ export FLASK_MAIL_SERVER='host.com'  # app.config.get('MAIL_SERVER')
 You can also leverage custom environment variables just as in the default Dynaconf class, like so:
 
 Example:
+
 ```python
 from flask import Flask
 from dynaconf import FlaskDynaconf
