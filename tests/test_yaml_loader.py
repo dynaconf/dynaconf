@@ -426,7 +426,7 @@ def test_should_not_duplicate_with_global_merge(tmpdir):
 
 
 def test_should_duplicate_when_explicit_set(tmpdir):
-    """ Issue #653"""
+    """Issue #653"""
     settings_file_yaml = """
     default:
       SCRIPTS:
@@ -460,7 +460,7 @@ def test_should_duplicate_when_explicit_set(tmpdir):
 
 
 def test_should_NOT_duplicate_when_explicit_set(tmpdir):
-    """ Issue #653"""
+    """Issue #653"""
     settings_file_yaml = """
     default:
       SCRIPTS:

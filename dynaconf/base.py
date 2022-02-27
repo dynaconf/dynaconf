@@ -6,6 +6,7 @@ import os
 import warnings
 from collections import defaultdict
 from contextlib import contextmanager
+from contextlib import nullcontext
 from contextlib import suppress
 from pathlib import Path
 
@@ -46,6 +47,7 @@ class LazySettings(LazyObject):
             envvar_prefix="MYAPP",             # `export MYAPP_FOO=bar`
             env_switcher="MYAPP_MODE",         # `export MYAPP_MODE=production`
             load_dotenv=True,                  # read a .env file
+            schema=MySchema,                   # validate settings with schema
         )
 
     More options available on https://www.dynaconf.com/configuration/
@@ -57,11 +59,28 @@ class LazySettings(LazyObject):
 
         :param wrapped: a deepcopy of this object will be wrapped (issue #596)
         :param kwargs: values that overrides default_settings
+        :param validators: a list of validators to run on the settings
+        :param schema (alias): Set the dynaconf_schema
+                               Schema can be a Schema instance or a dictionary
+        :param dynaconf_schema: A Schema to validate the settings
+
         """
 
         self._warn_dynaconf_global_settings = kwargs.pop(
             "warn_dynaconf_global_settings", None
         )  # in 3.0.0 global settings is deprecated
+
+        is_eager = kwargs.pop("is_eager", False)  # imeadiatly load & validate?
+        if schema := kwargs.get("schema", kwargs.get("dynaconf_schema")):
+            if hasattr(schema, "config"):
+                is_eager = schema.config(self).validation_mode == "eager"
+                kwargs.setdefault("dynaconf_schema", schema)
+                kwargs.pop("schema", None)
+            elif isinstance(schema, dict) and "config" in schema:
+                # NOTE: How to build a Schema dataclass from a dict?
+                is_eager = schema["config"].get("validation_mode") == "eager"
+                kwargs.setdefault("dynaconf_schema", schema)
+                kwargs.pop("schema", None)
 
         self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
@@ -74,6 +93,9 @@ class LazySettings(LazyObject):
                 self._wrapped = copy.deepcopy(wrapped)
             else:
                 self._wrapped = wrapped
+
+        if is_eager:
+            self._setup()
 
     def __resolve_config_aliases(self, kwargs):
         """takes aliases for _FOR_DYNACONF configurations
@@ -155,7 +177,7 @@ class LazySettings(LazyObject):
                 DeprecationWarning,
             )
 
-        default_settings.reload(self._kwargs.get("load_dotenv"))
+        default_settings.reload(self._kwargs.get("LOAD_DOTENV_FOR_DYNACONF"))
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
@@ -172,7 +194,7 @@ class LazySettings(LazyObject):
         :param settings_module: defines the setttings file
         :param kwargs:  override default settings
         """
-        default_settings.reload(self._kwargs.get("load_dotenv"))
+        default_settings.reload(self._kwargs.get("LOAD_DOTENV_FOR_DYNACONF"))
         environment_var = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
@@ -204,6 +226,7 @@ class Settings:
         self._fresh = False
         self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)
+        self._ignored_keys = defaultdict(dict)
         self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
@@ -218,7 +241,7 @@ class Settings:
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
-
+        self._dynaconf_schema = kwargs.pop("dynaconf_schema", None)
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
         )
@@ -226,8 +249,8 @@ class Settings:
         compat_kwargs(kwargs)
         if settings_module:
             self.set("SETTINGS_FILE_FOR_DYNACONF", settings_module)
-        for key, value in kwargs.items():
-            self.set(key, value)
+        self.update(**kwargs, loader_identifier="__init__")
+
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
         self.execute_loaders()
@@ -330,19 +353,39 @@ class Settings:
             return default
         return value
 
-    def as_dict(self, env=None, internal=False):
+    def as_dict(self, env=None, internal=False, exclude=None, include=None):
         """Returns a dictionary with set key and values.
 
         :param env: Str env name, default self.current_env `DEVELOPMENT`
         :param internal: bool - should include dynaconf internal vars?
+        :param exclude: list of keys to exclude
+        :param include: list of keys to include
         """
-        ctx_mgr = suppress() if env is None else self.using_env(env)
+        if include and exclude:
+            raise ValueError("include and exclude cannot be used together")
+
+        ctx_mgr = nullcontext() if env is None else self.using_env(env)
         with ctx_mgr:
             data = self.store.to_dict().copy()
-            # if not internal remove internal settings
+
+            if include:
+                data = {
+                    k: v
+                    for k, v in data.items()
+                    if k in include or k.swapcase() in include
+                }
+                return data
+
+            # Remove internal dynaconf configurations
             if not internal:
                 for name in UPPER_DEFAULT_SETTINGS:
                     data.pop(name, None)
+
+            if exclude:
+                for key in exclude:
+                    data.pop(key, None)
+                    data.pop(key.swapcase(), None)
+
             return data
 
     to_dict = as_dict  # backwards compatibility
@@ -815,8 +858,15 @@ class Settings:
                 key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
             )
 
-        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
+
+        # check if user wants default to be forced or ignore unknown keys
+        if self._dynaconf_schema and key not in UPPER_DEFAULT_SETTINGS:
+            if self._dynaconf_schema.should_skip_set(key, loader_identifier):
+                self._ignored_keys[key] = value
+                return
+
+        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         existing = getattr(self, key, None)
 
         if getattr(value, "_dynaconf_del", None):
@@ -985,6 +1035,11 @@ class Settings:
 
         self.load_includes(env, silent=silent, key=key)
         execute_hooks("post", self, env, silent=silent, key=key)
+
+        # Validate Schema after every loading.
+        if self._dynaconf_schema is not None:
+            self._dynaconf_schema.validate(self)
+            self.__annotations__ = self._dynaconf_schema.__annotations__
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
@@ -1221,5 +1276,8 @@ RESERVED_ATTRS = (
         "validators",
         "_validate_only",
         "_validate_exclude",
+        "_dynaconf_schema",
+        "_ignored_keys",
+        "__annotations__",
     ]
 )

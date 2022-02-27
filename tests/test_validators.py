@@ -144,7 +144,13 @@ def test_validators_register(tmpdir):
         Validator(
             "MYSQL_HOST", env="PRODUCTION", is_not_in=settings.DEV_SERVERS
         ),
+        Validator("NAME", condition=lambda value: value in ("BRUNO", "MIKE")),
         Validator("NAME", condition=lambda x: x in ("BRUNO", "MIKE")),
+        Validator(
+            "NAME", condition=lambda settings, x: x in ("BRUNO", "MIKE")
+        ),
+        Validator("NAME", condition=lambda this, x: x in ("BRUNO", "MIKE")),
+        Validator("NAME", condition=lambda st, x: x in ("BRUNO", "MIKE")),
         Validator(
             "IMAGE_1",
             "IMAGE_2",
@@ -528,6 +534,9 @@ def test_validator_can_provide_default(tmpdir):
             Validator("name", required=True),
             Validator("FOO", default="BAR"),
             Validator("COMPUTED", default=lambda st, va: "I am computed"),
+            Validator("COMPUTED1", default=lambda this: "I am computed"),
+            Validator("COMPUTED2", default=lambda settings: "I am computed"),
+            Validator("COMPUTED3", default=lambda validator: "I am computed"),
         ],
     )
     assert settings.name == "Bruno"
@@ -676,3 +685,22 @@ def test_toml_should_not_change_validator_type_using_at_sign():
     )
 
     assert settings.test == "+172800"
+
+
+def test_jinja_expressions(tmpdir, clean_env):
+    tmpfile = tmpdir.join("settings.yaml")
+    tmpfile.write(
+        """
+        foo: bar
+        baz: zaz
+        """
+    )
+
+    with pytest.raises(ValidationError):
+        settings = Dynaconf(
+            settings_file=str(tmpfile),
+            validators=[
+                Validator("foo", is_type_of=str, expr="value != 'bar'"),
+            ],
+        )
+        settings.validators.validate()

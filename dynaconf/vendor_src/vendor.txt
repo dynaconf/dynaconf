@@ -3,3 +3,4 @@ toml==0.10.8
 click==7.1.x
 python-dotenv==0.13.0
 ruamel.yaml==0.16.10
+jinja2==3.1.0.dev0
