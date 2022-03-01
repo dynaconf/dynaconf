@@ -30,5 +30,5 @@ Shout out to our top contributors!
 - [mirekdlugosz](https://api.github.com/users/mirekdlugosz)
 - [adevore](https://api.github.com/users/adevore)
 - [AmbientLighter](https://api.github.com/users/AmbientLighter)
+- [anderson-sousa](https://api.github.com/users/anderson-sousa)
 - [ap--](https://api.github.com/users/ap--)
-- [posquit0](https://api.github.com/users/posquit0)
