@@ -319,7 +319,7 @@ class Settings:
     def setdefault(self, item, default):
         """Returns value if exists or set it as the given default"""
         value = self.get(item, empty)
-        if value is empty and default is not empty:
+        if (not value or value is empty) and default is not empty:
             self.set(
                 item,
                 default,
