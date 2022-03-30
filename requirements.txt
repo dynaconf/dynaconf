@@ -8,3 +8,4 @@ mkdocs-nav-enhancements==0.9.1
 mkdocs-new-features-notifier==0.1.6
 mkdocs-versioning==0.3.1
 pymdown-extensions==8.0.1
+Jinja2>3.0.0
