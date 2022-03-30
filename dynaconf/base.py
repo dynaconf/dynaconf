@@ -646,7 +646,7 @@ class Settings:
         """Return the current active env"""
 
         if self.ENVIRONMENTS_FOR_DYNACONF is False:
-            return "main"
+            return self.MAIN_ENV_FOR_DYNACONF.lower()
 
         if self.FORCE_ENV_FOR_DYNACONF is not None:
             return self.FORCE_ENV_FOR_DYNACONF
