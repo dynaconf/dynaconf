@@ -86,6 +86,7 @@ if not SETTINGS_FILE_FOR_DYNACONF and mispelled_files is not None:
 
 # If provided environments will be loaded separatelly
 ENVIRONMENTS_FOR_DYNACONF = get("ENVIRONMENTS_FOR_DYNACONF", False)
+MAIN_ENV_FOR_DYNACONF = get("MAIN_ENV_FOR_DYNACONF", "MAIN")
 
 # If False dynaconf will allow access to first level settings only in upper
 LOWERCASE_READ_FOR_DYNACONF = get("LOWERCASE_READ_FOR_DYNACONF", True)
