@@ -13,7 +13,7 @@ The `$ dynaconf -i config.settings` cli provides some useful commands
 
 ### dynaconf --help
 
-```
+```bash
 Usage: dynaconf [OPTIONS] COMMAND [ARGS]...
 
   Dynaconf - Command Line Interface
@@ -28,6 +28,7 @@ Options:
   --help               Show this message and exit.
 
 Commands:
+  get       Returns the raw value for a settings key
   init      Inits a dynaconf project By default it creates a settings.toml...
   list      Lists all user defined config values and if `--all` is passed
             it...
@@ -99,6 +100,30 @@ Options:
 ```
 
 Note that `-i`/`--instance` cannot be used with `init` as `-i` must point to an existing instance of the settings.
+
+
+### Dynaconf get
+
+Get raw value for a single key
+
+```bash
+Usage: dynaconf get [OPTIONS] KEY
+
+  Returns the raw value for a settings key
+
+Options:
+  -d, --default TEXT  Default value if settings doesn't exist
+  -e, --env TEXT      Filters the env to get the values
+  -u, --unparse       Unparse data by adding markers such as @none, @int etc..
+  --help              Show this message and exit.
+```
+
+Example:
+
+```bash
+export FOO=$(dynaconf get DATABASE_NAME -d 'default')
+```
+
 
 ### dynaconf list
 
