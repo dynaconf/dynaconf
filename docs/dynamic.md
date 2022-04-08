@@ -39,7 +39,7 @@ DB_PATH = "@format {env[HOME]}/{this.current_env}/{env[PROGRAM_NAME]}/{this.DB_N
 so in your `program`
 
 ```py
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 settings.DB_PATH == '~/DEVELOPMENT/calculator/mydb.db'
 ```
@@ -67,7 +67,7 @@ DB_PATH = "@jinja {{env.HOME}}/{{this.current_env | lower}}/{{env['PROGRAM_NAME'
 so in your `program`
 
 ```py
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 settings.DB_PATH == '~/development/calculator/mydb.db'
 ```

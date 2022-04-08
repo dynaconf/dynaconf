@@ -1,8 +1,8 @@
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 from dynaconf import Validator
 from dynaconf.utils.parse_conf import Lazy
 
-settings = LazySettings(
+settings = Dynaconf(
     environments=True,
     ENV="EXAMPLE",
     load_dotenv=True,

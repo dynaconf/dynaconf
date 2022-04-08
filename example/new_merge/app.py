@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 assert settings.PY_MERGE_LIST == [1, 2], settings.PY_MERGE_LIST
 assert settings.PY_MERGE_DICT == {"a": 1, "b": 2}, settings.PY_MERGE_DICT

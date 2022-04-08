@@ -3,7 +3,6 @@ import os
 import pytest
 
 from dynaconf import Dynaconf
-from dynaconf import LazySettings
 from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.strategies.filtering import PrefixFilter
@@ -44,7 +43,7 @@ def test_accepts_only_upper():
     """Only upper case names are allowed if lowercase_read=False
     lower case are converted"""
 
-    settings = LazySettings(debug=True, lowercase_read=False)
+    settings = Dynaconf(debug=True, lowercase_read=False)
 
     assert settings.DEBUG is True
     assert settings.get("debug") is True
@@ -339,7 +338,7 @@ def test_set_explicit_merge_token(tmpdir):
         "a_dict": {"name": "Bruno"},
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
-    settings = LazySettings(settings_file="settings.toml")
+    settings = Dynaconf(settings_file="settings.toml")
     assert settings.A_LIST == [1, 2]
     assert settings.B_LIST == [1]
     assert settings.A_DICT == {"name": "Bruno"}
@@ -393,7 +392,7 @@ def test_set_new_merge_issue_241_1(tmpdir):
         }
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
-    settings = LazySettings(environments=True, settings_file="settings.toml")
+    settings = Dynaconf(environments=True, settings_file="settings.toml")
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green"]
     assert settings.DATA.links == {
@@ -425,7 +424,7 @@ def test_set_new_merge_issue_241_2(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings(environments=True, settings_file="settings.toml")
+    settings = Dynaconf(environments=True, settings_file="settings.toml")
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green", "blue"]
     assert settings.DATA.links == {
@@ -454,7 +453,7 @@ def test_set_new_merge_issue_241_3(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings(settings_file="settings.toml")
+    settings = Dynaconf(settings_file="settings.toml")
     assert settings.NAME == "Tommy Shelby"
     assert settings.COLORS == ["red", "green", "yellow", "pink"]
     assert settings.DATA.links == {"site": "pb.com"}
@@ -475,7 +474,7 @@ def test_set_new_merge_issue_241_4(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings(settings_file="settings.toml")
+    settings = Dynaconf(settings_file="settings.toml")
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green"]
     assert settings.DATA.links == {
@@ -502,7 +501,7 @@ def test_set_new_merge_issue_241_5(tmpdir):
         str(tmpdir.join("settings.local.toml")), data, merge=False
     )
 
-    settings = LazySettings(environments=True, settings_file="settings.toml")
+    settings = Dynaconf(environments=True, settings_file="settings.toml")
     assert settings.NAME == "Bruno"
     assert settings.COLORS == ["red", "green", "blue"]
     assert settings.DATA.links == {
@@ -692,7 +691,7 @@ def test_from_env_method(clean_env, tmpdir):
     }
     toml_path = str(tmpdir.join("base_settings.toml"))
     toml_loader.write(toml_path, data, merge=False)
-    settings = LazySettings(settings_file=toml_path, environments=True)
+    settings = Dynaconf(settings_file=toml_path, environments=True)
     settings.set("ARBITRARY_KEY", "arbitrary value")
 
     assert settings.VALUE == "From development env"
@@ -772,7 +771,7 @@ def test_from_env_method_with_prefix(clean_env, tmpdir):
     }
     toml_path = str(tmpdir.join("base_settings.toml"))
     toml_loader.write(toml_path, data, merge=False)
-    settings = LazySettings(
+    settings = Dynaconf(
         settings_file=toml_path,
         environments=True,
         filter_strategy=PrefixFilter("prefix"),
@@ -824,7 +823,7 @@ def test_preload(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("included.toml")), data, merge=False)
 
-    settings = LazySettings(
+    settings = Dynaconf(
         PRELOAD_FOR_DYNACONF=["preload.toml"],
         SETTINGS_FILE_FOR_DYNACONF="main_settings.toml",
         INCLUDES_FOR_DYNACONF=["included.toml"],
@@ -845,7 +844,7 @@ def test_config_aliases(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("blarg.toml")), data, merge=False)
 
-    settings = LazySettings(
+    settings = Dynaconf(
         envvar_prefix="BRUCE",
         core_loaders=["TOML"],
         loaders=["dynaconf.loaders.env_loader"],
@@ -883,9 +882,7 @@ def test_envless_mode(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
-    settings = LazySettings(
-        settings_file="settings.toml"
-    )  # already the default
+    settings = Dynaconf(settings_file="settings.toml")  # already the default
     assert settings.FOO == "bar"
     assert settings.HELLO == "world"
     assert settings.DEFAULT == 1
@@ -901,7 +898,7 @@ def test_envless_mode_with_prefix(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
-    settings = LazySettings(
+    settings = Dynaconf(
         settings_file="settings.toml", filter_strategy=PrefixFilter("prefix")
     )  # already the default
     assert settings.FOO == "bar"
@@ -924,7 +921,7 @@ def test_lowercase_read_mode(tmpdir):
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
     # settings_files mispelled.. should be `settings_file`
-    settings = LazySettings(settings_files="settings.toml")
+    settings = Dynaconf(settings_files="settings.toml")
 
     assert settings.FOO == "bar"
     assert settings.foo == "bar"
@@ -959,7 +956,7 @@ def test_settings_dict_like_iteration(tmpdir):
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
     # settings_files mispelled.. should be `settings_file`
-    settings = LazySettings(settings_files="settings.toml")
+    settings = Dynaconf(settings_files="settings.toml")
 
     for key in settings:
         assert key in settings._store
@@ -970,14 +967,14 @@ def test_settings_dict_like_iteration(tmpdir):
 
 def test_prefix_is_not_str_raises():
     with pytest.raises(TypeError):
-        toml_loader.load(LazySettings(filter_strategy=PrefixFilter(int)))
+        toml_loader.load(Dynaconf(filter_strategy=PrefixFilter(int)))
     with pytest.raises(TypeError):
-        toml_loader.load(LazySettings(filter_strategy=PrefixFilter(True)))
+        toml_loader.load(Dynaconf(filter_strategy=PrefixFilter(True)))
 
 
 def test_clone():
     # create a settings object
-    settings = LazySettings(FOO="bar")
+    settings = Dynaconf(FOO="bar")
     assert settings.FOO == "bar"
 
     # clone it
@@ -996,11 +993,11 @@ def test_wrap_existing_settings():
     """
     Wrap an existing settings object
     """
-    settings = LazySettings(FOO="bar")
+    settings = Dynaconf(FOO="bar")
     assert settings.FOO == "bar"
 
     # wrap it
-    wrapped = LazySettings(settings._wrapped)
+    wrapped = Dynaconf(settings._wrapped)
     assert wrapped.FOO == "bar"
 
     # modify the wrapped settings
@@ -1015,11 +1012,11 @@ def test_wrap_existing_settings_clone():
     """
     Wrap an existing settings object
     """
-    settings = LazySettings(FOO="bar")
+    settings = Dynaconf(FOO="bar")
     assert settings.FOO == "bar"
 
     # wrap it
-    wrapped = LazySettings(settings.dynaconf.clone())
+    wrapped = Dynaconf(settings.dynaconf.clone())
     assert wrapped.FOO == "bar"
 
     # modify the wrapped settings

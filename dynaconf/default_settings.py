@@ -199,13 +199,14 @@ SILENT_ERRORS_FOR_DYNACONF = get("SILENT_ERRORS_FOR_DYNACONF", True)
 # always fresh variables
 FRESH_VARS_FOR_DYNACONF = get("FRESH_VARS_FOR_DYNACONF", [])
 
+LOAD_DOTENV_FOR_DYNACONF = get("LOAD_DOTENV_FOR_DYNACONF", False)
 DOTENV_PATH_FOR_DYNACONF = get("DOTENV_PATH_FOR_DYNACONF", None)
 DOTENV_VERBOSE_FOR_DYNACONF = get("DOTENV_VERBOSE_FOR_DYNACONF", False)
 DOTENV_OVERRIDE_FOR_DYNACONF = get("DOTENV_OVERRIDE_FOR_DYNACONF", False)
 
 # Currently this is only used by cli. INSTANCE_FOR_DYNACONF specifies python
-# dotted path to custom LazySettings instance. Last dotted path item should be
-# instance of LazySettings.
+# dotted path to custom Dynaconf instance. Last dotted path item should be
+# instance of Dynaconf.
 INSTANCE_FOR_DYNACONF = get("INSTANCE_FOR_DYNACONF", None)
 
 # https://msg.pyyaml.org/load

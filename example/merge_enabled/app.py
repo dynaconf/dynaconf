@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 print("Read from settings.py:", settings.PYTHON_VAR)  # noqa
 

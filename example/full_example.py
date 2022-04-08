@@ -5,7 +5,9 @@
 # or save to REDIS, yaml, json, ini etc...
 import os
 
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 # Now read dynamic settings in your Python code
 # you import only the 'settings' object always from dynaconf module

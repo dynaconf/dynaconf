@@ -4,7 +4,9 @@ def test_dynaconf_is_on_testing_env(app):
 
 
 def test_dynaconf_settings_is_the_same_object(app):
-    from dynaconf import settings
+    from dynaconf import Dynaconf
+
+    settings = Dynaconf(**options)
 
     assert settings is app.config._settings
     assert app.config["VALUE"] == settings.VALUE

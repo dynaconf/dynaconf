@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 assert settings.DATABASE == {
     "host": "dev.server.com",

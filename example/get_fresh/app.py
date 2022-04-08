@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 from dynaconf.loaders.toml_loader import write
 
 # Get the potato

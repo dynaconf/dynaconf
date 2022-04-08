@@ -5,7 +5,9 @@ from os import environ
 
 import pytest
 
-from dynaconf import settings  # noqa
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)  # noqa
 from dynaconf.loaders.env_loader import load
 from dynaconf.loaders.env_loader import load_from_env
 from dynaconf.loaders.env_loader import write

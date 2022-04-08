@@ -62,7 +62,7 @@ You can also set the merging individually for each settings variable as seen on
 ## Programmatically loading a settings file
 
 ```python
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 settings.load_file(path="/path/to/file.toml")  # list or `;/,` separated allowed
 ```
 
@@ -141,7 +141,7 @@ For example, if you want to add a [SOPS](https://github.com/mozilla/sops) loader
 
 ```py
 def load(
-    obj: LazySettings,
+    obj: Dynaconf,
     env: str = "DEVELOPMENT",
     silent: bool = True,
     key: str = None,
@@ -183,9 +183,9 @@ Go to your `myprogram/settings.py` and apply the module impersonation.
 
 ```python
 import sys
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 
-sys.modules[__name__] = LazySettings()
+sys.modules[__name__] = Dynaconf()
 ```
 
 the last line of above code will make the module to replace itself with a dynaconf instance in the first time it is imported.
@@ -218,7 +218,8 @@ bar = 2
 Program::
 
 ```py
->>> from dynaconf import settings
+>>> from dynaconf import Dynaconf
+>>> settings = Dynaconf(**options)
 >>> print(settings.MESSAGE)
 'This is in dev'
 >>> print(settings.FOO)
@@ -280,7 +281,7 @@ Then the `new_settings` will inherit all the variables from existing env and als
 Will change `in_place` the `env` for the existing object.
 
 ```python
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 settings.setenv('other')
 # now values comes from [other] section of config
@@ -295,7 +296,7 @@ settings.setenv()
 Using context manager
 
 ```python
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 with settings.using_env('other'):
     # now values comes from [other] section of config
@@ -320,7 +321,7 @@ class Obj:
 then you can do:
 
 ```py
-from dynaconf import settings  # assume it has DEBUG=True and VALUE=42.1
+from dynaconf import Dynaconf;settings = Dynaconf(**options)  # assume it has DEBUG=True and VALUE=42.1
 obj = Obj()
 
 settings.populate_obj(obj)
@@ -333,7 +334,7 @@ assert obj.VALUE == 42.1
 Also you can specify only some keys:
 
 ```py
-from dynaconf import settings  # assume it has DEBUG=True and VALUE=42.1
+from dynaconf import Dynaconf;settings = Dynaconf(**options)  # assume it has DEBUG=True and VALUE=42.1
 obj = Obj()
 
 settings.populate_obj(obj, keys=['DEBUG'])
@@ -352,7 +353,7 @@ You can also do that programmatically with:
 
 ```py
 from dynaconf import loaders
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 from dynaconf.utils.boxing import DynaBox
 
 # generates a dict with all the keys for `development` env
@@ -396,7 +397,7 @@ value = "On Testing"
 
 `program.py`
 ```python
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 print(settings.VALUE)
 ```
@@ -431,7 +432,7 @@ VALUE = "On Testing"
 
 `app.py` that reads that value from current environment.
 ```py
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 
 def return_a_value():
@@ -442,7 +443,7 @@ def return_a_value():
 
 ```py
 import pytest
-from dynaconf import settings
+from dynaconf import Dynaconf;settings = Dynaconf(**options)
 
 
 @pytest.fixture(scope="session", autouse=True)

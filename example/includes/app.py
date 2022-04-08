@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 assert settings.DYNACONF_INCLUDE == [
     "configs/*",

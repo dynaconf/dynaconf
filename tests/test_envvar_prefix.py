@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 
 TOML = """
 [global]
@@ -13,12 +13,12 @@ thisvar = "should not be set"
 """
 
 
-def test_envvar_prefix_lazysettings(tmpdir):
+def test_envvar_prefix_Dynaconf(tmpdir):
     os.environ["DYNACONF_PREFIXED_VAR"] = "this is prefixed"
     tmpfile = tmpdir.mkdir("sub").join("test_no_envvar_prefix.toml")
     tmpfile.write(TOML)
 
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True,
         envvar_prefix=False,
         settings_file=str(tmpfile),
@@ -34,7 +34,7 @@ def test_envvar_prefix_false_from_envvar(tmpdir):
     tmpfile = tmpdir.mkdir("sub").join("test_no_envvar_prefix.toml")
     tmpfile.write(TOML)
 
-    settings = LazySettings(environments=True, settings_file=str(tmpfile))
+    settings = Dynaconf(environments=True, settings_file=str(tmpfile))
 
     assert settings.VAR == "my value"
     assert settings.DYNACONF_PREFIXED_VAR == "this is prefixed"

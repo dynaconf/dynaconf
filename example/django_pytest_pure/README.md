@@ -75,7 +75,7 @@ venv/lib/python3.6/site-packages/django/db/models/options.py:101: in __init__
     self.db_tablespace = settings.DEFAULT_TABLESPACE
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
 
-self = <dynaconf.base.LazySettings object at 0x7f251735c208>, name = 'DEFAULT_TABLESPACE'
+self = <dynaconf.base.Dynaconf object at 0x7f251735c208>, name = 'DEFAULT_TABLESPACE'
 
     def __getattr__(self, name):
         """Allow getting keys from self.store using dot notation"""

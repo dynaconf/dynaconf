@@ -2,14 +2,14 @@ import os
 
 import pytest
 
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 from dynaconf.loaders.yaml_loader import load
 from dynaconf.strategies.filtering import PrefixFilter
 
 
 @pytest.fixture(scope="module")
 def settings():
-    return LazySettings(
+    return Dynaconf(
         environments=True,
         ENV_FOR_DYNACONF="PRODUCTION",
         # ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
@@ -227,7 +227,7 @@ def test_local_files(tmpdir):
     """
     tmpdir.join("settings.local.yaml").write(local_file_yaml)
 
-    conf = LazySettings(environments=True, settings_file="settings.yaml")
+    conf = Dynaconf(environments=True, settings_file="settings.yaml")
     assert conf.NAME == "Bruno Rocha"
     assert set(conf.COLORS) == set(["red", "green", "blue"])
     assert conf.DATA.link == "brunorocha.org"
@@ -273,7 +273,7 @@ def test_explicit_local_files(tmpdir):
     """
     tmpdir.join("foo.local.yaml").write(local_file_yaml)
 
-    conf = LazySettings(
+    conf = Dynaconf(
         environments=True,
         SETTINGS_FILE_FOR_DYNACONF=["foo.yaml", "foo.local.yaml"],
     )
@@ -289,7 +289,7 @@ def test_explicit_local_files(tmpdir):
 
 
 def test_envless():
-    settings = LazySettings()
+    settings = Dynaconf()
     _yaml = """
     a: a,b
     colors__white__code: "#FFFFFF"
@@ -302,7 +302,7 @@ def test_envless():
 
 
 def test_prefix():
-    settings = LazySettings(filter_strategy=PrefixFilter("prefix"))
+    settings = Dynaconf(filter_strategy=PrefixFilter("prefix"))
     _yaml = """
     prefix_a: a,b
     prefix_colors__white__code: "#FFFFFF"
@@ -316,7 +316,7 @@ def test_prefix():
 
 
 def test_empty_env():
-    settings = LazySettings(environments=True)
+    settings = Dynaconf(environments=True)
     _yaml = """
     default:
         foo: bar
@@ -334,7 +334,7 @@ def test_empty_env_from_file(tmpdir):
     development: ~
     """
     tmpdir.join("settings.yaml").write(settings_file_yaml)
-    settings = LazySettings(environments=True, settings_file="settings.yaml")
+    settings = Dynaconf(environments=True, settings_file="settings.yaml")
     settings.reload()
     assert settings.FOO == "bar"
 
@@ -347,7 +347,7 @@ def test_merge_unique_in_a_first_level(tmpdir):
         non_exist: "@merge_unique item1,item2"
     """
     tmpdir.join("settings.yaml").write(settings_file_yaml)
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True,
         settings_file="settings.yaml",
         COLORS=["red", "green"],
@@ -373,7 +373,7 @@ def test_should_not_merge_if_merge_is_not_explicit_set(tmpdir):
         - "item_5"
     """
     tmpdir.join("settings.yaml").write(settings_file_yaml)
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True,
         settings_files=["settings.yaml"],
     )
@@ -407,7 +407,7 @@ def test_should_not_duplicate_with_global_merge(tmpdir):
         - "item_7"
     """
     tmpdir.join("settings.yaml").write(settings_file_yaml)
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True, settings_files=["settings.yaml"], merge_enabled=True
     )
     # settings.reload()
@@ -440,9 +440,7 @@ def test_should_duplicate_when_explicit_set(tmpdir):
         - "dynaconf_merge"
     """
     tmpdir.join("settings.yaml").write(settings_file_yaml)
-    settings = LazySettings(
-        environments=True, settings_files=["settings.yaml"]
-    )
+    settings = Dynaconf(environments=True, settings_files=["settings.yaml"])
     assert settings.SCRIPTS == [
         "script1.sh",
         "script2.sh",
@@ -474,9 +472,7 @@ def test_should_NOT_duplicate_when_explicit_set(tmpdir):
         - "dynaconf_merge_unique"  # NO DUPLICATE
     """
     tmpdir.join("settings.yaml").write(settings_file_yaml)
-    settings = LazySettings(
-        environments=True, settings_files=["settings.yaml"]
-    )
+    settings = Dynaconf(environments=True, settings_files=["settings.yaml"])
     assert settings.SCRIPTS == [
         "script1.sh",
         "script2.sh",

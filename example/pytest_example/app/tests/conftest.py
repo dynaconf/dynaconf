@@ -1,6 +1,8 @@
 import pytest
 
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 
 @pytest.fixture(scope="session", autouse=True)

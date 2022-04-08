@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 from dynaconf.loaders.vault_loader import list_envs
 
 print(settings.FOO)  # noqa

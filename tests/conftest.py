@@ -4,7 +4,7 @@ import sys
 
 import pytest
 
-from dynaconf.base import LazySettings
+from dynaconf import Dynaconf
 
 
 @pytest.fixture(scope="module")
@@ -19,7 +19,7 @@ def settings():
     os.environ[f"DYNA{mode}_ADICT"] = '@json {"key": "value"}'
     os.environ[f"DYNA{mode}_DEBUG"] = "@bool true"
     os.environ[f"DYNA{mode}_TODELETE"] = "@bool true"
-    sets = LazySettings(
+    sets = Dynaconf(
         LOADERS_FOR_DYNACONF=loaders,
         ENVVAR_PREFIX_FOR_DYNACONF=f"DYNA{mode}",
         ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),

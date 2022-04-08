@@ -1,5 +1,4 @@
-from dynaconf import LazySettings
-from dynaconf import settings
+from dynaconf import Dynaconf
 from dynaconf.strategies.filtering import PrefixFilter
 
 # print all values in the file
@@ -84,7 +83,7 @@ for key, value in assertions.items():
     assert found == getattr(settings.from_env("production"), key)
     assert found == value, f"expected: {key}: [{value}] found: [{found}]"
 
-settings = LazySettings(
+settings = Dynaconf(
     settings_files=["settings.yaml"],
     filter_strategy=PrefixFilter("prefix"),
     environments=True,

@@ -1,6 +1,6 @@
 import pytest
 
-from dynaconf.base import LazySettings
+from dynaconf.base import Dynaconf
 
 
 TOML = """
@@ -181,7 +181,7 @@ def test_invalid_include_path(tmpdir):
     settings_file = tmpdir.join("settings.toml")
     settings_file.write(TOML)
 
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True,
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
@@ -206,7 +206,7 @@ def test_load_nested_toml(tmpdir):
     toml_plugin_file = tmpdir.join("plugin2.toml")
     toml_plugin_file.write(TOML_PLUGIN_2)
 
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True,
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
@@ -238,7 +238,7 @@ def test_load_nested_different_types(ext, tmpdir):
     json_plugin_file = tmpdir.join(f"plugin2.{ext}")
     json_plugin_file.write(PLUGIN_TEXT[ext])
 
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True,
         ENV_FOR_DYNACONF="DEFAULT",
         silent=False,
@@ -267,7 +267,7 @@ def test_load_nested_different_types_with_merge(tmpdir):
         json_plugin_file = tmpdir.join(f"plugin2.{ext}")
         json_plugin_file.write(PLUGIN_TEXT[ext])
 
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True,
         ENV_FOR_DYNACONF="custom",
         silent=False,
@@ -302,7 +302,7 @@ def test_programmatically_file_load(tmpdir):
     """
     )
 
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True, SETTINGS_FILE_FOR_DYNACONF=str(settings_file)
     )
     assert settings.DEFAULT_VAR == "default"
@@ -341,7 +341,7 @@ def test_include_via_python_module_name(tmpdir):
     dummy_folder.join("dummy_module.py").write('FOO = "164110"')
     dummy_folder.join("__init__.py").write('print("initing dummy...")')
 
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True,
         SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
         INCLUDES_FOR_DYNACONF=["dummy.dummy_module"],
@@ -373,7 +373,7 @@ def test_include_via_python_module_name_and_others(tmpdir):
     """
     )
 
-    settings = LazySettings(
+    settings = Dynaconf(
         environments=True,
         SETTINGS_FILE_FOR_DYNACONF=str(settings_file),
         INCLUDES_FOR_DYNACONF=["dummy.dummy_module", "otherfile.yaml"],

@@ -1,12 +1,12 @@
 import os
 import tempfile
 
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 from dynaconf.utils import RENAMED_VARS
 
 
 # 0 given a bare settings
-settings = LazySettings(environments=True)
+settings = Dynaconf(environments=True)
 
 # 1 Ensure all renamed vars exists in object
 for old, new in RENAMED_VARS.items():
@@ -27,7 +27,7 @@ temppyfilename = os.path.basename(temppy)
 
 
 # 0 given a full old-style configured setting
-settings = LazySettings(
+settings = Dynaconf(
     environments=True,
     DYNACONF_NAMESPACE="FOO",
     DYNACONF_SETTINGS_MODULE=str(temptoml),
@@ -58,7 +58,7 @@ for old, new in RENAMED_VARS.items():
         getattr(settings, old),
     )
 
-settings = LazySettings(
+settings = Dynaconf(
     environments=True,
     DYNACONF_NAMESPACE="FOO",
     DYNACONF_SETTINGS_MODULE=temppyfilename,
@@ -83,7 +83,7 @@ print(settings.SILENT_ERRORS_FOR_DYNACONF)
 print(settings.FRESH_VARS_FOR_DYNACONF)
 
 
-settings = LazySettings(
+settings = Dynaconf(
     environments=True,
     NAMESPACE="FOO",
     SETTINGS_MODULE=temppyfilename,

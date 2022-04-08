@@ -3,7 +3,9 @@ print("# On import level dynaconf will read .env and config envvars")
 print("# It will also setup the initial search tree.")
 print("\n")
 
-from dynaconf import settings  # noqa
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)  # noqa
 
 print("\n")
 print("IS Dynaconf loaded yet?", settings.configured)

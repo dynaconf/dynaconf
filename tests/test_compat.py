@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from dynaconf import LazySettings
+from dynaconf import Dynaconf
 
 
 @pytest.mark.parametrize(
@@ -20,7 +20,7 @@ from dynaconf import LazySettings
     ],
 )
 def test_dynaconf_namespace_renamed(tmpdir, recwarn, deprecated, value, new):
-    settings = LazySettings(**{deprecated: value})
+    settings = Dynaconf(**{deprecated: value})
 
     assert len(recwarn) == 1
     assert issubclass(recwarn[0].category, DeprecationWarning)
@@ -35,14 +35,14 @@ def test_envvar_prefix_for_dynaconf(tmpdir, recwarn):
     os.environ["AWESOMEAPP_LIST"] = '["item1", "item2"]'
     os.environ["AWESOMEAPP_FLOAT"] = "42.2"
 
-    settings = LazySettings(ENVVAR_PREFIX_FOR_DYNACONF="AWESOMEAPP")
+    settings = Dynaconf(ENVVAR_PREFIX_FOR_DYNACONF="AWESOMEAPP")
 
     assert settings.FOO == 1
     assert settings.BAR is False
     assert settings.LIST == ["item1", "item2"]
     assert settings.FLOAT == 42.2
 
-    settings2 = LazySettings(GLOBAL_ENV_FOR_DYNACONF="AWESOMEAPP")
+    settings2 = Dynaconf(GLOBAL_ENV_FOR_DYNACONF="AWESOMEAPP")
 
     assert len(recwarn) == 1
     assert issubclass(recwarn[0].category, DeprecationWarning)

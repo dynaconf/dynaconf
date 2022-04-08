@@ -1,4 +1,6 @@
-from dynaconf import settings
+from dynaconf import Dynaconf
+
+settings = Dynaconf(**options)
 
 with open(settings.find_file("settings.sff")) as settings_file:
     print("settings from sff file\n", settings_file.read())
