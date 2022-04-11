@@ -164,6 +164,7 @@ class Validator:
         settings: Any,
         only: Optional[Union[str, Sequence]] = None,
         exclude: Optional[Union[str, Sequence]] = None,
+        only_current_env: bool = False,
     ) -> None:
         """Raise ValidationError if invalid"""
         # If only or exclude are not set, this value always passes startswith
@@ -188,6 +189,15 @@ class Validator:
             except ValidationError:
                 # if when is invalid, return canceling validation flow
                 return
+
+        if only_current_env:
+            if settings.current_env.upper() in map(
+                lambda s: s.upper(), self.envs
+            ):
+                self._validate_items(
+                    settings, settings.current_env, only=only, exclude=exclude
+                )
+            return
 
         # If only using current_env, skip using_env decoration (reload)
         if (
@@ -298,6 +308,7 @@ class CombinedValidator(Validator):
         settings: Any,
         only: Optional[Union[str, Sequence]] = None,
         exclude: Optional[Union[str, Sequence]] = None,
+        only_current_env: bool = False,
     ) -> None:  # pragma: no cover
         raise NotImplementedError(
             "subclasses OrValidator or AndValidator implements this method"
@@ -312,12 +323,18 @@ class OrValidator(CombinedValidator):
         settings: Any,
         only: Optional[Union[str, Sequence]] = None,
         exclude: Optional[Union[str, Sequence]] = None,
+        only_current_env: bool = False,
     ) -> None:
         """Ensure at least one of the validators are valid"""
         errors = []
         for validator in self.validators:
             try:
-                validator.validate(settings, only=only, exclude=exclude)
+                validator.validate(
+                    settings,
+                    only=only,
+                    exclude=exclude,
+                    only_current_env=only_current_env,
+                )
             except ValidationError as e:
                 errors.append(e)
                 continue
@@ -342,12 +359,18 @@ class AndValidator(CombinedValidator):
         settings: Any,
         only: Optional[Union[str, Sequence]] = None,
         exclude: Optional[Union[str, Sequence]] = None,
+        only_current_env: bool = False,
     ) -> None:
         """Ensure both the validators are valid"""
         errors = []
         for validator in self.validators:
             try:
-                validator.validate(settings, only=only, exclude=exclude)
+                validator.validate(
+                    settings,
+                    only=only,
+                    exclude=exclude,
+                    only_current_env=only_current_env,
+                )
             except ValidationError as e:
                 errors.append(e)
                 continue
@@ -412,6 +435,12 @@ class ValidatorList(list):
         self,
         only: Optional[Union[str, Sequence]] = None,
         exclude: Optional[Union[str, Sequence]] = None,
+        only_current_env: bool = False,
     ) -> None:
         for validator in self:
-            validator.validate(self.settings, only=only, exclude=exclude)
+            validator.validate(
+                self.settings,
+                only=only,
+                exclude=exclude,
+                only_current_env=only_current_env,
+            )

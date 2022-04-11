@@ -90,8 +90,7 @@ class FlaskDynaconf:
                 "To use this extension Flask must be installed "
                 "install it with: pip install flask"
             )
-        self.kwargs = kwargs
-
+        self.kwargs = {k.upper(): v for k, v in kwargs.items()}
         kwargs.setdefault("ENVVAR_PREFIX", "FLASK")
         env_prefix = f"{kwargs['ENVVAR_PREFIX']}_ENV"  # FLASK_ENV
         kwargs.setdefault("ENV_SWITCHER", env_prefix)
@@ -177,6 +176,9 @@ class DynaconfConfig(Config):
 
     def items(self):
         return self._chain_map().items()
+
+    def setdefault(self, key, value=None):
+        return self._chain_map().setdefault(key, value)
 
     def __iter__(self):
         return self._chain_map().__iter__()

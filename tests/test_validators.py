@@ -606,6 +606,36 @@ def test_validator_exclude_post_register(
     settings.app.path = "/tmp/app_startup"
 
 
+def test_validator_only_current_env_valid(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        environments=True,
+        ENV_FOR_DYNACONF="DEVELOPMENT",
+    )
+    settings.validators.register(
+        Validator("IMAGE_1", env="production", must_exist=True)
+    )
+    settings.validators.validate(only_current_env=True)
+
+
+def test_raises_only_current_env_invalid(tmpdir):
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
+    settings = LazySettings(
+        settings_file=str(tmpfile),
+        environments=True,
+        ENV_FOR_DYNACONF="PRODUCTION",
+    )
+    settings.validators.register(
+        Validator("IMAGE_1", env="production", must_exist=True)
+    )
+
+    with pytest.raises(ValidationError):
+        settings.validators.validate(only_current_env=True)
+
+
 def test_raises_on_invalid_selective_args(tmpdir, yaml_validators_good):
     settings = LazySettings(validators=yaml_validators_good, validate_only=int)
     with pytest.raises(ValueError):

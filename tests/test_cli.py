@@ -111,6 +111,85 @@ def test_list(testdir):
     assert "TEST_KEY<str> 'test_value'" in result
 
 
+def test_get(testdir):
+    """Tests get command"""
+    result = run(
+        ["get", "TEST_KEY"],
+        env={
+            "ROOT_PATH_FOR_DYNACONF": testdir,
+            "INSTANCE_FOR_DYNACONF": "tests.config.settings",
+        },
+    )
+    assert result == "test_value"
+
+
+def test_get_lower(testdir):
+    """Tests get command"""
+    result = run(
+        ["get", "test_key"],
+        env={
+            "ROOT_PATH_FOR_DYNACONF": testdir,
+            "INSTANCE_FOR_DYNACONF": "tests.config.settings",
+        },
+    )
+    assert result == "test_value"
+
+
+def test_get_unparsed(testdir):
+    """Tests get command"""
+    result = run(
+        ["get", "COMMENTJSON_ENABLED_FOR_DYNACONF", "-u"],
+        env={
+            "ROOT_PATH_FOR_DYNACONF": testdir,
+            "INSTANCE_FOR_DYNACONF": "tests.config.settings",
+        },
+    )
+    assert result == "@bool False"
+
+
+def test_get_with_default(testdir):
+    """Tests get command"""
+    result = run(
+        ["get", "this_obviously_doesnt_exist_yet", "-d", "Hello123"],
+        env={
+            "ROOT_PATH_FOR_DYNACONF": testdir,
+            "INSTANCE_FOR_DYNACONF": "tests.config.settings",
+        },
+    )
+    assert result == "Hello123"
+
+
+def test_get_other_env(tmpdir):
+    """Tests get command"""
+    settings_file = tmpdir.join("settings.json")
+    settings_file.write(
+        '{"prod": {"name": "admin"}, "development": {"name": "dev"}}'
+    )
+    instance_file = tmpdir.join("myconfig.py")
+    instance_file.write(
+        "settings = __import__('dynaconf').Dynaconf("
+        f"settings_file=r'{str(settings_file)}',"
+        "environments=True"
+        ")"
+    )
+
+    result = run(
+        ["get", "name"],
+        env={
+            "INSTANCE_FOR_DYNACONF": "myconfig.settings",
+        },
+    )
+    assert result == "dev"
+
+    result = run(
+        ["get", "name", "-e", "prod"],
+        env={
+            "INSTANCE_FOR_DYNACONF": "myconfig.settings",
+        },
+    )
+    assert result == "admin"
+
+
 def test_help_dont_require_instance(testdir):
     result = os.system("dynaconf list --help")
     assert result == 0

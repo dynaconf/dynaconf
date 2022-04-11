@@ -18,6 +18,7 @@ from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
 from dynaconf.utils.functional import empty
 from dynaconf.utils.parse_conf import parse_conf_data
+from dynaconf.utils.parse_conf import unparse_conf_data
 from dynaconf.validator import ValidationError
 from dynaconf.validator import Validator
 from dynaconf.vendor import click
@@ -400,6 +401,45 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
             "🎉 Dynaconf is configured! read more on https://dynaconf.com\n"
             "   Use `dynaconf -i config.settings list` to see your settings\n"
         )
+
+
+@main.command(name="get")
+@click.argument("key", required=True)
+@click.option(
+    "--default",
+    "-d",
+    default=empty,
+    help="Default value if settings doesn't exist",
+)
+@click.option(
+    "--env", "-e", default=None, help="Filters the env to get the values"
+)
+@click.option(
+    "--unparse",
+    "-u",
+    default=False,
+    help="Unparse data by adding markers such as @none, @int etc..",
+    is_flag=True,
+)
+def get(key, default, env, unparse):
+    """Returns the raw value for a settings key"""
+    if env:
+        env = env.strip()
+    if key:
+        key = key.strip()
+
+    if env:
+        settings.setenv(env)
+
+    if default is not empty:
+        result = settings.get(key, default)
+    else:
+        result = settings[key]  # let the keyerror raises
+
+    if unparse:
+        result = unparse_conf_data(result)
+
+    click.echo(result, nl=False)
 
 
 @main.command(name="list")

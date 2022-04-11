@@ -218,6 +218,9 @@ class Settings:
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
+        self._validate_only_current_env = kwargs.pop(
+            "validate_only_current_env", False
+        )
 
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
@@ -233,7 +236,9 @@ class Settings:
         self.execute_loaders()
 
         self.validators.validate(
-            only=self._validate_only, exclude=self._validate_exclude
+            only=self._validate_only,
+            exclude=self._validate_exclude,
+            only_current_env=self._validate_only_current_env,
         )
 
     def __call__(self, *args, **kwargs):
@@ -319,7 +324,7 @@ class Settings:
     def setdefault(self, item, default):
         """Returns value if exists or set it as the given default"""
         value = self.get(item, empty)
-        if value is empty and default is not empty:
+        if (not value or value is empty) and default is not empty:
             self.set(
                 item,
                 default,
@@ -646,7 +651,7 @@ class Settings:
         """Return the current active env"""
 
         if self.ENVIRONMENTS_FOR_DYNACONF is False:
-            return "main"
+            return self.MAIN_ENV_FOR_DYNACONF.lower()
 
         if self.FORCE_ENV_FOR_DYNACONF is not None:
             return self.FORCE_ENV_FOR_DYNACONF
@@ -1221,5 +1226,6 @@ RESERVED_ATTRS = (
         "validators",
         "_validate_only",
         "_validate_exclude",
+        "_validate_only_current_env",
     ]
 )
