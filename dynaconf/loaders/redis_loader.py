@@ -67,7 +67,7 @@ def write(obj, data=None, **kwargs):
         raise RuntimeError(
             "Redis is not configured \n"
             "export REDIS_ENABLED_FOR_DYNACONF=true\n"
-            "and configure the REDIS_FOR_DYNACONF_* variables"
+            "and configure the REDIS_*_FOR_DYNACONF variables"
         )
     client = StrictRedis(**obj.REDIS_FOR_DYNACONF)
     holder = obj.get("ENVVAR_PREFIX_FOR_DYNACONF").upper()

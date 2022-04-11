@@ -55,6 +55,7 @@ test_examples:
 	cd example/project_root/;pwd;rm -rf /tmp/dynaconf_project_root_test/settings.py;mkdir -p /tmp/dynaconf_project_root_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/dynaconf_project_root_test/settings.py;python app.py;rm -rf /tmp/dynaconf_project_root_test/
 	cd example/settings_file/;pwd;rm -rf /tmp/settings_file_test/settings.py;mkdir -p /tmp/settings_file_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/settings_file_test/settings.py;python app.py;rm -rf /tmp/settings_file_test/
 	cd example/configure/;pwd;rm -rf /tmp/configure_test/settings.py;mkdir -p /tmp/configure_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/configure_test/settings.py;python app.py;rm -rf /tmp/configure_test/
+	cd example/-m_case/;pwd;python -m module
 
 	@echo '###############  Calling from outer folder  ###############'
 	python example/common/program.py
@@ -118,6 +119,7 @@ test_examples:
 	cd example/issues/494_using_pathlib;pwd;python app.py
 	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__device_id=42 EXPECTED_VALUE=42 python app.py
 	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__DEVICE_ID=42 EXPECTED_VALUE=42 python app.py
+	cd example/issues/734_validate_only_current_env;pwd;python app.py
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
@@ -208,7 +210,7 @@ publish:
 
 clean:
 	@find ./ -name '*.pyc' -exec rm -f {} \;
-	@find ./ -name '__pycache__' -exec rm -rf {} \;
+	@find ./ -name '__pycache__' -prune -exec rm -rf {} \;
 	@find ./ -name 'Thumbs.db' -exec rm -f {} \;
 	@find ./ -name '*~' -exec rm -f {} \;
 	rm -rf .cache

@@ -22,7 +22,6 @@ if DYNACONF_TEST_REDIS_URL:
     def docker_redis():
         return DYNACONF_TEST_REDIS_URL
 
-
 else:
 
     @pytest.fixture(scope="module")

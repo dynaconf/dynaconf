@@ -71,14 +71,27 @@ def load(obj, env=None, silent=None, key=None):
     """
     client = get_client(obj)
     try:
-        dirs = client.secrets.kv.list_secrets(
-            path=obj.VAULT_PATH_FOR_DYNACONF,
-            mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
-        )["data"]["keys"]
+        if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2:
+            dirs = client.secrets.kv.v2.list_secrets(
+                path=obj.VAULT_PATH_FOR_DYNACONF,
+                mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
+            )["data"]["keys"]
+        else:
+            dirs = client.secrets.kv.v1.list_secrets(
+                path=obj.VAULT_PATH_FOR_DYNACONF,
+                mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
+            )["data"]["keys"]
     except InvalidPath:
         # The given path is not a directory
         dirs = []
-    env_list = dirs + build_env_list(obj, env)
+    # First look for secrets into environments less store
+    if not obj.ENVIRONMENTS_FOR_DYNACONF:
+        # By adding '', dynaconf will now read secrets from environments-less
+        # store which are not written by `dynaconf write` to Vault store
+        env_list = [obj.MAIN_ENV_FOR_DYNACONF.lower(), ""]
+    # Finally, look for secret into all the environments
+    else:
+        env_list = dirs + build_env_list(obj, env)
     for env in env_list:
         path = "/".join([obj.VAULT_PATH_FOR_DYNACONF, env])
         try:
@@ -99,7 +112,11 @@ def load(obj, env=None, silent=None, key=None):
             # extract the inner data
             data = data.get("data", {}).get("data", {})
         try:
-            if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2 and data:
+            if (
+                obj.VAULT_KV_VERSION_FOR_DYNACONF == 2
+                and obj.ENVIRONMENTS_FOR_DYNACONF
+                and data
+            ):
                 data = data.get("data", {})
             if data and key:
                 value = parse_conf_data(

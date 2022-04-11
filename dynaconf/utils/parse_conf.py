@@ -166,7 +166,9 @@ class Lazy:
 
     _dynaconf_lazy_format = True
 
-    def __init__(self, value=empty, formatter=Formatters.python_formatter, casting=None):
+    def __init__(
+        self, value=empty, formatter=Formatters.python_formatter, casting=None
+    ):
         self.value = value
         self.formatter = formatter
         self.casting = casting
@@ -197,6 +199,11 @@ class Lazy:
         """Encodes this object values to be serializable to json"""
         return f"@{self.formatter} {self.value}"
 
+    def set_casting(self, casting):
+        """Set the casting and return the instance."""
+        self.casting = casting
+        return self
+
 
 def try_to_encode(value, callback=str):
     """Tries to encode a value by verifying existence of `_dynaconf_encode`"""
@@ -219,17 +226,27 @@ def evaluate_lazy_format(f):
 
 
 converters = {
-    "@str": str,
-    "@int": int,
-    "@float": float,
-    "@bool": lambda value: str(value).lower() in true_values,
-    "@json": json.loads,
+    "@str": lambda value: value.set_casting(str)
+    if isinstance(value, Lazy)
+    else str(value),
+    "@int": lambda value: value.set_casting(int)
+    if isinstance(value, Lazy)
+    else int(value),
+    "@float": lambda value: value.set_casting(float)
+    if isinstance(value, Lazy)
+    else float(value),
+    "@bool": lambda value: value.set_casting(
+        lambda x: str(x).lower() in true_values
+    )
+    if isinstance(value, Lazy)
+    else str(value).lower() in true_values,
+    "@json": lambda value: value.set_casting(
+        lambda x: json.loads(x.replace("'", '"'))
+    )
+    if isinstance(value, Lazy)
+    else json.loads(value),
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
-    "@jinja_int": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=int),
-    "@jinja_float": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=float),
-    "@jinja_bool": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=lambda value: str(value).lower() in true_values),
-    "@jinja_json": lambda value: Lazy(value, formatter=Formatters.jinja_formatter, casting=lambda x: json.loads(x.replace("'", '"'))),
     # Meta Values to trigger pre assignment actions
     "@reset": Reset,  # @reset is DEPRECATED on v3.0.0
     "@del": Del,
@@ -267,7 +284,6 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
     """
     @int @bool @float @json (for lists and dicts)
     strings does not need converters
-
     export DYNACONF_DEFAULT_THEME='material'
     export DYNACONF_DEBUG='@bool True'
     export DYNACONF_DEBUG_TOOLBAR_ENABLED='@bool False'
@@ -287,10 +303,22 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
         and isinstance(data, str)
         and data.startswith(tuple(converters.keys()))
     ):
-        parts = data.partition(" ")
-        converter_key = parts[0]
-        value = parts[-1]
-        value = get_converter(converter_key, value, box_settings)
+        # Check combination token is used
+        comb_token = re.match(
+            r"^@(str|int|float|bool|json) @(jinja|format)", data
+        )
+        if comb_token:
+            tokens = comb_token.group(0)
+            converter_key_list = tokens.split(" ")
+            value = data.replace(tokens, "").strip()
+        else:
+            parts = data.partition(" ")
+            converter_key_list = [parts[0]]
+            value = parts[-1]
+
+        # Parse the converters iteratively
+        for converter_key in converter_key_list[::-1]:
+            value = get_converter(converter_key, value, box_settings)
     else:
         value = parse_with_toml(data) if tomlfy else data
 
