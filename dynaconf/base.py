@@ -218,6 +218,9 @@ class Settings:
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
+        self._validate_only_current_env = kwargs.pop(
+            "validate_only_current_env", False
+        )
 
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
@@ -233,7 +236,9 @@ class Settings:
         self.execute_loaders()
 
         self.validators.validate(
-            only=self._validate_only, exclude=self._validate_exclude
+            only=self._validate_only,
+            exclude=self._validate_exclude,
+            only_current_env=self._validate_only_current_env,
         )
 
     def __call__(self, *args, **kwargs):
@@ -1221,5 +1226,6 @@ RESERVED_ATTRS = (
         "validators",
         "_validate_only",
         "_validate_exclude",
+        "_validate_only_current_env",
     ]
 )
