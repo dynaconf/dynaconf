@@ -1,0 +1,13 @@
+[development]
+version = "dev"
+age = 35
+name = "Bruno"
+servers = ['127.0.0.1', 'localhost', 'development.com']
+PORT = 80
+
+[production]
+version = "1.0.0"
+age = 35
+name = "Bruno"
+servers = ['production.com']
+PORT = 443

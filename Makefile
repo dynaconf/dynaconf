@@ -119,6 +119,7 @@ test_examples:
 	cd example/issues/494_using_pathlib;pwd;python app.py
 	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__device_id=42 EXPECTED_VALUE=42 python app.py
 	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__DEVICE_ID=42 EXPECTED_VALUE=42 python app.py
+	cd example/issues/734_validate_only_current_env;pwd;python app.py
 
 test_vault:
 	# @cd example/vault;pwd;python write.py

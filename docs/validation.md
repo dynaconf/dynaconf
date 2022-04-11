@@ -184,7 +184,7 @@ This returns code 0 (success) if validation is ok.
     All values in dynaconf are parsed using toml format, TOML tries to be smart
     and infer the type of the settings variables, some variables will be automatically
     converted to integer:
-    
+
     ```
     FOO = "0x..."  # hexadecimal
     FOO = "0o..."  # Octal
@@ -263,5 +263,59 @@ settings.validators.validate(
     only=["module2"],
     exclude=["module2.bad"]
 )
-
 ```
+
+> **Validate only current env**
+
+You can specify if you want to validate all environments defined for a validator (default behavior) or only the current environement. In the first case, the validators will run on all possible settings defined in their list of environment, while in the latter the validators with environments different from the current environment will be skipped.
+
+This is useful when your configuration for different environments (let's say `production` and `development`) comes from different files you don't necesseraly have access to during development. You would want to write different validators for your `development` and `production` environments, and only run the right validator for the current environment.
+
+Here is an example of the option using:
+
+- `settings.toml`
+```ini
+[development]
+version = "dev"
+age = 35
+name = "Bruno"
+servers = ['127.0.0.1', 'localhost', 'development.com']
+PORT = 80
+
+[production]
+version = "1.0.0"
+age = 35
+name = "Bruno"
+servers = ['production.com']
+PORT = 443
+```
+
+- `.secrets.toml`
+```ini
+[production]
+api_key = 'secret_api_key'
+```
+
+You could then have these validators:
+
+```python
+from dynaconf import Dynaconf, Validator
+
+settings = Dynaconf(
+    settings_files=['setting.toml', '.secrets.toml'],
+    environments=True,
+    validators=[
+        # Ensure some parameters exists for both envs
+        Validator('VERSION', 'NAME', 'SERVERS', envs=['development', 'production'], must_exist=True),
+
+        # Ensure some parameter validate certain condition in dev env
+        Validator("SERVERS", env='development', cont='localhost'),
+
+        # Ensure some parameter exists in production env
+        Validator('API_KEY', env='production', must_exist=True),
+    ]
+)
+```
+And suppose during development, when `settings.current_env == 'development'`, you don't have the file `.secrets.toml`.
+
+Running `settings.validators.validate()` will fail even if `settings.current_env == 'development'`, because by default all validators will run on all of their environments, whether or not it is the current env. However you could create your settings with the parameter `validate_only_current_env=True`, and nothing will be raised if `settings.current_env == 'development'`. Still, if `settings.current_env == 'production'`, it will fail, forcing you to have `.secrets.toml` file in the directory in `production`, but not necessarily during `development`.
