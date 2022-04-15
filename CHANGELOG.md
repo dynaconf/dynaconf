@@ -2,6 +2,138 @@ Changelog
 =========
 
 
+3.1.8 (2022-04-15)
+------------------
+- Release version 3.1.8. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Anderson Sousa (1):
+            Document the usage with python -m (#710)
+
+      Andressa Cabistani (2):
+            Add unique label when merging lists to fix issue #653 (#661)
+            Add new validation to fix issue #585 (#667)
+
+      Armin Berres (1):
+            Fix typo in error message
+
+      Bruno Rocha (7):
+            Release version 3.1.7
+            Found this bug that was duplicating the generated envlist (#663)
+            Add support for Python 3.10 (#665)
+            Attempt to fix #555 (#669)
+            Create update_contributors.yml
+            Fixing pre-coomit and docs CI
+            Added `dynaconf get` command to cli (#730)
+
+      Caneco (2):
+            improvement: add brand new logo to the project (#686)
+            improvement: update socialcard to match the python way (#687)
+
+      EdwardCuiPeacock (2):
+            Feature: add @jinja and @format casting (#704)
+            Combo converter doc (#735)
+
+      Eitan Mosenkis (1):
+            Fix FlaskConfig.setdefault (#706)
+
+      Enderson Menezes (Mr. Enderson) (2):
+            Force PYTHONIOENCODING to utf-8 to fix #664 (#672)
+            edit: move discussions to github tab (#682)
+
+      Eugene Triguba (1):
+            Fix custom prefix link in envvar documentation (#680)
+
+      Gibran Herrera (1):
+            Fix Issue 662 Lazy validation (#675)
+
+      Jitendra Yejare (2):
+            Load vault secrets from environment less stores or which are not written by dynaconf (#725)
+            Use default value when settings is blank (#729)
+
+      Pavel Alimpiev (1):
+            Update docs link (#678)
+
+      Ugo Benassayag (1):
+            Added validate_only_current_env to validator (issue #734) (#736)
+
+      Waylon Walker (1):
+            Docs Fix Spelling (#696)
+
+      dependabot[bot] (3):
+            Bump django from 2.1.5 to 2.2.26 in /example/django_pytest_pure (#711)
+            Bump mkdocs from 1.1.2 to 1.2.3 (#715)
+            Bump django from 2.2.26 to 2.2.27 in /example/django_pytest_pure (#717)
+
+      github-actions[bot] (2):
+            [automated] Update Contributors File (#691)
+            [automated] Update Contributors File (#732)
+
+      lowercase00 (1):
+            Makes Django/Flask kwargs case insensitive (#721)
+- Combo converter doc (#735) [EdwardCuiPeacock]
+- Added validate_only_current_env to validator (issue #734) (#736) [Ugo
+  Benassayag, Ugo Benassayag]
+- [automated] Update Contributors File (#732) [github-actions[bot],
+  rochacbruno]
+- Added `dynaconf get` command to cli (#730) [Bruno Rocha]
+- Fixing pre-coomit and docs CI. [Bruno Rocha]
+- Fix typo in error message. [Armin Berres]
+
+  It is, e.g., REDIS_HOST_FOR_DYNACONF - not REDIS_FOR_DYNACONF_HOST.
+- Bump django from 2.2.26 to 2.2.27 in /example/django_pytest_pure
+  (#717) [Bruno Rocha, dependabot[bot], dependabot[bot]]
+- Bump mkdocs from 1.1.2 to 1.2.3 (#715) [Bruno Rocha, dependabot[bot],
+  dependabot[bot]]
+- Fix custom prefix link in envvar documentation (#680) [Andressa
+  Cabistani, Bruno Rocha, Eugene Triguba]
+- Use default value when settings is blank (#729) [Bruno Rocha, Jitendra
+  Yejare]
+- Load vault secrets from environment less stores or which are not
+  written by dynaconf (#725) [Jitendra Yejare]
+- Makes Django/Flask kwargs case insensitive (#721) [lowercase00]
+- Docs Fix Spelling (#696) [Bruno Rocha, Waylon Walker]
+- Bump django from 2.1.5 to 2.2.26 in /example/django_pytest_pure (#711)
+  [Bruno Rocha, dependabot[bot], dependabot[bot]]
+- [automated] Update Contributors File (#691) [github-actions[bot],
+  rochacbruno]
+- Feature: add @jinja and @format casting (#704) [Bruno Rocha,
+  EdwardCuiPeacock]
+- Document the usage with python -m (#710) [Anderson Sousa, Bruno Rocha]
+- Fix FlaskConfig.setdefault (#706) [Eitan Mosenkis]
+- Create update_contributors.yml. [Bruno Rocha]
+- Improvement: update socialcard to match the python way (#687) [Caneco]
+- Improvement: add brand new logo to the project (#686) [Caneco]
+- Edit: move discussions to github tab (#682) [Enderson Menezes (Mr.
+  Enderson)]
+- Update docs link (#678) [Pavel Alimpiev]
+
+  * Replace an old Django-related link with a new one
+
+  * Update docs link
+- Fix Issue 662 Lazy validation (#675) [Gibran Herrera]
+- Force PYTHONIOENCODING to utf-8 to fix #664 (#672) [Enderson Menezes
+  (Mr. Enderson)]
+- Attempt to fix #555 (#669) [Bruno Rocha]
+- Add new validation to fix issue #585 (#667) [Andressa Cabistani,
+  andressa.cabistani]
+- Add support for Python 3.10 (#665) [Bruno Rocha]
+
+  Python 3.10 supported and tested
+- Found this bug that was duplicating the generated envlist (#663)
+  [Bruno Rocha]
+- Add unique label when merging lists to fix issue #653 (#661) [Andressa
+  Cabistani, andressa.cabistani]
+- Release version 3.1.7. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.6
+            Add missing docs and missing python_requires (#659)
+
+
 3.1.7 (2021-09-09)
 ------------------
 - Release version 3.1.7. [Bruno Rocha]
