@@ -1,0 +1,2 @@
+export TESTING_nested__test_field=setbyenv
+export TESTING_nested__group_field=setbyenvgroup
