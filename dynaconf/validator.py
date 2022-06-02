@@ -27,7 +27,12 @@ EQUALITY_ATTRS = (
 
 
 class ValidationError(Exception):
-    pass
+    """Raised when a validation fails"""
+
+    def __init__(self, message: str, *args, **kwargs):
+        self.details = kwargs.pop("details", [])
+        super().__init__(message, *args, **kwargs)
+        self.message = message
 
 
 class Validator:
@@ -109,6 +114,7 @@ class Validator:
         cast: Optional[Callable[[Any], Any]] = None,
         default: Optional[Union[Any, Callable[[Any, Validator], Any]]] = empty,
         description: Optional[str] = None,
+        apply_default_on_none: Optional[bool] = False,
         **operations: Any,
     ) -> None:
         # Copy immutable MappingProxyType as a mutable dict
@@ -131,6 +137,7 @@ class Validator:
         self.default = default
         self.description = description
         self.envs: Optional[Sequence[str]] = None
+        self.apply_default_on_none = apply_default_on_none
 
         if isinstance(env, str):
             self.envs = [env]
@@ -240,20 +247,26 @@ class Validator:
             else:
                 default_value = empty
 
-            value = self.cast(settings.setdefault(name, default_value))
+            value = self.cast(
+                settings.setdefault(
+                    name,
+                    default_value,
+                    apply_default_on_none=self.apply_default_on_none,
+                )
+            )
 
             # is name required but not exists?
             if self.must_exist is True and value is empty:
-                raise ValidationError(
-                    self.messages["must_exist_true"].format(name=name, env=env)
+                _message = self.messages["must_exist_true"].format(
+                    name=name, env=env
                 )
+                raise ValidationError(_message, details=[(self, _message)])
 
             if self.must_exist is False and value is not empty:
-                raise ValidationError(
-                    self.messages["must_exist_false"].format(
-                        name=name, env=env
-                    )
+                _message = self.messages["must_exist_false"].format(
+                    name=name, env=env
                 )
+                raise ValidationError(_message, details=[(self, _message)])
 
             if self.must_exist in (False, None) and value is empty:
                 continue
@@ -261,28 +274,26 @@ class Validator:
             # is there a callable condition?
             if self.condition is not None:
                 if not self.condition(value):
-                    raise ValidationError(
-                        self.messages["condition"].format(
-                            name=name,
-                            function=self.condition.__name__,
-                            value=value,
-                            env=env,
-                        )
+                    _message = self.messages["condition"].format(
+                        name=name,
+                        function=self.condition.__name__,
+                        value=value,
+                        env=env,
                     )
+                    raise ValidationError(_message, details=[(self, _message)])
 
             # operations
             for op_name, op_value in self.operations.items():
                 op_function = getattr(validator_conditions, op_name)
                 if not op_function(value, op_value):
-                    raise ValidationError(
-                        self.messages["operations"].format(
-                            name=name,
-                            operation=op_function.__name__,
-                            op_value=op_value,
-                            value=value,
-                            env=env,
-                        )
+                    _message = self.messages["operations"].format(
+                        name=name,
+                        operation=op_function.__name__,
+                        op_value=op_value,
+                        value=value,
+                        env=env,
                     )
+                    raise ValidationError(_message, details=[(self, _message)])
 
 
 class CombinedValidator(Validator):
@@ -341,14 +352,13 @@ class OrValidator(CombinedValidator):
             else:
                 return
 
-        raise ValidationError(
-            self.messages["combined"].format(
-                errors=" or ".join(
-                    str(e).replace("combined validators failed ", "")
-                    for e in errors
-                )
+        _message = self.messages["combined"].format(
+            errors=" or ".join(
+                str(e).replace("combined validators failed ", "")
+                for e in errors
             )
         )
+        raise ValidationError(_message, details=[(self, _message)])
 
 
 class AndValidator(CombinedValidator):
@@ -376,14 +386,13 @@ class AndValidator(CombinedValidator):
                 continue
 
         if errors:
-            raise ValidationError(
-                self.messages["combined"].format(
-                    errors=" and ".join(
-                        str(e).replace("combined validators failed ", "")
-                        for e in errors
-                    )
+            _message = self.messages["combined"].format(
+                errors=" and ".join(
+                    str(e).replace("combined validators failed ", "")
+                    for e in errors
                 )
             )
+            raise ValidationError(_message, details=[(self, _message)])
 
 
 class ValidatorList(list):
@@ -443,4 +452,30 @@ class ValidatorList(list):
                 only=only,
                 exclude=exclude,
                 only_current_env=only_current_env,
+            )
+
+    def validate_all(
+        self,
+        only: Optional[Union[str, Sequence]] = None,
+        exclude: Optional[Union[str, Sequence]] = None,
+        only_current_env: bool = False,
+    ) -> None:
+        errors = []
+        details = []
+        for validator in self:
+            try:
+                validator.validate(
+                    self.settings,
+                    only=only,
+                    exclude=exclude,
+                    only_current_env=only_current_env,
+                )
+            except ValidationError as e:
+                errors.append(e)
+                details.append((validator, str(e)))
+                continue
+
+        if errors:
+            raise ValidationError(
+                "; ".join(str(e) for e in errors), details=details
             )

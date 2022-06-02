@@ -56,6 +56,39 @@ settings = Dynaconf(
 The above will raise `dynaconf.validators.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")` and `dynaconf.validators.ValidationError("PROJECT must be eq='hello_world' but it is 'This is not hello_world' in env PRODUCTION")`
 
 
+## Lazy validation
+
+Instead of passing `validators=` argument to `Dynaconf` class you can register validators after the instance is created.
+
+```python
+settings = Dynaconf(...)
+
+custom_msg = "You cannot set {name} to {value} in env {env}"
+settings.validators.register(
+    Validator("MYSQL_HOST", eq="development.com", env="DEVELOPMENT"),
+    Validator("MYSQL_HOST", ne="development.com", env="PRODUCTION"),
+    Validator("VERSION", ne=1, messages={"operations": custom_msg}),
+    Validator("BLABLABLA", must_exist=True),
+)
+```
+
+Having the list of validators registered you can call one of:
+
+### Validate and raise on the first error:
+
+```python
+settings.validators.validate()
+```
+
+### Validate and accumulate errors, raise only after all validators are evaluated.
+
+```python
+settings.validators.validate_all()
+```
+
+The raised `ValidationError` will have an attribute `details` holding information about each
+error raised.
+
 ### Providing default or computed values
 
 
@@ -69,6 +102,10 @@ Validator("FOO", default="A default value for foo")
 
 Then if not able to load the values from files or environment this default value will be set for that key.
 
+
+!!! warning
+    YAML reads empty keys as `None` and in that case defaults are not applied, if you want to change it
+    set `apply_default_on_none=True` either globally to `Dynaconf` class or individually on a `Validator`.
 
 #### Computed values
 

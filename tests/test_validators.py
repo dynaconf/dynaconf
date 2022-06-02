@@ -1,3 +1,4 @@
+import os
 from types import MappingProxyType
 
 import pytest
@@ -63,6 +64,12 @@ app:
         arg1: "a"
         arg2: "b"
         arg3: "c"
+
+hasemptyvalues:
+    key1:
+    key2:
+    key3: null
+    key4: "@empty"
 """
 
 
@@ -363,6 +370,36 @@ def test_validator_custom_message(tmpdir):
     assert custom_msg.format(
         name="VERSION", value="1", env="DEVELOPMENT"
     ) in str(error)
+
+
+def test_validate_all(tmpdir):
+    """Assert custom message is being processed by validator."""
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(TOML)
+
+    settings = LazySettings(
+        environments=True, SETTINGS_FILE_FOR_DYNACONF=str(tmpfile), silent=True
+    )
+
+    custom_msg = "You cannot set {name} to {value} in env {env}"
+    settings.validators.register(
+        Validator("MYSQL_HOST", eq="development.com", env="DEVELOPMENT"),
+        Validator("MYSQL_HOST", ne="development.com", env="PRODUCTION"),
+        Validator("VERSION", ne=1, messages={"operations": custom_msg}),
+        Validator("BLABLABLA", must_exist=True),
+    )
+
+    with pytest.raises(ValidationError) as error:
+        settings.validators.validate_all()
+
+    assert (
+        custom_msg.format(name="VERSION", value="1", env="DEVELOPMENT")
+        in error.value.message
+    )
+    assert "BLABLABLA" in error.value.message
+
+    assert error.type == ValidationError
+    assert len(error.value.details) == 2
 
 
 def test_validator_subclass_messages(tmpdir):
@@ -706,3 +743,94 @@ def test_toml_should_not_change_validator_type_using_at_sign():
     )
 
     assert settings.test == "+172800"
+
+
+def test_default_eq_env_lvl_1():
+    """Tests when the env value equals the default value."""
+    VAR_NAME = "test"
+    ENV = "DYNATESTRUN_TEST"
+    settings = Dynaconf(
+        environments=False,
+        envvar_prefix="DYNATESTRUN",
+        validators=[
+            Validator(
+                VAR_NAME,
+                default=True,
+                is_type_of=bool,
+            ),
+        ],
+    )
+    os.environ[ENV] = "true"
+    assert settings.test is True
+    del os.environ[ENV]
+
+
+def test_default_lvl_1():
+    """Tests if the default works propperly without any nested level.
+
+    Uses different values for the default and the environment variable.
+    """
+    VAR_NAME = "test"
+    ENV = "DYNATESTRUN_TEST"
+    settings = Dynaconf(
+        environments=False,
+        envvar_prefix="DYNATESTRUN",
+        validators=[
+            Validator(
+                VAR_NAME,
+                default=True,
+                is_type_of=bool,
+            ),
+        ],
+    )
+    os.environ[ENV] = "false"
+    assert settings.test is False
+    del os.environ[ENV]
+
+
+def test_default_lvl_2():
+    """Tests if the default works propperly with one nested level.
+
+    Uses different values for the default and the environment variable.
+    """
+    VAR_NAME = "nested.test"
+    ENV = "DYNATESTRUN_NESTED__TEST"
+    settings = Dynaconf(
+        environments=False,
+        envvar_prefix="DYNATESTRUN",
+        validators=[
+            Validator(
+                VAR_NAME,
+                default=True,
+                is_type_of=bool,
+            ),
+        ],
+    )
+    os.environ[ENV] = "false"
+    assert settings.nested.test is False
+    del os.environ[ENV]
+
+
+def test_use_default_value_when_yaml_is_empty_and_explicitly_marked(tmpdir):
+    tmpfile = tmpdir.join("settings.yaml")
+    tmpfile.write(YAML)
+    settings = Dynaconf(
+        settings_file=str(tmpfile),
+        validators=[
+            # Explicitly say thar default must be applied to None
+            Validator(
+                "hasemptyvalues.key1",
+                default="value1",
+                apply_default_on_none=True,
+            ),
+            # The following 2 defaults must be ignored
+            Validator("hasemptyvalues.key2", default="value2"),
+            Validator("hasemptyvalues.key3", default="value3"),
+            # This one must be set because on YAML key is set to `@empty`
+            Validator("hasemptyvalues.key4", default="value4"),
+        ],
+    )
+    assert settings.hasemptyvalues.key1 == "value1"
+    assert settings.hasemptyvalues.key2 is None
+    assert settings.hasemptyvalues.key3 is None
+    assert settings.hasemptyvalues.key4 == "value4"

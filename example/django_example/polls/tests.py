@@ -56,6 +56,14 @@ class SettingsTest(TestCase):
         with self.settings(DAY=19):
             self.assertEqual(settings.DAY, 19)
 
+    def test_debug_value(self):
+        self.assertTrue(settings.ANOTHER_DEBUG)
+
+        # self.assertTrue(settings.DEBUG)
+        # Django by default overrides DEBUG to False during tests.
+        # Starting with Django 1.11 you can use
+        # --debug-mode to set the DEBUG setting to True prior to running tests.
+
 
 assert settings.TEST_VALUE == "a"
 
@@ -94,4 +102,17 @@ class TestHookExecutes(TestCase):
         self.assertEqual(
             settings.BANDS,
             ["Metallica", "Black Sabbath", "Iron Maiden", "Beatles"],
+        )
+        self.assertTrue(settings.HOOK_ON_DJANGO_APP)
+
+
+class TestMerge(TestCase):
+    def test_merge(self):
+        self.assertEqual(
+            settings.LOGGING.loggers[""].handlers,
+            ["console"],
+        )
+        self.assertEqual(
+            settings.LOGGING.loggers[""].level,
+            "DEBUG",
         )

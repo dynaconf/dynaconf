@@ -49,6 +49,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
             os.environ["DJANGO_SETTINGS_MODULE"]
         ]
 
+    settings_module_name = django_settings_module.__name__
     settings_file = os.path.abspath(django_settings_module.__file__)
     _root_path = os.path.dirname(settings_file)
 
@@ -96,6 +97,16 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         dj["ORIGINAL_SETTINGS_MODULE"] = django_settings.SETTINGS_MODULE
 
     lazy_settings.update(dj)
+
+    # Allow dynaconf_hooks to be in the same folder as the django.settings
+    dynaconf.loaders.execute_hooks(
+        "post",
+        lazy_settings,
+        lazy_settings.current_env,
+        modules=[settings_module_name],
+        files=[settings_file],
+    )
+    lazy_settings._loaded_py_modules.insert(0, settings_module_name)
 
     # 5) Patch django.conf.settings
     class Wrapper:

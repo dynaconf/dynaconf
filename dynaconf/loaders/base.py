@@ -118,6 +118,9 @@ class BaseLoader:
             # is there a `dynaconf_merge` on top level of file?
             file_merge = file_data.get("dynaconf_merge")
 
+            # is there a flag disabling dotted lookup on file?
+            file_dotted_lookup = file_data.get("dynaconf_dotted_lookup")
+
             for env in build_env_list(self.obj, self.env):
                 env = env.lower()  # lower for better comparison
 
@@ -136,6 +139,7 @@ class BaseLoader:
                     f"{self.identifier}_{env}",
                     file_merge,
                     key,
+                    file_dotted_lookup=file_dotted_lookup,
                 )
 
     def _set_data_to_obj(
@@ -144,6 +148,7 @@ class BaseLoader:
         identifier,
         file_merge=None,
         key=False,
+        file_dotted_lookup=None,
     ):
         """Calls settings.set to add the keys"""
         # data 1st level keys should be transformed to upper case.
@@ -156,11 +161,21 @@ class BaseLoader:
 
         # is there a `dynaconf_merge` inside an `[env]`?
         file_merge = file_merge or data.pop("DYNACONF_MERGE", False)
+
+        # If not passed or passed as None,
+        # look for inner [env] value, or default settings.
+        if file_dotted_lookup is None:
+            file_dotted_lookup = data.pop(
+                "DYNACONF_DOTTED_LOOKUP",
+                self.obj.get("DOTTED_LOOKUP_FOR_DYNACONF"),
+            )
+
         if not key:
             self.obj.update(
                 data,
                 loader_identifier=identifier,
                 merge=file_merge,
+                dotted_lookup=file_dotted_lookup,
             )
         elif key in data:
             self.obj.set(
@@ -168,4 +183,5 @@ class BaseLoader:
                 data.get(key),
                 loader_identifier=identifier,
                 merge=file_merge,
+                dotted_lookup=file_dotted_lookup,
             )

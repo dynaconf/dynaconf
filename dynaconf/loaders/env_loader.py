@@ -1,5 +1,6 @@
 from os import environ
 
+from dynaconf.utils import missing
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.vendor.dotenv import cli as dotenv_cli
@@ -54,9 +55,8 @@ def load_from_env(
 
     # Load environment variables in bulk (when matching).
     else:
-        # Only known variables should be loaded from environment.
+        # Only known variables should be loaded from environment?
         ignore_unknown = obj.get("IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF")
-        known_keys = set(obj.store)
 
         trim_len = len(env_)
         data = {
@@ -69,7 +69,7 @@ def load_from_env(
                 # Ignore environment variables that haven't been
                 # pre-defined in settings space.
                 ignore_unknown
-                and key[trim_len:] not in known_keys
+                and obj.get(key[trim_len:], default=missing) is missing
             )
         }
         # Update the settings space based on gathered data from environment.

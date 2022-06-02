@@ -27,6 +27,38 @@ REST_FRAMEWORK = {
 TEST_VALUE = "a"
 COLORS = ["black", "green"]
 
+
+LOGGING = {
+    "version": 1,
+    "formatters": {
+        "simple": {"format": "%(name)s:%(levelname)s: %(message)s"}
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+            "filters": [],
+        }
+    },
+    "loggers": {
+        "": {
+            # The root logger
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django_guid": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+    },
+}
+
+
+ANOTHER_DEBUG = True
+DEBUG = True
+
 sys.path.append(".")
 
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
