@@ -368,7 +368,10 @@ DATABASES = {
 }
 ```
 
-> **IMPORTANT** lower case keys are respected only on *nix systems, unfortunately Windows environment variables are case insensitive and Python reads it as all upper cases, that means that if you are running on Windows the dictionary can have only upper case keys.
+!!! warning
+    lower case keys are respected only on *nix systems, unfortunately Windows environment variables are case insensitive and Python reads it as all upper cases, that means that if you are running on Windows the dictionary can have only upper case keys.
+    **Also** only first level keys are case insensitive, which means `DYNACONF_FOO__BAR=1` is different than `DYNACONF_FOO__bar=1`  
+    **in other words**, except by the first level key, you must follow strictly the case of the variable key.
 
 Now if you want to add a new item to `ARGS` key:
 
@@ -526,9 +529,6 @@ settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234
 ### Known caveats
 
 The **dynaconf_merge** and **@merge** functionalities works only for the first level keys, it will not merge subdicts or nested lists (yet).
-
-For deeper nested objects use [dunder merge](/envvars/#nested-keys-in-dictionaries-via-environment-variables).
-
 
 
 ## More examples

@@ -14,6 +14,7 @@ test_examples:
 	cd example/;pwd;python full_example.py
 	cd example/;pwd;python compat.py
 	cd example/app;pwd;python app.py
+	cd example/apply_default_on_none;pwd;python app.py
 	cd example/dunder;pwd;python app.py
 	cd example/format;pwd;python app.py
 	cd example/app_with_dotenv;pwd;python app.py
@@ -37,6 +38,9 @@ test_examples:
 	cd example/pytest_example/app;pwd;python app.py
 	cd example/pytest_example/app;pwd;pytest tests/
 	cd example/pytest_example/flask;pwd;pytest tests
+	cd example/python_loader;pwd;python app.py
+	cd example/python_loader_with_hooks;pwd;python app.py
+	cd example/module_impersonation;pwd;python main.py
 	cd example/validators/with_python/;pwd;python app.py
 	cd example/validators/with_toml/;pwd;PYTHONPATH=. dynaconf -i config.settings validate
 	cd example/toml_with_secrets/;pwd;python program.py
@@ -119,7 +123,13 @@ test_examples:
 	cd example/issues/494_using_pathlib;pwd;python app.py
 	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__device_id=42 EXPECTED_VALUE=42 python app.py
 	cd example/issues/519_underscore_in_name;pwd;ATC_BLE__DEVICE_ID=42 EXPECTED_VALUE=42 python app.py
-	cd example/issues/734_validate_only_current_env;pwd;python app.py
+	cd example/issues/685_disable_dotted_lookup;pwd;python app.py
+	cd example/issues/709_yaml_merge_with_env;pwd;python app.py
+	cd example/issues/718_dynaconf_dotted_lookup;pwd;python app.py
+	cd example/issues/720_load_dotenv;pwd;python src/app/app.py
+	cd example/issues/722_docs_example;pwd;python app.py
+	cd example/issues/729_use_default_when_setting_is_blank;pwd;python app.py
+	cd example/issues/741_envvars_ignored;pwd;sh recreate.sh
 
 test_vault:
 	# @cd example/vault;pwd;python write.py

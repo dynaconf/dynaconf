@@ -69,7 +69,8 @@ def _run_hook_module(hook, hook_module, obj, key=None):
         return
 
     if hook_module and getattr(hook_module, "_error", False):
-        raise hook_module._error
+        if not isinstance(hook_module._error, FileNotFoundError):
+            raise hook_module._error
 
     hook_func = getattr(hook_module, hook, None)
     if hook_func:
@@ -85,13 +86,16 @@ def _run_hook_module(hook, hook_module, obj, key=None):
         obj._loaded_hooks[hook_module.__file__][hook] = hook_dict
 
 
-def execute_hooks(hook, obj, env=None, silent=True, key=None):
+def execute_hooks(
+    hook, obj, env=None, silent=True, key=None, modules=None, files=None
+):
     """Execute dynaconf_hooks from module or filepath."""
     if hook not in ["post"]:
         raise ValueError(f"hook {hook} not supported yet.")
 
     # try to load hooks using python module __name__
-    for loaded_module in obj._loaded_py_modules:
+    modules = modules or obj._loaded_py_modules
+    for loaded_module in modules:
         hook_module_name = ".".join(
             loaded_module.split(".")[:-1] + ["dynaconf_hooks"]
         )
@@ -109,7 +113,8 @@ def execute_hooks(hook, obj, env=None, silent=True, key=None):
             )
 
     # Try to load from python filename path
-    for loaded_file in obj._loaded_files:
+    files = files or obj._loaded_files
+    for loaded_file in files:
         hook_file = os.path.join(
             os.path.dirname(loaded_file), "dynaconf_hooks.py"
         )

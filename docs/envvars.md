@@ -32,6 +32,17 @@ export DYNACONF_STRING_NUM="'76'"                            # str: "76"
 export DYNACONF_PERSON__IS_ADMIN=true                        # bool: True (nested)
 ```
 
+!!! warning
+    When exporting datastructures sych as `dict` and `list` you have to use one of:  
+    ```
+    export DYNACONF_TOML_DICT={key="value"}
+    export DYNACONF_TOML_LIST=["item"]
+    export DYNACONF_JSON_DICT='@json {"key": "value"}'
+    export DYNACONF_JSON_LIST='@json ["item"]'
+    ```
+    Those 2 ways are the only ways for dynaconf to load `dicts` and `lists` from envvars.
+
+
 with the above it is now possible to read the settings from your `program.py` using.
 
 ```python

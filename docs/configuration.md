@@ -488,4 +488,21 @@ Options: safe_load, unsafe_load, full_load
 
 ---
 
+### **dotted_lookup**
 
+By default dynaconf reads `.` as separator when setting and reading values.
+this feature can be disabled by setting `dotted_lookup=False`
+
+- type: bool
+- default: True
+
+!!! tip
+    This can also be set per file using `dynaconf_dotted_lookup: false` in the top level of the file and works for setting values. For reading you can pass `setting.get("key.other", dotted_lookup=False)`
+
+Options: True, False
+
+
+### **apply_default_on_none**
+
+YAML reads empty values as `None` in this case if you want to have `Validator` defaults applied
+to the `None` values you must set `apply_default_on_none` on `Dynaconf` class or specific on `Validator` instance.

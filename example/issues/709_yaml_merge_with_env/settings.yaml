@@ -1,0 +1,18 @@
+---
+default:
+  FOO:
+  PARAM_1: ''
+  docker:
+    some_config:
+      config_a:
+        some_param: 'cde'
+        another_param: 'abc'
+      config_b:
+        different_param: 123
+    PARAM_2: ''
+    PARAM_3: ''
+development:
+  PARAM_1: 'param_1_for_dev'
+  docker:
+    PARAM_2: 'param2_for_dev'
+    PARAM_3: 'param3_for_dev'

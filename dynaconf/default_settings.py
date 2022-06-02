@@ -129,6 +129,9 @@ ENCODING_FOR_DYNACONF = get("ENCODING_FOR_DYNACONF", "utf-8")
 # Merge objects on load
 MERGE_ENABLED_FOR_DYNACONF = get("MERGE_ENABLED_FOR_DYNACONF", False)
 
+# Lookup keys considering dots as separators
+DOTTED_LOOKUP_FOR_DYNACONF = get("DOTTED_LOOKUP_FOR_DYNACONF", True)
+
 # BY default `__` is the separator for nested env vars
 # export `DYNACONF__DATABASE__server=server.com`
 # export `DYNACONF__DATABASE__PORT=6666`
@@ -230,6 +233,13 @@ PRELOAD_FOR_DYNACONF = get("PRELOAD_FOR_DYNACONF", [])
 
 # Files to skip if found on search tree
 SKIP_FILES_FOR_DYNACONF = get("SKIP_FILES_FOR_DYNACONF", [])
+
+# YAML reads empty vars as None, should dynaconf apply validator defaults?
+# this is set to None, then evaluated on base.Settings.setdefault
+# possible values are True/False
+APPLY_DEFAULT_ON_NONE_FOR_DYNACONF = get(
+    "APPLY_DEFAULT_ON_NONE_FOR_DYNACONF", None
+)
 
 
 # Backwards compatibility with renamed variables

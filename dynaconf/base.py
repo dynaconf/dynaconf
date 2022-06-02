@@ -144,6 +144,15 @@ class LazySettings(LazyObject):
         """
         return self.get(*args, **kwargs)
 
+    @property
+    def _should_load_dotenv(self):
+        """Chicken and egg problem, we must manually check envvar
+        before deciding if we are loading envvars :)"""
+        _environ_load_dotenv = parse_conf_data(
+            os.environ.get("LOAD_DOTENV_FOR_DYNACONF"), tomlfy=True
+        )
+        return self._kwargs.get("load_dotenv", _environ_load_dotenv)
+
     def _setup(self):
         """Initial setup, run once."""
 
@@ -155,7 +164,7 @@ class LazySettings(LazyObject):
                 DeprecationWarning,
             )
 
-        default_settings.reload(self._kwargs.get("load_dotenv"))
+        default_settings.reload(self._should_load_dotenv)
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
@@ -172,7 +181,7 @@ class LazySettings(LazyObject):
         :param settings_module: defines the setttings file
         :param kwargs:  override default settings
         """
-        default_settings.reload(self._kwargs.get("load_dotenv"))
+        default_settings.reload(self._should_load_dotenv)
         environment_var = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
@@ -233,13 +242,20 @@ class Settings:
             self.set(key, value)
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
-        self.execute_loaders()
 
-        self.validators.validate(
-            only=self._validate_only,
-            exclude=self._validate_exclude,
-            only_current_env=self._validate_only_current_env,
-        )
+        # The following flags are used for when copying of settings is done
+        skip_loaders = kwargs.get("dynaconf_skip_loaders", False)
+        skip_validators = kwargs.get("dynaconf_skip_validators", False)
+
+        if not skip_loaders:
+            self.execute_loaders()
+
+        if not skip_validators:
+            self.validators.validate(
+                only=self._validate_only,
+                exclude=self._validate_exclude,
+                only_current_env=self._validate_only_current_env,
+            )
 
     def __call__(self, *args, **kwargs):
         """Allow direct call of `settings('val')`
@@ -321,18 +337,37 @@ class Settings:
         """Redirects to store object"""
         return self.store.values()
 
-    def setdefault(self, item, default):
-        """Returns value if exists or set it as the given default"""
+    def setdefault(self, item, default, apply_default_on_none=False):
+        """Returns value if exists or set it as the given default
+
+        apply_default_on_none: if True, default is set when value is None
+        """
         value = self.get(item, empty)
-        if (not value or value is empty) and default is not empty:
+
+        # Yaml loader reads empty values as None, whould we apply defaults?
+        global_apply_default = (
+            self.get("APPLY_DEFAULT_ON_NONE_FOR_DYNACONF") is not None
+        )
+        apply_default = default is not empty and (
+            value is empty
+            or (
+                value is None
+                and (
+                    apply_default_on_none is True
+                    or global_apply_default is True
+                )
+            )
+        )
+
+        if apply_default:
             self.set(
                 item,
                 default,
                 loader_identifier="setdefault",
                 tomlfy=True,
-                dotted_lookup=True,
             )
             return default
+
         return value
 
     def as_dict(self, env=None, internal=False):
@@ -384,7 +419,7 @@ class Settings:
         default=None,
         cast=None,
         fresh=False,
-        dotted_lookup=True,
+        dotted_lookup=empty,
         parent=None,
     ):
         """
@@ -405,6 +440,9 @@ class Settings:
         if nested_sep and nested_sep in key:
             # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
             key = key.replace(nested_sep, ".")
+
+        if dotted_lookup is empty:
+            dotted_lookup = self._store.get("DOTTED_LOOKUP_FOR_DYNACONF")
 
         if "." in key and dotted_lookup:
             return self._dotted_get(
@@ -798,7 +836,7 @@ class Settings:
         value,
         loader_identifier=None,
         tomlfy=False,
-        dotted_lookup=True,
+        dotted_lookup=empty,
         is_secret="DeprecatedArgument",  # noqa
         merge=False,
     ):
@@ -810,6 +848,9 @@ class Settings:
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
         """
+        if dotted_lookup is empty:
+            dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
+
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
         if nested_sep and nested_sep in key:
             # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
@@ -880,6 +921,7 @@ class Settings:
         tomlfy=False,
         merge=False,
         is_secret="DeprecatedArgument",  # noqa
+        dotted_lookup=empty,
         **kwargs,
     ):
         """
@@ -910,6 +952,7 @@ class Settings:
                 loader_identifier=loader_identifier,
                 tomlfy=tomlfy,
                 merge=merge,
+                dotted_lookup=dotted_lookup,
             )
 
     def _merge_before_set(self, existing, value):
@@ -1153,7 +1196,15 @@ class Settings:
 
     def dynaconf_clone(self):
         """Clone the current settings object."""
-        return copy.deepcopy(self)
+        try:
+            return copy.deepcopy(self)
+        except TypeError:
+            # can't deepcopy settings object bacause of module object
+            # being set as value in the settings dict
+            new_data = self.to_dict(internal=True)
+            new_data["dynaconf_skip_loaders"] = True
+            new_data["dynaconf_skip_validators"] = True
+            return Settings(**new_data)
 
     @property
     def dynaconf(self):
@@ -1220,6 +1271,7 @@ RESERVED_ATTRS = (
         "_not_installed_warnings",
         "_store",
         "_warn_dynaconf_global_settings",
+        "_should_load_dotenv",
         "environ",
         "SETTINGS_MODULE",
         "filter_strategy",

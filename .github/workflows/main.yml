@@ -45,6 +45,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Upgrade PIP
+        continue-on-error: true
         run: pip install --user --upgrade pip
       - name: Install project and test cli
         run: |
@@ -143,6 +144,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Pip
         run: pip install --user --upgrade pip
+        continue-on-error: true
       - name: Install project
         run: pip install --use-deprecated=legacy-resolver .[test]
       - name: run tests
@@ -162,6 +164,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Pip
+        continue-on-error: true
         run: pip install --user --upgrade pip
       - name: Install project
         run: pip install --use-deprecated=legacy-resolver .[test]

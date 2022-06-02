@@ -992,6 +992,27 @@ def test_clone():
     assert settings.FOO == "bar"
 
 
+def test_clone_with_module_type():
+    # create a settings object
+    settings = LazySettings(FOO="bar", A_MODULE=os)
+    # adding a module type makes object unpickaable
+    # then .clone raised an error, this was fixed by copying the dict.
+    assert settings.FOO == "bar"
+
+    # clone it
+    cloned = settings.dynaconf.clone()
+    assert cloned.FOO == "bar"
+
+    # modify the cloned settings
+    cloned.FOO = "baz"
+    assert cloned.FOO == "baz"
+
+    # assert original settings is not modified
+    assert settings.FOO == "bar"
+
+    assert settings.A_MODULE == cloned.A_MODULE
+
+
 def test_wrap_existing_settings():
     """
     Wrap an existing settings object

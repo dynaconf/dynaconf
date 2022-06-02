@@ -11,7 +11,7 @@ mixed settings formats across your application.
 ## Supported formats
 
 - **.toml** - Default and **recommended** file format.
-- **.yaml|.yml** - Recommended for Django applications.
+- **.yaml|.yml** - Recommended for Django applications. (see [yaml caveats](#yamlcaveats))
 - **.json** - Useful to reuse existing or exported settings.
 - **.ini** - Useful to reuse legacy settings.
 - **.py** - **Not Recommended** but supported for backwards compatibility.
@@ -25,6 +25,10 @@ mixed settings formats across your application.
     Can't find the file format you need for your settings?
     You can create your custom loader and read any data source.
     read more on [extending dynaconf](/advanced/)
+
+!!! warning
+    To use the `.ini` or `.properties` file format you need to install extra dependency
+    `pip install configobj` or `pip install dynaconf[ini]`
 
 ## Reading settings from files
 
@@ -217,3 +221,33 @@ You can for example name it `[testing]` or `[anything]`
 !!! tip
     It is also possible to switch environments programmatically passing
     `env="development"` to `Dynaconf` class on instantiation.
+
+
+### YAML Caveats
+
+#### Nonetypes
+
+Yaml parser used by dynaconf (ruamel.yaml) reads undefined values as `None` so
+
+```yaml
+key:
+key: ~
+key: null
+``` 
+
+All those 3 keys will be parsed as python's `None` object.
+
+When using a validator to set a default value for those values you might want to use one of:
+
+```py
+Validator("key", default="thing", apply_default_on_none=True)
+```
+
+This way dynaconf will consider the default value even if setting is `None` on yaml.
+
+or on yaml you can set the value to `@empty`
+
+```yaml
+key: "@empty"
+```
+>> **NEW** in 3.1.9
