@@ -1,53 +1,32 @@
-exclude: docs
+exclude: "(^dynaconf/vendor+.|^venv/+.|^.venv/+.|^env/+.|^.tox/+.|^build/+.|docs)"
+default_language_version:
+    python: python3
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: fix-encoding-pragma
+        args: [--remove]
   - repo: https://github.com/asottile/reorder_python_imports
     rev: v3.0.1
     hooks:
       - id: reorder-python-imports
-        language_version: python3
-        args: [--py3-plus]
-        exclude: &exc "(^dynaconf/vendor+.|^venv/+.|^.venv/+.|^env/+.|^.tox/+.|^build/+.)"
   - repo: https://github.com/ambv/black
     rev: 22.3.0
     hooks:
       - id: black
         args: [--line-length=79]
-        language_version: python3
-        exclude: *exc
-
+  - repo: https://gitlab.com/pycqa/flake8
+    rev: 3.9.2
+    hooks:
+      - id: flake8
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v0.942
     hooks:
       - id: mypy
         files: ^dynaconf/
-        exclude: *exc
-
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
-    hooks:
-      - id: trailing-whitespace
-        language_version: python3
-        exclude: *exc
-      - id: end-of-file-fixer
-        language_version: python3
-        exclude: *exc
-      - id: check-yaml
-        language_version: python3
-        exclude: *exc
-      - id: check-merge-conflict
-        language_version: python3
-        exclude: *exc
-      - id: debug-statements
-        language_version: python3
-        exclude: *exc
-      - id: fix-encoding-pragma
-        language_version: python3
-        exclude: *exc
-        args: [--remove]
-  - repo: https://gitlab.com/pycqa/flake8
-    rev: 3.9.2
-    hooks:
-      - id: flake8
-        args: ['--ignore=F403,W504,W503,F841,E401,F401,E402']
-        language_version: python3
-        exclude: *exc
