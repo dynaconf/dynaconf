@@ -19,10 +19,30 @@ nav:
     - Django: django.md
     - Advanced usage: advanced.md
 theme:
-    language: en
-    name: material
-    logo: img/logo_square_d.svg
-    favicon: img/favicon.ico
+  features:
+      - search.suggest
+      - search.highlight
+      - search.share
+      - content.code.annotate
+  name: material
+  language: en
+  logo: img/logo_square_d.svg
+  favicon: img/favicon.ico
+  palette:
+    - scheme: default
+      media: "(prefers-color-scheme: light)"
+      primary: white
+      accent: teal
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+    - scheme: slate 
+      media: "(prefers-color-scheme: dark)"
+      primary: black
+      accent: teal
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
 markdown_extensions:
   - pymdownx.details
   - pymdownx.emoji:
@@ -35,13 +55,19 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tasklist:
       custom_checkbox: true
-  - pymdownx.tabbed
+  - pymdownx.tabbed:
+      alternate_style: true 
   - pymdownx.tilde
   - admonition
   - codehilite:
       guess_lang: false
   - toc:
       permalink: true
+plugins:
+  - git-revision-date
+  - search:
+      lang: en
+      prebuild_index: true
 extra:
   disqus: dynaconf
   social:
