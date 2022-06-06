@@ -192,16 +192,11 @@ test_all: test_examples test_integration test_redis test_vault test
 install:
 	pip install --upgrade pip
 	pip install -r requirements_dev.txt
-	make setup-pre-commit
-
-setup-pre-commit:
-	pre-commit install
-	pre-commit install-hooks
 
 run-pre-commit:
 	rm -rf .tox/
 	rm -rf build/
-	pre-commit run --files $$(find -regex '.*\.\(py\|yaml\|yml\|md\)') -v
+	pre-commit run --all-files
 
 pep8:
 	# Flake8 ignores
