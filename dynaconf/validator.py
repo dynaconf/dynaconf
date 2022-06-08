@@ -5,11 +5,7 @@ from itertools import chain
 from types import MappingProxyType
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Optional
 from typing import Sequence
-from typing import Union
 
 from dynaconf import validator_conditions
 from dynaconf.utils import ensure_a_list
