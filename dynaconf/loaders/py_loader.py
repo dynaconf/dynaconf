@@ -108,12 +108,12 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
     mod._is_error = False
     mod._error = None
     try:
-        with io.open(
+        with open(
             _find_file(filename),
             encoding=default_settings.ENCODING_FOR_DYNACONF,
         ) as config_file:
             exec(compile(config_file.read(), filename, "exec"), mod.__dict__)
-    except IOError as e:
+    except OSError as e:
         e.strerror = (
             f"py_loader: error loading file " f"({e.strerror} {filename})\n"
         )
@@ -136,7 +136,7 @@ def write(settings_path, settings_data, merge=True):
         existing = DynaconfDict()
         load(existing, str(settings_path))
         object_merge(existing, settings_data)
-    with io.open(
+    with open(
         str(settings_path),
         "w",
         encoding=default_settings.ENCODING_FOR_DYNACONF,

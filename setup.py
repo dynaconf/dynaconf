@@ -9,7 +9,7 @@ from setuptools import setup
 def read(*names, **kwargs):
     """Read a file."""
     content = ""
-    with io.open(
+    with open(
         os.path.join(os.path.dirname(__file__), *names),
         encoding=kwargs.get("encoding", "utf8"),
     ) as open_file:

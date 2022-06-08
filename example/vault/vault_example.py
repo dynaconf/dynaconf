@@ -11,7 +11,7 @@ with settings.using_env("dev"):
 
 assert settings.SECRET == "vault_works_in_default"
 available_envs = list_envs(settings, "dynaconf/")
-assert set(available_envs) == set(["default", "dev", "prod"]), available_envs
+assert set(available_envs) == {"default", "dev", "prod"}, available_envs
 
 all_secrets = []
 

@@ -33,18 +33,18 @@ class DynaBox(Box):
     @evaluate_lazy_format
     def __getattr__(self, item, *args, **kwargs):
         try:
-            return super(DynaBox, self).__getattr__(item, *args, **kwargs)
+            return super().__getattr__(item, *args, **kwargs)
         except (AttributeError, KeyError):
             n_item = item.lower() if item.isupper() else upperfy(item)
-            return super(DynaBox, self).__getattr__(n_item, *args, **kwargs)
+            return super().__getattr__(n_item, *args, **kwargs)
 
     @evaluate_lazy_format
     def __getitem__(self, item, *args, **kwargs):
         try:
-            return super(DynaBox, self).__getitem__(item, *args, **kwargs)
+            return super().__getitem__(item, *args, **kwargs)
         except (AttributeError, KeyError):
             n_item = item.lower() if item.isupper() else upperfy(item)
-            return super(DynaBox, self).__getitem__(n_item, *args, **kwargs)
+            return super().__getitem__(n_item, *args, **kwargs)
 
     def __copy__(self):
         return self.__class__(
@@ -69,7 +69,7 @@ class DynaBox(Box):
     def get(self, item, default=None, *args, **kwargs):
         if item not in self:  # toggle case
             item = item.lower() if item.isupper() else upperfy(item)
-        value = super(DynaBox, self).get(item, empty, *args, **kwargs)
+        value = super().get(item, empty, *args, **kwargs)
         if value is empty:
             # see Issue: #486
             return self._case_insensitive_get(item, default)

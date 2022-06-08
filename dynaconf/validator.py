@@ -105,16 +105,16 @@ class Validator:
     def __init__(
         self,
         *names: str,
-        must_exist: Optional[bool] = None,
-        required: Optional[bool] = None,  # alias for `must_exist`
-        condition: Optional[Callable[[Any], bool]] = None,
-        when: Optional[Validator] = None,
-        env: Optional[Union[str, Sequence[str]]] = None,
-        messages: Optional[Dict[str, str]] = None,
-        cast: Optional[Callable[[Any], Any]] = None,
-        default: Optional[Union[Any, Callable[[Any, Validator], Any]]] = empty,
-        description: Optional[str] = None,
-        apply_default_on_none: Optional[bool] = False,
+        must_exist: bool | None = None,
+        required: bool | None = None,  # alias for `must_exist`
+        condition: Callable[[Any], bool] | None = None,
+        when: Validator | None = None,
+        env: str | Sequence[str] | None = None,
+        messages: dict[str, str] | None = None,
+        cast: Callable[[Any], Any] | None = None,
+        default: Any | Callable[[Any, Validator], Any] | None = empty,
+        description: str | None = None,
+        apply_default_on_none: bool | None = False,
         **operations: Any,
     ) -> None:
         # Copy immutable MappingProxyType as a mutable dict
@@ -136,7 +136,7 @@ class Validator:
         self.operations = operations
         self.default = default
         self.description = description
-        self.envs: Optional[Sequence[str]] = None
+        self.envs: Sequence[str] | None = None
         self.apply_default_on_none = apply_default_on_none
 
         if isinstance(env, str):
@@ -169,8 +169,8 @@ class Validator:
     def validate(
         self,
         settings: Any,
-        only: Optional[Union[str, Sequence]] = None,
-        exclude: Optional[Union[str, Sequence]] = None,
+        only: str | Sequence | None = None,
+        exclude: str | Sequence | None = None,
         only_current_env: bool = False,
     ) -> None:
         """Raise ValidationError if invalid"""
@@ -224,9 +224,9 @@ class Validator:
     def _validate_items(
         self,
         settings: Any,
-        env: Optional[str] = None,
-        only: Optional[Union[str, Sequence]] = None,
-        exclude: Optional[Union[str, Sequence]] = None,
+        env: str | None = None,
+        only: str | Sequence | None = None,
+        exclude: str | Sequence | None = None,
     ) -> None:
         env = env or settings.current_env
         for name in self.names:
@@ -317,8 +317,8 @@ class CombinedValidator(Validator):
     def validate(
         self,
         settings: Any,
-        only: Optional[Union[str, Sequence]] = None,
-        exclude: Optional[Union[str, Sequence]] = None,
+        only: str | Sequence | None = None,
+        exclude: str | Sequence | None = None,
         only_current_env: bool = False,
     ) -> None:  # pragma: no cover
         raise NotImplementedError(
@@ -332,8 +332,8 @@ class OrValidator(CombinedValidator):
     def validate(
         self,
         settings: Any,
-        only: Optional[Union[str, Sequence]] = None,
-        exclude: Optional[Union[str, Sequence]] = None,
+        only: str | Sequence | None = None,
+        exclude: str | Sequence | None = None,
         only_current_env: bool = False,
     ) -> None:
         """Ensure at least one of the validators are valid"""
@@ -367,8 +367,8 @@ class AndValidator(CombinedValidator):
     def validate(
         self,
         settings: Any,
-        only: Optional[Union[str, Sequence]] = None,
-        exclude: Optional[Union[str, Sequence]] = None,
+        only: str | Sequence | None = None,
+        exclude: str | Sequence | None = None,
         only_current_env: bool = False,
     ) -> None:
         """Ensure both the validators are valid"""
@@ -399,7 +399,7 @@ class ValidatorList(list):
     def __init__(
         self,
         settings: Any,
-        validators: Optional[Sequence[Validator]] = None,
+        validators: Sequence[Validator] | None = None,
         *args: Validator,
         **kwargs: Any,
     ) -> None:
@@ -407,11 +407,11 @@ class ValidatorList(list):
             args = list(args) + list(validators)  # type: ignore
         self._only = kwargs.pop("validate_only", None)
         self._exclude = kwargs.pop("validate_exclude", None)
-        super(ValidatorList, self).__init__(args, **kwargs)  # type: ignore
+        super().__init__(args, **kwargs)  # type: ignore
         self.settings = settings
 
     def register(self, *args: Validator, **kwargs: Validator):
-        validators: List[Validator] = list(
+        validators: list[Validator] = list(
             chain.from_iterable(kwargs.values())  # type: ignore
         )
         validators.extend(args)
@@ -419,12 +419,10 @@ class ValidatorList(list):
             if validator and validator not in self:
                 self.append(validator)
 
-    def descriptions(
-        self, flat: bool = False
-    ) -> Dict[str, Union[str, List[str]]]:
+    def descriptions(self, flat: bool = False) -> dict[str, str | list[str]]:
 
         if flat:
-            descriptions: Dict[str, Union[str, List[str]]] = {}
+            descriptions: dict[str, str | list[str]] = {}
         else:
             descriptions = defaultdict(list)
 
@@ -442,8 +440,8 @@ class ValidatorList(list):
 
     def validate(
         self,
-        only: Optional[Union[str, Sequence]] = None,
-        exclude: Optional[Union[str, Sequence]] = None,
+        only: str | Sequence | None = None,
+        exclude: str | Sequence | None = None,
         only_current_env: bool = False,
     ) -> None:
         for validator in self:
@@ -456,8 +454,8 @@ class ValidatorList(list):
 
     def validate_all(
         self,
-        only: Optional[Union[str, Sequence]] = None,
-        exclude: Optional[Union[str, Sequence]] = None,
+        only: str | Sequence | None = None,
+        exclude: str | Sequence | None = None,
         only_current_env: bool = False,
     ) -> None:
         errors = []

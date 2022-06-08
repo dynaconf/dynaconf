@@ -1,4 +1,4 @@
-class DummyExtensionType(object):
+class DummyExtensionType:
     def __init__(self, app=None):
         self.app = app
         if app is not None:

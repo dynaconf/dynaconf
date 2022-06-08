@@ -142,7 +142,7 @@ class DynaconfConfig(Config):
 
     def __init__(self, _settings, _app, *args, **kwargs):
         """perform the initial load"""
-        super(DynaconfConfig, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Bring Dynaconf instance value to Flask Config
         Config.update(self, _settings.store)

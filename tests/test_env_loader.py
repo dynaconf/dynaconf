@@ -71,7 +71,7 @@ def test_write(tmpdir):
 
     ground_truth = SETTINGS_DATA_GROUND_TRUTH.split("\n")
 
-    with open(str(settings_path), "r") as fp:
+    with open(str(settings_path)) as fp:
         lines = fp.readlines()
         for idx, line in enumerate(lines):
             line = line.strip()

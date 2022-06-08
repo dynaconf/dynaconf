@@ -266,7 +266,7 @@ def write(filename, data, env=None):
     loader_name = f"{filename.rpartition('.')[-1]}_loader"
     loader = globals().get(loader_name)
     if not loader:
-        raise IOError(f"{loader_name} cannot be found.")
+        raise OSError(f"{loader_name} cannot be found.")
 
     data = DynaBox(data, box_settings={}).to_dict()
     if loader is not py_loader and env and env not in data:
