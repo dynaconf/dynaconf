@@ -1,5 +1,7 @@
 # docker run -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault
 # pip install hvac
+from __future__ import annotations
+
 from dynaconf.utils import build_env_list
 from dynaconf.utils.parse_conf import parse_conf_data
 

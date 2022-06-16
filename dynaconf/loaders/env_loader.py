@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from os import environ
 
 from dynaconf.utils import missing

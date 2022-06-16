@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf.utils import build_env_list
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
