@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf.base import LazySettings  # noqa
 from dynaconf.constants import DEFAULT_SETTINGS_FILES
 from dynaconf.contrib import DjangoDynaconf  # noqa

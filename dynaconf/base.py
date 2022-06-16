@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import glob
 import importlib
@@ -66,7 +68,7 @@ class LazySettings(LazyObject):
         self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
         self._kwargs = kwargs
-        super(LazySettings, self).__init__()
+        super().__init__()
 
         if wrapped:
             if self._django_override:
@@ -267,7 +269,7 @@ class Settings:
         """Allow `settings.FOO = 'value'` while keeping internal attrs."""
 
         if name in RESERVED_ATTRS:
-            super(Settings, self).__setattr__(name, value)
+            super().__setattr__(name, value)
         else:
             self.set(name, value)
 
@@ -275,7 +277,7 @@ class Settings:
         """stores reference in `_deleted` for proper error management"""
         self._deleted.add(name)
         if hasattr(self, name):
-            super(Settings, self).__delattr__(name)
+            super().__delattr__(name)
 
     def __contains__(self, item):
         """Respond to `item in settings`"""
@@ -902,7 +904,7 @@ class Settings:
 
         self.store[key] = value
         self._deleted.discard(key)
-        super(Settings, self).__setattr__(key, value)
+        super().__setattr__(key, value)
 
         # set loader identifiers so cleaners know which keys to clean
         if loader_identifier and loader_identifier in self.loaded_by_loaders:
@@ -1215,7 +1217,7 @@ class Settings:
         internal methods and attrs.
         """
 
-        class AttrProxy(object):
+        class AttrProxy:
             def __init__(self, obj):
                 self.obj = obj
 

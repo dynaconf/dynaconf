@@ -5,13 +5,8 @@ import warnings
 from collections import defaultdict
 from json import JSONDecoder
 from typing import Any
-from typing import Dict
 from typing import Iterator
-from typing import List
-from typing import Optional
-from typing import Tuple
 from typing import TYPE_CHECKING
-from typing import Union
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -34,7 +29,7 @@ if os.name == "nt":  # pragma: no cover
 
 
 def object_merge(
-    old: Any, new: Any, unique: bool = False, full_path: List[str] = None
+    old: Any, new: Any, unique: bool = False, full_path: list[str] = None
 ) -> Any:
     """
     Recursively merge two data structures, new is mutated in-place.
@@ -86,8 +81,8 @@ def object_merge(
 
 
 def recursive_get(
-    obj: Union[DynaBox, Dict[str, int], Dict[str, Union[str, int]]],
-    names: Optional[List[str]],
+    obj: DynaBox | dict[str, int] | dict[str, str | int],
+    names: list[str] | None,
 ) -> Any:
     """Given a dot accessible object and a list of names `foo.bar.zaz`
     gets recursivelly all names one by one obj.foo.bar.zaz.
@@ -102,7 +97,7 @@ def recursive_get(
 
 
 def handle_metavalues(
-    old: Union[DynaBox, Dict[str, int], Dict[str, Union[str, int]]], new: Any
+    old: DynaBox | dict[str, int] | dict[str, str | int], new: Any
 ) -> None:
     """Cleanup of MetaValues on new dict"""
 
@@ -178,7 +173,7 @@ class DynaconfDict(dict):
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
-        super(DynaconfDict, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def set(self, key: str, value: str, *args, **kwargs) -> None:
         self[key] = value
@@ -208,7 +203,7 @@ RENAMED_VARS = {
 }
 
 
-def compat_kwargs(kwargs: Dict[str, Any]) -> None:
+def compat_kwargs(kwargs: dict[str, Any]) -> None:
     """To keep backwards compat change the kwargs to new names"""
     warn_deprecations(kwargs)
     for old, new in RENAMED_VARS.items():
@@ -230,7 +225,7 @@ class Missing:
         """Respond to boolean duck-typing."""
         return False
 
-    def __eq__(self, other: Union[DynaBox, Missing]) -> bool:
+    def __eq__(self, other: DynaBox | Missing) -> bool:
         """Equality check for a singleton."""
 
         return isinstance(other, self.__class__)
@@ -249,7 +244,7 @@ class Missing:
 missing = Missing()
 
 
-def deduplicate(list_object: List[str]) -> List[str]:
+def deduplicate(list_object: list[str]) -> list[str]:
     """Rebuild `list_object` removing duplicated and keeping order"""
     new = []
     for item in list_object:
@@ -269,8 +264,8 @@ def warn_deprecations(data: Any) -> None:
 
 
 def trimmed_split(
-    s: str, seps: Union[str, Tuple[str, str]] = (";", ",")
-) -> List[str]:
+    s: str, seps: str | tuple[str, str] = (";", ",")
+) -> list[str]:
     """Given a string s, split is by one of one of the seps."""
     for sep in seps:
         if sep not in s:
@@ -280,7 +275,7 @@ def trimmed_split(
     return [s]  # raw un-splitted
 
 
-def ensure_a_list(data: Any) -> Union[List[int], List[str]]:
+def ensure_a_list(data: Any) -> list[int] | list[str]:
     """Ensure data is a list or wrap it in a list"""
     if not data:
         return []
@@ -292,9 +287,7 @@ def ensure_a_list(data: Any) -> Union[List[int], List[str]]:
     return [data]
 
 
-def build_env_list(
-    obj: Union[Settings, LazySettings], env: Optional[str]
-) -> List[str]:
+def build_env_list(obj: Settings | LazySettings, env: str | None) -> list[str]:
     """Build env list for loaders to iterate.
 
     Arguments:
@@ -355,7 +348,7 @@ def upperfy(key: str) -> str:
     return key.upper()
 
 
-def multi_replace(text: str, patterns: Dict[str, str]) -> str:
+def multi_replace(text: str, patterns: dict[str, str]) -> str:
     """Replaces multiple pairs in a string
 
     Arguments:
@@ -372,7 +365,7 @@ def multi_replace(text: str, patterns: Dict[str, str]) -> str:
 
 def extract_json_objects(
     text: str, decoder: JSONDecoder = JSONDecoder()
-) -> Iterator[Dict[str, Union[int, Dict[Any, Any]]]]:
+) -> Iterator[dict[str, int | dict[Any, Any]]]:
     """Find JSON objects in text, and yield the decoded JSON data
 
     Does not attempt to look for JSON arrays, text, or other JSON types outside
@@ -393,7 +386,7 @@ def extract_json_objects(
 
 
 def recursively_evaluate_lazy_format(
-    value: Any, settings: Union[Settings, LazySettings]
+    value: Any, settings: Settings | LazySettings
 ) -> Any:
     """Given a value as a data structure, traverse all its members
     to find Lazy values and evaluate it.

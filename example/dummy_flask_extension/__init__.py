@@ -1,4 +1,7 @@
-class DummyExtensionType(object):
+from __future__ import annotations
+
+
+class DummyExtensionType:
     def __init__(self, app=None):
         self.app = app
         if app is not None:

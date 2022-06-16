@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import os
 
@@ -14,7 +16,7 @@ def test_py_loader_from_file(tmpdir):
 
     settings = DynaconfDict()
     dummy_path = tmpdir.join("dummy_module.py")
-    with io.open(
+    with open(
         str(dummy_path), "w", encoding=default_settings.ENCODING_FOR_DYNACONF
     ) as f:
         f.write('FOO = "bar"')
@@ -78,7 +80,7 @@ def test_py_loader_from_file_dunder(clean_env, tmpdir):
         }
     )
     dummy_path = tmpdir.join("dummy_module.py")
-    with io.open(
+    with open(
         str(dummy_path), "w", encoding=default_settings.ENCODING_FOR_DYNACONF
     ) as f:
         f.write('F = "bar"')
@@ -149,7 +151,7 @@ def test_post_load_hooks(clean_env, tmpdir):
     }
 
     for path, lines in to_write.items():
-        with io.open(
+        with open(
             str(path), "w", encoding=default_settings.ENCODING_FOR_DYNACONF
         ) as f:
             for line in lines:

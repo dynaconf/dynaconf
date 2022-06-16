@@ -1,4 +1,5 @@
 # Covering this issue: https://pulp.plan.io/issues/6244
+from __future__ import annotations
 
 REST_FRAMEWORK = {
     "URL_FIELD_NAME": "pulp_href",

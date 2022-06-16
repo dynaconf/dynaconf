@@ -3,6 +3,8 @@
 # $export DYNACONF_HOSTNAME=host.com
 # $export DYNACONF_PORT='@int 5000'
 # or save to REDIS, yaml, json, ini etc...
+from __future__ import annotations
+
 import os
 
 from dynaconf import settings

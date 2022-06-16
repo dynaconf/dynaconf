@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import inspect
 import io
 import os
@@ -10,7 +12,7 @@ def _walk_to_root(path, break_at=None):
     Directories starting from the given directory up to the root or break_at
     """
     if not os.path.exists(path):  # pragma: no cover
-        raise IOError("Starting path not found")
+        raise OSError("Starting path not found")
 
     if os.path.isfile(path):  # pragma: no cover
         path = os.path.dirname(path)
@@ -84,7 +86,7 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
 
 def read_file(path, **kwargs):
     content = ""
-    with io.open(path, **kwargs) as open_file:
+    with open(path, **kwargs) as open_file:
         content = open_file.read().strip()
     return content
 

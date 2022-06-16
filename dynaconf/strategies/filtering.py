@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf.utils import upperfy
 
 
@@ -5,7 +7,7 @@ class PrefixFilter:
     def __init__(self, prefix):
         if not isinstance(prefix, str):
             raise TypeError("`SETTINGS_FILE_PREFIX` must be str")
-        self.prefix = "{}_".format(upperfy(prefix))
+        self.prefix = f"{upperfy(prefix)}_"
 
     def __call__(self, data):
         """Filter incoming data by prefix"""

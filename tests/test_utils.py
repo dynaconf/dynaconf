@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import json
 import os
@@ -92,7 +94,7 @@ def test_find_file(tmpdir):
 
     # now place a .env file a few levels up and make sure it's found
     filename = os.path.join(str(child4), ".env")
-    with io.open(
+    with open(
         filename, "w", encoding=default_settings.ENCODING_FOR_DYNACONF
     ) as f:
         f.write("TEST=test\n")

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 FILES = {
     "all": ["default"],
     "last": ["default"],

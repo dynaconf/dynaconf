@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import settings
 
 assert settings.ENVVAR_PREFIX_FOR_DYNACONF == "GREATAPP"

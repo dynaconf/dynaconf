@@ -1,4 +1,5 @@
 # Take as example a program which connects to a database
+from __future__ import annotations
 
 
 def connect(server, port, username, password):

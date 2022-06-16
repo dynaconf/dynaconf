@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import Dynaconf
 from dynaconf import ValidationError
 from dynaconf import Validator

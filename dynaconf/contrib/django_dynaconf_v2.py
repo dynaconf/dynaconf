@@ -20,6 +20,8 @@ On your projects root folder now you can start as::
     DJANGO_ALLOWED_HOSTS='["localhost"]' \
     python manage.py runserver
 """
+from __future__ import annotations
+
 import inspect
 import os
 import sys

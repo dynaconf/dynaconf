@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 import pytest
@@ -229,7 +231,7 @@ def test_local_files(tmpdir):
 
     conf = LazySettings(environments=True, settings_file="settings.yaml")
     assert conf.NAME == "Bruno Rocha"
-    assert set(conf.COLORS) == set(["red", "green", "blue"])
+    assert set(conf.COLORS) == {"red", "green", "blue"}
     assert conf.DATA.link == "brunorocha.org"
     assert conf.DATA.city == "Guarulhos"
     assert conf.OTHER == {"baz": "zaz"}
@@ -279,7 +281,7 @@ def test_explicit_local_files(tmpdir):
     )
 
     assert conf.NAME == "Bruno Rocha"
-    assert set(conf.COLORS) == set(["red", "green", "blue"])
+    assert set(conf.COLORS) == {"red", "green", "blue"}
     assert conf.DATA.link == "brunorocha.org"
     assert conf.DATA.city == "Guarulhos"
     assert conf.OTHER == {"baz": "zaz"}

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 FILES = ["settings.py"]
 PERSON = {"name": "Bruno"}
 PY_MERGE_LIST = [1]

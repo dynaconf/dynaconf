@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import importlib
 import io
 import os
@@ -366,15 +368,14 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
         ignore_line = ".secrets.*"
         comment = "\n# Ignore dynaconf secret files\n"
         if not gitignore_path.exists():
-            with io.open(str(gitignore_path), "w", encoding=ENC) as f:
+            with open(str(gitignore_path), "w", encoding=ENC) as f:
                 f.writelines([comment, ignore_line, "\n"])
         else:
             existing = (
-                ignore_line
-                in io.open(str(gitignore_path), encoding=ENC).read()
+                ignore_line in open(str(gitignore_path), encoding=ENC).read()
             )
             if not existing:  # pragma: no cover
-                with io.open(str(gitignore_path), "a+", encoding=ENC) as f:
+                with open(str(gitignore_path), "a+", encoding=ENC) as f:
                     f.writelines([comment, ignore_line, "\n"])
 
         click.echo(

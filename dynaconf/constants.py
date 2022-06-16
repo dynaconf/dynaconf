@@ -1,4 +1,6 @@
 # pragma: no cover
+from __future__ import annotations
+
 INI_EXTENSIONS = (".ini", ".conf", ".properties")
 TOML_EXTENSIONS = (".toml", ".tml")
 YAML_EXTENSIONS = (".yaml", ".yml")

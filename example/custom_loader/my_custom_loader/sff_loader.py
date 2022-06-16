@@ -1,5 +1,6 @@
 # In order to have multiple envs support use BaseLoader
 # Take a look in dynaconf/loaders/json_loader.py
+from __future__ import annotations
 
 
 def load(obj, env=None, silent=True, key=None, filename=None):

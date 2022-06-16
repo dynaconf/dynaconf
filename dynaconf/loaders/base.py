@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import io
 import warnings
 
@@ -75,7 +77,7 @@ class BaseLoader:
         for source_file in files:
             if source_file.endswith(self.extensions):
                 try:
-                    with io.open(
+                    with open(
                         source_file,
                         encoding=self.obj.get(
                             "ENCODING_FOR_DYNACONF", "utf-8"
@@ -85,7 +87,7 @@ class BaseLoader:
                         self.obj._loaded_files.append(source_file)
                         if content:
                             data[source_file] = content
-                except IOError as e:
+                except OSError as e:
                     if ".local." not in source_file:
                         warnings.warn(
                             f"{self.identifier}_loader: {source_file} "

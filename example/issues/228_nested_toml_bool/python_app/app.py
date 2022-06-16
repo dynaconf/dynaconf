@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import settings
 
 print(settings.DEBUG.enabled)

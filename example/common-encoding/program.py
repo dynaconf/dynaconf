@@ -1,4 +1,6 @@
 # Take as example a program which connects to a database
+from __future__ import annotations
+
 import io
 import os
 
@@ -29,13 +31,13 @@ print(settings.dynaconf_banner)
 print("#" * 79)
 print("\n* The settings are defined in .toml files\n")
 print("$ cat settings.toml")
-with io.open(
+with open(
     settings.find_file("settings.toml"),
     encoding=os.environ.get("ENCODING_FOR_DYNACONF"),
 ) as settings_file:
     print(settings_file.read())
 print("$ cat .secrets.toml")
-with io.open(
+with open(
     settings.find_file(".secrets.toml"),
     encoding=os.environ.get("ENCODING_FOR_DYNACONF"),
 ) as secrets_file:

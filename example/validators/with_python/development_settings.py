@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 EXAMPLE = True
 MYSQL_HOST = "development.com"
 VERSION = 1

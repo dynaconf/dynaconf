@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import settings
 from dynaconf.loaders.toml_loader import write
 

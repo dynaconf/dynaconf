@@ -3,6 +3,8 @@ https://docs.djangoproject.com/en/1.11/topics/settings/
 https://docs.djangoproject.com/en/1.11/ref/settings/
 https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
 """
+from __future__ import annotations
+
 import os
 from collections import OrderedDict
 

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 print("# Starting", __file__)
 print("# On import level dynaconf will read .env and config envvars")
 print("# It will also setup the initial search tree.")

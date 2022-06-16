@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import settings
 
 # Assuming this app is running on CI the secret values would be read from

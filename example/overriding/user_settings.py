@@ -1,6 +1,7 @@
 # Alternative 1
 # This works
 # https://www.dynaconf.com/merging/#merging-existing-data-structures
+from __future__ import annotations
 
 REST_FRAMEWORK__DEFAULT_AUTHENTICATION_CLASSES = [
     "rest_framework.authentication.SessionAuthentication",

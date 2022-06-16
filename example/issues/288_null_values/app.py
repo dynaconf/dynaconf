@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import settings
 
 assert settings["NULLED_VALUE_PYTHON"] is None
