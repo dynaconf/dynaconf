@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from app import views
 from django.urls import include
 from django.urls import path

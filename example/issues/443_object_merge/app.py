@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf.utils import object_merge
 from dynaconf.utils.boxing import DynaBox
 

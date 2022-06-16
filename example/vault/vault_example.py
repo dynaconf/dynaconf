@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import settings
 from dynaconf.loaders.vault_loader import list_envs
 

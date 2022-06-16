@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import settings
 
 assert settings.PY_MERGE_LIST == [1, 2], settings.PY_MERGE_LIST

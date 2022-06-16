@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import settings
 
 print("Read from settings.py:", settings.PYTHON_VAR)  # noqa

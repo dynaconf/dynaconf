@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import settings
 
 with open(settings.find_file("settings.sff")) as settings_file:

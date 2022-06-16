@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 EXAMPLE = True
 MYSQL_HOST = "localhost"
 DEV_SERVERS = ("127.0.0.1", "localhost", "development.com")

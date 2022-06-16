@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import Dynaconf
 
 settings = Dynaconf(load_dotenv=True)

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import LazySettings
 
 settings = LazySettings(settings_files="settings.yaml")

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 DYNACONF_MERGE = True
 FILES = ["settings.local.py"]
 PERSON = {"country": "Brasil"}

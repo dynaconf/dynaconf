@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import Dynaconf
 from dynaconf import settings
 from dynaconf.strategies.filtering import PrefixFilter

@@ -1,4 +1,6 @@
 # You should start your standalone scripts with this:
+from __future__ import annotations
+
 from django.conf import settings
 
 # This `DYNACONF.configure()` line may be useful in some cases

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import LazySettings
 from dynaconf import Validator
 from dynaconf.utils.parse_conf import Lazy

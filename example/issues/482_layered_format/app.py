@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dynaconf import Dynaconf
 
 settings_files = ["settings.toml", "other.toml"]

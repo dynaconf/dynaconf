@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 
 # Where is all the Django's settings?

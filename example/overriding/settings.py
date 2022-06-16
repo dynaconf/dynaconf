@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 REST_FRAMEWORK = {
     "URL_FIELD_NAME": "pulp_href",
     "DEFAULT_FILTER_BACKENDS": (
