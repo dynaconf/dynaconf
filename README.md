@@ -63,7 +63,7 @@ $ dynaconf init -f toml
 .
 ├── config.py       # This is from where you import your settings object (required)
 ├── .secrets.toml   # This is to hold sensitive data like passwords and tokens (optional)
-└── settings.toml   # This is to hold your application setttings (optional)
+└── settings.toml   # This is to hold your application settings (optional)
 ```
 
 On the file `config.py` Dynaconf init generates the following boilerpate
