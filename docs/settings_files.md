@@ -74,7 +74,7 @@ settings.name == "Bruno"
 ## Settings file location
 
 Dynaconf will search files specified in `settings_file` option starting the search tree
-on the current working dir (the directory where you program is located).
+on the current working dir (the directory where your program is located).
 
 Ex:
 
