@@ -58,7 +58,7 @@ def get_client(obj):
         "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF or "
         "VAULT_ROLE_ID_FOR_DYNACONF defined?"
     )
-    client.kv.default_kv_version = obj.VAULT_KV_VERSION_FOR_DYNACONF
+    client.secrets.kv.default_kv_version = obj.VAULT_KV_VERSION_FOR_DYNACONF
     return client
 
 
