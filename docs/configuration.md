@@ -36,11 +36,12 @@ export ENV_SWITCHER_FOR_DYNACONF=MYPROGRAM_ENV
     When exporting as env vars ensure to use UPPERCASE and add the `_FOR_DYNACONF` suffix. example: `export AUTO_CAST_FOR_DYNACONF=true`
 
 !!! tip
-    Env vars are casted using TOML parser, so `=FOO` is `str`, `=42` is `int`, `=42.1` is `float`, `=[1, 2]` is a `list` and `={foo="bar"}` is a `dict` and finally `=true` is a boolean. (to force a string value enclose it on quotes: `="'42'"` is `str, '42'`)
+    Env vars are cast using the TOML parser, so `=FOO` is `str`, `=42` is `int`, `=42.1` is `float`, `=[1, 2]` is a `list` and `={foo="bar"}` is a `dict` and finally `=true` is a boolean. (to force a string value enclose it in quotes: `="'42'"` is `str, '42'`)
 
 ### **auto_cast**
-Auto cast is the ability of using tokens to specify the type casting for settings variables.
-ex: `@format {env[HOME]}`, `@int 32`, `@json {...}`, this options disables that feature.
+
+Auto cast is the ability of using special tokens to cast settings variables.
+ex: `@format {env[HOME]}`, `@int 32`, `@json {...}`
 
 - type: bool
 - default: true
@@ -49,7 +50,7 @@ ex: `@format {env[HOME]}`, `@int 32`, `@json {...}`, this options disables that 
 
 ### **commentjson_enabled**
 
-Enables comments in JSON settings files, to work `commentjson` must be installed `pip install commentjson`
+Enables comments in JSON settings files, but `commentjson` must be installed, i.e.: `pip install commentjson`
 
 - type: bool
 - default: false
@@ -86,7 +87,7 @@ When `load_dotenv` is enabled, this controls if variables in `.env` will overrid
 
 ### **dotenv_path**
 
-Sets the path for the `.env` file and it can be full path or just the directory.
+Sets the location of the `.env` file to either the full path or the containing directory.
 
 - type: str
 - default: "." (or the same as project_root)
@@ -113,7 +114,7 @@ Which encoding to use when loading settings files.
 
 ### **environments**
 
-Controls if Dynaconf will work in a multi layered environment system allowing `[default]`, `[development]`, `[production]` and other separation of environments.
+Controls if dynaconf will work in a multi-layered environment system allowing `[default]`, `[development]`, `[production]` and other environment separations.
 
 - type: boolean or a list
 - default: false
@@ -122,7 +123,7 @@ Controls if Dynaconf will work in a multi layered environment system allowing `[
 
 ### **envvar**
 
-The variable to change the location of settings module using environment variables.
+This variable changes the location of the settings file that loads the environment variables,
 ex: `export SETTINGS_FILE_FOR_DYNACONF=another/path/settings.toml`
 
 - type: str
@@ -132,8 +133,8 @@ ex: `export SETTINGS_FILE_FOR_DYNACONF=another/path/settings.toml`
 
 ### **envvar_prefix**
 
-The prefix for dynaconf to load values from environment variables, in your program you might want users
-to export using your app name ex: `export MYPROGRAM_DEBUG=true`
+The prefix used by dynaconf to load values from environment variables. You might want your users
+to export values using your app name, ex: `export MYPROGRAM_DEBUG=true`
 
 - type: str
 - default: "DYNACONF"
@@ -141,8 +142,9 @@ to export using your app name ex: `export MYPROGRAM_DEBUG=true`
 ---
 
 ### **env**
-When `environments` is set, this controls the current environment for the runtime execution.
-usually this is set using environment variable.
+
+When `environments` is set, this controls the current environment used in runtime.
+This is usually set using an environment variable.
 
 ```bash
 export ENV_FOR_DYNACONF=production
@@ -157,7 +159,7 @@ Or per execution: `ENV_FOR_DYNACONF=production program.py`
 
 ### **env_switcher**
 
-By default `ENV_FOR_DYNACONF` is the variable to switch envs, but you can set this to another variable name.
+By default `ENV_FOR_DYNACONF` is the variable used to switch envs, but you can set this to another variable name.
 ex: `MYPROGRAM_ENV=production`
 
 - type: str
@@ -189,7 +191,7 @@ ex: `fresh_vars=["password"]` so when accessing `settings.password` it will be r
 
 ### **includes**
 
-After the load of files specified in `settings_files` Dynaconf will load all the files added to `includes` in a post load process.
+After loading the files specified in `settings_files` dynaconf will load all the files added to `includes` in a post-load process.
 
 - type: list
 - default: []
@@ -210,7 +212,7 @@ After the load of files specified in `settings_files` Dynaconf will load all the
 
 ### **loaders**
 
-The list of loaders Dynaconf will trigger after its core loaders, this list is useful to include
+The list of loaders dynaconf will trigger after its core loaders, this list is useful to include
 [custom loaders](/advanced/#custom loaders) and also to control the loading of env vars as the last step.
 
 !!! warning
@@ -226,7 +228,7 @@ Learn more about [loaders](/advanced/)
 
 ### **load_dotenv**
 
-When turned on dynaconf will try to load the variables from a `.env` file.
+When turned on, dynaconf will try to load the variables from a `.env` file.
 
 - type: bool
 - default: false
@@ -306,7 +308,7 @@ DATABASES = {
 
 ### **preload**
 
-Sometimes you might need to load some file before Dynaconf starts looking for  its `settings_files` or `includes`, you can have for example a `dynaconf.toml` to hold dynaconf's configuration.
+Sometimes you might need to load some file before dynaconf starts looking for  its `settings_files` or `includes`, you can have for example a `dynaconf.toml` to hold dynaconf's configuration.
 
 - type: list
 - default: []

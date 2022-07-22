@@ -7,15 +7,15 @@ we included a full [diagram](https://viewer.diagrams.net/?highlight=0000ff&edit=
 
 ### Vendoring
 
-Dynaconf now doesn't have dependencies because the main used libraries has
-been vendored, in addition to the vendoring process (which followed the guidelines
-regarding licensing and structure) all the vendored libraries has been minified to
+Dynaconf doesn't have dependencies because the main libraries used have
+been vendored. In addition to the vendoring process (which followed the guidelines
+regarding licensing and structure), all the vendored libraries have been minified to
 save space on the distribution.
 
 Ideally the vendored libraries will be upgraded on-demand only when a new security
 or important bug fix is released on the respective vendored repository.
 
-Exception is python-box which the goal is to remove the dependency and implement
+Python-box is an exception since the goal is to remove the dependency and implement
 its basic features within dynaconf/DynaBox type.
 
 ### Cleanups
@@ -32,8 +32,8 @@ The mechanism to evaluate `Lazy` values has been refactored and now `@format` an
 Fixed a problem when multiple combined validators are registered and fixed
 duplication of ValidationError messages.
 
-All names in a must_exist clause are now tested, before it was stopping
-validation on the first failure.
+All names in a must_exist clause are now tested, instead of stopping validation on the
+first failure.
 
 ### Fixes
 
@@ -83,7 +83,7 @@ def my_function(settings, validator):
 
 ```
 
-If you want to be lazy evaluated
+If you want it to be lazy evaluated
 
 ```py
 
