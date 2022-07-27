@@ -130,6 +130,7 @@ test_examples:
 	cd example/issues/722_docs_example;pwd;python app.py
 	cd example/issues/729_use_default_when_setting_is_blank;pwd;python app.py
 	cd example/issues/741_envvars_ignored;pwd;sh recreate.sh
+	cd example/issues/705_flask_dynaconf_init;pwd;make test;make clean
 
 test_vault:
 	# @cd example/vault;pwd;python write.py
