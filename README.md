@@ -7,7 +7,6 @@
 [![MIT License](https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square)](/LICENSE) [![PyPI](https://img.shields.io/pypi/v/dynaconf.svg)](https://pypi.python.org/pypi/dynaconf) [![PyPI](https://img.shields.io/pypi/pyversions/dynaconf.svg)]() ![PyPI - Downloads](https://img.shields.io/pypi/dm/dynaconf.svg?label=pip%20installs&logo=python) [![CI](https://github.com/rochacbruno/dynaconf/actions/workflows/main.yml/badge.svg)](https://github.com/rochacbruno/dynaconf/actions/workflows/main.yml) [![codecov](https://codecov.io/gh/rochacbruno/dynaconf/branch/master/graph/badge.svg)](https://codecov.io/gh/rochacbruno/dynaconf) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/42d2f11ef0a446808b246c8c69603f6e)](https://www.codacy.com/gh/rochacbruno/dynaconf/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rochacbruno/dynaconf&amp;utm_campaign=Badge_Grade)  ![GitHub stars](https://img.shields.io/github/stars/rochacbruno/dynaconf.svg) ![GitHub Release Date](https://img.shields.io/github/release-date/rochacbruno/dynaconf.svg) ![GitHub commits since latest release](https://img.shields.io/github/commits-since/rochacbruno/dynaconf/latest.svg) ![GitHub last commit](https://img.shields.io/github/last-commit/rochacbruno/dynaconf.svg) [![Code Style Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black/) 
 
 ![GitHub issues](https://img.shields.io/github/issues/rochacbruno/dynaconf.svg) [![User Forum](https://img.shields.io/badge/users-forum-blue.svg?logo=googlechat)](https://github.com/rochacbruno/dynaconf/discussions) [![Join the chat at https://gitter.im/dynaconf/dev](https://badges.gitter.im/dynaconf/dev.svg)](https://gitter.im/dynaconf/dev?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![ Matrix](https://img.shields.io/badge/dev-room-blue.svg?logo=matrix)](https://matrix.to/#/#dynaconf:matrix.org)
- [![Demo](https://img.shields.io/badge/demo-learn-yellow.svg?logo=gnubash)](https://github.com/rochacbruno/learndynaconf) 
 
 ## Features
 
@@ -21,11 +20,6 @@
 - Built-in extensions for **Django** and **Flask** web frameworks.
 - CLI for common operations such as `init, list, write, validate, export`.
 - full docs on https://dynaconf.com
-
-## Quick start
-
-> **DEMO:** You can see a working demo here: https://github.com/rochacbruno/learndynaconf
-
 
 ### Install
 
