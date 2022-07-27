@@ -8,7 +8,7 @@
 
 
 
-[![Foo](https://xscode.com/assets/promo-banner.svg)](https://xscode.com/rochacbruno/dynaconf)
+[![Foo](https://xscode.com/assets/promo-banner.svg)](https://xscode.com/rochacbruno/dynaconf) [![Join the chat at https://gitter.im/dynaconf/dev](https://badges.gitter.im/dynaconf/dev.svg)](https://gitter.im/dynaconf/dev?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Features
 

@@ -52,9 +52,10 @@ def set_settings(ctx, instance=None):
     elif "FLASK_APP" in os.environ:  # pragma: no cover
         with suppress(ImportError, click.UsageError):
             from flask.cli import ScriptInfo  # noqa
+            from dynaconf import FlaskDynaconf
 
             flask_app = ScriptInfo().load_app()
-            settings = flask_app.config
+            settings = FlaskDynaconf(flask_app, **flask_app.config).settings
             click.echo(
                 click.style(
                     "Flask app detected", fg="white", bg="bright_black"
