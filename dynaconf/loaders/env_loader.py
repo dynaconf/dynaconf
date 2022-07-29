@@ -76,6 +76,9 @@ def load_from_env(
         }
         # Update the settings space based on gathered data from environment.
         if data:
+            filter_strategy = obj.get("FILTER_STRATEGY")
+            if filter_strategy:
+                data = filter_strategy(data)
             obj.update(data, loader_identifier=identifier)
 
 

@@ -83,7 +83,7 @@ jobs:
           check_name: Test Results (Python ${{ matrix.python-version }})
       - name: "Upload coverage to Codecov"
         if: ${{ matrix.python-version == '3.8' }}
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
 

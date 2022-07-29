@@ -638,7 +638,7 @@ Read more on [Validation](/validation/)
 
 ### Vendored
 
-Dynaconf core has no dependency it is using vendored copies of external
+Dynaconf core has no dependency. It uses vendored copies of external
 libraries such as **python-box, click, python-dotenv, ruamel-yaml, python-toml**
 
 ### Optional dependencies
