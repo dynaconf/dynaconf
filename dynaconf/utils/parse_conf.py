@@ -184,7 +184,18 @@ class Lazy:
         """LazyValue triggers format lazily."""
         self.settings = settings
         self.context["_validator_object"] = validator_object
-        result = self.formatter(self.value, **self.context)
+        var = str(self.value)
+        if "@format" in var:
+            var = self.value.replace(
+                "this.", settings.ENVVAR_PREFIX_FOR_DYNACONF + "_"
+            )
+            var = var.replace(".", settings.NESTED_SEPARATOR_FOR_DYNACONF)
+            var = var.strip("}").strip("{").upper()
+        result = (
+            os.getenv(var)
+            if os.getenv(var)
+            else self.formatter(self.value, **self.context)
+        )
         if self.casting is not None:
             result = self.casting(result)
         return result

@@ -1,0 +1,9 @@
+SERVER:
+  VERSION:
+    RELEASE: "6.10"
+    SNAP: 22
+  DEPLOY_WORKFLOW: "deploy-sat-jenkins"
+  DEPLOY_ARGUMENTS:
+    deploy_sat_version: "@format {this.server.version.release}"
+    deploy_snap_version: "@format {this.server.version.snap}"
+    deploy_rhel_version: '7'
