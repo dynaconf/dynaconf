@@ -309,7 +309,8 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
     ):
         # Check combination token is used
         comb_token = re.match(
-            f"^({'|'.join(converters.keys())}) @(jinja|format)", data,
+            f"^({'|'.join(converters.keys())}) @(jinja|format)",
+            data,
         )
         if comb_token:
             tokens = comb_token.group(0)

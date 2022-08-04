@@ -1,0 +1,3 @@
+[default]
+parent = "@path @format {env[HOME]}/parent"
+child = "@path @format {this.parent}/child"
