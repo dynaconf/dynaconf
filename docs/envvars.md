@@ -2,7 +2,7 @@
 
 Dynaconf prioritizes environment variables over files as the best recommendation to keep your settings.
 
-According to [12factorapp](https://12factor.net) is is a good practice to keep your configurations based on environment.
+According to [12factorapp](https://12factor.net) it is a good practice to keep your configurations based on environment.
 
 In addition to that Dynaconf offers some approaches you may want to **Optionally** follow:
 
