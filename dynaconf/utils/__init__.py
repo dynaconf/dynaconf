@@ -52,7 +52,7 @@ def object_merge(
             new.insert(0, item)
 
     if isinstance(old, dict) and isinstance(new, dict):
-        existing_value = recursive_get(old, full_path)  # doesnt handle None
+        existing_value = recursive_get(old, full_path)  # doesn't handle None
         # Need to make every `None` on `_store` to be an wrapped `LazyNone`
 
         # data coming from source, in `new` can be mix case: KEY4|key4|Key4
@@ -95,7 +95,7 @@ def recursive_get(
     names: list[str] | None,
 ) -> Any:
     """Given a dot accessible object and a list of names `foo.bar.zaz`
-    gets recursivelly all names one by one obj.foo.bar.zaz.
+    gets recursively all names one by one obj.foo.bar.zaz.
     """
     if not names:
         return

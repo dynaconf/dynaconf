@@ -23,7 +23,7 @@ positive_conditions = [
     ("len_ne", [], 1),
     ("len_min", "Minimum length", 3),
     ("len_min", [1, 2, 3, 4, 5], 3),
-    ("len_max", "Maximum lenght", 15),
+    ("len_max", "Maximum length", 15),
     ("len_max", [1, 2, 3, 4, 5], 5),
     ("startswith", "codeshow", "code"),
 ]

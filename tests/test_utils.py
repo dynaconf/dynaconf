@@ -163,7 +163,7 @@ def test_casting_json(settings):
 
     # Test how single quotes cases are handled.
     # When jinja uses `attr` to render a json string,
-    # it may covnert double quotes to single quotes.
+    # it may convert double quotes to single quotes.
     settings.set("value", "{'FOO': 'bar'}")
     res = parse_conf_data("@json @jinja {{ this.value }}")(settings)
     assert isinstance(res, dict)
@@ -231,7 +231,7 @@ def test_missing_sentinel():
     assert missing == missing
 
     # new instances of Missing should be equal to each other due to
-    # explicit __eq__ implmentation check for isinstance.
+    # explicit __eq__ implementation check for isinstance.
     assert missing == Missing()
 
     # The sentinel should not be equal to None, True, or False
@@ -239,7 +239,8 @@ def test_missing_sentinel():
     assert missing is not True
     assert missing is not False
 
-    # But the explict typecasting of missing to a bool should evaluate to False
+    # But the explicit typecasting of missing to a bool should evaluate to
+    # False
     assert bool(missing) is False
 
     assert str(missing) == "<dynaconf.missing>"

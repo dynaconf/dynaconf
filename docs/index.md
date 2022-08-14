@@ -67,7 +67,7 @@ pip install dynaconf
     .
     ├── config.py       # Where you import your settings object (required)
     ├── .secrets.toml   # Sensitive data like passwords and tokens (optional)
-    └── settings.toml   # Application setttings (optional)
+    └── settings.toml   # Application settings (optional)
     ```
 
     === "your_program.py"

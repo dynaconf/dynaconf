@@ -89,9 +89,9 @@ class LazySettings(LazyObject):
             "environment": "environments",
             "ENVIRONMENT": "ENVIRONMENTS",
         }
-        for mispell, correct in mispells.items():
-            if mispell in kwargs:
-                kwargs[correct] = kwargs.pop(mispell)
+        for misspell, correct in mispells.items():
+            if misspell in kwargs:
+                kwargs[correct] = kwargs.pop(misspell)
 
         for_dynaconf_keys = {
             key
@@ -180,7 +180,7 @@ class LazySettings(LazyObject):
         Allows user to reconfigure settings object passing a new settings
         module or separated kwargs
 
-        :param settings_module: defines the setttings file
+        :param settings_module: defines the settings file
         :param kwargs:  override default settings
         """
         default_settings.reload(self._should_load_dotenv)
@@ -209,7 +209,7 @@ class Settings:
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         """Execute loaders and custom initialization
 
-        :param settings_module: defines the setttings file
+        :param settings_module: defines the settings file
         :param kwargs:  override default settings
         """
         self._fresh = False
@@ -346,7 +346,7 @@ class Settings:
         """
         value = self.get(item, empty)
 
-        # Yaml loader reads empty values as None, whould we apply defaults?
+        # Yaml loader reads empty values as None, would we apply defaults?
         global_apply_default = (
             self.get("APPLY_DEFAULT_ON_NONE_FOR_DYNACONF") is not None
         )
@@ -425,7 +425,7 @@ class Settings:
         parent=None,
     ):
         """
-        Get a value from settings store, this is the prefered way to access::
+        Get a value from settings store, this is the preferred way to access::
 
             >>> from dynaconf import settings
             >>> settings.get('KEY')
@@ -483,7 +483,7 @@ class Settings:
         """Check if key exists
 
         :param key: the name of setting variable
-        :param fresh: if key should be taken from source direclty
+        :param fresh: if key should be taken from source directly
         :return: Boolean
         """
         key = upperfy(key)
@@ -1009,7 +1009,7 @@ class Settings:
         """Execute all internal and registered loaders
 
         :param env: The environment to load
-        :param silent: If loading erros is silenced
+        :param silent: If loading errors is silenced
         :param key: if provided load a single key
         :param filename: optional custom filename to load
         :param loaders: optional list of loader modules
@@ -1200,7 +1200,7 @@ class Settings:
         try:
             return copy.deepcopy(self)
         except TypeError:
-            # can't deepcopy settings object bacause of module object
+            # can't deepcopy settings object because of module object
             # being set as value in the settings dict
             new_data = self.to_dict(internal=True)
             new_data["dynaconf_skip_loaders"] = True

@@ -304,7 +304,7 @@ settings.validators.validate(
 
 > **Validate only current env**
 
-You can specify if you want to validate all environments defined for a validator (default behavior) or only the current environement. In the first case, the validators will run on all possible settings defined in their list of environment, while in the latter the validators with environments different from the current environment will be skipped.
+You can specify if you want to validate all environments defined for a validator (default behavior) or only the current environment. In the first case, the validators will run on all possible settings defined in their list of environment, while in the latter the validators with environments different from the current environment will be skipped.
 
 This is useful when your configuration for different environments (let's say `production` and `development`) comes from different files you don't necesseraly have access to during development. You would want to write different validators for your `development` and `production` environments, and only run the right validator for the current environment.
 
