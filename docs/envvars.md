@@ -144,6 +144,35 @@ export PREFIX_PATH='@format {env{"HOME"}/.config/{this.DB_NAME}'
 export PREFIX_PATH='@jinja {{env.HOME}}/.config/{{this.DB_NAME}} | abspath'
 ```
 
+## Adding a Custom Casting Token
+
+If you would like to add a custom casting token, you can do so by adding a
+converter. For example, if we would like to cast strings to a pathlib.Path 
+object we can add in our python code:
+
+```python
+# app.py
+from pathlib import Path
+from dynaconf.utils import parse_conf
+
+parse_conf.converters["@path"] = (
+    lambda value: value.set_casting(Path)
+    if isinstance(value, parse_conf.Lazy)
+    else Path(value)
+)
+```
+
+In the settings file we can now use teh @path casting token. Like with other
+casting tokens you can also combine them:
+
+```toml
+# settings.toml
+my_path = "@path /home/foo/example.txt"
+parent = "@path @format {env[HOME]}/parent"
+child = "@path @format {this.parent}/child"
+```
+
+
 ## Environment variables filtering
 
 All environment variables (naturally, accounting for prefix rules) will be
