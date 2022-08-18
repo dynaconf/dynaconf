@@ -144,7 +144,7 @@ export PREFIX_PATH='@format {env{"HOME"}/.config/{this.DB_NAME}'
 export PREFIX_PATH='@jinja {{env.HOME}}/.config/{{this.DB_NAME}} | abspath'
 ```
 
-## Adding a Custom Casting Token
+### Adding a Custom Casting Token
 
 If you would like to add a custom casting token, you can do so by adding a
 converter. For example, if we would like to cast strings to a pathlib.Path 
