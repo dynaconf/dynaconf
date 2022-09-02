@@ -60,6 +60,7 @@ test_examples:
 	cd example/settings_file/;pwd;rm -rf /tmp/settings_file_test/settings.py;mkdir -p /tmp/settings_file_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/settings_file_test/settings.py;python app.py;rm -rf /tmp/settings_file_test/
 	cd example/configure/;pwd;rm -rf /tmp/configure_test/settings.py;mkdir -p /tmp/configure_test/;echo "MESSAGE = 'Hello from tmp'" > /tmp/configure_test/settings.py;python app.py;rm -rf /tmp/configure_test/
 	cd example/-m_case/;pwd;python -m module
+	cd example/custom_cast_token;pwd;python app.py
 
 	@echo '###############  Calling from outer folder  ###############'
 	python example/common/program.py
