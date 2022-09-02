@@ -493,3 +493,44 @@ def test_should_NOT_duplicate_when_explicit_set(tmpdir):
         "script1.sh",
         # merge_unique does not duplicate, but overrides the order
     ]
+
+
+def test_empty_yaml_key_overriding(tmpdir):
+    new_key_value = "new_key_value"
+    os.environ["DYNACONF_LEVEL1__KEY"] = new_key_value
+    os.environ["DYNACONF_LEVEL1__KEY2"] = new_key_value
+    os.environ["DYNACONF_LEVEL1__key3"] = new_key_value
+    os.environ["DYNACONF_LEVEL1__KEY4"] = new_key_value
+    os.environ["DYNACONF_LEVEL1__KEY5"] = new_key_value
+
+    tmpdir.join("test.yml").write(
+        """
+        level1:
+          key: key_value
+          KEY2:
+          key3:
+          keY4:
+        """
+    )
+
+    for merge_state in (True, False):
+        _settings = LazySettings(
+            settings_files=["test.yml"], merge_enabled=merge_state
+        )
+        assert _settings.level1.key == new_key_value
+        assert _settings.level1.key2 == new_key_value
+        assert _settings.level1.key3 == new_key_value
+        assert _settings.level1.get("KEY4") == new_key_value
+        assert _settings.level1.get("key4") == new_key_value
+        assert _settings.level1.get("keY4") == new_key_value
+        assert _settings.level1.get("keY6", "foo") == "foo"
+        assert _settings.level1.get("KEY6", "bar") == "bar"
+        assert _settings.level1["Key4"] == new_key_value
+        assert _settings.level1.Key4 == new_key_value
+        assert _settings.level1.KEy4 == new_key_value
+        assert _settings.level1.KEY4 == new_key_value
+        assert _settings.level1.key4 == new_key_value
+        with pytest.raises(AttributeError):
+            _settings.level1.key6
+            _settings.level1.key7
+            _settings.level1.KEY8
