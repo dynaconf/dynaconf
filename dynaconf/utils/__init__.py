@@ -55,23 +55,33 @@ def object_merge(
         existing_value = recursive_get(old, full_path)  # doesnt handle None
         # Need to make every `None` on `_store` to be an wrapped `LazyNone`
 
-        for key, value in old.items():
+        # data coming from source, in `new` can be mix case: KEY4|key4|Key4
+        # data existing on `old` object has the correct case: key4|KEY4|Key4
+        # So we need to ensure that new keys matches the existing keys
+        for new_key in list(new.keys()):
+            correct_case_key = find_the_correct_casing(new_key, old)
+            if correct_case_key:
+                new[correct_case_key] = new.pop(new_key)
 
+        for old_key, value in old.items():
+
+            # This is for when the dict exists internally
+            # but the new value on the end of full path is the same
             if (
                 existing_value is not None
-                and key.lower() == full_path[-1].lower()
+                and old_key.lower() == full_path[-1].lower()
                 and existing_value is value
             ):
                 # Here Be The Dragons
                 # This comparison needs to be smarter
                 continue
 
-            if key not in new:
-                new[key] = value
+            if old_key not in new:
+                new[old_key] = value
             else:
                 object_merge(
                     value,
-                    new[key],
+                    new[old_key],
                     full_path=full_path[1:] if full_path else None,
                 )
 
@@ -89,7 +99,7 @@ def recursive_get(
     """
     if not names:
         return
-    head, tail = names[0], names[1:]
+    head, *tail = names
     result = getattr(obj, head, None)
     if not tail:
         return result
@@ -106,7 +116,6 @@ def handle_metavalues(
         # MetaValue instances
         if getattr(new[key], "_dynaconf_reset", False):  # pragma: no cover
             # a Reset on `new` triggers reasign of existing data
-            # @reset is deprecated on v3.0.0
             new[key] = new[key].unwrap()
         elif getattr(new[key], "_dynaconf_del", False):
             # a Del on `new` triggers deletion of existing data
@@ -424,3 +433,21 @@ def isnamedtupleinstance(value):
     if not isinstance(f, tuple):
         return False
     return all(type(n) == str for n in f)
+
+
+def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
+    """Given a key, find the proper casing in data
+
+    Arguments:
+        key {str} -- A key to be searched in data
+        data {dict} -- A dict to be searched
+
+    Returns:
+        str -- The proper casing of the key in data
+    """
+    if key in data:
+        return key
+    for k in data.keys():
+        if k.lower() == key.lower():
+            return k
+    return None
