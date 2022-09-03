@@ -1,21 +1,51 @@
-from __future__ import print_function,absolute_import,division,unicode_literals
-_B=False
-_A=None
+# coding: utf-8
+
+from __future__ import print_function, absolute_import, division, unicode_literals
+
+"""
+You cannot subclass bool, and this is necessary for round-tripping anchored
+bool values (and also if you want to preserve the original way of writing)
+
+bool.__bases__ is type 'int', so that is what is used as the basis for ScalarBoolean as well.
+
+You can use these in an if statement, but not when testing equivalence
+"""
+
 from .anchor import Anchor
-if _B:from typing import Text,Any,Dict,List
-__all__=['ScalarBoolean']
+
+if False:  # MYPY
+    from typing import Text, Any, Dict, List  # NOQA
+
+__all__ = ['ScalarBoolean']
+
+# no need for no_limit_int -> int
+
+
 class ScalarBoolean(int):
-	def __new__(D,*E,**A):
-		B=A.pop('anchor',_A);C=int.__new__(D,*E,**A)
-		if B is not _A:C.yaml_set_anchor(B,always_dump=True)
-		return C
-	@property
-	def anchor(self):
-		A=self
-		if not hasattr(A,Anchor.attrib):setattr(A,Anchor.attrib,Anchor())
-		return getattr(A,Anchor.attrib)
-	def yaml_anchor(A,any=_B):
-		if not hasattr(A,Anchor.attrib):return _A
-		if any or A.anchor.always_dump:return A.anchor
-		return _A
-	def yaml_set_anchor(A,value,always_dump=_B):A.anchor.value=value;A.anchor.always_dump=always_dump
+    def __new__(cls, *args, **kw):
+        # type: (Any, Any, Any) -> Any
+        anchor = kw.pop('anchor', None)  # type: ignore
+        b = int.__new__(cls, *args, **kw)  # type: ignore
+        if anchor is not None:
+            b.yaml_set_anchor(anchor, always_dump=True)
+        return b
+
+    @property
+    def anchor(self):
+        # type: () -> Any
+        if not hasattr(self, Anchor.attrib):
+            setattr(self, Anchor.attrib, Anchor())
+        return getattr(self, Anchor.attrib)
+
+    def yaml_anchor(self, any=False):
+        # type: (bool) -> Any
+        if not hasattr(self, Anchor.attrib):
+            return None
+        if any or self.anchor.always_dump:
+            return self.anchor
+        return None
+
+    def yaml_set_anchor(self, value, always_dump=False):
+        # type: (Any, bool) -> None
+        self.anchor.value = value
+        self.anchor.always_dump = always_dump

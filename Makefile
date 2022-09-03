@@ -210,7 +210,9 @@ pep8:
 	flake8 dynaconf --exclude=dynaconf/vendor*
 
 dist: clean
+	@make minify_vendor
 	@python setup.py sdist bdist_wheel
+	@make source_vendor
 
 publish:
 	make run-tox
@@ -236,3 +238,21 @@ docs:
 run-tox:
 	tox --recreate
 	rm -rf .tox
+
+minify_vendor:
+	# Ensure vendor is source and cleanup vendor_src bck folder
+	ls dynaconf/vendor/source && rm -rf dynaconf/vendor_src
+
+	# Backup dynaconf/vendor folder as dynaconf/vendor_src
+	mv dynaconf/vendor dynaconf/vendor_src
+
+	# create a new dynaconf/vendor folder with minified files
+	./minify.sh
+
+
+source_vendor:
+	# Ensure dynaconf/vendor_src is source and cleanup vendor folder
+	ls dynaconf/vendor_src/source && rm -rf dynaconf/vendor
+
+	# Restore dynaconf/vendor_src folder as dynaconf/vendor
+	mv dynaconf/vendor_src dynaconf/vendor

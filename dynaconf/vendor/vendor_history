@@ -1,0 +1,7 @@
+
+## BOX
+
+- Mar 2, 2021
+
+Fix #462 make DynaBox nested List to use DynaBox as default class
+https://github.com/dynaconf/dynaconf/pull/533/files
