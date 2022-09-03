@@ -133,6 +133,10 @@ key = value
 anotherkey = value
 ```
 
+!!! note
+    The paths passed to includes are relative to the `root_path` of Dynaconf instance or if that is not set, relative
+    to the directory where the first loaded file is located, includes also accepts globs and absolute paths.
+
 ---
 
 ## Layered environments on files

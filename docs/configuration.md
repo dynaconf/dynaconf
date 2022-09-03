@@ -208,6 +208,11 @@ After loading the files specified in `settings_files` dynaconf will load all the
     ```
     **Includes allows the use of globs**
 
+!!! warning 
+    includes are loaded relative to the first loaded file, so if you have a `settings_files=['conf/settings.toml']` and `includes=["*.yaml"]`
+    the yaml files will be loaded relative to the `conf` folder. Unless you specify the absolute path or pass `root_path` to the Dynaconf
+    initializer.
+
 ---
 
 ### **loaders**
