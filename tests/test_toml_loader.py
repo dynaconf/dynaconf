@@ -49,7 +49,38 @@ password = 123456.0
 host = "othertoml.com"
 """
 
+INVALID_TOML_TO_BE_REMOVED_ON_4_0_0 = """
+[global]
+secret = "@float 42"
+password = 123456.0
+host = "othertoml.com"
+emojis = "😀😀😀😀"
+encoded_variable="This has accents like � and � � � � just to test encoding �"
+# The above is not alowed by TOML, but it is allowed by Dynaconf < 4.0.0
+"""
+
+
 TOMLS = [TOML, TOML2]
+
+
+def test_load_from_toml_with_invalid_unicode(tmpdir):
+    # THIS TEST MUST FAIL AND BE REMOVED ON 4.0.0
+    load(settings, filename=INVALID_TOML_TO_BE_REMOVED_ON_4_0_0)
+    assert settings.ENCODED_VARIABLE == (
+        "This has accents like � and � � � � just to test encoding �"
+    )
+
+    tmpfile = tmpdir.join("settings.toml")
+    with open(tmpfile.strpath, "w", encoding="utf-8") as f:
+        f.write(INVALID_TOML_TO_BE_REMOVED_ON_4_0_0)
+
+    _settings = LazySettings(
+        settings_files=[tmpfile.strpath], environments=True
+    )
+    assert _settings.ENCODED_VARIABLE == (
+        "This has accents like � and � � � � just to test encoding �"
+    )
+    assert _settings.EMOJIS == "😀😀😀😀"
 
 
 def test_load_from_toml():

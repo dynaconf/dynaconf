@@ -13,6 +13,7 @@ from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.functional import empty
 from dynaconf.vendor import toml
+from dynaconf.vendor import tomllib
 
 try:
     from jinja2 import Environment
@@ -277,10 +278,22 @@ def get_converter(converter_key, value, box_settings):
 
 def parse_with_toml(data):
     """Uses TOML syntax to parse data"""
-    try:
-        return toml.loads(f"key={data}")["key"]
-    except (toml.TomlDecodeError, KeyError):
-        return data
+    try:  # try tomllib first
+        try:
+            return tomllib.loads(f"key={data}")["key"]
+        except (tomllib.TOMLDecodeError, KeyError):
+            return data
+    except UnicodeDecodeError:  # pragma: no cover
+        # fallback to toml (TBR in 4.0.0)
+        try:
+            return toml.loads(f"key={data}")["key"]
+        except (toml.TomlDecodeError, KeyError):
+            return data
+        warnings.warn(
+            "TOML files should have only UTF-8 encoded characters. "
+            "starting on 4.0.0 dynaconf will stop allowing invalid chars.",
+            DeprecationWarning,
+        )
 
 
 def _parse_conf_data(data, tomlfy=False, box_settings=None):

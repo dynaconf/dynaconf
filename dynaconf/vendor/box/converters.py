@@ -11,7 +11,7 @@ from pathlib import Path
 
 import dynaconf.vendor.ruamel.yaml as yaml
 from dynaconf.vendor.box.exceptions import BoxError, BoxWarning
-from dynaconf.vendor import toml
+from dynaconf.vendor import tomllib as toml
 
 
 BOX_PARAMETERS = ('default_box', 'default_box_attr', 'conversion_box',

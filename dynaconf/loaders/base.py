@@ -21,7 +21,14 @@ class BaseLoader:
     """
 
     def __init__(
-        self, obj, env, identifier, extensions, file_reader, string_reader
+        self,
+        obj,
+        env,
+        identifier,
+        extensions,
+        file_reader,
+        string_reader,
+        opener_params=None,
     ):
         """Instantiates a loader for different sources"""
         self.obj = obj
@@ -30,6 +37,10 @@ class BaseLoader:
         self.extensions = extensions
         self.file_reader = file_reader
         self.string_reader = string_reader
+        self.opener_params = opener_params or {
+            "mode": "r",
+            "encoding": obj.get("ENCODING_FOR_DYNACONF", "utf-8"),
+        }
 
     @staticmethod
     def warn_not_installed(obj, identifier):  # pragma: no cover
@@ -77,12 +88,7 @@ class BaseLoader:
         for source_file in files:
             if source_file.endswith(self.extensions):
                 try:
-                    with open(
-                        source_file,
-                        encoding=self.obj.get(
-                            "ENCODING_FOR_DYNACONF", "utf-8"
-                        ),
-                    ) as open_file:
+                    with open(source_file, **self.opener_params) as open_file:
                         content = self.file_reader(open_file)
                         self.obj._loaded_files.append(source_file)
                         if content:

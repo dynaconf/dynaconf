@@ -3,7 +3,7 @@
 from json import JSONDecodeError
 from pathlib import Path
 from typing import Union
-from dynaconf.vendor.toml import TomlDecodeError
+from dynaconf.vendor.tomllib import TOMLDecodeError
 from dynaconf.vendor.ruamel.yaml import YAMLError
 
 
@@ -35,7 +35,7 @@ def _to_yaml(data):
 def _to_toml(data):
     try:
         return Box.from_toml(data)
-    except TomlDecodeError:
+    except TOMLDecodeError:
         raise BoxError('File is not TOML as expected')
 
 
