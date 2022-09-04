@@ -1,18 +1,49 @@
-_A='utf-8'
 import sys
-PY2=sys.version_info[0]==2
-if PY2:from StringIO import StringIO
-else:from io import StringIO
+
+PY2 = sys.version_info[0] == 2  # type: bool
+
+if PY2:
+    from StringIO import StringIO  # noqa
+else:
+    from io import StringIO  # noqa
+
+
 def is_type_checking():
-	try:from typing import TYPE_CHECKING as A
-	except ImportError:return False
-	return A
-IS_TYPE_CHECKING=is_type_checking()
-if IS_TYPE_CHECKING:from typing import Text
+    # type: () -> bool
+    try:
+        from typing import TYPE_CHECKING
+    except ImportError:
+        return False
+    return TYPE_CHECKING
+
+
+IS_TYPE_CHECKING = is_type_checking()
+
+
+if IS_TYPE_CHECKING:
+    from typing import Text
+
+
 def to_env(text):
-	if PY2:return text.encode(sys.getfilesystemencoding()or _A)
-	else:return text
+    # type: (Text) -> str
+    """
+    Encode a string the same way whether it comes from the environment or a `.env` file.
+    """
+    if PY2:
+        return text.encode(sys.getfilesystemencoding() or "utf-8")
+    else:
+        return text
+
+
 def to_text(string):
-	A=string
-	if PY2:return A.decode(_A)
-	else:return A
+    # type: (str) -> Text
+    """
+    Make a string Unicode if it isn't already.
+
+    This is useful for defining raw unicode strings because `ur"foo"` isn't valid in
+    Python 3.
+    """
+    if PY2:
+        return string.decode("utf-8")
+    else:
+        return string

@@ -10,7 +10,7 @@ from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils.parse_conf import true_values
-from dynaconf.vendor_src.box.box_list import BoxList
+from dynaconf.vendor.box.box_list import BoxList
 
 
 def test_deleted_raise(settings):

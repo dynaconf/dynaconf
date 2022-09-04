@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-import io
+import warnings
 from pathlib import Path
 
 from dynaconf import default_settings
 from dynaconf.constants import TOML_EXTENSIONS
 from dynaconf.loaders.base import BaseLoader
 from dynaconf.utils import object_merge
-from dynaconf.vendor import toml
+from dynaconf.vendor import toml  # Backwards compatibility with uiri/toml
+from dynaconf.vendor import tomllib  # New tomllib stdlib on py3.11
 
 
 def load(obj, env=None, silent=True, key=None, filename=None):
@@ -22,19 +23,54 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     :return: None
     """
 
-    loader = BaseLoader(
-        obj=obj,
-        env=env,
-        identifier="toml",
-        extensions=TOML_EXTENSIONS,
-        file_reader=toml.load,
-        string_reader=toml.loads,
-    )
-    loader.load(
-        filename=filename,
-        key=key,
-        silent=silent,
-    )
+    try:
+        loader = BaseLoader(
+            obj=obj,
+            env=env,
+            identifier="toml",
+            extensions=TOML_EXTENSIONS,
+            file_reader=tomllib.load,
+            string_reader=tomllib.loads,
+            opener_params={"mode": "rb"},
+        )
+        loader.load(
+            filename=filename,
+            key=key,
+            silent=silent,
+        )
+    except UnicodeDecodeError:  # pragma: no cover
+        """
+        NOTE: Compat functions exists to keep backwards compatibility with
+        the new tomllib library. The old library was called `toml` and
+        the new one is called `tomllib`.
+
+        The old lib uiri/toml allowed unicode characters and readed files
+        as string.
+
+        The new tomllib (stdlib) does not allow unicode characters, only
+        utf-8 encoded, and read files as binary.
+
+        NOTE: In dynaconf 4.0.0 we will drop support for the old library
+        removing the compat functions and calling directly the new lib.
+        """
+        loader = BaseLoader(
+            obj=obj,
+            env=env,
+            identifier="toml",
+            extensions=TOML_EXTENSIONS,
+            file_reader=toml.load,
+            string_reader=toml.loads,
+        )
+        loader.load(
+            filename=filename,
+            key=key,
+            silent=silent,
+        )
+
+        warnings.warn(
+            "TOML files should have only UTF-8 encoded characters. "
+            "starting on 4.0.0 dynaconf will stop allowing invalid chars.",
+        )
 
 
 def write(settings_path, settings_data, merge=True):
@@ -46,17 +82,33 @@ def write(settings_path, settings_data, merge=True):
     """
     settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover
-        with open(
-            str(settings_path), encoding=default_settings.ENCODING_FOR_DYNACONF
-        ) as open_file:
-            object_merge(toml.load(open_file), settings_data)
+        try:  # tomllib first
+            with open(str(settings_path), "rb") as open_file:
+                object_merge(tomllib.load(open_file), settings_data)
+        except UnicodeDecodeError:  # pragma: no cover
+            # uiri/toml fallback (TBR on 4.0.0)
+            with open(
+                str(settings_path),
+                encoding=default_settings.ENCODING_FOR_DYNACONF,
+            ) as open_file:
+                object_merge(toml.load(open_file), settings_data)
 
-    with open(
-        str(settings_path),
-        "w",
-        encoding=default_settings.ENCODING_FOR_DYNACONF,
-    ) as open_file:
-        toml.dump(encode_nulls(settings_data), open_file)
+    try:  # tomllib first
+        with open(str(settings_path), "wb") as open_file:
+            tomllib.dump(encode_nulls(settings_data), open_file)
+    except UnicodeEncodeError:  # pragma: no cover
+        # uiri/toml fallback (TBR on 4.0.0)
+        with open(
+            str(settings_path),
+            "w",
+            encoding=default_settings.ENCODING_FOR_DYNACONF,
+        ) as open_file:
+            toml.dump(encode_nulls(settings_data), open_file)
+
+        warnings.warn(
+            "TOML files should have only UTF-8 encoded characters. "
+            "starting on 4.0.0 dynaconf will stop allowing invalid chars.",
+        )
 
 
 def encode_nulls(data):

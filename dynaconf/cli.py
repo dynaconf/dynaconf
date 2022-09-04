@@ -25,6 +25,7 @@ from dynaconf.validator import ValidationError
 from dynaconf.validator import Validator
 from dynaconf.vendor import click
 from dynaconf.vendor import toml
+from dynaconf.vendor import tomllib
 
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
@@ -695,7 +696,16 @@ def validate(path):  # pragma: no cover
         click.echo(click.style(f"{path} not found", fg="white", bg="red"))
         sys.exit(1)
 
-    validation_data = toml.load(open(str(path)))
+    try:  # try tomlib first
+        validation_data = tomllib.load(open(str(path), "rb"))
+    except UnicodeDecodeError:  # fallback to legacy toml (TBR in 4.0.0)
+        warnings.warn(
+            "TOML files should have only UTF-8 encoded characters. "
+            "starting on 4.0.0 dynaconf will stop allowing invalid chars.",
+        )
+        validation_data = toml.load(
+            open(str(path), encoding=default_settings.ENCODING_FOR_DYNACONF),
+        )
 
     success = True
     for env, name_data in validation_data.items():

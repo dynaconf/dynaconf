@@ -79,3 +79,8 @@ junit/
 # django example static files
 example/django_example/admin/
 example/django_example/debug_toolbar/
+
+
+# Vendor_src exists only during build process
+dynaconf/vendor_src/
+dynaconf/vendor/source
