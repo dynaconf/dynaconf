@@ -135,6 +135,9 @@ class Validator:
         self.envs: Sequence[str] | None = None
         self.apply_default_on_none = apply_default_on_none
 
+        # See #585
+        self.is_type_of = operations.get("is_type_of")
+
         if isinstance(env, str):
             self.envs = [env]
         elif isinstance(env, (list, tuple)):
@@ -242,6 +245,20 @@ class Validator:
                 )
             else:
                 default_value = empty
+
+            # THIS IS A FIX FOR #585 in contrast with #799
+            # toml considers signed strings "+-1" as integers
+            # however existing users are passing strings
+            # to default on validator (see #585)
+            # The solution we added on #667 introduced a new problem
+            # This fix here makes it to work for both cases.
+            if (
+                isinstance(default_value, str)
+                and default_value.startswith(("+", "-"))
+                and self.is_type_of is str
+            ):
+                # avoid TOML from parsing "+-1" as integer
+                default_value = f"'{default_value}'"
 
             value = self.cast(
                 settings.setdefault(

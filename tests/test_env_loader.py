@@ -206,6 +206,20 @@ def test_backwards_compat_using_env_argument():
     assert settings.VALUE == "BLARG as prefix"
 
 
+def test_load_signed_integer():
+    environ["799_SIGNED_NEG_INT"] = "-1"
+    environ["799_SIGNED_POS_INT"] = "+1"
+    load_from_env(
+        identifier="env_global",
+        key=None,
+        prefix="799",
+        obj=settings,
+        silent=True,
+    )
+    assert settings.SIGNED_NEG_INT == -1
+    assert settings.SIGNED_POS_INT == 1
+
+
 def test_env_is_not_str_raises():
     with pytest.raises(TypeError):
         load_from_env(settings, prefix=int)
