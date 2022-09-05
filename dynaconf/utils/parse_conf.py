@@ -348,7 +348,7 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
 
 def parse_conf_data(data, tomlfy=False, box_settings=None):
 
-    # fix for https://github.com/rochacbruno/dynaconf/issues/595
+    # fix for https://github.com/dynaconf/dynaconf/issues/595
     if isnamedtupleinstance(data):
         return data
 

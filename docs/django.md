@@ -32,7 +32,7 @@ $ dynaconf init --django yourapp/settings.py
 
 Dynaconf will append its extension loading code to the bottom of your `yourapp/settings.py` file and will create `settings.toml` and `.secrets.toml` in the current folder (the same where `manage.py` is located).
 
-> **TIP** Take a look at [example/django_example](https://github.com/rochacbruno/dynaconf/tree/master/example/django_example)
+> **TIP** Take a look at [example/django_example](https://github.com/dynaconf/dynaconf/tree/master/example/django_example)
 
 ## Using `DJANGO_` environment variables
 
@@ -241,7 +241,7 @@ import pytest
 
 @pytest.fixture(scope="session", autouse=True)
 def set_test_settings():
-    # https://github.com/rochacbruno/dynaconf/issues/491#issuecomment-745391955
+    # https://github.com/dynaconf/dynaconf/issues/491#issuecomment-745391955
     from django.conf import settings
     settings.setenv('testing')  # force the environment to be whatever you want
 ```

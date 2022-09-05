@@ -174,7 +174,7 @@ print(
 )
 print("#" * 79)
 print(settings.dynaconf_banner)
-print("Learn more at http://github.com/rochacbruno/dynaconf")
+print("Learn more at http://github.com/dynaconf/dynaconf")
 
 
 with settings.using_env("testing"):

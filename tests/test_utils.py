@@ -56,7 +56,7 @@ def test_unparse():
 
 
 def test_cast_bool(settings):
-    """Covers https://github.com/rochacbruno/dynaconf/issues/14"""
+    """Covers https://github.com/dynaconf/dynaconf/issues/14"""
     assert parse_conf_data(False, box_settings=settings) is False
     assert settings.get("SIMPLE_BOOL", cast="@bool") is False
 

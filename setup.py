@@ -44,7 +44,7 @@ test_requirements = [
 setup(
     name="dynaconf",
     version=read("dynaconf", "VERSION"),
-    url="https://github.com/rochacbruno/dynaconf",
+    url="https://github.com/dynaconf/dynaconf",
     license="MIT",
     author="Bruno Rocha",
     author_email="rochacbruno@gmail.com",
