@@ -30,7 +30,7 @@ box = DynaBox(
 
 
 def test_named_tuple_is_not_transformed():
-    """Issue: https://github.com/rochacbruno/dynaconf/issues/595"""
+    """Issue: https://github.com/dynaconf/dynaconf/issues/595"""
     assert isinstance(box.database, DBDATA)
     assert isinstance(box.database, tuple)
 

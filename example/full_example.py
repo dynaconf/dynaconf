@@ -24,7 +24,7 @@ os.environ[
 
 # Now when reading settings they will be get from your sources dynamically
 # defined data types are casted (but you can also do explicitly if want)
-# read more in https://github.com/rochacbruno/dynaconf
+# read more in https://github.com/dynaconf/dynaconf
 
 print("You server is:")
 print(settings.HOSTNAME)

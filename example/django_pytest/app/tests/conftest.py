@@ -6,7 +6,7 @@ from django.core.management import call_command
 
 @pytest.fixture(scope="session", autouse=True)
 def set_test_settings():
-    # https://github.com/rochacbruno/dynaconf/issues/491#issuecomment-745391955
+    # https://github.com/dynaconf/dynaconf/issues/491#issuecomment-745391955
     from django.conf import settings
 
     settings.setenv("pytest")

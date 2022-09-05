@@ -81,11 +81,21 @@ jobs:
         with:
           files: junit/**/*.xml
           check_name: Test Results (Python ${{ matrix.python-version }})
+
       - name: "Upload coverage to Codecov"
         if: ${{ matrix.python-version == '3.8' }}
         uses: codecov/codecov-action@v3
         with:
           fail_ci_if_error: true
+
+      - name: Run codacy-coverage-reporter
+        if: ${{ matrix.python-version == '3.9' }}
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          # or
+          # api-token: ${{ secrets.CODACY_API_TOKEN }}
+          coverage-reports: coverage.xml
 
   unit_tests_mac:
     needs: install_test

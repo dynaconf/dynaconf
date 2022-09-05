@@ -239,5 +239,5 @@ $ dynaconf -i config.settings --banner
 ██████╔╝   ██║   ██║ ╚████║██║  ██║╚██████╗╚██████╔╝██║ ╚████║██║
 ╚═════╝    ╚═╝   ╚═╝  ╚═══╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝
 
-Learn more at: http://github.com/rochacbruno/dynaconf
+Learn more at: http://github.com/dynaconf/dynaconf
 ```

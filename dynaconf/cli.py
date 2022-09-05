@@ -164,7 +164,7 @@ def show_banner(ctx, param, value):
         return
     set_settings(ctx)
     click.echo(settings.dynaconf_banner)
-    click.echo("Learn more at: http://github.com/rochacbruno/dynaconf")
+    click.echo("Learn more at: http://github.com/dynaconf/dynaconf")
     ctx.exit()
 
 

@@ -2,9 +2,9 @@ site_name: Dynaconf - 3.1.9
 site_url: https://dynaconf.com
 site_description: Configuration Management for Python
 site_author: Bruno Rocha
-repo_name: rochacbruno/dynaconf
-repo_url: https://github.com/rochacbruno/dynaconf
-edit_uri: 'https://github.com/rochacbruno/dynaconf/tree/master/docs'
+repo_name: dynaconf/dynaconf
+repo_url: https://github.com/dynaconf/dynaconf
+edit_uri: 'https://github.com/dynaconf/dynaconf/tree/master/docs'
 nav:
     - Home: index.md
     - Configuration: configuration.md
@@ -72,7 +72,7 @@ extra:
   disqus: dynaconf
   social:
     - icon: fontawesome/brands/github-alt
-      link: https://github.com/rochacbruno/dynaconf
+      link: https://github.com/dynaconf/dynaconf
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/rochacbruno
     - icon: fontawesome/brands/linkedin

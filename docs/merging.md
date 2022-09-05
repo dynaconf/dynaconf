@@ -533,4 +533,4 @@ The **dynaconf_merge** and **@merge** functionalities works only for the first l
 
 ## More examples
 
-Take a look at the [example](https://github.com/rochacbruno/dynaconf/tree/master/example) folder to see some examples of use with different file formats and features.
+Take a look at the [example](https://github.com/dynaconf/dynaconf/tree/master/example) folder to see some examples of use with different file formats and features.

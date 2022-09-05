@@ -27,7 +27,7 @@ This Diagram can help you understand visually what happens on Dynaconf: https://
 git clone git@github.com:{$USER}/dynaconf.git
 
 # Add the upstream remote
-git remote add upstream https://github.com/rochacbruno/dynaconf.git
+git remote add upstream https://github.com/dynaconf/dynaconf.git
 
 # Activate your Python Environment
 python3.7 -m venv venv
@@ -59,7 +59,7 @@ git commit -am "Changed XPTO to fix #issue_number"
 # Push to your own fork
 git push -u origin HEAD
 
-# Open github.com/rochacbruno/dynaconf and send a Pull Request.
+# Open github.com/dynaconf/dynaconf and send a Pull Request.
 ```
 
 ### Run integration tests

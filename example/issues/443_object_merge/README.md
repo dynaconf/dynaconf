@@ -39,7 +39,7 @@ I would expect the final settings dict to be:
 
 The bug is in
 
-https://github.com/rochacbruno/dynaconf/blob/8998cac224a985dc8bb783f2a5abd71ff4e6769c/dynaconf/utils/__init__.py#L45
+https://github.com/dynaconf/dynaconf/blob/8998cac224a985dc8bb783f2a5abd71ff4e6769c/dynaconf/utils/__init__.py#L45
 
 As all the values are `pulp` it is wrongly using `is` to compare and `"pulp" is "pulp"` will always be `True` regardless the key it is in.
 

@@ -584,7 +584,7 @@ Changelog
   In order to keep the same method api, default values should be parsed
   and converted to Boxed objects.
 
-  https://github.com/rochacbruno/dynaconf/issues/462
+  https://github.com/dynaconf/dynaconf/issues/462
 - HOTFIX for 501 (#540) [Bruno Rocha]
 
   Flask still missing __contains__
@@ -828,7 +828,7 @@ Other
             Update docs/release_notes
             Fixing prospector warnings. (#425)
             Fix mkdocs config problem found in #423
-            Signed in for https://xscode.com/rochacbruno/dynaconf (#426)
+            Signed in for https://xscode.com/dynaconf/dynaconf (#426)
             Remove links to outdated issues from guidelines
             Fix colors and KEyError handling on cli.py (#429)
             Fix #434 setenv failing to unset LazyValues (#437)
@@ -858,7 +858,7 @@ Other
             Update docs/release_notes
             Fixing prospector warnings. (#425)
             Fix mkdocs config problem found in #423
-            Signed in for https://xscode.com/rochacbruno/dynaconf (#426)
+            Signed in for https://xscode.com/dynaconf/dynaconf (#426)
             Remove links to outdated issues from guidelines
             Fix colors and KEyError handling on cli.py (#429)
             Fix #434 setenv failing to unset LazyValues (#437)
@@ -931,7 +931,7 @@ Other
   - [Release notes](https://github.com/facelessuser/mkdocs-material-extensions/releases)
   - [Changelog](https://github.com/facelessuser/mkdocs-material-extensions/blob/master/changelog.md)
   - [Commits](https://github.com/facelessuser/mkdocs-material-extensions/compare/1.0...1.0.1)
-- Signed in for https://xscode.com/rochacbruno/dynaconf (#426) [Bruno
+- Signed in for https://xscode.com/dynaconf/dynaconf (#426) [Bruno
   Rocha]
 
   Offering paid support for dynaconf users.
@@ -1171,7 +1171,7 @@ Other
       Bruno Rocha (10):
             Release version 3.0.0
             Hot fix removing unused imports
-            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Merge branch 'master' of github.com:dynaconf/dynaconf
             Removing invalid links, adding allert on old docs  fix #369 and fix #371 (#372)
             Fix #359 lazy template substitution on nested keys (#375)
             Flask fizes and other issues included. (#376)
@@ -1199,7 +1199,7 @@ Other
       Bruno Rocha (10):
             Release version 3.0.0
             Hot fix removing unused imports
-            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Merge branch 'master' of github.com:dynaconf/dynaconf
             Removing invalid links, adding allert on old docs  fix #369 and fix #371 (#372)
             Fix #359 lazy template substitution on nested keys (#375)
             Flask fizes and other issues included. (#376)
@@ -1247,7 +1247,7 @@ Other
   Rocha]
 - Removing invalid links, adding allert on old docs  fix #369 and fix
   #371 (#372) [Bruno Rocha]
-- Merge branch 'master' of github.com:rochacbruno/dynaconf. [Bruno
+- Merge branch 'master' of github.com:dynaconf/dynaconf. [Bruno
   Rocha]
 - Fix validation of optional fields (#370) [Bruno Rocha
   <rochacbruno@users.noreply.github.com>    Co-authored-by: Bruno Rocha
@@ -1313,7 +1313,7 @@ Other
             DEPRECATED global settings object.
             DEPRECATED global settings object. (#356)
             Lowecase read allowed by default (#357)
-            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Merge branch 'master' of github.com:dynaconf/dynaconf
             envless by default - breaking change ⚠️ (#358)
             dotenv is no more loaded by default (#360)
             No more loading of `settings.*` by default (#361)
@@ -1351,7 +1351,7 @@ Other
   * Fix redis and vault tests
 
   * CLI default to global instance with warnings
-- Merge branch 'master' of github.com:rochacbruno/dynaconf. [Bruno
+- Merge branch 'master' of github.com:dynaconf/dynaconf. [Bruno
   Rocha]
 - Lowecase read allowed by default (#357) [Bruno Rocha]
 
@@ -2220,7 +2220,7 @@ Other
 
       Bruno Rocha (21):
             Merge branch 'jperras-merge-multiple-settings-files'
-            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Merge branch 'master' of github.com:dynaconf/dynaconf
             Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
             Update dynaconf/utils/boxing.py
             Update dynaconf/utils/boxing.py
@@ -2282,7 +2282,7 @@ Other
 
       Bruno Rocha (21):
             Merge branch 'jperras-merge-multiple-settings-files'
-            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Merge branch 'master' of github.com:dynaconf/dynaconf
             Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
             Update dynaconf/utils/boxing.py
             Update dynaconf/utils/boxing.py
@@ -2495,7 +2495,7 @@ Other
 
       Bruno Rocha (9):
             Merge branch 'jperras-merge-multiple-settings-files'
-            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Merge branch 'master' of github.com:dynaconf/dynaconf
             Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
             Update dynaconf/utils/boxing.py
             Update dynaconf/utils/boxing.py
@@ -2542,7 +2542,7 @@ Other
 
       Bruno Rocha (9):
             Merge branch 'jperras-merge-multiple-settings-files'
-            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Merge branch 'master' of github.com:dynaconf/dynaconf
             Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
             Update dynaconf/utils/boxing.py
             Update dynaconf/utils/boxing.py
@@ -2604,7 +2604,7 @@ Other
 
       Bruno Rocha (6):
             Merge branch 'jperras-merge-multiple-settings-files'
-            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Merge branch 'master' of github.com:dynaconf/dynaconf
             Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
             Update dynaconf/utils/boxing.py
             Update dynaconf/utils/boxing.py
@@ -2639,7 +2639,7 @@ Other
 
       Bruno Rocha (6):
             Merge branch 'jperras-merge-multiple-settings-files'
-            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Merge branch 'master' of github.com:dynaconf/dynaconf
             Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
             Update dynaconf/utils/boxing.py
             Update dynaconf/utils/boxing.py
@@ -2677,14 +2677,14 @@ Other
 
   Typo!
 - Fix small typo in README.md. [Matthias]
-- Merge branch 'master' of github.com:rochacbruno/dynaconf. [Bruno
+- Merge branch 'master' of github.com:dynaconf/dynaconf. [Bruno
   Rocha]
 - Python 3.4 has different error message. [Mantas]
 - Remove mocker fixture. [Mantas]
 
   Left this accidentaly.
 
-  https://travis-ci.org/rochacbruno/dynaconf/jobs/452612532
+  https://travis-ci.org/dynaconf/dynaconf/jobs/452612532
 - Add INSTANCE_FOR_DYNACONF and --instance. [Mantas]
 
   There parameters allows dynaconf to use different LazySettings instance
@@ -2849,7 +2849,7 @@ Other
   Docs have been updated to show an example of the nested validator name
   definition in action.
 
-  Closes rochacbruno/dynaconf#85.
+  Closes dynaconf/dynaconf#85.
 - Fix #94 setenv cleans SETTINGS_MODULE attribute. [Bruno Rocha]
 - Merge branch 'jperras-dot-traversal-access' [Bruno Rocha]
 - Merge branch 'dot-traversal-access' of
@@ -2879,7 +2879,7 @@ Other
   - Tested [✓]
   - Examples added [✓]
 
-  Closes rochacbruno/dynaconf#84
+  Closes dynaconf/dynaconf#84
 - Merge branch 'rsnyman-merge-settings' [Bruno Rocha]
 - Add example for merge_configs. [Bruno Rocha]
 - Add setting merging. [Raoul Snyman]
