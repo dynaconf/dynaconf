@@ -10,8 +10,6 @@
 <p style="align-content: center"><a href="/LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-007EC7.svg?style=flat-square"></a> <a href="https://pypi.python.org/pypi/dynaconf"><img alt="PyPI" src="https://img.shields.io/pypi/v/dynaconf.svg"></a><a href="https://github.com/dynaconf/dynaconf/actions/workflows/main.yml"><img src="https://github.com/dynaconf/dynaconf/actions/workflows/main.yml/badge.svg"></a><a href="https://codecov.io/gh/dynaconf/dynaconf"><img alt="codecov" src="https://codecov.io/gh/dynaconf/dynaconf/branch/master/graph/badge.svg"></a> <a href="https://www.codacy.com/gh/dynaconf/dynaconf/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dynaconf/dynaconf&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/3fb2de98464442f99a7663181803b400"/></a> <img alt="GitHub Release Date" src="https://img.shields.io/github/release-date/dynaconf/dynaconf.svg"> <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/dynaconf/dynaconf.svg"> <a href="https://github.com/dynaconf/dynaconf/discussions"><img alt="Discussions" src="https://img.shields.io/badge/discussions-forum-yellow.svg?logo=googlechat"></a> <a href="https://github.com/rochacbruno/learndynaconf"><img alt="Demo" src="https://img.shields.io/badge/demo-learn-blue.svg?logo=gnubash"></a></p>
 
 
-[![Foo](https://xscode.com/assets/promo-banner.svg)](https://xscode.com/dynaconf/dynaconf)
-
 > **DICA** Você pode ver uma exmplo funcional aqui (em inglês): https://github.com/rochacbruno/learndynaconf
 
 ## Recursos
