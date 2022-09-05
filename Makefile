@@ -184,6 +184,7 @@ test: pep8 mypy test_only
 
 citest:
 	py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml
+	coverage xml
 
 ciinstall:
 	python -m pip install --upgrade pip
