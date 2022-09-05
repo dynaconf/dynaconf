@@ -356,7 +356,6 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
     box_settings = box_settings or {}
 
     if isinstance(data, (tuple, list)):
-
         # recursively parse each sequence item
         return [
             parse_conf_data(item, tomlfy=tomlfy, box_settings=box_settings)
@@ -371,13 +370,6 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
                 v, tomlfy=tomlfy, box_settings=box_settings
             )
         return _parsed
-
-    if (
-        isinstance(data, str)
-        and data.startswith(("+", "-"))
-        and data[1:].isdigit()
-    ):
-        return data
 
     # return parsed string value
     return _parse_conf_data(data, tomlfy=tomlfy, box_settings=box_settings)
