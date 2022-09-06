@@ -1,0 +1,5 @@
+[development]
+TEST_VAR = ""
+
+[default]
+TEST_VAR = "a default value"
