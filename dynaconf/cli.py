@@ -43,6 +43,8 @@ def set_settings(ctx, instance=None):
 
     settings = None
 
+    _echo_enabled = ctx.invoked_subcommand not in ["get", None]
+
     if instance is not None:
         if ctx.invoked_subcommand in ["init"]:
             raise click.UsageError(
@@ -57,7 +59,7 @@ def set_settings(ctx, instance=None):
 
             flask_app = ScriptInfo().load_app()
             settings = FlaskDynaconf(flask_app, **flask_app.config).settings
-            click.echo(
+            _echo_enabled and click.echo(
                 click.style(
                     "Flask app detected", fg="white", bg="bright_black"
                 )
@@ -73,7 +75,7 @@ def set_settings(ctx, instance=None):
             settings = LazySettings()
 
         if settings is not None:
-            click.echo(
+            _echo_enabled and click.echo(
                 click.style(
                     "Django app detected", fg="white", bg="bright_black"
                 )
