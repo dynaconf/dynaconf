@@ -77,8 +77,8 @@ junit/
 
 
 # django example static files
-example/django_example/admin/
-example/django_example/debug_toolbar/
+tests_functional/django_example/admin/
+tests_functional/django_example/debug_toolbar/
 
 
 # Vendor_src exists only during build process

@@ -32,7 +32,7 @@ $ dynaconf init --django yourapp/settings.py
 
 Dynaconf will append its extension loading code to the bottom of your `yourapp/settings.py` file and will create `settings.toml` and `.secrets.toml` in the current folder (the same where `manage.py` is located).
 
-> **TIP** Take a look at [example/django_example](https://github.com/dynaconf/dynaconf/tree/master/example/django_example)
+> **TIP** Take a look at [tests_functional/django_example](https://github.com/dynaconf/dynaconf/tree/master/tests_functional/django_example)
 
 ## Using `DJANGO_` environment variables
 

@@ -2,6 +2,8 @@
 source = dynaconf
 
 [report]
+show_missing = true
+fail_under = 100
 omit =
     */python?.?/*
     */site-packages/nose/*
@@ -11,7 +13,7 @@ omit =
     dynaconf/loaders/redis_loader.py
     dynaconf/loaders/vault_loader.py
     dynaconf/loaders/__init__.py
-    dynaconf/example/*
+    dynaconf/tests_functional/*
     dynaconf/vendor/*
     dynaconf/vendor_src/*
     dynaconf/contrib/django_dynaconf/*

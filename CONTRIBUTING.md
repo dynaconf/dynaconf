@@ -14,7 +14,7 @@ This Diagram can help you understand visually what happens on Dynaconf: https://
    2. Activate a python3.6+ virtualenv
    3. Code
 2. Update the `docs/guides/` related to your changes.
-3. Update `example/` (editing or adding a new one related to your changes)
+3. Update `tests_functional/` (editing or adding a new one related to your changes)
 4. Ensure tests are passing (see below `make all`)
    1. This project uses `pre-commit` and `Black` for code styling and adequacy tests.
 5. Commit, Push and make a Pull Request!
@@ -47,8 +47,8 @@ git fetch upstream; git rebase upstream/master
 # Fix any conflicts if any.
 
 # Update docs/guides/ if needed
-# Edit example/ if needed
-# Create a new app in example/{your_example} and add it to Makefile.
+# Edit tests_functional/ if needed
+# Create a new app in tests_functional/{your_example} and add it to Makefile.
 
 # Then ensure everything is ok
 make all

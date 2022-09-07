@@ -167,7 +167,7 @@ def load(
     obj._loaded_files.append(sops_file)
 ```
 
-See more [example/custom_loader](https://github.com/dynaconf/dynaconf/tree/master/example/custom_loader)
+See more [tests_functional/custom_loader](https://github.com/dynaconf/dynaconf/tree/master/tests_functional/custom_loader)
 
 ## Module impersonation
 
@@ -413,7 +413,7 @@ Then your `program.py` will print `"On Testing"` red from `[testing]` environmen
 For pytest it is common to create fixtures to provide pre-configured settings object or to configure the settings before
 all the tests are collected.
 
-Examples available on [https://github.com/dynaconf/dynaconf/tree/master/example/pytest_example](https://github.com/dynaconf/dynaconf/tree/master/example/pytest_example)
+Examples available on [https://github.com/dynaconf/dynaconf/tree/master/tests_functional/pytest_example](https://github.com/dynaconf/dynaconf/tree/master/tests_functional/pytest_example)
 
 With `pytest` fixtures it is recommended to use the `FORCE_ENV_FOR_DYNACONF` instead of just `ENV_FOR_DYNACONF` because it has precedence.
 

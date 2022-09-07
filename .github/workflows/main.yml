@@ -181,38 +181,7 @@ jobs:
       - name: Install project
         run: pip install --use-deprecated=legacy-resolver .[test]
       - name: run tests
-        run: |
-          pushd example\common & cd & python program.py & popd
-          pushd example\common-encoding & cd & python program.py & popd
-          pushd example\ & cd & python full_example.py & popd
-          pushd example\ & cd & python compat.py & popd
-          pushd example\app & cd & python app.py  & popd
-          pushd example\app_with_dotenv & cd & python app.py & popd
-          pushd example\merge_enabled & cd & python app.py & popd
-          pushd example\new_merge & cd & python app.py & popd
-          pushd example\dynaconf_merge & cd & python app.py & popd
-          pushd example\multiple_sources & cd & python app.py & popd
-          pushd example\multiple_folders & cd & python app.py & popd
-          pushd example\toml_example\ & cd & python app.py & popd
-          pushd example\yaml_example\settings_file\ & cd & python app.py & popd
-          pushd example\yaml_example\yaml_as_extra_config\ & cd & python app.py & popd
-          pushd example\flask_with_dotenv & cd & flask routes & popd
-          pushd example\flask_with_toml & cd & flask routes & popd
-          pushd example\flask_with_yaml & cd & flask routes & popd
-          pushd example\flask_with_json & cd & flask routes & popd
-          pushd example\flask_with_commentjson & cd & flask routes & popd
-          pushd example\flask_with_ini & cd & flask routes & popd
-          pushd example\validators\with_python\ & cd & python app.py & popd
-          pushd example\validators\with_toml\ & cd & dynaconf validate & popd
-          pushd example\toml_with_secrets\ & cd & python program.py & popd
-          pushd example\envs & cd & python app.py & popd
-          pushd example\custom_loader & cd & python app.py & popd
-          pushd example\get_fresh & cd & python app.py & popd
-          pushd example\includes & cd & python app.py & popd
-          pushd example\jenkins_secrets_file & cd & python app.py & popd
-          pushd example\specific_settings_files & cd & python app.py & popd
-          pushd example\django_example\ & cd & python manage.py test polls -v 2 & popd
-          pushd example\django_example\ & cd & django-admin test polls -v 2 & popd
+        run: python tests_functional/runtests.py
 
   redis:
     needs: functional_tests_linux_mac
