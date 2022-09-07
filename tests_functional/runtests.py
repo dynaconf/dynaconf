@@ -5,6 +5,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from time import sleep
 
 from dynaconf.vendor.tomllib import load
 
@@ -12,31 +13,41 @@ from dynaconf.vendor.tomllib import load
 HERE = Path(__file__).parent
 skips = load(open(HERE / "skipfile.toml", "rb")).get(os.name, [])
 
+print("Starting Functional Tests")
+print("-" * 40)
+
 
 def execute_test(filename, cmd, path, env):
     if (path / filename).exists():
         print(f"Running {filename}")
-        subprocess.check_call(cmd, cwd=path, env=env)
+        try:
+            subprocess.check_call(cmd, cwd=path, env=env)
+        except subprocess.CalledProcessError:
+            print(f"################# Failed on {path}")
+
         # try to also execute from parent folder
         if filename not in ["Makefile", "test.sh"]:
             print("Running from parent folder")
-            subprocess.check_call(
-                [sys.executable, path.resolve() / filename],
-                cwd=path.parent,
-                env=env,
-            )
+            try:
+                subprocess.check_call(
+                    [sys.executable, path.resolve() / filename],
+                    cwd=path.parent,
+                    env=env,
+                )
+            except subprocess.CalledProcessError:
+                print("################# Failed to run from parent folder")
+
         return True  # test executed with success
     return False  # test not executed because file not found
 
 
 def execute_tests(path):
+    print("-" * 40)
+    print("Starting Test on:", path)
 
     if path.name in skips:
         print(f"Skipping {path} on {os.name}")
         return True
-
-    print("-" * 80)
-    print("Starting Test on:", path)
 
     env = {**os.environ}
     if os.path.exists(path / "env.toml"):
@@ -66,6 +77,7 @@ def run_tests():
     print("Workdir:", root_directory.absolute())
     functional_tests = sorted(list(root_directory.iterdir()))
     print("Collected functional tests:", len(functional_tests))
+    sleep(1)
     for path in functional_tests:
         if path.is_dir():
             if path.name in [".", "__pycache__"]:
