@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import io
 import os
 import pprint
 import sys
@@ -264,6 +263,19 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     """
     click.echo("⚙️  Configuring your Dynaconf environment")
     click.echo("-" * 42)
+    if "FLASK_APP" in os.environ:  # pragma: no cover
+        click.echo(
+            "⚠️  Flask detected, you can't use `dynaconf init` "
+            "on a flask project, instead go to dynaconf.com/flask/ "
+            "for more information.\n"
+            "Or add the following to your app.py\n"
+            "\n"
+            "from dynaconf import FlaskDynaconf\n"
+            "app = Flask(__name__)\n"
+            "FlaskDynaconf(app)\n"
+        )
+        exit(1)
+
     path = Path(path)
 
     if env is not None:

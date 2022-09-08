@@ -1,0 +1,11 @@
+key = "value"
+a_boolean = false
+number = 789  # had to edit this to match assertion above; previous value: 1234
+a_float = 56.8
+a_list = [1, 2, 3, 4]
+
+[a_dict]
+hello="world"
+
+[a_dict.nested]
+other_level = "nested value"
