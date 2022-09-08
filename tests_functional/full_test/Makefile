@@ -1,4 +1,4 @@
 .PHONY: test
 
 test:
-	python test.py
+	python app.py
