@@ -40,7 +40,7 @@ def execute_tests(path):
     print("Starting Test on:", path)
 
     if path.name in skips:
-        print(f"⏩ Skipping {path} on {os.name}")
+        print(f"Skipping {path} on {os.name}")
         return True
 
     env = {**os.environ}
@@ -79,7 +79,7 @@ def run_tests():
 
             if execute_tests(path):
                 passed += 1
-                print(f"✅ Passed {path}")
+                print(f"Passed {path}")
                 continue
 
             # Now Subdirectories one level
@@ -91,12 +91,12 @@ def run_tests():
 
                     if execute_tests(subdir):
                         passed += 1
-                        print(f"✅ Passed {subdir}")
+                        print(f"Passed {subdir}")
                         continue
 
             if not subdirs:
                 exit(
-                    "❌ WARNING: Can't find a testable file, "
+                    "WARNING: Can't find a testable file, "
                     "Makefile, test.sh, app.py, test.py, program.py"
                 )
 
