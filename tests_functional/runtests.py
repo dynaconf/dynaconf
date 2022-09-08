@@ -20,22 +20,16 @@ print("-" * 40)
 def execute_test(filename, cmd, path, env):
     if (path / filename).exists():
         print(f"Running {filename}")
-        try:
-            subprocess.check_call(cmd, cwd=path, env=env)
-        except subprocess.CalledProcessError:
-            print(f"################# Failed on {path}")
+        subprocess.check_call(cmd, cwd=path, env=env)
 
         # try to also execute from parent folder
         if filename not in ["Makefile", "test.sh"]:
             print("Running from parent folder")
-            try:
-                subprocess.check_call(
-                    [sys.executable, path.resolve() / filename],
-                    cwd=path.parent,
-                    env=env,
-                )
-            except subprocess.CalledProcessError:
-                print("################# Failed to run from parent folder")
+            subprocess.check_call(
+                [sys.executable, path.resolve() / filename],
+                cwd=path.parent,
+                env=env,
+            )
 
         return True  # test executed with success
     return False  # test not executed because file not found
@@ -72,7 +66,7 @@ def execute_tests(path):
 
 
 def run_tests():
-    executed = 0
+    passed = 0
     root_directory = Path(__file__).parent
     print("Workdir:", root_directory.absolute())
     functional_tests = sorted(list(root_directory.iterdir()))
@@ -84,7 +78,8 @@ def run_tests():
                 continue
 
             if execute_tests(path):
-                executed += 1
+                passed += 1
+                print(f"Passed {path}")
                 continue
 
             # Now Subdirectories one level
@@ -95,15 +90,19 @@ def run_tests():
                         continue
 
                     if execute_tests(subdir):
-                        executed += 1
+                        passed += 1
+                        print(f"Passed {subdir}")
                         continue
 
             if not subdirs:
                 exit(
-                    "WARNING: Can't find Makefile, app.py, test.py, program.py"
+                    "WARNING: Can't find a testable file, "
+                    "Makefile, test.sh, app.py, test.py, program.py"
                 )
 
-    print(f"{executed} functional tests passed")
+    print("-" * 40)
+    print(f"{passed} functional tests passed")
+    print("-" * 40)
 
 
 if __name__ == "__main__":
