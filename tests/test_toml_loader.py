@@ -56,7 +56,7 @@ password = 123456.0
 host = "othertoml.com"
 emojis = "😀😀😀😀"
 encoded_variable="This has accents like � and � � � � just to test encoding �"
-# The above is not alowed by TOML, but it is allowed by Dynaconf < 4.0.0
+# The above is not allowed by TOML, but it is allowed by Dynaconf < 4.0.0
 """
 
 

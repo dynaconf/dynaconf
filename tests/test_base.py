@@ -25,7 +25,7 @@ def test_deleted_raise(settings):
 
 
 def test_delete_and_set_again(settings):
-    """asserts variable can be deleted and setted again"""
+    """asserts variable can be deleted and set again"""
 
     # set
     settings.TODELETE2 = True
@@ -711,7 +711,7 @@ def test_from_env_method(clean_env, tmpdir):
     assert other_settings.get("ARBITRARY_KEY") is None
     assert other_settings.get("ONLY_IN_DEVELOPMENT") is None
     with pytest.raises(AttributeError):
-        # values set programatically are not cloned
+        # values set programmatically are not cloned
         other_settings.ARBITRARY_KEY
     with pytest.raises(AttributeError):
         # values set only in a specific env not cloned
@@ -797,7 +797,7 @@ def test_from_env_method_with_prefix(clean_env, tmpdir):
     with pytest.raises(AttributeError):
         other_settings.not_prefixed
     with pytest.raises(AttributeError):
-        # values set programatically are not cloned
+        # values set programmatically are not cloned
         other_settings.ARBITRARY_KEY
     with pytest.raises(AttributeError):
         # values set only in a specific env not cloned
@@ -925,7 +925,7 @@ def test_lowercase_read_mode(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
-    # settings_files mispelled.. should be `settings_file`
+    # settings_files misspelled.. should be `settings_file`
     settings = LazySettings(settings_files="settings.toml")
 
     assert settings.FOO == "bar"
@@ -960,7 +960,7 @@ def test_settings_dict_like_iteration(tmpdir):
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data)
 
-    # settings_files mispelled.. should be `settings_file`
+    # settings_files misspelled.. should be `settings_file`
     settings = LazySettings(settings_files="settings.toml")
 
     for key in settings:

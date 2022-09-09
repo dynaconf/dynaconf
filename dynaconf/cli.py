@@ -101,7 +101,7 @@ def set_settings(ctx, instance=None):
 def import_settings(dotted_path):
     """Import settings instance from python dotted path.
 
-    Last item in dotted path must be settings instace.
+    Last item in dotted path must be settings instance.
 
     Example: import_settings('path.to.settings')
     """

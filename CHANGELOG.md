@@ -637,7 +637,7 @@ Other
 - Fix #478 Make alias for environment -> environments (#534) [Bruno
   Rocha]
 
-  This is a commom mistake to pass `environment` so it is alias.
+  This is a common mistake to pass `environment` so it is alias.
 
   Fix #478
 - Fix #462 make DynaBox nested List to use DynaBox as default class
@@ -797,7 +797,7 @@ Other
 
   * Change map to list comprehension and create empty [] as default value
 
-  * fix wrong identation
+  * fix wrong indentation
 - Fix merging hyperlink to fix  #454 (#458) [Ilito Torquato, Ilito
   Torquato]
 - Specify flask extension initializers by entry point object reference
@@ -900,7 +900,7 @@ Other
 - Fix #432 no need for warning when env is missing on a file (#438)
   [Bruno Rocha]
 
-  When env is missing on a file ther eis no need to output
+  When env is missing on a file there eis no need to output
   a warning.
 
   All envs are optional on files.
@@ -1237,7 +1237,7 @@ Other
   Fix #327
   Fix #341
 
-  Exemples added:
+  Examples added:
 
   	example/issues/323_DEFAULT_VALUES_RESOLUTION/
   	example/issues/325_flask_dot_env/
@@ -1591,7 +1591,7 @@ Other
   The release of python-box https://github.com/cdgriffith/Box/pull/116
   is a breaking change.
 
-  So pinning this until this project addapts.
+  So pinning this until this project adapts.
 
   Also pinning other direct deps.
 - Fix #258 custom message for validators. [Bruno Rocha]
@@ -1982,7 +1982,7 @@ Other
             Use the Key Value API rather than the old 'read' and 'write' methods (#198)
 - Fix #194 flask.app.config __setitem__ (#199) [Bruno Rocha]
 
-  Flask.config was not proxying __setitem__ atribute so this
+  Flask.config was not proxying __setitem__ attribute so this
   change adds a call to __setitem__ on contrib/flask_dynaconf
 - Use the Key Value API rather than the old 'read' and 'write' methods
   (#198) [Raoul Snyman]
@@ -2096,7 +2096,7 @@ Other
             HOTFIX config.md on docs [skip ci] (#171)
             Fix some open file descriptors on exampls and tests (#172)
             Fix #151 setup pre-commit and black (#173)
-            Add CONTRIBUTING.md, conrtib isntructions and Black badge (#174)
+            Add CONTRIBUTING.md, contrib isntructions and Black badge (#174)
             Fix release script
 
       David Moreau Simard (1):
@@ -2129,7 +2129,7 @@ Other
             HOTFIX config.md on docs [skip ci] (#171)
             Fix some open file descriptors on exampls and tests (#172)
             Fix #151 setup pre-commit and black (#173)
-            Add CONTRIBUTING.md, conrtib isntructions and Black badge (#174)
+            Add CONTRIBUTING.md, contrib isntructions and Black badge (#174)
             Fix release script
 
       David Moreau Simard (1):
@@ -2139,7 +2139,7 @@ Other
             Skip reloading envs for validators that only apply to current_env (#162)
             Fix #163 Allow disabling env prefix (#164)
 - Fix release script. [Bruno Rocha]
-- Add CONTRIBUTING.md, conrtib isntructions and Black badge (#174)
+- Add CONTRIBUTING.md, contrib isntructions and Black badge (#174)
   [Bruno Rocha]
 - Fix #151 setup pre-commit and black (#173) [Bruno Rocha]
 
@@ -2207,7 +2207,7 @@ Other
 
   removed logzero, cached logger using lru_cache (that means that if loglevel changes, log changes)
 
-  - imporved docs and badges.
+  - improved docs and badges.
 - Fix typos in bash export examples. [David Moreau Simard]
 - HOTIX: Django doc. [Bruno Rocha]
 - Added Django explicit mode to docs (#149) [Bruno Rocha]
@@ -2238,7 +2238,7 @@ Other
             Fix #110 add docs for dynaconf_include
             Add dynaconf_include examples
             Set up CI with Azure Pipelines (#142)
-            Add dynaconf_merge fucntionality for dict and list settings. (#139)
+            Add dynaconf_merge functionality for dict and list settings. (#139)
             Preparing for 2.0.0
 
       Byungjin Park (1):
@@ -2300,7 +2300,7 @@ Other
             Fix #110 add docs for dynaconf_include
             Add dynaconf_include examples
             Set up CI with Azure Pipelines (#142)
-            Add dynaconf_merge fucntionality for dict and list settings. (#139)
+            Add dynaconf_merge functionality for dict and list settings. (#139)
             Preparing for 2.0.0
 
       Byungjin Park (1):
@@ -2359,10 +2359,10 @@ Other
   - start_dotenv is now Lazy (only when settings._setup is called)
   - Added new _FOR_DYNACONF config options ENV_SWITCHER, SKIP_FILES, INCLUDES & SECRETS
   - Renamed config PROJECT_ROOT -> ROOT_PATH
-- Add dynaconf_merge fucntionality for dict and list settings. (#139)
+- Add dynaconf_merge functionality for dict and list settings. (#139)
   [Bruno Rocha]
 
-  If your settings has existing variables of types `list` ot `dict` and you want to `merge` instead of `override` then
+  If your settings has existing variables of types `list` or `dict` and you want to `merge` instead of `override` then
   the `dynaconf_merge` and `dynaconf_merge_unique` stanzas can mark that variable as a candidate for merging.
 
   For **dict** value:
@@ -2399,7 +2399,7 @@ Other
       dynaconf_merge: true
   ```
 
-  The `dynaconf_merge` token will mark that object to be merged with existing values (of course `dynaconf_merge` key will not be added to the final settings it is jsut a mark)
+  The `dynaconf_merge` token will mark that object to be merged with existing values (of course `dynaconf_merge` key will not be added to the final settings it is just a mark)
 
   The end result will be on `[development]` env:
 
@@ -2682,7 +2682,7 @@ Other
 - Python 3.4 has different error message. [Mantas]
 - Remove mocker fixture. [Mantas]
 
-  Left this accidentaly.
+  Left this accidentally.
 
   https://travis-ci.org/dynaconf/dynaconf/jobs/452612532
 - Add INSTANCE_FOR_DYNACONF and --instance. [Mantas]
@@ -2884,8 +2884,8 @@ Other
 - Add example for merge_configs. [Bruno Rocha]
 - Add setting merging. [Raoul Snyman]
 
-  - Addd the ability to merge nested structures instead of completely overwriting them
-  - Use monkeypatch to stop one test from interferring with another
+  - Add the ability to merge nested structures instead of completely overwriting them
+  - Use monkeypatch to stop one test from interfering with another
   - Updated documentation
 
 
@@ -2935,7 +2935,7 @@ Other
   [latty]
 - Release 1.0.3. [Bruno Rocha]
 
-  - Excluded example and tests from realease dist
+  - Excluded example and tests from release dist
   - removed root logger configuration
 
 
@@ -3032,7 +3032,7 @@ Other
 - Increase cli test coverage. [Bruno Rocha]
 - Dynaconf variables in blue and user variables in green. [Bruno Rocha]
 - Added `dynaconf list` and `dynaconf write` subcommands. [Bruno Rocha]
-- More cli commands lsit and write. [Bruno Rocha]
+- More cli commands list and write. [Bruno Rocha]
 - Added more tests for cli and py loader. [Bruno Rocha]
 - Replaced coveralls with codecov #57. [Bruno Rocha]
 - Modularized the loaders, added `dynaconf init` command. [Bruno Rocha]
@@ -3048,9 +3048,9 @@ Other
 - Merge pull request #52 from rochacbruno/fix_namespace_in_django.
   [Bruno Rocha]
 
-  Fix namespace swithc in django apps
+  Fix namespace switch in django apps
 - Add missing .env. [Bruno Rocha]
-- Fix namespace swithc in django apps. [Bruno Rocha]
+- Fix namespace switch in django apps. [Bruno Rocha]
 
 
 0.7.5 (2018-05-20)
@@ -3238,7 +3238,7 @@ Other
 - Add Pipfile.lock to .gitignore. [Douglas Soares de Andrade]
 - Small Refactory. [Douglas Soares de Andrade]
 
-  - Adding object to the Settings classe to make it work with Python2
+  - Adding object to the Settings classes to make it work with Python2
 - Small Refactory. [Douglas Soares de Andrade]
 
   - Reordering the imports according to  pylint and flake8
@@ -3307,7 +3307,7 @@ Other
 - Added note about get_fresh in readme. [Bruno Rocha]
 - Better namespace management, get_fresh(key) to access redis. [Bruno
   Rocha]
-- Now it can be used programatically. [Bruno Rocha]
+- Now it can be used programmatically. [Bruno Rocha]
 
 
 0.2.1 (2015-12-20)
@@ -3318,7 +3318,7 @@ Other
 
 0.2.0 (2015-12-20)
 ------------------
-- Can also load from arbitraty filepath. [Bruno Rocha]
+- Can also load from arbitrary filepath. [Bruno Rocha]
 - Renamed var, added loaders, bump version. [Bruno Rocha]
 
 

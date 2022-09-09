@@ -44,7 +44,7 @@ with open(
     print(secrets_file.read())
 
 print("#" * 79)
-print("\n* Acessing settings defined in .toml files\n")
+print("\n* Accessing settings defined in .toml files\n")
 print('By default dynaconf will always work in "development" env')
 print("Take a look at settings.toml and .secrets.toml")
 connect(settings.SERVER, settings.PORT, settings.USERNAME, settings.PASSWORD)
@@ -163,7 +163,7 @@ print(
 print("#" * 79)
 print("\n* There is more!\n")
 print(
-    "Dynaconf can switch environments programatically with context managers."
+    "Dynaconf can switch environments programmatically with context managers."
 )
 print("Dynaconf has extensions for Flask and Django.")
 print("Dynaconf can read values from yaml, ini, json and py files.")

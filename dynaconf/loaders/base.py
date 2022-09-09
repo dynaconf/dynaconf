@@ -57,7 +57,7 @@ class BaseLoader:
 
         :param filename: Optional filename to load
         :param key: if provided load a single key
-        :param silent: if load erros should be silenced
+        :param silent: if load errors should be silenced
         """
 
         filename = filename or self.obj.get(self.identifier.upper())

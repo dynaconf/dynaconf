@@ -86,7 +86,7 @@ if not SETTINGS_FILE_FOR_DYNACONF and mispelled_files is not None:
 # # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`
 
 
-# If provided environments will be loaded separatelly
+# If provided environments will be loaded separately
 ENVIRONMENTS_FOR_DYNACONF = get("ENVIRONMENTS_FOR_DYNACONF", False)
 MAIN_ENV_FOR_DYNACONF = get("MAIN_ENV_FOR_DYNACONF", "MAIN")
 

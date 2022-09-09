@@ -19,7 +19,7 @@ def settings():
 
 
 YAML = """
-# the bellow is just to ensure `,` will not break string YAML
+# the below is just to ensure `,` will not break string YAML
 a: 'a,b'
 default:
   password: 99999

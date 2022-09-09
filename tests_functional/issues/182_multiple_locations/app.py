@@ -29,7 +29,7 @@ assert settings.VAR1 == "config1_prod"
 print("----")
 
 
-# To make dynaconf a diferent file we need to include it
+# To make dynaconf a different file we need to include it
 # includes can be a toml-like list
 print("using config 2")
 os.environ["INCLUDES_FOR_DYNACONF"] = "['./cfg2/settings.toml']"

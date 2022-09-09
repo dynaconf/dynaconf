@@ -44,7 +44,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         the new tomllib library. The old library was called `toml` and
         the new one is called `tomllib`.
 
-        The old lib uiri/toml allowed unicode characters and readed files
+        The old lib uiri/toml allowed unicode characters and re-added files
         as string.
 
         The new tomllib (stdlib) does not allow unicode characters, only

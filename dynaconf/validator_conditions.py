@@ -76,7 +76,7 @@ def len_min(value, other):
 
 
 def len_max(value, other):
-    """Maximum lenght"""
+    """Maximum length"""
     return len(value) <= other
 
 

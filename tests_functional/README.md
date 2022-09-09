@@ -49,7 +49,7 @@ Environment variables are very important for Dynaconf so
 most of the functional tests will need to customize those
 there are 2 ways:
 
-- Write a `.env` file and then pass `load_dotenv=True` to Dynaconf contructor.
+- Write a `.env` file and then pass `load_dotenv=True` to Dynaconf constructor.
 - Use `env.toml` file to define environment variables, **IMPORTANT** that this file has only upper case keys and all values are strings: `THING = "value"`.
 
 ## Skipping functional tests
