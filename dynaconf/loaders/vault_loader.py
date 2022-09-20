@@ -33,7 +33,7 @@ def get_client(obj):
         **{k: v for k, v in obj.VAULT_FOR_DYNACONF.items() if v is not None}
     )
     if obj.VAULT_ROLE_ID_FOR_DYNACONF is not None:
-        client.auth_approle(
+        client.auth.approle.login(
             role_id=obj.VAULT_ROLE_ID_FOR_DYNACONF,
             secret_id=obj.get("VAULT_SECRET_ID_FOR_DYNACONF"),
         )
