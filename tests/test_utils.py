@@ -8,6 +8,7 @@ from collections import namedtuple
 import pytest
 
 from dynaconf import default_settings
+from dynaconf import Dynaconf
 from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
@@ -191,6 +192,13 @@ def test_disable_cast(monkeypatch):
     with monkeypatch.context() as m:
         m.setenv("AUTO_CAST_FOR_DYNACONF", "off")
         assert parse_conf_data("@int 42", box_settings={}) == "@int 42"
+
+
+def test_disable_cast_on_instance():
+    settings = Dynaconf(auto_cast=False, environments=True)
+    assert settings.auto_cast_for_dynaconf is False
+    settings.set("SIMPLE_INT", "@int 42")
+    assert settings.get("SIMPLE_INT") == "@int 42"
 
 
 def test_tomlfy(settings):
@@ -380,13 +388,16 @@ def test_lazy_format_class():
 def test_evaluate_lazy_format_decorator(settings):
     class Settings:
         FOO = "foo"
+        AUTO_CAST_FOR_DYNACONF = True
 
         @evaluate_lazy_format
-        def get(self):
+        def get(self, key, default=None):
+            if key.endswith("_FOR_DYNACONF"):
+                return getattr(self, key)
             return parse_conf_data("@format {this.FOO}/bar", box_settings=self)
 
     settings = Settings()
-    assert settings.get() == "foo/bar"
+    assert settings.get("foo") == "foo/bar"
 
 
 def test_lazy_format_on_settings(settings):
@@ -408,14 +419,18 @@ def test_evaluate_lazy_format_decorator_jinja(settings):
     class Settings:
         FOO = "foo"
 
+        AUTO_CAST_FOR_DYNACONF = True
+
         @evaluate_lazy_format
-        def get(self):
+        def get(self, key, default=None):
+            if key.endswith("_FOR_DYNACONF"):
+                return getattr(self, key)
             return parse_conf_data(
                 "@jinja {{this.FOO}}/bar", box_settings=settings
             )
 
     settings = Settings()
-    assert settings.get() == "foo/bar"
+    assert settings.get("foo") == "foo/bar"
 
 
 def test_lazy_format_on_settings_jinja(settings):
