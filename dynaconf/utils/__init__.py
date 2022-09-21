@@ -46,6 +46,12 @@ def object_merge(
         return new
 
     if isinstance(old, list) and isinstance(new, list):
+
+        # 726: allow local_merge to override global merge on lists
+        if "dynaconf_merge_unique" in new:
+            new.remove("dynaconf_merge_unique")
+            unique = True
+
         for item in old[::-1]:
             if unique and item in new:
                 continue
