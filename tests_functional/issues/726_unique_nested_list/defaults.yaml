@@ -1,0 +1,4 @@
+config_key:
+  nested_list:
+    - item_a
+    - item_b
