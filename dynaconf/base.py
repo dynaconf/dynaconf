@@ -694,6 +694,7 @@ class Settings:
             return self.MAIN_ENV_FOR_DYNACONF.lower()
 
         if self.FORCE_ENV_FOR_DYNACONF is not None:
+            self.ENV_FOR_DYNACONF = self.FORCE_ENV_FOR_DYNACONF
             return self.FORCE_ENV_FOR_DYNACONF
 
         try:
