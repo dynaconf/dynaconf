@@ -1,0 +1,6 @@
+config_key:
+  nested_list:
+    - dynaconf_merge_unique
+    - item_a
+    - item_b
+    - item_c
