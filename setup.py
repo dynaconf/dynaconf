@@ -55,8 +55,8 @@ setup(
         exclude=[
             "tests",
             "tests.*",
-            "example",
-            "example.*",
+            "tests_functional",
+            "tests_functional.*",
             "docs",
             "legacy_docs",
             "legacy_docs.*",
