@@ -40,6 +40,11 @@ if ! twine --help > /dev/null; then
   exit 1
 fi
 
+if ! pyminify --help > /dev/null; then
+  echo 'pyminify is required: "pip install -U python-minifier"'
+  exit 1
+fi
+
 # See: http://mywiki.wooledge.org/BashFAQ/028
 readonly script_name='release.sh'
 
