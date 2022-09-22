@@ -8,7 +8,7 @@ touch dynaconf/vendor/__init__.py
 cp dynaconf/vendor_src/vendor.txt dynaconf/vendor/vendor.txt
 
 # For each folder in vendor_src
-for direc in box click dotenv ruamel/yaml toml
+for direc in box click dotenv ruamel/yaml toml tomllib
 do
 
    # Ensure that the directory exists.
