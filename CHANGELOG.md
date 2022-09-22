@@ -2,6 +2,84 @@ Changelog
 =========
 
 
+3.1.11 (2022-09-22)
+-------------------
+- Release version 3.1.11. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.10
+            Release hotfix (no need to run coverage or include tests_functional)
+- Release hotfix (no need to run coverage or include tests_functional)
+  [Bruno Rocha]
+- Release version 3.1.10. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Amadou Crookes (1):
+            envars.md typo fix (#786)
+
+      Bruno Rocha (19):
+            Release version 3.1.9
+            Bump dev version to 3.1.10
+            Update badges
+            demo repo will be replaced by a video tutorial soon
+            Fix CI
+            New data key casing must adapt to existing key casing (#795)
+            Add test and docs about includes (#796)
+            Removed vendor_src folder (#798)
+            Replacing rochacbruno/ with dynaconf/ (#800)
+            Fix codecov (#801)
+            Parse negative numbers from envvar Fix #799 and Fix #585 (#802)
+            Fix get command with Django (#804)
+            Add a functional test runner (#805)
+            Test runner docs and styling (#806)
+            Allow merge_unique on lists when merge_enabled=True (#810)
+            Rebind current env when forced for Pytest Fix #728 (#809)
+            AUTO_CAST can be enabled on instance (#811)
+            Ensure pyminify is on release script
+            Add missing tomllib to monify script
+
+      Gaurav Talreja (1):
+            Fix #807 Use client.auth.approle.login instead of client.auth_approle (#808)
+
+      Jitendra Yejare (1):
+            Fix #768 of kv property depreciation from client object (#769)
+
+      Joren Retel (2):
+            Feature/detect casting comb token from converters (#784)
+            Adding documentation and example to makefile. (#791)
+
+      João Gustavo A. Amorim (1):
+            Add pyupgrade hook (#759)
+
+      Kian-Meng Ang (1):
+            Fix typos (#788)
+
+      Lucas Limeira (1):
+            Using filter_strategy in env_loader to fix #760 (#767)
+
+      Nicholas Nadeau, Ph.D., P.Eng (1):
+            fix: typo (#766)
+
+      Oleksii Baranov (2):
+            Bump codecov action version (#775)
+            Fix cli init command for flask (#705) (#774)
+
+      Pedro de Medeiros (1):
+            documentation fixes (#771)
+
+      The Gitter Badger (1):
+            Add a Gitter chat badge to README.md (#776)
+
+      Théo Melo (1):
+            Fixing a typo on the readme file (#763)
+
+      Vicente Marçal (1):
+            docs(pt-br): Docs Translation to brazilian portugues. (#787)
+
+
 3.1.10 (2022-09-22)
 -------------------
 
