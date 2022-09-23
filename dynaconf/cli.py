@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import json
 import os
 import pprint
 import sys
@@ -439,7 +440,10 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     is_flag=True,
 )
 def get(key, default, env, unparse):
-    """Returns the raw value for a settings key"""
+    """Returns the raw value for a settings key.
+
+    If result is a dict, list or tuple it is printes as a valid json string.
+    """
     if env:
         env = env.strip()
     if key:
@@ -455,6 +459,9 @@ def get(key, default, env, unparse):
 
     if unparse:
         result = unparse_conf_data(result)
+
+    if isinstance(result, (dict, list, tuple)):
+        result = json.dumps(result, sort_keys=True)
 
     click.echo(result, nl=False)
 
