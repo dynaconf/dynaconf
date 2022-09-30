@@ -456,4 +456,6 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
     for k in data.keys():
         if k.lower() == key.lower():
             return k
+        if k.replace(" ", "_").lower() == key.lower():
+            return k
     return None
