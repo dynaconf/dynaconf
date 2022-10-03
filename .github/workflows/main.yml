@@ -139,7 +139,7 @@ jobs:
       - name: Install project
         run: make ciinstall
       - name: Run functional tests
-        run: make test_examples
+        run: make test_functional
 
   unit_tests_windows:
     needs: install_test
