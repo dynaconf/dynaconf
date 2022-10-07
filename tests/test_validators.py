@@ -779,7 +779,7 @@ def test_default_eq_env_lvl_1():
 
 
 def test_default_lvl_1():
-    """Tests if the default works propperly without any nested level.
+    """Tests if the default works properly without any nested level.
 
     Uses different values for the default and the environment variable.
     """
@@ -802,7 +802,7 @@ def test_default_lvl_1():
 
 
 def test_default_lvl_2():
-    """Tests if the default works propperly with one nested level.
+    """Tests if the default works properly with one nested level.
 
     Uses different values for the default and the environment variable.
     """

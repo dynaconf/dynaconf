@@ -42,7 +42,7 @@ app = Flask(__name__)
 FlaskDynaconf(app, envvar_prefix="PEANUT")
 ```
 
-Now you can declare your variables with your custom prefix, and it will be normally available withing Flask's native configuration `app.config`.
+Now you can declare your variables with your custom prefix, and it will be normally available within Flask's native configuration `app.config`.
 
 ```bash
 export PEANUT_DEBUG=true              # app.config.DEBUG
@@ -66,7 +66,7 @@ IF you don't want to manually create your config files take a look at the [CLI](
 
 ## Loading Flask Extensions Dynamically
 
-You can tell Dynaconf to load your Flask Extensions dynamically as long as the extensions follows the Pattens of Flask extensions.
+You can tell Dynaconf to load your Flask Extensions dynamically as long as the extensions follows the Patterns of Flask extensions.
 
 The only requirement is that the extension must be a `callable` that accepts `app` as first argument. e.g: `flask_admin:Admin` or `custom_extension.module:instance.init_app` and of course the extension must be in Python namespace to be imported.
 

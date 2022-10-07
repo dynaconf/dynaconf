@@ -162,7 +162,7 @@ parse_conf.converters["@path"] = (
 )
 ```
 
-In the settings file we can now use teh @path casting token. Like with other
+In the settings file we can now use the @path casting token. Like with other
 casting tokens you can also combine them:
 
 ```toml

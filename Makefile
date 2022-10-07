@@ -1,10 +1,10 @@
 SHELL := /bin/bash
-.PHONY: all citest clean mypy dist docs install pep8 publish run-pre-commit run-tox setup-pre-commit test test_examples test_only test_redis test_vault help coverage-report
+.PHONY: all citest clean mypy dist docs install pep8 publish run-pre-commit run-tox setup-pre-commit test test_functional test_only test_redis test_vault help coverage-report
 
 help:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
 
-all: clean install run-pre-commit test test_examples coverage-report
+all: clean install run-pre-commit test test_functional coverage-report
 
 test_functional:
 	./tests_functional/runtests.py
@@ -49,7 +49,7 @@ ciinstall:
 	python -m pip install --upgrade pip
 	python -m pip install -r requirements_dev.txt
 
-test_all: test_examples test_integration test_redis test_vault test
+test_all: test_functional test_integration test_redis test_vault test
 	@coverage html
 
 install:

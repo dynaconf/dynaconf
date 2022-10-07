@@ -37,7 +37,7 @@ def test_override_settings_596(tmpdir):
     override = UserSettingsHolder(settings._wrapped)
     override.SECRET_KEY = "foobar"
 
-    # overriden settings is changed
+    # overridden settings is changed
     assert override.SECRET_KEY == "foobar"
 
     # original not changed

@@ -311,8 +311,12 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
     # not enforced to not break backwards compatibility with custom loaders
     box_settings = box_settings or {}
 
-    cast_toggler = os.environ.get("AUTO_CAST_FOR_DYNACONF", "true").lower()
-    castenabled = cast_toggler not in false_values
+    castenabled = box_settings.get("AUTO_CAST_FOR_DYNACONF", empty)
+    if castenabled is empty:
+        castenabled = (
+            os.environ.get("AUTO_CAST_FOR_DYNACONF", "true").lower()
+            not in false_values
+        )
 
     if (
         castenabled

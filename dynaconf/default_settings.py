@@ -86,7 +86,7 @@ if not SETTINGS_FILE_FOR_DYNACONF and mispelled_files is not None:
 # # In dynaconf 1.0.0 `NAMESPACE` got renamed to `ENV`
 
 
-# If provided environments will be loaded separatelly
+# If provided environments will be loaded separately
 ENVIRONMENTS_FOR_DYNACONF = get("ENVIRONMENTS_FOR_DYNACONF", False)
 MAIN_ENV_FOR_DYNACONF = get("MAIN_ENV_FOR_DYNACONF", "MAIN")
 
@@ -124,6 +124,8 @@ ENVVAR_PREFIX_FOR_DYNACONF = get("ENVVAR_PREFIX_FOR_DYNACONF", "DYNACONF")
 IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF = get(
     "IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF", False
 )
+
+AUTO_CAST_FOR_DYNACONF = get("AUTO_CAST_FOR_DYNACONF", True)
 
 # The default encoding to open settings files
 ENCODING_FOR_DYNACONF = get("ENCODING_FOR_DYNACONF", "utf-8")

@@ -62,11 +62,11 @@ settings.FOO = {
 
 or even
 
-settings.set('foo.a.b', "reseted") to have
+settings.set('foo.a.b', "reset") to have
 
 settings.FOO = {
   "a": {
-    "b": "reseted"
+    "b": "reset"
   }
 }
 

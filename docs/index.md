@@ -67,7 +67,7 @@ pip install dynaconf
     .
     ├── config.py       # Where you import your settings object (required)
     ├── .secrets.toml   # Sensitive data like passwords and tokens (optional)
-    └── settings.toml   # Application setttings (optional)
+    └── settings.toml   # Application settings (optional)
     ```
 
     === "your_program.py"
@@ -569,6 +569,19 @@ for key, value in settings.items():           # dict like iteration
     print(key, value)
 ```
 
+## Spaces in keys
+
+If the key has spaces it can be accessed by replacing the space with an underscore.
+
+```yaml
+ROOT:
+    MY KEY: "value"
+```
+    
+```python
+settings.root.my_key == "value"
+settings.root["my key"] == "value"
+```
 ## Validating your settings
 
 Dynaconf offers the `Validator` object for you to define rules for

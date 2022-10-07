@@ -44,7 +44,7 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
     - Current working directory
 
     For each path in the `search_tree` it will also look for an
-    aditional `./config` folder.
+    additional `./config` folder.
     """
     search_tree = []
     work_dir = os.getcwd()

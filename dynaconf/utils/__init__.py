@@ -46,13 +46,19 @@ def object_merge(
         return new
 
     if isinstance(old, list) and isinstance(new, list):
+
+        # 726: allow local_merge to override global merge on lists
+        if "dynaconf_merge_unique" in new:
+            new.remove("dynaconf_merge_unique")
+            unique = True
+
         for item in old[::-1]:
             if unique and item in new:
                 continue
             new.insert(0, item)
 
     if isinstance(old, dict) and isinstance(new, dict):
-        existing_value = recursive_get(old, full_path)  # doesnt handle None
+        existing_value = recursive_get(old, full_path)  # doesn't handle None
         # Need to make every `None` on `_store` to be an wrapped `LazyNone`
 
         # data coming from source, in `new` can be mix case: KEY4|key4|Key4
@@ -95,7 +101,7 @@ def recursive_get(
     names: list[str] | None,
 ) -> Any:
     """Given a dot accessible object and a list of names `foo.bar.zaz`
-    gets recursivelly all names one by one obj.foo.bar.zaz.
+    gets recursively all names one by one obj.foo.bar.zaz.
     """
     if not names:
         return
@@ -449,5 +455,7 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
         return key
     for k in data.keys():
         if k.lower() == key.lower():
+            return k
+        if k.replace(" ", "_").lower() == key.lower():
             return k
     return None

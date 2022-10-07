@@ -1,6 +1,6 @@
 """Dynaconf django extension
 
-In the `django_project/settings.py` put at the very botton of the file:
+In the `django_project/settings.py` put at the very bottom of the file:
 
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 # Read more at https://www.dynaconf.com/django/

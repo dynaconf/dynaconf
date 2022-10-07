@@ -125,6 +125,18 @@ def test_get(testdir):
     assert result == "test_value"
 
 
+def test_get_json_dict(testdir):
+    """Tests get command printing json"""
+    env = env = {
+        "ROOT_PATH_FOR_DYNACONF": testdir,
+        "DYNACONF_DATA__KEY": "value",
+        "DYNACONF_DATA__OTHERKEY": "other value",
+        "INSTANCE_FOR_DYNACONF": "tests.config.settings",
+    }
+    result = run(["get", "data"], env=env)
+    assert result == '{"KEY": "value", "OTHERKEY": "other value"}'
+
+
 def test_get_lower(testdir):
     """Tests get command"""
     result = run(

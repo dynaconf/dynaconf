@@ -1,0 +1,8 @@
+[default]
+name = "default name"
+
+[development]
+name = "development name"
+
+[testing]
+name = "testing name"

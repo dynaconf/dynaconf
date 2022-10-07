@@ -71,7 +71,7 @@ class FlaskDynaconf:
             app,
             ENV='MYSITE',
             SETTINGS_FILE='settings.yml',
-            EXTRA_VALUE='You can add aditional config vars here'
+            EXTRA_VALUE='You can add additional config vars here'
         )
 
     Take a look at examples/flask in Dynaconf repository

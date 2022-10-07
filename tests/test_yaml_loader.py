@@ -19,7 +19,7 @@ def settings():
 
 
 YAML = """
-# the bellow is just to ensure `,` will not break string YAML
+# the below is just to ensure `,` will not break string YAML
 a: 'a,b'
 default:
   password: 99999
@@ -35,6 +35,9 @@ default:
     auth:
       password: qwerty
       test: 1234
+  spaced key: 1
+  spaced nested:
+    key: 1
 development:
   password: 88888
   host: devserver.com
@@ -68,6 +71,11 @@ def test_load_from_yaml(settings):
     assert settings.SERVICE.port == 80
     assert settings.SERVICE.auth.password == "qwerty"
     assert settings.SERVICE.auth.test == 1234
+    assert settings.spaced_key == 1
+    assert settings.spaced_nested.key == 1
+    assert settings.spaced_nested["key"] == 1
+    assert settings["spaced key"] == 1
+    assert settings["SPACED KEY"] == 1
     load(settings, filename=YAML, env="DEVELOPMENT")
     assert settings.HOST == "devserver.com"
     load(settings, filename=YAML)
