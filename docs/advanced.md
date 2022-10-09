@@ -396,8 +396,15 @@ value = "On Testing"
 
 `program.py`
 ```python
+import os
 from dynaconf import settings
 
+current_directory = os.path.dirname(os.path.realpath(__file__))
+settings = Dynaconf(
+    root_path=current_directory,
+    envvar_prefix="DYNACONF", 
+    settings_files=["settings.toml"],
+)
 print(settings.VALUE)
 ```
 
