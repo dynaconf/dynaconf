@@ -417,6 +417,24 @@ Examples available on [https://github.com/dynaconf/dynaconf/tree/master/tests_fu
 
 With `pytest` fixtures it is recommended to use the `FORCE_ENV_FOR_DYNACONF` instead of just `ENV_FOR_DYNACONF` because it has precedence.
 
+#### Configure Dynaconf with Pytest
+
+Define your `root_path`
+
+```py
+import os
+
+from dynaconf import Dynaconf
+
+current_directory = os.path.dirname(os.path.realpath(__file__))
+
+settings = Dynaconf(
+    root_path=current_directory, # defining root_path
+    envvar_prefix="DYNACONF", 
+    settings_files=["settings.toml", ".secrets.toml"],
+)
+```
+
 #### A python program
 
 `settings.toml` with the `[testing]` environment.
