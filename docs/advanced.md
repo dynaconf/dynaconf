@@ -66,7 +66,7 @@ from dynaconf import settings
 settings.load_file(path="/path/to/file.toml")  # list or `;/,` separated allowed
 ```
 
-> **NOTE**: programmatically loaded file is not persisted, once `env` is changed via `setenv|ugin_env`, or a `reload` or `configure` is invoked it will be cleaned, to persist it needs to go to `INCLUDES_FOR_DYNACONF` variable or you need to load it programmatically again.
+> **NOTE**: programmatically loaded file is not persisted, once `env` is changed via `setenv|using_env`, or a `reload` or `configure` is invoked it will be cleaned, to persist it needs to go to `INCLUDES_FOR_DYNACONF` variable or you need to load it programmatically again.
 
 
 ## Prefix filtering
