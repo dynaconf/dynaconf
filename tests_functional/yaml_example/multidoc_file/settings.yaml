@@ -1,0 +1,31 @@
+default:
+  host: server.com from YAML
+  port: 5000
+  username: admin
+  PASSWORD: Secret
+  levels:
+    - debug
+    - info
+    - warning
+  money: 500.5
+  age: 42
+  enabled: true
+  works: yaml_example
+  custom: 'this is custom from [default]'
+  prefix_custom: "this is custom when prefix is set"
+  test_loaders:
+    dev: test_dev
+    prod: test_prod
+development:
+  custom: this will be overwritten
+  host: this will be overwritten
+  works: this will be overwritten
+---
+development:
+  custom: 'this is custom from [development]'
+  host: dev_server.com from yaml
+  works: yaml_example in dev env
+production:
+  custom: 'this is custom from [production]'
+  host: prod_server.com from yaml
+  works: yaml_example in prod env

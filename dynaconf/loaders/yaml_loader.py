@@ -19,6 +19,38 @@ yaml.SafeDumper.yaml_representers[
 )
 
 
+class AllLoader(BaseLoader):
+    """YAML Loader to load multi doc files"""
+
+    @staticmethod
+    def _assign_data(data, source_file, content):
+        """Helper to iterate through all docs in a file"""
+        content = tuple(content)
+        if len(content) == 1:
+            data[source_file] = content[0]
+        elif len(content) > 1:
+            for i, doc in enumerate(content):
+                data[f"{source_file}[{i}]"] = doc
+
+    def get_source_data(self, files):
+        data = {}
+        for source_file in files:
+            if source_file.endswith(self.extensions):
+                try:
+                    with open(source_file, **self.opener_params) as open_file:
+                        content = self.file_reader(open_file)
+                        self.obj._loaded_files.append(source_file)
+                        self._assign_data(data, source_file, content)
+                except OSError as e:
+                    if ".local." not in source_file:
+                        warn(f"{self.identifier}_loader: {source_file} " f":{str(e)}")
+            else:
+                # for tests it is possible to pass string
+                content = self.string_reader(source_file)
+                self._assign_data(data, source_file, content)
+        return data
+
+
 def load(obj, env=None, silent=True, key=None, filename=None):
     """
     Reads and loads in to "obj" a single key or all keys from source file.
@@ -32,10 +64,9 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     """
     # Resolve the loaders
     # https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
-    # Possible values are `safe_load, full_load, unsafe_load, load`
-    yaml_reader = getattr(
-        yaml, obj.get("YAML_LOADER_FOR_DYNACONF"), yaml.safe_load
-    )
+    # Possible values are:
+    #   `safe_load, full_load, unsafe_load, load, safe_load_all`
+    yaml_reader = getattr(yaml, obj.get("YAML_LOADER_FOR_DYNACONF"), yaml.safe_load)
     if yaml_reader.__name__ == "unsafe_load":  # pragma: no cover
         warn(
             "yaml.unsafe_load is deprecated."
@@ -43,7 +74,11 @@ def load(obj, env=None, silent=True, key=None, filename=None):
             " Try to use full_load or safe_load."
         )
 
-    loader = BaseLoader(
+    _loader = BaseLoader
+    if yaml_reader.__name__.endswith("_all"):
+        _loader = AllLoader
+
+    loader = _loader(
         obj=obj,
         env=env,
         identifier="yaml",
