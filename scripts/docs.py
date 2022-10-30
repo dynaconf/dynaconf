@@ -29,7 +29,7 @@ box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,.2),0 0 0.05rem rgba(0,0,0,.1);display: f
 margin: 1.5625em 0; padding: 0 0.6rem;page-break-inside: avoid;"> 
 <p style="background-color: #be6725;color: #be2525"> <span style="color: #be2525">&#9888;</span> Warning </p>
 <p>The current page still doesn't have a translation for this language.</p>
-<p> But you can help translating it: <a href="https://github.com/dynaconf/dynaconf/blob/master/docs/advanced.md" target="_blank">Contributing</a></p>
+<p> But you can help translating it: <a href="https://github.com/dynaconf/dynaconf/blob/9f91e0dc1c96c9dcbc2feca6bd29f898a157b9a9/CONTRIBUTING.md" target="_blank">Contributing</a></p>
 </div>
 """
 
