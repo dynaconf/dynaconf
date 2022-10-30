@@ -10,6 +10,7 @@ django
 django-debug-toolbar
 gitchangelog
 boto3
+typer
 
 # testing
 codecov
