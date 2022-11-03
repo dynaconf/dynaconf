@@ -13,15 +13,15 @@ nav:
   - fr: /fr/
   - pt_BR: /pt_BR/
 - Env vars: envvars.md
-- Settings files: settings_files.md
-- Secrets: secrets.md
-- Merging: merging.md
-- Dynamic Variables: dynamic.md
+- Arquivos de configurações: settings_files.md
+- Segredos: secrets.md
+- Mesclando: merging.md
+- Variáveis dinâmicas: dynamic.md
 - CLI: cli.md
-- Validation: validation.md
+- Validação: validation.md
 - Flask: flask.md
 - Django: django.md
-- Advanced usage: advanced.md
+- Uso avançado: advanced.md
 theme:
   features:
   - search.suggest
@@ -86,10 +86,6 @@ extra:
     link: https://twitch.tv/codeshow
   alternate:
   - link: /
-    name: en
-  - link: /es/
-    name: es
-  - link: /fr/
-    name: fr
+    name: en - English
   - link: /pt_BR/
-    name: pt_BR
+    name: pt_BR - Portuguese (Brazil)
