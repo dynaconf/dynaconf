@@ -2,7 +2,7 @@
 # if commit is not tagged don't build
 #ignore = "git describe --exact-match && exit 1 || exit 0"
 publish = "site"
-command = "pip install -r requirements.txt && mkdocs build --clean"
+command = "pip install -r requirements.txt && python ./scripts/docs.py build-all"
 
 [build.environment]
 
@@ -14,4 +14,4 @@ command = "pip install -r requirements.txt && mkdocs build --clean"
 
 [context.deploy-preview]
 ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF"
-command = "pip install -r requirements.txt && mkdocs build --clean"
+command = "pip install -r requirements.txt && python ./scripts/docs.py build-all"

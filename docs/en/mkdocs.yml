@@ -85,10 +85,6 @@ extra:
     link: https://twitch.tv/codeshow
   alternate:
   - link: /
-    name: en
-  - link: /es/
-    name: es
-  - link: /fr/
-    name: fr
+    name: en - English
   - link: /pt_BR/
-    name: pt_BR
+    name: pt_BR - Portuguese (Brazil)

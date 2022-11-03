@@ -99,7 +99,8 @@ fi
 echo "${new_version}" > dynaconf/VERSION
 
 # update doc header
-sed -i "s/Dynaconf - [[:digit:]]*.[[:digit:]]*.[[:alnum:]]*/Dynaconf - ${new_version}/" mkdocs.yml
+sed -i "s/Dynaconf - [[:digit:]]*.[[:digit:]]*.[[:alnum:]]*/Dynaconf - ${new_version}/" ./docs/en/mkdocs.yml
+sed -i "s/Dynaconf - [[:digit:]]*.[[:digit:]]*.[[:alnum:]]*/Dynaconf - ${new_version}/" ./docs/pt_BR/mkdocs.yml
 
 make dist
 echo 'New Package generated!'
@@ -130,8 +131,11 @@ echo "Starting release of $new_version"
 make setup-pre-commit
 
 # Create a new commit and annotated tag.
-git add dynaconf/VERSION mkdocs.yml
-pre-commit run --files dynaconf/VERSION mkdocs.yml || true
+git add dynaconf/VERSION ./docs/en/mkdocs.yml
+pre-commit run --files dynaconf/VERSION ./docs/en/mkdocs.yml | true
+
+git add dynaconf/VERSION ./docs/en/mkdocs.yml
+pre-commit run --files dynaconf/VERSION ./docs/pt_BR/mkdocs.yml | true
 
 commit_message="$(git shortlog "${old_version}.." | sed 's/^./    &/')"
 git commit \
