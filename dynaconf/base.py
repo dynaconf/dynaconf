@@ -12,6 +12,7 @@ from contextlib import suppress
 from pathlib import Path
 
 from dynaconf import default_settings
+from dynaconf.hooking import hookable
 from dynaconf.loaders import default_loader
 from dynaconf.loaders import enable_external_loaders
 from dynaconf.loaders import env_loader
@@ -372,6 +373,7 @@ class Settings:
 
         return value
 
+    @hookable
     def as_dict(self, env=None, internal=False):
         """Returns a dictionary with set key and values.
 
@@ -415,6 +417,7 @@ class Settings:
             ".".join(keys), default=default, parent=result, cast=cast, **kwargs
         )
 
+    @hookable
     def get(
         self,
         key,
@@ -833,6 +836,7 @@ class Settings:
             )
         self.update(data=new_data, tomlfy=tomlfy, **kwargs)
 
+    @hookable
     def set(
         self,
         key,
@@ -917,6 +921,7 @@ class Settings:
             # a default value and goes away only when explicitly unset
             self._defaults[key] = value
 
+    @hookable
     def update(
         self,
         data=None,
@@ -1004,6 +1009,7 @@ class Settings:
         self.clean()
         self.execute_loaders(env, silent)
 
+    @hookable(name="loaders")
     def execute_loaders(
         self, env=None, silent=None, key=None, filename=None, loaders=None
     ):
@@ -1054,6 +1060,7 @@ class Settings:
             if last_loader and last_loader == env_loader:
                 last_loader.load(self, env, silent, key)
 
+    @hookable
     def load_file(self, path=None, env=None, silent=True, key=None):
         """Programmatically load files from ``path``.
 
@@ -1180,6 +1187,7 @@ class Settings:
             value = self.get_fresh(key)
             return value is True or value in true_values
 
+    @hookable
     def populate_obj(self, obj, keys=None, ignore=None):
         """Given the `obj` populate it using self.store items.
 
