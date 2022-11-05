@@ -18,7 +18,11 @@ __all__ = [
 ]
 
 
-EMPTY_VALUE = object()
+class Empty:
+    ...
+
+
+EMPTY_VALUE = Empty()
 
 
 def hookable(function=None, name=None, before=True, after=True):
@@ -200,6 +204,30 @@ class HookValue:
             super().__setattr__(key, value)
         else:
             setattr(self.value, key, value)
+
+    def __add__(self, other):
+        return self.value + other
+
+    def __sub__(self, other):
+        return self.value - other
+
+    def __mul__(self, other):
+        return self.value * other
+
+    def __truediv__(self, other):
+        return self.value / other
+
+    def __floordiv__(self, other):
+        return self.value // other
+
+    def __mod__(self, other):
+        return self.value % other
+
+    def __divmod__(self, other):
+        return divmod(self.value, other)
+
+    def __pow__(self, power, modulo=None):
+        return pow(self.value, power, modulo)
 
     def __delattr__(self, item):
         delattr(self.value, item)

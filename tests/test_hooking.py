@@ -2,11 +2,63 @@ from __future__ import annotations
 
 import pytest
 
+from dynaconf import Dynaconf
 from dynaconf.hooking import Action
 from dynaconf.hooking import EagerValue
 from dynaconf.hooking import Hook
 from dynaconf.hooking import hookable
 from dynaconf.hooking import HookValue
+
+
+def test_hook_dynaconf_class_before():
+    settings = Dynaconf(INTERNAL_VALUE=42)
+    settings["_registered_hooks"] = {
+        Action.BEFORE_GET: [
+            Hook(lambda s, v, *a, **k: (EagerValue(99), a, k))
+        ],
+    }
+    assert settings.get("INTERNAL_VALUE") == 99
+
+
+def test_hook_dynaconf_class_after():
+    settings = Dynaconf(INTERNAL_VALUE=42)
+    settings["_registered_hooks"] = {
+        Action.AFTER_GET: [Hook(lambda s, v, *a, **k: (v + 1, a, k))],
+    }
+    assert settings.get("INTERNAL_VALUE") == 43
+
+
+def test_hooked_dict():
+    class HookedDict(dict):
+        @hookable
+        def get(self, key, default=None):
+            return "to"
+
+    d = HookedDict()
+    d["_registered_hooks"] = {
+        Action.AFTER_GET: [
+            Hook(lambda s, v, *a, **kw: (f"{v}fu", a, kw)),
+        ],
+    }
+    assert d.get("key") == "tofu"
+
+
+def test_hooked_dict_store():
+    class HookedDict(dict):
+        _store = {
+            "_registered_hooks": {
+                Action.AFTER_GET: [
+                    Hook(lambda s, v, *a, **kw: (f"{v}fu", a, kw)),
+                ],
+            }
+        }
+
+        @hookable
+        def get(self, key, default=None):
+            return "to"
+
+    d = HookedDict()
+    assert d.get("key") == "tofu"
 
 
 def test_hook_before_and_after_bypass_method():
@@ -99,6 +151,14 @@ def test_hook_values():
     assert bool(value) is True
     assert str(value) == "1"
     assert repr(value) == repr(value.value)
+    assert value + 1 == 2
+    assert value - 1 == 0
+    assert value * 2 == 2
+    assert value / 2 == 0.5
+    assert value // 2 == 0
+    assert value % 2 == 1
+    assert value**2 == 1
+    assert divmod(value, 2) == (0, 1)
 
     value = HookValue([1, 2, 3])
     assert value == [1, 2, 3]
