@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import io
 import os
-import sys
 
 from setuptools import find_packages
 from setuptools import setup
@@ -83,7 +81,7 @@ setup(
         "all": ["redis", "ruamel.yaml", "configobj", "hvac"],
         "test": test_requirements,
     },
-    python_requires=">=3.7",
+    python_requires=">=3.8",
     entry_points={"console_scripts": ["dynaconf=dynaconf.cli:main"]},
     setup_requires=["setuptools>=38.6.0"],
     classifiers=[
@@ -100,6 +98,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Utilities",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
