@@ -40,37 +40,54 @@ def hookable(function=None, name=None, before=True, after=True):
     if function and not callable(function):
         raise TypeError("hookable must be applied with named arguments only")
 
-    def dispatch(fun, *args, **kwargs):
+    def dispatch(fun, self, *args, **kwargs):
         """calls the decorated function and its hooks"""
-        self, *args = args
-        # _registered_hooks = getattr(self, "_registered_hooks", None)
-        hooks_key, _registered_hooks = pop_hooks(self)
-        if not _registered_hooks:
+        # return fun(*args, **kwargs)  # ???????????????
+
+        # If function is being called from inside a hook, return the original
+        # if object has no hooks, return the original
+        inside_a_hook = isinstance(self, SettingsWrapper)
+        if inside_a_hook or not (_registered_hooks := get_hooks(self)):
             return fun(self, *args, **kwargs)
 
-        def _hook(self, action, value, *args, **kwargs):
-            function_name = name or fun.__name__
+        function_name = name or fun.__name__
+
+        # function being called not in the list of hooks, return the original
+        if not set(_registered_hooks).intersection(
+            (f"before_{function_name}", f"after_{function_name}")
+        ):
+            return fun(self, *args, **kwargs)
+
+        # Wrap the instance in a wrapper that will be passed to the hooks
+        # so they can access the instance attributes and methods without
+        # triggering the hooks again
+        self = SettingsWrapper(self, function_name)
+
+        def _hook(action, value: HookValue, *hargs, **hkwargs):
+            """executes the hooks for the given action"""
             hooks = _registered_hooks.get(f"{action}_{function_name}", [])
             for hook in hooks:
-                value, args, kwargs = hook.function(
-                    self, value, *args, **kwargs
+                value, hargs, hkwargs = hook.function(
+                    self, value, *hargs, **hkwargs
                 )
                 value = HookValue.new(value)
-            return value, args, kwargs
+            return value, hargs, hkwargs
 
+        # Value starts as en empty value on the first before hook
         value = HookValue(EMPTY_VALUE)
         if before:
-            value, args, kwargs = _hook(self, "before", value, *args, **kwargs)
+            value, args, kwargs = _hook("before", value, *args, **kwargs)
 
+        # If the value is EagerValue, it means main function should not be
+        # executed and the value should go straight to the after hooks if any
         if not isinstance(value, EagerValue):
-            value = HookValue.new(fun(self, *args, **kwargs))
+            value = MethodValue(fun(self, *args, **kwargs))
 
         if after:
-            value, args, kwargs = _hook(self, "after", value, *args, **kwargs)
+            value, args, kwargs = _hook("after", value, *args, **kwargs)
 
-        # Put back registered hooks on self
-        put_hooks(self, _registered_hooks, hooks_key)
-
+        # unwrap the value from the HookValue so it can be returned
+        # normally to the caller
         return value.value
 
     if function:
@@ -79,7 +96,7 @@ def hookable(function=None, name=None, before=True, after=True):
         def wrapper(*args, **kwargs):
             return dispatch(function, *args, **kwargs)
 
-        # wrapper.function = function
+        wrapper.original_function = function
         return wrapper
 
     def decorator(function):
@@ -88,43 +105,45 @@ def hookable(function=None, name=None, before=True, after=True):
         def wrapper(*args, **kwargs):
             return dispatch(function, *args, **kwargs)
 
-        # wrapper.function = function
+        wrapper.original_function = function
         return wrapper
 
     return decorator
 
 
-def pop_hooks(obj):
-    """Remove registered hooks from object"""
-    return_name = "_registered_hooks"
-    hooks = None
-    for key in [return_name, return_name.upper()]:
+def get_hooks(obj):
+    """get registered hooks from object"""
+    attr = "_registered_hooks"
+    for key in [attr, attr.upper()]:
         if hasattr(obj, key):
-            return_name = key
-            hooks = getattr(obj, key)
+            return getattr(obj, key)
         elif isinstance(obj, dict) and key in obj:
-            return_name = key
-            hooks = obj[key]
+            return obj[key]
         elif hasattr(obj, "_store") and key in obj._store:
-            return_name = key
-            hooks = obj._store[key]
-
-    with suppress(Exception):
-        delattr(obj, return_name)
-    with suppress(Exception):
-        del obj[return_name]
-    with suppress(Exception):
-        del obj._store[return_name]
-
-    return return_name, hooks
+            return obj._store[key]
 
 
-def put_hooks(obj, hooks, key="_registered_hooks"):
-    """Put back registered hooks on object"""
-    if hasattr(obj, "_store"):
-        obj._store[key] = hooks
-    else:
-        setattr(obj, key, hooks)
+class SettingsWrapper:
+    """Allow hooks to access the original object without recursion"""
+
+    def __init__(self, settings, function_name):
+        self.settings = settings
+        original_function = getattr(settings, function_name).original_function
+        setattr(
+            self,
+            function_name,
+            lambda *args, **kwargs: original_function(self, *args, **kwargs),
+        )
+
+    def __getattr__(self, item):
+        if item.lower() == "_registered_hooks":
+            return None
+        return getattr(self.settings, item)
+
+    def __getitem__(self, item):
+        if item == "_registered_hooks":
+            return None
+        return self.settings[item]
 
 
 @dataclass

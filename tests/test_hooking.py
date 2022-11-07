@@ -30,6 +30,9 @@ def test_hook_dynaconf_class_after():
 
 def test_hooked_dict():
     class HookedDict(dict):
+
+        _store = {}
+
         @hookable
         def get(self, key, default=None):
             return "to"
@@ -66,6 +69,8 @@ def test_hook_before_and_after_bypass_method():
 
     class HookedSettings:
 
+        _store = {}
+
         _registered_hooks = {
             # Accumulate all values
             Action.BEFORE_GET: [
@@ -101,10 +106,12 @@ def test_hook_runs_after_method():
     }
 
     def try_to_get_from_database(self, value, key, *args, **kwargs):
-        print(self, value, key, args, kwargs)
+        assert self.get("feature_enabled") is False
         return DATABASE.get(key, value.value), args, kwargs
 
     class HookedSettings:
+
+        _store = {}
 
         _registered_hooks = {
             # After hooks makes the final value
