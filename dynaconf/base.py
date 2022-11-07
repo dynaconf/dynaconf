@@ -12,7 +12,6 @@ from contextlib import suppress
 from pathlib import Path
 
 from dynaconf import default_settings
-from dynaconf.hooking import hookable
 from dynaconf.loaders import default_loader
 from dynaconf.loaders import enable_external_loaders
 from dynaconf.loaders import env_loader
@@ -61,6 +60,8 @@ class LazySettings(LazyObject):
         :param wrapped: a deepcopy of this object will be wrapped (issue #596)
         :param kwargs: values that overrides default_settings
         """
+
+        self._wrapper_class = kwargs.pop("_wrapper_class", Settings)
 
         self._warn_dynaconf_global_settings = kwargs.pop(
             "warn_dynaconf_global_settings", None
@@ -166,13 +167,14 @@ class LazySettings(LazyObject):
                 "your own instance e.g: `settings = Dynaconf(*options)`",
                 DeprecationWarning,
             )
+            self._wrapper_class = Settings  # Ensure it is an unhooked instance
 
         default_settings.reload(self._should_load_dotenv)
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
         settings_module = os.environ.get(environment_variable)
-        self._wrapped = Settings(
+        self._wrapped = self._wrapper_class(
             settings_module=settings_module, **self._kwargs
         )
 
@@ -191,7 +193,9 @@ class LazySettings(LazyObject):
         settings_module = settings_module or os.environ.get(environment_var)
         compat_kwargs(kwargs)
         kwargs.update(self._kwargs)
-        self._wrapped = Settings(settings_module=settings_module, **kwargs)
+        self._wrapped = self._wrapper_class(
+            settings_module=settings_module, **kwargs
+        )
 
     @property
     def configured(self):
@@ -373,7 +377,6 @@ class Settings:
 
         return value
 
-    @hookable
     def as_dict(self, env=None, internal=False):
         """Returns a dictionary with set key and values.
 
@@ -417,7 +420,6 @@ class Settings:
             ".".join(keys), default=default, parent=result, cast=cast, **kwargs
         )
 
-    @hookable
     def get(
         self,
         key,
@@ -836,7 +838,6 @@ class Settings:
             )
         self.update(data=new_data, tomlfy=tomlfy, **kwargs)
 
-    @hookable
     def set(
         self,
         key,
@@ -921,7 +922,6 @@ class Settings:
             # a default value and goes away only when explicitly unset
             self._defaults[key] = value
 
-    @hookable
     def update(
         self,
         data=None,
@@ -1009,7 +1009,6 @@ class Settings:
         self.clean()
         self.execute_loaders(env, silent)
 
-    @hookable(name="loaders")
     def execute_loaders(
         self, env=None, silent=None, key=None, filename=None, loaders=None
     ):
@@ -1060,7 +1059,6 @@ class Settings:
             if last_loader and last_loader == env_loader:
                 last_loader.load(self, env, silent, key)
 
-    @hookable
     def load_file(self, path=None, env=None, silent=True, key=None):
         """Programmatically load files from ``path``.
 
@@ -1187,7 +1185,6 @@ class Settings:
             value = self.get_fresh(key)
             return value is True or value in true_values
 
-    @hookable
     def populate_obj(self, obj, keys=None, ignore=None):
         """Given the `obj` populate it using self.store items.
 
@@ -1214,7 +1211,7 @@ class Settings:
             new_data = self.to_dict(internal=True)
             new_data["dynaconf_skip_loaders"] = True
             new_data["dynaconf_skip_validators"] = True
-            return Settings(**new_data)
+            return self.__class__(**new_data)
 
     @property
     def dynaconf(self):

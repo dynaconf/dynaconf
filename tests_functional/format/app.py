@@ -2,11 +2,6 @@ from __future__ import annotations
 
 import os
 
-from dynaconf import Dynaconf
-
-settings = Dynaconf(
-    settings_files=["settings.toml"], environments=True, load_dotenv=True
-)
 from dynaconf import settings
 
 assert settings.get("FORMAT_USERNAME") is None

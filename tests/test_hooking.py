@@ -7,23 +7,22 @@ from dynaconf.hooking import Action
 from dynaconf.hooking import EagerValue
 from dynaconf.hooking import Hook
 from dynaconf.hooking import hookable
+from dynaconf.hooking import HookableSettings
 from dynaconf.hooking import HookValue
 
 
 def test_hook_dynaconf_class_before():
-    settings = Dynaconf(INTERNAL_VALUE=42)
+    settings = Dynaconf(INTERNAL_VALUE=42, _wrapper_class=HookableSettings)
     settings["_registered_hooks"] = {
-        Action.BEFORE_GET: [
-            Hook(lambda s, v, *a, **k: (EagerValue(99), a, k))
-        ],
+        Action.BEFORE_GET: [Hook(lambda s, v, *_, **__: EagerValue(99))],
     }
     assert settings.get("INTERNAL_VALUE") == 99
 
 
 def test_hook_dynaconf_class_after():
-    settings = Dynaconf(INTERNAL_VALUE=42)
+    settings = Dynaconf(INTERNAL_VALUE=42, _wrapper_class=HookableSettings)
     settings["_registered_hooks"] = {
-        Action.AFTER_GET: [Hook(lambda s, v, *a, **k: (v + 1, a, k))],
+        Action.AFTER_GET: [Hook(lambda s, v, *_, **__: v + 1)],
     }
     assert settings.get("INTERNAL_VALUE") == 43
 
@@ -40,7 +39,7 @@ def test_hooked_dict():
     d = HookedDict()
     d["_registered_hooks"] = {
         Action.AFTER_GET: [
-            Hook(lambda s, v, *a, **kw: (f"{v}fu", a, kw)),
+            Hook(lambda s, v, *_, **__: f"{v}fu"),
         ],
     }
     assert d.get("key") == "tofu"
@@ -51,7 +50,7 @@ def test_hooked_dict_store():
         _store = {
             "_registered_hooks": {
                 Action.AFTER_GET: [
-                    Hook(lambda s, v, *a, **kw: (f"{v}fu", a, kw)),
+                    Hook(lambda s, v, *_, **__: f"{v}fu"),
                 ],
             }
         }
@@ -74,16 +73,14 @@ def test_hook_before_and_after_bypass_method():
         _registered_hooks = {
             # Accumulate all values
             Action.BEFORE_GET: [
-                Hook(lambda s, v, *a, **kw: ("ba", a, kw)),
-                Hook(
-                    lambda s, v, *a, **kw: (EagerValue(f"{v.value}na"), a, kw)
-                ),
+                Hook(lambda s, v, *_, **__: "ba"),
+                Hook(lambda s, v, *_, **__: EagerValue(f"{v.value}na")),
                 # EagerValue is a special value that bypasses the method
                 # and goes to the after hooks
             ],
             # After hooks makes the final value
             Action.AFTER_GET: [
-                Hook(lambda s, v, *a, **kw: (f"{v.value}na", a, kw)),
+                Hook(lambda s, v, *_, **__: f"{v.value}na"),
             ],
         }
 
@@ -105,9 +102,9 @@ def test_hook_runs_after_method():
         "feature_enabled": True,
     }
 
-    def try_to_get_from_database(self, value, key, *args, **kwargs):
+    def try_to_get_from_database(self, value, key, *_, **__):
         assert self.get("feature_enabled") is False
-        return DATABASE.get(key, value.value), args, kwargs
+        return DATABASE.get(key, value.value)
 
     class HookedSettings:
 

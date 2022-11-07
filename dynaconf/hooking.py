@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-from contextlib import suppress
 from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
 from typing import Any
 from typing import Callable
+
+from dynaconf.base import Settings
+
 
 __all__ = [
     "hookable",
@@ -15,6 +17,7 @@ __all__ = [
     "HookValue",
     "MethodValue",
     "Action",
+    "HookableSettings",
 ]
 
 
@@ -25,13 +28,11 @@ class Empty:
 EMPTY_VALUE = Empty()
 
 
-def hookable(function=None, name=None, before=True, after=True):
+def hookable(function=None, name=None):
     """Adds before and after hooks to any method.
 
     :param function: function to be decorated
     :param name: name of the method to be decorated (default to method name)
-    :param before: if before hooks should be executed
-    :param after: if after hooks should be executed
     :return: decorated function
 
     Usage: see tests/test_hooking.py for more examples.
@@ -42,7 +43,6 @@ def hookable(function=None, name=None, before=True, after=True):
 
     def dispatch(fun, self, *args, **kwargs):
         """calls the decorated function and its hooks"""
-        # return fun(*args, **kwargs)  # ???????????????
 
         # If function is being called from inside a hook, return the original
         # if object has no hooks, return the original
@@ -63,28 +63,23 @@ def hookable(function=None, name=None, before=True, after=True):
         # triggering the hooks again
         self = SettingsWrapper(self, function_name)
 
-        def _hook(action, value: HookValue, *hargs, **hkwargs):
+        def _hook(action: str, value: HookValue) -> HookValue:
             """executes the hooks for the given action"""
             hooks = _registered_hooks.get(f"{action}_{function_name}", [])
             for hook in hooks:
-                value, hargs, hkwargs = hook.function(
-                    self, value, *hargs, **hkwargs
-                )
+                value = hook.function(self, value, *args, **kwargs)
                 value = HookValue.new(value)
-            return value, hargs, hkwargs
+            return value
 
         # Value starts as en empty value on the first before hook
-        value = HookValue(EMPTY_VALUE)
-        if before:
-            value, args, kwargs = _hook("before", value, *args, **kwargs)
+        value = _hook("before", HookValue(EMPTY_VALUE))
 
         # If the value is EagerValue, it means main function should not be
         # executed and the value should go straight to the after hooks if any
         if not isinstance(value, EagerValue):
             value = MethodValue(fun(self, *args, **kwargs))
 
-        if after:
-            value, args, kwargs = _hook("after", value, *args, **kwargs)
+        value = _hook("after", value)
 
         # unwrap the value from the HookValue so it can be returned
         # normally to the caller
@@ -155,7 +150,7 @@ class Hook:
     The callable must accept the following arguments:
 
     - self: The instance of the class, e.g `settings`
-    - value: The value to be processed
+    - value: The value to be processed wrapper in a HookValue
       (accumulated from previous hooks, last hook will receive the final value)
     - *args: The args passed to the original method
     - **kwargs: The kwargs passed to the original method
@@ -163,8 +158,6 @@ class Hook:
     The callable must return a tuple with the following values:
 
     - value: The processed value to be passed to the next hook
-    - *args: The args to be passed to the next hook
-    - **kwargs: The kwargs to be passed to the next hook
     """
 
     function: Callable
@@ -285,3 +278,37 @@ class Action(str, Enum):
     BEFORE_LOAD_FILE = "before_load_file"
     AFTER_POPULATE_OBJ = "after_populate_obj"
     BEFORE_POPULATE_OBJ = "before_populate_obj"
+
+
+class HookableSettings(Settings):
+    """Wrapper for dynaconf.base.Settings that adds hooks to methods."""
+
+    @hookable
+    def as_dict(self, *args, **kwargs):
+        return Settings.as_dict(self, *args, **kwargs)
+
+    to_dict = as_dict
+
+    @hookable
+    def get(self, *args, **kwargs):
+        return Settings.get(self, *args, **kwargs)
+
+    @hookable
+    def set(self, *args, **kwargs):
+        return Settings.set(self, *args, **kwargs)
+
+    @hookable
+    def update(self, *args, **kwargs):
+        return Settings.update(self, *args, **kwargs)
+
+    @hookable(name="loaders")
+    def execute_loaders(self, *args, **kwargs):
+        return Settings.execute_loaders(self, *args, **kwargs)
+
+    @hookable
+    def load_file(self, *args, **kwargs):
+        return Settings.load_file(self, *args, **kwargs)
+
+    @hookable
+    def populate_obj(self, *args, **kwargs):
+        return Settings.populate_obj(self, *args, **kwargs)
