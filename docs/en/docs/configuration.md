@@ -275,13 +275,13 @@ With `merge_enabled` the ending `settings.server` will be
 ```python
 {"port": 8888, "address": "server.com"}
 ```
-otherwise it will be only what is specified in the latest loaded file. read more about [merging strategies](/docs/en/docs/merging.mdng.md)
+otherwise it will be only what is specified in the latest loaded file. read more about [merging strategies](/docs/en/docs/merging.md)
 
 ---
 
 ### **nested_separator**
 
-One of the [merging strategies](/docs/en/docs/merging.mdng.md) is the use of `__` to access nested level data structures. By default the separator is `__` (double underline), this variable allows you to change that.
+One of the [merging strategies](/docs/en/docs/merging.md) is the use of `__` to access nested level data structures. By default the separator is `__` (double underline), this variable allows you to change that.
 
 !!! warning
     Choose something that is suitable for env vars, usually you don't need to change this variable.
