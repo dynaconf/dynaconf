@@ -6,7 +6,9 @@ from functools import wraps
 from typing import Any
 from typing import Callable
 
+from dynaconf.base import RESERVED_ATTRS
 from dynaconf.base import Settings
+from dynaconf.base import UPPER_DEFAULT_SETTINGS
 
 
 __all__ = [
@@ -123,6 +125,11 @@ class SettingsWrapper:
 
     def __init__(self, settings, function_name):
         self.settings = settings
+        # self.settings = settings.dynaconf_clone()
+        # self.settings._store["_REGISTERED_HOOKS"] = {}
+        # self.settings._store["_registered_hooks"] = {}
+        # check if possoble to remove only the function named hooks
+        self.function_name = function_name
         original_function = getattr(settings, function_name).original_function
         setattr(
             self,
@@ -133,10 +140,12 @@ class SettingsWrapper:
     def __getattr__(self, item):
         if item.lower() == "_registered_hooks":
             return None
-        return getattr(self.settings, item)
+        settings = object.__getattribute__(self, "settings")
+        return getattr(settings, item)
+        # return getattr(self.settings, item)
 
     def __getitem__(self, item):
-        if item == "_registered_hooks":
+        if item.lower() == "_registered_hooks":
             return None
         return self.settings[item]
 
@@ -280,6 +289,13 @@ class Action(str, Enum):
     BEFORE_POPULATE_OBJ = "before_populate_obj"
 
 
+HOOK_ATTRS = [
+    "_REGISTERED_HOOKS",
+    "_registered_hooks",
+    "_store",
+]
+
+
 class HookableSettings(Settings):
     """Wrapper for dynaconf.base.Settings that adds hooks to methods."""
 
@@ -294,8 +310,10 @@ class HookableSettings(Settings):
         return Settings.get(self, *args, **kwargs)
 
     @hookable
-    def set(self, *args, **kwargs):
-        return Settings.set(self, *args, **kwargs)
+    def set(self, key, value, *args, **kwargs):
+        # self.__dict__[key] = value
+        # self.__dict__[key.upper()] = value
+        return Settings.set(self, key, value, *args, **kwargs)
 
     @hookable
     def update(self, *args, **kwargs):

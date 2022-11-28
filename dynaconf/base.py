@@ -289,20 +289,30 @@ class Settings:
         return item.upper() in self.store or item.lower() in self.store
 
     def __getattribute__(self, name):
-        if name not in RESERVED_ATTRS and name not in UPPER_DEFAULT_SETTINGS:
-            with suppress(KeyError):
-                # self._store has Lazy values already evaluated
-                if (
-                    name.islower()
-                    and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty)
-                    is False
-                ):
-                    # only matches exact casing, first levels always upper
-                    return self._store.to_dict()[name]
-                # perform lookups for upper, and casefold
-                return self._store[name]
-        # in case of RESERVED_ATTRS or KeyError above, keep default behaviour
-        return super().__getattribute__(name)
+        if (
+            name.startswith("__")
+            or name in RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS
+        ):
+            return super().__getattribute__(name)
+
+        # This is to keep the only upper case mode working
+        # self._store has Lazy values already evaluated
+        if (
+            name.islower()
+            and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty) is False
+        ):
+            try:
+                # only matches exact casing, first levels always upper
+                return self._store.to_dict()[name]
+            except KeyError:
+                return super().__getattribute__(name)
+
+        # then go to the regular .get which triggers hooks among other things
+        value = self.get(name, default=empty)
+        if value is empty:
+            return super().__getattribute__(name)
+
+        return value
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
@@ -871,7 +881,8 @@ class Settings:
 
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
-        existing = getattr(self, key, None)
+        # existing = getattr(self, key, None)
+        existing = self.store.get(key, None)
 
         if getattr(value, "_dynaconf_del", None):
             # just in case someone use a `@del` in a first level var.
@@ -1205,12 +1216,16 @@ class Settings:
         """Clone the current settings object."""
         try:
             return copy.deepcopy(self)
-        except TypeError:
+        except (TypeError, copy.Error):
             # can't deepcopy settings object because of module object
             # being set as value in the settings dict
             new_data = self.to_dict(internal=True)
             new_data["dynaconf_skip_loaders"] = True
             new_data["dynaconf_skip_validators"] = True
+
+            # To avoid circular import cloned settings has no hooks
+            new_data["_registered_hooks"] = {}
+            new_data["_REGISTERED_HOOKS"] = {}
             return self.__class__(**new_data)
 
     @property
@@ -1286,5 +1301,7 @@ RESERVED_ATTRS = (
         "_validate_only",
         "_validate_exclude",
         "_validate_only_current_env",
+        "_registered_hooks",
+        "_REGISTERED_HOOKS",
     ]
 )

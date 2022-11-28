@@ -11,11 +11,37 @@ from dynaconf.hooking import HookableSettings
 from dynaconf.hooking import HookValue
 
 
+class BaseHookedSettings:
+    def dynaconf_clone(self):
+        return self
+
+
 def test_hook_dynaconf_class_before():
-    settings = Dynaconf(INTERNAL_VALUE=42, _wrapper_class=HookableSettings)
+    settings = Dynaconf(
+        INTERNAL_VALUE=42,
+        TEMPLATED="@format {this[INTERNAL_VALUE]}abc",
+        TEMPLATED1="@int @format {this[INTERNAL_VALUE]}",
+        TEMPLATED2="@jinja {{this.INTERNAL_VALUE}}abcd",
+        TEMPLATED3="@int @jinja {{this.INTERNAL_VALUE}}",
+        _wrapper_class=HookableSettings,
+    )
     settings["_registered_hooks"] = {
-        Action.BEFORE_GET: [Hook(lambda s, v, *_, **__: EagerValue(99))],
+        Action.BEFORE_GET: [
+            Hook(
+                lambda s, v, key, *_, **__: EagerValue(99)
+                if key == "INTERNAL_VALUE"
+                else v
+            )
+        ],
     }
+    settings.set("FOOVALUE", 100)
+
+    assert settings.FOOVALUE == 100
+    assert settings.TEMPLATED == "99abc"
+    assert settings.TEMPLATED1 == 99
+    assert settings.TEMPLATED2 == "99abcd"
+    assert settings.TEMPLATED3 == 99
+    assert settings.INTERNAL_VALUE == 99
     assert settings.get("INTERNAL_VALUE") == 99
 
 
@@ -24,11 +50,12 @@ def test_hook_dynaconf_class_after():
     settings["_registered_hooks"] = {
         Action.AFTER_GET: [Hook(lambda s, v, *_, **__: v + 1)],
     }
+    assert settings.INTERNAL_VALUE == 43
     assert settings.get("INTERNAL_VALUE") == 43
 
 
 def test_hooked_dict():
-    class HookedDict(dict):
+    class HookedDict(BaseHookedSettings, dict):
 
         _store = {}
 
@@ -46,7 +73,7 @@ def test_hooked_dict():
 
 
 def test_hooked_dict_store():
-    class HookedDict(dict):
+    class HookedDict(BaseHookedSettings, dict):
         _store = {
             "_registered_hooks": {
                 Action.AFTER_GET: [
@@ -66,7 +93,7 @@ def test_hooked_dict_store():
 def test_hook_before_and_after_bypass_method():
     """Method is never executed, before and after hooks are called"""
 
-    class HookedSettings:
+    class HookedSettings(BaseHookedSettings):
 
         _store = {}
 
@@ -106,7 +133,7 @@ def test_hook_runs_after_method():
         assert self.get("feature_enabled") is False
         return DATABASE.get(key, value.value)
 
-    class HookedSettings:
+    class HookedSettings(BaseHookedSettings):
 
         _store = {}
 
