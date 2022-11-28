@@ -8,7 +8,7 @@ In addition to that Dynaconf offers some approaches you may want to **Optionally
 
 - Add a list of validators to `validators=[Validator()]` on your dynaconf settings instance and provide [defaults and constraints](/validation/).
 - Enable `load_dotenv` and provide a `.env.example` or `.env` file with the default variables.
-- Write your variables in a [settings file](/docs/en/docs/settings_files.mdes.md) in the format of your choice.
+- Write your variables in a [settings file](/docs/en/docs/settings_files.md) in the format of your choice.
 - Load your settings from [vault or redis](/secrets/)
 
 ## Environment variables

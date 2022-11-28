@@ -10,5 +10,5 @@ mkdocs
 pymdown-extensions
 mkdocs-material
 mkdocs-git-revision-date-plugin
+typer
 Jinja2>3.0.0
-typer~=0.6.1
