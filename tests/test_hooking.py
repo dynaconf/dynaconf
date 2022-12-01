@@ -3,17 +3,27 @@ from __future__ import annotations
 import pytest
 
 from dynaconf import Dynaconf
+from dynaconf.base import Settings
 from dynaconf.hooking import Action
 from dynaconf.hooking import EagerValue
 from dynaconf.hooking import Hook
 from dynaconf.hooking import hookable
 from dynaconf.hooking import HookableSettings
 from dynaconf.hooking import HookValue
+from dynaconf.utils.boxing import DynaBox
 
 
 class BaseHookedSettings:
-    def dynaconf_clone(self):
-        return self
+    def __init__(self, **kwargs):
+        self._store = DynaBox(kwargs)
+
+    @property
+    def __dict__(self):
+        return self._store
+
+    @hookable
+    def get(self, key):
+        return self._store.get(key)
 
 
 def test_hook_dynaconf_class_before():
@@ -25,6 +35,15 @@ def test_hook_dynaconf_class_before():
         TEMPLATED3="@int @jinja {{this.INTERNAL_VALUE}}",
         _wrapper_class=HookableSettings,
     )
+
+    def do_something_useless(s, v, key, *_, **__):
+        # print(s)
+        # __import__('ipdb').set_trace()
+        assert s["INTERNAL_VALUE"] == 42
+        if key == "INTERNAL_VALUE":
+            assert v == 99
+        return v
+
     settings["_registered_hooks"] = {
         Action.BEFORE_GET: [
             Hook(
@@ -33,11 +52,19 @@ def test_hook_dynaconf_class_before():
                 else v
             )
         ],
+        Action.AFTER_GET: [Hook(do_something_useless)],
+        # Action.AFTER_SET: [
+        #     Hook(
+        #         lambda s, v, key, *_, **__: HookValue(18)
+        #     )
+        # ]
     }
+    assert settings.TEMPLATED == "99abc"
+
     settings.set("FOOVALUE", 100)
 
     assert settings.FOOVALUE == 100
-    assert settings.TEMPLATED == "99abc"
+    assert settings["FOOVALUE"] == 100
     assert settings.TEMPLATED1 == 99
     assert settings.TEMPLATED2 == "99abcd"
     assert settings.TEMPLATED3 == 99
@@ -74,19 +101,16 @@ def test_hooked_dict():
 
 def test_hooked_dict_store():
     class HookedDict(BaseHookedSettings, dict):
-        _store = {
-            "_registered_hooks": {
-                Action.AFTER_GET: [
-                    Hook(lambda s, v, *_, **__: f"{v}fu"),
-                ],
-            }
-        }
+        ...
 
-        @hookable
-        def get(self, key, default=None):
-            return "to"
-
-    d = HookedDict()
+    d = HookedDict(
+        key="to",
+        _registered_hooks={
+            Action.AFTER_GET: [
+                Hook(lambda s, v, *_, **__: f"{v}fu"),
+            ],
+        },
+    )
     assert d.get("key") == "tofu"
 
 
@@ -129,31 +153,22 @@ def test_hook_runs_after_method():
         "feature_enabled": True,
     }
 
-    def try_to_get_from_database(self, value, key, *_, **__):
-        assert self.get("feature_enabled") is False
+    def try_to_get_from_database(d, value, key, *_, **__):
+        assert d.get("feature_enabled") is False
         return DATABASE.get(key, value.value)
 
     class HookedSettings(BaseHookedSettings):
+        ...
 
-        _store = {}
-
-        _registered_hooks = {
-            # After hooks makes the final value
+    settings = HookedSettings(
+        feature_enabled=False,
+        something_not_in_database="default value",
+        _registered_hooks={
             Action.AFTER_GET: [
                 Hook(try_to_get_from_database),
             ],
-        }
-
-        internal_data = {
-            "feature_enabled": False,
-            "something_not_in_database": "default value",
-        }
-
-        @hookable
-        def get(self, key):
-            return self.internal_data.get(key)
-
-    settings = HookedSettings()
+        },
+    )
 
     # On the object feature is disabled
     # but on the database it is enabled

@@ -47,9 +47,13 @@ def hookable(function=None, name=None):
         """calls the decorated function and its hooks"""
 
         # If function is being called from inside a hook, return the original
+        # function passing a dict instead of the settings object
+        # inside_a_hook = isinstance(self, SettingsWrapper)
+        # if inside_a_hook:
+        #     return fun(self.__dict__, *args, **kwargs)
+
         # if object has no hooks, return the original
-        inside_a_hook = isinstance(self, SettingsWrapper)
-        if inside_a_hook or not (_registered_hooks := get_hooks(self)):
+        if not (_registered_hooks := get_hooks(self)):
             return fun(self, *args, **kwargs)
 
         function_name = name or fun.__name__
@@ -63,13 +67,25 @@ def hookable(function=None, name=None):
         # Wrap the instance in a wrapper that will be passed to the hooks
         # so they can access the instance attributes and methods without
         # triggering the hooks again
-        self = SettingsWrapper(self, function_name)
+        # self = SettingsWrapper(self, function_name)
+
+        settings_dict = self.__dict__
+
+        # HERE:
+        # Create a class LazyHookableSettings
+        # IMplement on that class only the get, set, update
+        # feed it with settings_dict
+        # when .set or .update is called
+        # the class will materialize a new Settings() insternally
+        # and call the original set or update
+        # and then the get will now return the value from the new Settings()
+        # then pass to the hook the instance instead of the dict
 
         def _hook(action: str, value: HookValue) -> HookValue:
             """executes the hooks for the given action"""
             hooks = _registered_hooks.get(f"{action}_{function_name}", [])
             for hook in hooks:
-                value = hook.function(self, value, *args, **kwargs)
+                value = hook.function(settings_dict, value, *args, **kwargs)
                 value = HookValue.new(value)
             return value
 
@@ -120,34 +136,35 @@ def get_hooks(obj):
             return obj._store[key]
 
 
-class SettingsWrapper:
-    """Allow hooks to access the original object without recursion"""
+# class SettingsWrapper:
+#     """Allow hooks to access the original object without recursion"""
 
-    def __init__(self, settings, function_name):
-        self.settings = settings
-        # self.settings = settings.dynaconf_clone()
-        # self.settings._store["_REGISTERED_HOOKS"] = {}
-        # self.settings._store["_registered_hooks"] = {}
-        # check if possoble to remove only the function named hooks
-        self.function_name = function_name
-        original_function = getattr(settings, function_name).original_function
-        setattr(
-            self,
-            function_name,
-            lambda *args, **kwargs: original_function(self, *args, **kwargs),
-        )
+#     def __init__(self, settings, function_name):
+#         self.settings = settings
+#         # self.settings = settings.dynaconf_clone()
+#         # self.settings._store["_REGISTERED_HOOKS"] = {}
+#         # self.settings._store["_registered_hooks"] = {}
+#         # check if possoble to remove only the function named hooks
+#         self.function_name = function_name
+#         original_function = getattr(settings, function_name
+#            ).original_function
+#         setattr(
+#             self,
+#             function_name,
+#             lambda *args, **kwargs: original_function(self, *args, **kwargs),
+#         )
 
-    def __getattr__(self, item):
-        if item.lower() == "_registered_hooks":
-            return None
-        settings = object.__getattribute__(self, "settings")
-        return getattr(settings, item)
-        # return getattr(self.settings, item)
+#     def __getattr__(self, item):
+#         if item.lower() == "_registered_hooks":
+#             return None
+#         settings = object.__getattribute__(self, "settings")
+#         return getattr(settings, item)
+#         # return getattr(self.settings, item)
 
-    def __getitem__(self, item):
-        if item.lower() == "_registered_hooks":
-            return None
-        return self.settings[item]
+#     def __getitem__(self, item):
+#         if item.lower() == "_registered_hooks":
+#             return None
+#         return self.settings[item]
 
 
 @dataclass
@@ -257,14 +274,12 @@ class HookValue:
         return repr(self.value)
 
 
-@dataclass
 class MethodValue(HookValue):
     """A value returned by a method
     The main decorated method have its value wrapped in this class
     """
 
 
-@dataclass
 class EagerValue(HookValue):
     """Use this wrapper to return earlier from a hook.
     Main function is bypassed and value is passed to after hooks."""
@@ -287,13 +302,6 @@ class Action(str, Enum):
     BEFORE_LOAD_FILE = "before_load_file"
     AFTER_POPULATE_OBJ = "after_populate_obj"
     BEFORE_POPULATE_OBJ = "before_populate_obj"
-
-
-HOOK_ATTRS = [
-    "_REGISTERED_HOOKS",
-    "_registered_hooks",
-    "_store",
-]
 
 
 class HookableSettings(Settings):
