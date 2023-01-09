@@ -204,15 +204,13 @@ def test_as_json(settings):
 
 
 def test_env_should_be_string(settings):
-    with pytest.raises(AttributeError):
-        with settings.setenv(123456):
-            pass
+    with pytest.raises(ValueError):
+        settings.setenv(123456)
 
 
 def test_env_should_not_have_underline(settings):
-    with pytest.raises(AttributeError):
-        with settings.setenv("COOL_env"):
-            pass
+    with pytest.raises(ValueError):
+        settings.setenv("COOL_env")
 
 
 def test_path_for(settings):

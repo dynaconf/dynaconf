@@ -140,7 +140,7 @@ Dynaconf support 2 types of lazy values `format` and `jinja` which allows
 template substitutions.
 
 ```bash
-export PREFIX_PATH='@format {env{"HOME"}/.config/{this.DB_NAME}'
+export PREFIX_PATH='@format {env[HOME]}/.config/{this.DB_NAME}'
 export PREFIX_PATH='@jinja {{env.HOME}}/.config/{{this.DB_NAME}} | abspath'
 ```
 
