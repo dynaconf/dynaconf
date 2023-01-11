@@ -172,6 +172,7 @@ default_vault = {
     "timeout": get("VAULT_TIMEOUT_FOR_DYNACONF", None),
     "proxies": get("VAULT_PROXIES_FOR_DYNACONF", None),
     "allow_redirects": get("VAULT_ALLOW_REDIRECTS_FOR_DYNACONF", None),
+    "namespace": get('VAULT_NAMESPACE_FOR_DYNACONF', None),
 }
 VAULT_FOR_DYNACONF = get("VAULT_FOR_DYNACONF", default_vault)
 VAULT_ENABLED_FOR_DYNACONF = get("VAULT_ENABLED_FOR_DYNACONF", False)
