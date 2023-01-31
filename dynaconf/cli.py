@@ -29,7 +29,7 @@ from dynaconf.vendor import tomllib
 
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
-CWD=None
+CWD = None
 try:
     CWD = Path.cwd()
 except FileNotFoundError:

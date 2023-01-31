@@ -67,7 +67,6 @@ def execute_tests(path):
 
 
 def run_tests(show_list=False, test_filter=None):
-
     def filter_allowed(testpath):
         if not test_filter:
             return True
@@ -126,16 +125,16 @@ def run_tests(show_list=False, test_filter=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--list',
-        dest='show_list',
-        action='store_true',
-        help='List all available tests (do not execute)'
+        "--list",
+        dest="show_list",
+        action="store_true",
+        help="List all available tests (do not execute)",
     )
     parser.add_argument(
-        '--filter',
-        dest='test_filter',
-        action='append',
-        help='limt tests to those that contain a substring'
+        "--filter",
+        dest="test_filter",
+        action="append",
+        help="limt tests to those that contain a substring",
     )
     args = parser.parse_args()
     run_tests(show_list=args.show_list, test_filter=args.test_filter)

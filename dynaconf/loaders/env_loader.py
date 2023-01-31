@@ -6,10 +6,11 @@ from dynaconf.utils import missing
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
 
-DOTENV_IMPORTED=False
+DOTENV_IMPORTED = False
 try:
     from dynaconf.vendor.dotenv import cli as dotenv_cli
-    DOTENV_IMPORTED=True
+
+    DOTENV_IMPORTED = True
 except ImportError:
     pass
 except FileNotFoundError:

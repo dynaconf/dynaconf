@@ -7,6 +7,6 @@ mkdir -p /tmp/foobar
 cd /tmp/foobar
 rm -rf /tmp/foobar
 
-dynaconf -i config.settings list 
+dynaconf -i config.settings list
 RC=$?
 exit $RC
