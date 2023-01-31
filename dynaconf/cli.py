@@ -120,6 +120,8 @@ def import_settings(dotted_path):
         module = importlib.import_module(module)
     except ImportError as e:
         raise click.UsageError(e)
+    except FileNotFoundError:
+        return
     try:
         return getattr(module, name)
     except AttributeError as e:
