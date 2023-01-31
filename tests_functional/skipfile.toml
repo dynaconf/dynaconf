@@ -18,4 +18,5 @@ nt = [
     "449_django_lazy_path",
     "685_disable_dotted_lookup",
     "741_envvars_ignored",
+    "missing_pwd",
 ]
