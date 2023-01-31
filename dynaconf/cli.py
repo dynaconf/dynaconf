@@ -29,7 +29,11 @@ from dynaconf.vendor import tomllib
 
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
-CWD = Path.cwd()
+CWD = None
+try:
+    CWD = Path.cwd()
+except FileNotFoundError:
+    pass
 EXTS = ["ini", "toml", "yaml", "json", "py", "env"]
 WRITERS = ["ini", "toml", "yaml", "json", "py", "redis", "vault", "env"]
 
@@ -116,6 +120,8 @@ def import_settings(dotted_path):
         module = importlib.import_module(module)
     except ImportError as e:
         raise click.UsageError(e)
+    except FileNotFoundError:
+        return
     try:
         return getattr(module, name)
     except AttributeError as e:
