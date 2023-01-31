@@ -92,6 +92,8 @@ def load_from_env(
 
 def write(settings_path, settings_data, **kwargs):
     """Write data to .env file"""
+    if not DOTENV_IMPORTED:
+        return
     for key, value in settings_data.items():
         quote_mode = (
             isinstance(value, str)
