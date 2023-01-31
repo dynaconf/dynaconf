@@ -5,7 +5,15 @@ from os import environ
 from dynaconf.utils import missing
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
-from dynaconf.vendor.dotenv import cli as dotenv_cli
+
+DOTENV_IMPORTED=False
+try:
+    from dynaconf.vendor.dotenv import cli as dotenv_cli
+    DOTENV_IMPORTED=True
+except ImportError:
+    pass
+except FileNotFoundError:
+    pass
 
 
 IDENTIFIER = "env"
