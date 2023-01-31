@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import os
 import subprocess
 import sys
@@ -65,22 +66,35 @@ def execute_tests(path):
     return False
 
 
-def run_tests():
+def run_tests(show_list=False, test_filter=None):
+
+    def filter_allowed(testpath):
+        if not test_filter:
+            return True
+        for keyword in test_filter:
+            if keyword in testpath.name:
+                return True
+        return False
+
     passed = 0
     root_directory = Path(__file__).parent
     print("Workdir:", root_directory.absolute())
     functional_tests = sorted(list(root_directory.iterdir()))
     print("Collected functional tests:", len(functional_tests))
     sleep(1)
+
     for path in functional_tests:
         if path.is_dir():
             if path.name in [".", "__pycache__"]:
                 continue
 
-            if execute_tests(path):
-                passed += 1
-                print(f"Passed {path}")
-                continue
+            if show_list:
+                print(path)
+            else:
+                if filter_allowed(path) and execute_tests(path):
+                    passed += 1
+                    print(f"Passed {path}")
+                    continue
 
             # Now Subdirectories one level
             subdirs = sorted(list(path.iterdir()))
@@ -89,10 +103,13 @@ def run_tests():
                     if subdir.name in [".", "__pycache__"]:
                         continue
 
-                    if execute_tests(subdir):
-                        passed += 1
-                        print(f"Passed {subdir}")
-                        continue
+                    if show_list:
+                        print(subdir)
+                    else:
+                        if filter_allowed(subdir) and execute_tests(subdir):
+                            passed += 1
+                            print(f"Passed {subdir}")
+                            continue
 
             if not subdirs:
                 exit(
@@ -100,10 +117,25 @@ def run_tests():
                     "Makefile, test.sh, app.py, test.py, program.py"
                 )
 
-    print("-" * 40)
-    print(f"{passed} functional tests passed")
-    print("-" * 40)
+    if not show_list:
+        print("-" * 40)
+        print(f"{passed} functional tests passed")
+        print("-" * 40)
 
 
 if __name__ == "__main__":
-    run_tests()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--list',
+        dest='show_list',
+        action='store_true',
+        help='List all available tests (do not execute)'
+    )
+    parser.add_argument(
+        '--filter',
+        dest='test_filter',
+        action='append',
+        help='limt tests to those that contain a substring'
+    )
+    args = parser.parse_args()
+    run_tests(show_list=args.show_list, test_filter=args.test_filter)
