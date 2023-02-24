@@ -93,7 +93,7 @@ clean:
 
 docs:
 	rm -rf site
-	mkdocs build --clean
+	python ./scripts/docs.py build-all
 
 run-tox:
 	tox --recreate

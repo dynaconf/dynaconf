@@ -75,6 +75,11 @@ target/
 
 junit/
 
+# mkDocs Build
+docs_build/
+dynaconf.egg-info/
+
+
 
 # django example static files
 tests_functional/django_example/admin/
