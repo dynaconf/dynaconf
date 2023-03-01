@@ -90,15 +90,6 @@ jobs:
           files: coverage.xml
           fail_ci_if_error: true
 
-      - name: Run codacy-coverage-reporter
-        if: ${{ matrix.python-version == '3.10' }}
-        uses: codacy/codacy-coverage-reporter-action@v1
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          # or
-          # api-token: ${{ secrets.CODACY_API_TOKEN }}
-          coverage-reports: coverage.xml
-
   unit_tests_mac:
     needs: install_test
     strategy:
