@@ -27,6 +27,7 @@ EXPECTED = {
         "timeout": None,
         "proxies": None,
         "allow_redirects": None,
+        "namespace": None,
         # "session": None,
     },
     "VAULT_ENABLED_FOR_DYNACONF": False,
