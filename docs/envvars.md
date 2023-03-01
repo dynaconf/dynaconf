@@ -19,7 +19,7 @@ You can override any setting key by exporting an environment variable prefixed b
 
 !!! info
     When loading environment variables, dynaconf will parse the value using `toml` language
-    so it will try to automatic convert to the proper data type.
+    so it will try to automatically convert to the proper data type.
 
 ```bash
 export DYNACONF_NAME=Bruno                                   # str: "Bruno"
@@ -33,7 +33,7 @@ export DYNACONF_PERSON__IS_ADMIN=true                        # bool: True (neste
 ```
 
 !!! warning
-    When exporting datastructures sych as `dict` and `list` you have to use one of:  
+    When exporting data structures such as `dict` and `list` you have to use one of:  
     ```
     export DYNACONF_TOML_DICT={key="value"}
     export DYNACONF_TOML_LIST=["item"]
@@ -43,7 +43,7 @@ export DYNACONF_PERSON__IS_ADMIN=true                        # bool: True (neste
     Those 2 ways are the only ways for dynaconf to load `dicts` and `lists` from envvars.
 
 
-with the above it is now possible to read the settings from your `program.py` using.
+With the above it is now possible to read the settings in your `program.py` using:
 
 ```python
 from dynaconf import Dynaconf
@@ -140,7 +140,7 @@ Dynaconf support 2 types of lazy values `format` and `jinja` which allows
 template substitutions.
 
 ```bash
-export PREFIX_PATH='@format {env{"HOME"}/.config/{this.DB_NAME}'
+export PREFIX_PATH='@format {env[HOME]}/.config/{this.DB_NAME}'
 export PREFIX_PATH='@jinja {{env.HOME}}/.config/{{this.DB_NAME}} | abspath'
 ```
 

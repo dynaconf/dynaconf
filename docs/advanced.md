@@ -83,7 +83,7 @@ from dynaconf.strategies.filtering import PrefixFilter
 
 settings = Dynaconf(
     settings_file="settings.toml",
-    environments=False
+    environments=False,
     filter_strategy=PrefixFilter("prefix")
 )
 ```

@@ -753,8 +753,8 @@ class Settings:
         """
         env = env or self.ENV_FOR_DYNACONF
 
-        if not isinstance(env, str):
-            raise AttributeError("env should be a string")
+        if not isinstance(env, str) or "_" in env or " " in env:
+            raise ValueError("env should be a string without _ or spaces")
 
         env = env.upper()
 
