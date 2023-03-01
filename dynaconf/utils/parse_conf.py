@@ -137,13 +137,24 @@ class Merge(MetaValue):
         self.unique = unique
 
 
+class FormattingError(Exception):
+    """Error formatting a lazy variable"""
+
+
 class BaseFormatter:
     def __init__(self, function, token):
         self.function = function
         self.token = token
 
     def __call__(self, value, **context):
-        return self.function(value, **context)
+        try:
+            return self.function(value, **context)
+        except (KeyError, AttributeError) as exc:
+            # A template like {this.FOO} failed with AttributeError
+            # object has no attribute FOO. (or KeyError in case of env[...])
+            raise FormattingError(
+                f"dynaconf can't interpolate variable because {exc}"
+            ) from exc
 
     def __str__(self):
         return str(self.token)
