@@ -47,7 +47,10 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
     additional `./config` folder.
     """
     search_tree = []
-    work_dir = os.getcwd()
+    try:
+        work_dir = os.getcwd()
+    except FileNotFoundError:
+        return ""
     skip_files = skip_files or []
 
     # If filename is an absolute path and exists, just return it

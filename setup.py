@@ -44,6 +44,7 @@ setup(
     version=read("dynaconf", "VERSION"),
     url="https://github.com/dynaconf/dynaconf",
     license="MIT",
+    license_files=["LICENSE", "vendor_licenses/*"],
     author="Bruno Rocha",
     author_email="rochacbruno@gmail.com",
     description="The dynamic configurator for your Python Project",
