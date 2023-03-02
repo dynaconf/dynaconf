@@ -2,6 +2,114 @@ Changelog
 =========
 
 
+3.1.12 (2023-03-02)
+-------------------
+
+Fix
+~~~
+- Envvars.md get `HOME` environment variable (#831) [MicLon]
+
+Other
+~~~~~
+- Release version 3.1.12. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      André "decko" de Brito (2):
+            Removes Codacy Coverage Reporter (#871)
+            Add a namespace property for VAULT_FOR_DYNACONF dict (#870)
+
+      Bruno Rocha (8):
+            Release version 3.1.11
+            bump dev version to 3.1.12
+            Ensure `dynaconf get` returns a valid json string. (#813)
+            [bugfix] Fix access of keys with spaces (#815)
+            hotfix func tests (#816)
+            Add Python 3.11 to CI (#830)
+            fix lint error
+            Fix casting on Validator and improve docs (#873)
+
+      Bryan Weber (1):
+            Fix typos in envvars docs (#840)
+
+      Florian Apolloner (1):
+            Small typo fix. (#822)
+
+      Maxwell G (1):
+            Include license files for vendored deps (#841)
+
+      MicLon (1):
+            fix: envvars.md get `HOME` environment variable (#831)
+
+      Otávio Dantas (1):
+            doc(pt-br): translate flask extension to pt-br (#852)
+
+      Sergio Kef (1):
+            Fix code snippet in docs (#843)
+
+      Tetiana (1):
+            #817 Add note about defining root_path when testing (#818)
+
+      jctanner (1):
+            Handle all failures when pwd does not exist. (#857)
+
+      jmeichle (1):
+            Add support for VAULT_NAMESPACE_FOR_DYNACONF (#854)
+- Fix casting on Validator and improve docs (#873) [Bruno Rocha]
+
+  fix: #823
+  fix: #834
+- Fix lint error. [Bruno Rocha]
+- Small typo fix. (#822) [Bruno Rocha, Florian Apolloner]
+- Fix typos in envvars docs (#840) [Bruno Rocha, Bryan Weber]
+- Include license files for vendored deps (#841) [Bruno Rocha, Maxwell
+  G]
+- Fix code snippet in docs (#843) [Sergio Kef]
+
+  Fix syntax error, missing comma
+- Add a namespace property for VAULT_FOR_DYNACONF dict (#870) [André
+  "decko" de Brito, Bruno Rocha]
+- Removes Codacy Coverage Reporter (#871) [André "decko" de Brito]
+- Add support for VAULT_NAMESPACE_FOR_DYNACONF (#854) [Bruno Rocha,
+  jmeichle]
+
+  * Add support for VAULT_NAMESPACE_FOR_DYNACONF
+
+  * adjusting for linting
+
+  ---------
+- Handle all failures when pwd does not exist. (#857) [jctanner]
+
+  * Handle all failures when pwd does not exist.
+
+  ---------
+- Doc(pt-br): translate flask extension to pt-br (#852) [Otávio Dantas]
+- Add Python 3.11 to CI (#830) [Bruno Rocha, Vicente Marçal]
+
+  Fix a testing error on CI
+- #817 Add note about defining root_path when testing (#818) [Tetiana]
+
+  fix #817
+- Hotfix func tests (#816) [Bruno Rocha]
+- [bugfix] Fix access of keys with spaces (#815) [Bruno Rocha]
+
+  Fix #814
+- Ensure `dynaconf get` returns a valid json string. (#813) [Bruno
+  Rocha]
+- Bump dev version to 3.1.12. [Bruno Rocha]
+- Release version 3.1.11. [Bruno Rocha]
+
+  This release is a hotfix on top of 3.1.10
+
+  Please read changelog from  https://github.com/dynaconf/dynaconf/releases/tag/3.1.10
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.10
+            Release hotfix (no need to run coverage or include tests_functional)
+
+
 3.1.11 (2022-09-22)
 -------------------
 - Release version 3.1.11. [Bruno Rocha]
