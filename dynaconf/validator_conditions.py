@@ -83,3 +83,8 @@ def len_max(value, other):
 def startswith(value, term):
     """returns value.startswith(term) result"""
     return value.startswith(term)
+
+
+def endswith(value, term):
+    """returns value.endswith(term) result"""
+    return value.endswith(term)

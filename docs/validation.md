@@ -11,6 +11,7 @@ age = 35
 name = "Bruno"
 DEV_SERVERS = ['127.0.0.1', 'localhost', 'development.com']
 PORT = 8001
+JAVA_BIN = "/usr/bin/java"
 
 [production]
 PROJECT = "This is not hello_world"
@@ -21,6 +22,7 @@ PROJECT = "This is not hello_world"
 At any point of your program you can do:
 
 ```python
+from pathlib import Path
 from dynaconf import Dynaconf, Validator
 
 
@@ -49,12 +51,202 @@ settings = Dynaconf(
 
         # Checks whether the length is the same as defined.
         Validator("PORT", len_eq=4),
+
+        # Ensure java_bin is returned as a Path instance
+        Validator("JAVA_BIN", must_exist=True, cast=Path),
+
+        # Ensure a value meets a condition specified by a callable 
+        Validator("VERSION", must_exist=True, condition=lambda v: v.startswith("1.")),
     ]
 )
 ```
 
 The above will raise `dynaconf.validators.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")` and `dynaconf.validators.ValidationError("PROJECT must be eq='hello_world' but it is 'This is not hello_world' in env PRODUCTION")`
 
+
+## Validator parameters 
+
+Validators can be created by passing the following arguments: 
+
+```python
+# names: list[str]
+# can be a single or multiple positional strings 
+Validator('VERSION', 'AGE', 'NAME'),
+# can also use dot notation 
+Validator('DATABASE.HOST', 'DATABASE.PORT'),
+Validator('DATABASE.HOST', 'DATABASE.PORT'),
+
+
+# must_exist: bool (alias: required)
+# Check whether variable must or not exist 
+Validator('VERSION', must_exist=True), 
+Validator('PASSWORD', must_exist=False),
+# there is an alias for must_exist called `required`
+Validator('VERSION', required=True), 
+
+# condition: callable 
+# A function or any other callable that accepts `value` and 
+# must return a boolean 
+Validator('VERSION', condition=lambda v: v.startswith("1.")),
+
+# when: Validator
+# Condtionally runs the validator only when the passed validator passes
+Validator(
+    'VERSION',
+    condition=lambda v: v.endswith("-dev"),
+    when=Validator('ENV_FOR_DYNACONF', eq='development')
+),
+
+# env: str 
+# Runs the validator against the specified env, only for 
+# settings that are loaded from files with environments=True 
+Validator('VERSION', must_exist=True, env='production'),
+
+# messages: dict[str, str]
+# A dictionary with custom messages for each validation type 
+Validator(
+    "VERSION", 
+    must_exist=True,
+    condition=lambda v: v.startswith("1."),
+    messages={
+        "must_exist_true": "You forgot to set {name} in your settings.",
+        "condition": "The allowed version must start with 1., you passed {value}"
+    }
+),
+
+# cast: callable/class 
+# A type or a callable to transform the type of the passed object
+# can also be used to apply transformations/normalizations
+Validator("VERSION", cast=str),
+Validator("VERSION", cast=lambda v: v.replace("1.", "2.")),
+Validator("STATIC_FOLDER", cast=Path)
+# Cast will be called for default values and also for values defined on 
+# settings via files or envvars
+
+# default: any value or a callable 
+# If the value is not found it will be set to the default value 
+# if the default is a callable it will be called with the
+# settings and instance of validator as arguments.
+def default_connection_args(settings, validator):
+    if settings.DATABASE.uri.startswith("sqlite://"):
+        return {"echo": True}
+    else:
+        return {}
+
+Validator("DATABASE.CONNECTION_ARGS", default=default_connection_args), 
+# default will be called only if the value is not explicitly set on settings 
+# via files or env vars.
+
+# description: str
+# As of 3.1.12 dynaconf doesn't use this for nothing 
+# but there are plugins and external tools that uses 
+# this value to generate documentation 
+Validator("VERSION", description="The version of the app"),
+
+# apply_default_on_none: bool 
+# YAML parser parses empty values as `None` so in this case
+# you might want to force the application of default when the 
+# value in settings is `None`
+Validator("VERSION", default="1.0.0", apply_default_on_none=True),
+
+
+# Operations: comparison operations 
+# - eq: value == other
+# - ne: value != other
+# - gt: value > other
+# - lt: value < other
+# - gte: value >= other
+# - lte: value <= other
+# - is_type_of: isinstance(value, type)
+# - is_in:  value in sequence
+# - is_not_in: value not in sequence
+# - identity: value is other
+# - cont: contain value in
+# - len_eq: len(value) == other
+# - len_ne: len(value) != other
+# - len_min: len(value) > other
+# - len_max: len(value) < other
+# - startswith: value.startswith(other) 
+# - endswith: value.endswith(other)
+# Examples:
+Validator("VERSION", eq="1.0.0"),
+Validator("VERSION", ne="1.0.0"),
+Validator("AGE", gt=18),
+Validator("AGE", lt=18),
+Validator("AGE", gte=18),
+Validator("AGE", lte=18),
+Validator("AGE", is_type_of=int),
+Validator("AGE", is_in=[18, 19, 20]),
+Validator("AGE", is_not_in=[18, 19, 20]),
+Validator("THING", identity=thing),  # settings.THING is thing
+Validator("THING", cont="hello"),  # "hello" in settings.THING
+Validator("THING", len_eq=3),  # len(settings.THING) == 3
+Validator("THING", len_ne=3),  # len(settings.THING) != 3
+Validator("THING", len_min=3),  # len(settings.THING) > 3
+Validator("THING", len_max=3),  # len(settings.THING) < 3
+Validator("THING", startswith="hello"),  # settings.THING.startswith("hello")
+Validator("THING", endswith="world"),  # settings.THING.endswith("world")
+```
+
+## Complex validators 
+
+A single validator can have multiple conditions.
+
+```python
+Validator(
+  "NAME",
+  ne="john",
+  len_min=4,
+  must_exist=True, # redundant but allowed 
+  startswith="user_",
+  cast=str,
+  condition=lambda v: v not in FORBIDEN_USERS,
+  ...
+)
+```
+
+But can also be expressed in separated validators, notice that order matters
+because validators are evaluated in the given order.
+
+```python
+validators = [
+  Validator("NAME", ne="john"),
+  Validator("NAME", len_min=4),
+  Validator("NAME", must_exist=True),
+  Validator("NAME", startswith="user_"),
+]
+```
+
+## Custom validation messages
+
+Messages can be customized by passing a `messages` argument to the `Validator` constructor.
+
+The messages argument must be passed a dictionary with one of the valid keys:
+
+The default messages are:
+
+```python
+{
+    "must_exist_true": "{name} is required in env {env}",
+    "must_exist_false": "{name} cannot exists in env {env}",
+    "condition": "{name} invalid for {function}({value}) in env {env}",
+    "operations": (
+        "{name} must {operation} {op_value} "
+        "but it is {value} in env {env}"
+    ),
+    "combined": "combined validators failed {errors}",
+}
+```
+
+Example:
+
+```python
+Validator(
+    "VERSION",
+    must_exist=True,
+    messages={"must_exist_true": "You forgot to set {name} in your settings."}
+)
+```
 
 ## Lazy validation
 
@@ -164,6 +356,103 @@ settings.validators.register(
 
 # Fire the validator
 settings.validators.validate()
+```
+
+### Casting / Transform
+
+Validators can be used to cast values to a specific type,
+the `cast` argument expects a class/type or callable.
+
+given this settings.toml 
+```toml
+name = 'Bruno'
+colors = ['red', 'green', 'blue']
+``` 
+
+Validators can be passed a `cast` attribute
+
+```python
+settings = Dynaconf(
+    validators=[
+        # Order matters here
+        Validator("name", len_eq=5),
+        Validator("name", len_min=1),
+        Validator("name", len_max=5),
+        # This will cast the str to list
+        Validator("name", cast=list),
+        # From this point on Validation pipeline
+        # `name` will be a list of chars
+        # and this will affect the settings.NAME
+
+        Validator("colors", len_eq=3),
+        Validator("colors", len_eq=3),
+        # this will cast the list to str
+        Validator("colors", len_eq=24, cast=str),
+        # From this point on Validation pipeline
+        # `colors` will be a str of 24 chars
+        # and this will affect the settings.COLORS
+
+    ],
+)
+```
+
+```python
+assert settings.name == ['B', 'r', 'u', 'n', 'o']
+assert type(settings.name ) == list
+assert settings.colors == '["red", "green", "blue"]'
+assert type(settings.colors) == str
+```
+
+### Callable conditions 
+
+The `condition` argument expects a callable that receives the value and returns a 
+boolean value, if the condition is not met a `ValidationError` will be raised.
+
+To pass the validation the condition function must return `True` (or a truthy type)
+if the returned value is `False` (ot a falsy type) then the condition fails.
+
+The condition calleble receives only the single value as parameter.
+
+Example:
+
+```python
+Validator("VERSION", condition=lambda v: v.startswith("1."))
+
+
+def user_must_be_chuck_norris(value):
+    return value == "Chuck Norris"
+
+Validator("USER", condition=user_must_be_chuck_norris)
+```
+
+### Conditional Validators 
+
+In some cases you might want to perform a validation only when 
+another validator passes, for example:
+
+> Ensure that the `DATABASE.HOST` is set only when `DATABASE.USER` is set.
+
+To validate that case the parameter `when` can be passed:
+
+```python
+Validator(
+    "DATABASE.HOST", 
+    must_exist=True, 
+    when=Validator("DATABASE.USER", must_exist=True)
+)
+```
+
+Another example:
+
+> validate `DATABASE.CONNECTION_ARGS` is set only when `DATABASE.URI startswith "sqlite://"`
+
+```python
+Validator(
+    "DATABASE.CONNECTION_ARGS", 
+    must_exist=True, 
+    when=Validator("DATABASE.URI", condition=lambda v: v.startswith("sqlite://")),
+    messages={"must_exist_true": "{name} is required when DATABASE is SQLite"}
+)
 ```
 
 ### Combining validators
