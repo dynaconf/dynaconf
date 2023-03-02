@@ -260,12 +260,10 @@ class Validator:
                 # avoid TOML from parsing "+-1" as integer
                 default_value = f"'{default_value}'"
 
-            value = self.cast(
-                settings.setdefault(
-                    name,
-                    default_value,
-                    apply_default_on_none=self.apply_default_on_none,
-                )
+            value = settings.setdefault(
+                name,
+                default_value,
+                apply_default_on_none=self.apply_default_on_none,
             )
 
             # is name required but not exists?
@@ -283,6 +281,14 @@ class Validator:
 
             if self.must_exist in (False, None) and value is empty:
                 continue
+
+            if self.cast:
+                # value or default value already set
+                # by settings.setdefault above
+                # however we need to cast it
+                # so we call .set again
+                value = self.cast(settings.get(name))
+                settings.set(name, value)
 
             # is there a callable condition?
             if self.condition is not None:
