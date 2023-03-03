@@ -274,4 +274,4 @@ def write(filename, data, merge=False, env=None):
     if loader is not py_loader and env and env not in data:
         data = {env: data}
 
-    loader.write(filename, data, merge=False)
+    loader.write(filename, data, merge=merge)
