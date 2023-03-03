@@ -1,5 +1,5 @@
 #!/bin/bash -x
-export SETTINGS_FILE_FOR_DYNACONF=$(mktemp --suffix .yaml)
+export SETTINGS_FILE_FOR_DYNACONF=$(mktemp -t dynaconf.XXXXX.yaml)
 echo "offset: 24" > $SETTINGS_FILE_FOR_DYNACONF
 PARENT=$(readlink -f .)
 mkdir nonexistent_dir
