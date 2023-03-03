@@ -263,7 +263,7 @@ def enable_external_loaders(obj):
             obj.LOADERS_FOR_DYNACONF.insert(0, loader)
 
 
-def write(filename, data, merge=False, env=None):
+def write(filename, data, env=None, merge=False):
     """Writes `data` to `filename` infers format by file extension."""
     loader_name = f"{filename.rpartition('.')[-1]}_loader"
     loader = globals().get(loader_name)
