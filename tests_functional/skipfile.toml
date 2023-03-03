@@ -19,4 +19,8 @@ nt = [
     "685_disable_dotted_lookup",
     "741_envvars_ignored",
     "missing_pwd",
+    "876_deleted_cwd",
+]
+darwin = [
+    "876_deleted_cwd",
 ]

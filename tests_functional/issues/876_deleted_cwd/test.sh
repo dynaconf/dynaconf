@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/bin/bash -x
 export SETTINGS_FILE_FOR_DYNACONF=$(mktemp --suffix .yaml)
 echo "offset: 24" > $SETTINGS_FILE_FOR_DYNACONF
-PARENT=$(realpath .)
+PARENT=$(readlink -f .)
 mkdir nonexistent_dir
 cd nonexistent_dir
 rm -r ../nonexistent_dir
