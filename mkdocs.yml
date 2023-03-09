@@ -4,26 +4,27 @@ site_description: Configuration Management for Python
 site_author: Bruno Rocha
 repo_name: dynaconf/dynaconf
 repo_url: https://github.com/dynaconf/dynaconf
-edit_uri: 'https://github.com/dynaconf/dynaconf/tree/master/docs'
+edit_uri: "https://github.com/dynaconf/dynaconf/tree/master/docs"
 nav:
-    - Home: index.md
-    - Configuration: configuration.md
-    - Env vars: envvars.md
-    - Settings files: settings_files.md
-    - Secrets: secrets.md
-    - Merging: merging.md
-    - Dynamic Variables: dynamic.md
-    - CLI: cli.md
-    - Validation: validation.md
-    - Flask: flask.md
-    - Django: django.md
-    - Advanced usage: advanced.md
+  - Home: index.md
+  - Configuration: configuration.md
+  - Env vars: envvars.md
+  - Settings files: settings_files.md
+  - Secrets: secrets.md
+  - Merging: merging.md
+  - Dynamic Variables: dynamic.md
+  - CLI: cli.md
+  - Validation: validation.md
+  - Flask: flask.md
+  - Django: django.md
+  - Advanced usage: advanced.md
+  - FAQ: faq.md
 theme:
   features:
-      - search.suggest
-      - search.highlight
-      - search.share
-      - content.code.annotate
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.annotate
   name: material
   language: en
   logo: img/logo_square_d.svg
@@ -36,7 +37,7 @@ theme:
       toggle:
         icon: material/lightbulb-outline
         name: Switch to dark mode
-    - scheme: slate 
+    - scheme: slate
       media: "(prefers-color-scheme: dark)"
       primary: black
       accent: teal
@@ -56,7 +57,7 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tabbed:
-      alternate_style: true 
+      alternate_style: true
   - pymdownx.tilde
   - admonition
   - codehilite:
