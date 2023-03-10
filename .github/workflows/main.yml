@@ -193,7 +193,7 @@ jobs:
       redis:
         image: redis
         ports:
-           - 6379:6379
+          - 6379:6379
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -218,7 +218,7 @@ jobs:
       vault:
         image: vault
         ports:
-           - 8200:8200
+          - 8200:8200
         env:
           VAULT_DEV_ROOT_TOKEN_ID: myroot
 
