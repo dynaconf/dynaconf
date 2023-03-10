@@ -147,9 +147,9 @@ Controls if dynaconf will work in a multi-layered environment system allowing `[
 > type=`str`, default=`SETTINGS_FILE_FOR_DYNACONF` </br>
 > env-var=`ENVVAR_FOR_DYNACONF`
 
-Sets an environment variable name that will be used to load the settings file. See [setting_file](https://www.dynaconf.com/configuration/#settings_file-or-settings_files)
+Sets an environment variable name that will be used to load the settings files.
 
-ex:
+Eg:
 
 ```bash
 # sets MY_SETTINGS_PATH as the new env var that defines the paths to the settings files.
@@ -158,6 +158,9 @@ export ENVVAR_FOR_DYNACONF="MY_SETTINGS_PATH"
 # now its value will override *settings_file* or SETTINGS_FILE_FOR_DYNACONF values
 export MY_SETTINGS_PATH="path.to.settings"
 ```
+
+!!! warning "Legacy Option"
+    The preferred way of defining setting files is through [setting_file](https://www.dynaconf.com/configuration/#settings_file-or-settings_files). Consider if you really need to use this.
 
 ---
 
@@ -415,32 +418,25 @@ ex: `export SECRETS_FOR_DYNACONF=path/to/secrets.yaml`
 
 ---
 
-### **settings_file** or **settings_files**
+### **settings_file** (or **settings_files**)
 
 > type=`str | list`, default=`[]` </br>
 > env-var=`SETTINGS_FILE_FOR_DYNACONF` or `SETTINGS_FILES_FOR_DYNACONF`
 
 !!! info
-    This variable is required, but can be overriden by [envvar](https://www.dynaconf.com/configuration/#envvar)
+    This variable is required since v3.0.0 (see [#361](https://github.com/dynaconf/dynaconf/pull/361))
 
 The path for the files you wish dynaconf to load the settings from.
 It can be `settings_file` (singular) or `settings_files` (multiple).
 
-_Starting on v3.0.0 dynaconf will load only files specified on this variables._
-
 </br>
 
-Must be a `list`:
+It can be `list` or `str` separated by semicolons/commas:
 
 ```py
-settings_files=["file1.toml", "file2.toml"]
-```
-
-or a `str` separated by semicolons or commas.
-
-```py
-settings_files="file1.toml;file2.toml"
-settings_files="file1.toml,file2.toml"
+settings_files=["file1.toml", "file2.toml"] # list
+settings_files="file1.toml;file2.toml" # semicolons separator
+settings_files="file1.toml,file2.toml" # commas separator
 ```
 
 Also it can be a single file.
