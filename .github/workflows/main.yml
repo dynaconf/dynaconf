@@ -6,9 +6,16 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ master ]
+    branches: [master]
+    # will run when at least one file matches something else than those
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
   pull_request:
-    branches: [ master ]
+    branches: [master]
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
