@@ -1,0 +1,23 @@
+# This overrides main.yml when only doc related changes were made
+# see: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/troubleshooting-required-status-checks#handling-skipped-but-required-checks
+
+name: CI
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [master]
+    # will run when at least one file matches something else than those
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
+  pull_request:
+    branches: [master]
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "No build required"'
