@@ -1,4 +1,4 @@
-# Dynaconf Quick Start
+# Dynaconf Quick Start!
 
 <p align="center">
   <a href="https://dynaconf.com"><img src="img/logo_400.svg?sanitize=true" alt="Dynaconf"></a>
