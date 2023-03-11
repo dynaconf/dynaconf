@@ -17,7 +17,7 @@ on:
       - "mkdocs.yml"
 
 jobs:
-  build:
+  checkpoint:
     runs-on: ubuntu-latest
     steps:
       - run: 'echo "No build required"'
