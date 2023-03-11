@@ -7,12 +7,12 @@ on:
   push:
     branches: [master]
     # will run when at least one file matches something else than those
-    paths-ignore:
+    paths:
       - "docs/**"
       - "mkdocs.yml"
   pull_request:
     branches: [master]
-    paths-ignore:
+    paths:
       - "docs/**"
       - "mkdocs.yml"
 
