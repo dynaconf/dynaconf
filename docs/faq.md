@@ -28,3 +28,41 @@ Dynaconf path resolving relies on your CWD (current working directory) being at 
 Some IDEs may modify the CWD to run tests, and this will cause this issue.
 
 PyCharm, for example, may change the CWD to `./tests` in their integrated test system. If this is your specific case, go to "Modify Run Configuration > Working Dir" on the test tab and assure that it points to the root of your project.
+
+## Conditional Validation
+
+> Is it possible to create a Validator that would require the presence of an option if another option is present?
+
+Yes. Validators provide great flexibility in the ways you can arrange them. If `foo` must only be present if `bar` exists, you could do:
+
+```python
+Validator(
+        "foo",
+        must_exist=True,
+        when=Validator(
+            "bar", must_exist=True,
+        ),
+    ),
+```
+
+See more about [validators](https://www.dynaconf.com/validation/)
+
+## Deprecation mechanism
+
+> I have a quite busy project and sometimes old config files get in the way. Is there a deprecation mechanism to deal with this?
+
+There is already a [feature request](https://github.com/dynaconf/dynaconf/discussions/881) about a more specific deprecation mechanism, but right now you can use hooks to achieve that. You might do something like:
+
+```python
+# dynaconf_hooks.py
+def post(settings: Dynaconf) -> dict:
+    DEPRECATED = {
+        "FOO": "NEWKEY"
+    }
+    for key, new in DEPRECATED.items():
+        if value := settings.get(key):
+            warnings.warn(f"{key} has been replaced by {new}")
+            settings.set(new, value)
+```
+
+See more about [hooks](https://www.dynaconf.com/advanced/#hooks)
