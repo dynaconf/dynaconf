@@ -2,7 +2,7 @@
 
 Dynaconf allows the validation of settings parameters, in some cases you may want to validate the settings before starting the program.
 
-Lets say you have `settings.toml`
+Let's say you have `settings.toml`
 
 ```ini
 [default]
@@ -28,13 +28,13 @@ from dynaconf import Dynaconf, Validator
 
 settings = Dynaconf(
     validators=[
-        # Ensure some parameters exists (are required)
+        # Ensure some parameters exist (are required)
         Validator('VERSION', 'AGE', 'NAME', must_exist=True),
 
         # Ensure some password cannot exist
         Validator('PASSWORD', must_exist=False),
 
-        # Ensure some parameter mets a condition
+        # Ensure some parameter meets a condition
         # conditions: (eq, ne, lt, gt, lte, gte, identity, is_type_of, is_in, is_not_in)
         Validator('AGE', lte=30, gte=10),
 
@@ -138,8 +138,8 @@ Validator("DATABASE.CONNECTION_ARGS", default=default_connection_args),
 # via files or env vars.
 
 # description: str
-# As of 3.1.12 dynaconf doesn't use this for nothing 
-# but there are plugins and external tools that uses 
+# As of 3.1.12 dynaconf doesn't use this for anything 
+# but there are plugins and external tools that uses it.
 # this value to generate documentation 
 Validator("VERSION", description="The version of the app"),
 
@@ -205,7 +205,7 @@ Validator(
 )
 ```
 
-But can also be expressed in separated validators, notice that order matters
+But can also be expressed in separate validators, notice that order matters
 because validators are evaluated in the given order.
 
 ```python
@@ -406,12 +406,12 @@ assert type(settings.colors) == str
 ### Callable conditions 
 
 The `condition` argument expects a callable that receives the value and returns a 
-boolean value, if the condition is not met a `ValidationError` will be raised.
+boolean value. If the condition is not met a `ValidationError` will be raised.
 
 To pass the validation the condition function must return `True` (or a truthy type)
-if the returned value is `False` (ot a falsy type) then the condition fails.
+if the returned value is `False` (or a falsy type) then the condition fails.
 
-The condition calleble receives only the single value as parameter.
+The condition callable receives only a single value as a parameter.
 
 Example:
 
@@ -476,7 +476,7 @@ Validator('DATABASE.HOST', must_exist=True) & Validator('DATABASE.CONN', must_ex
 
 It is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same folder as your settings files.
 
-`dynaconf_validators.toml` equivalent to program above
+`dynaconf_validators.toml` is equivalent to the program below:
 
 ```ini
 [default]
@@ -593,9 +593,9 @@ settings.validators.validate(
 
 > **Validate only current env**
 
-You can specify if you want to validate all environments defined for a validator (default behavior) or only the current environment. In the first case, the validators will run on all possible settings defined in their list of environment, while in the latter the validators with environments different from the current environment will be skipped.
+You can specify if you want to validate all environments defined for a validator (default behavior) or only the current environment. In the first case, the validators will run on all possible settings defined in their list of environments, while in the latter the validators with environments different from the current environment will be skipped.
 
-This is useful when your configuration for different environments (let's say `production` and `development`) comes from different files you don't necesseraly have access to during development. You would want to write different validators for your `development` and `production` environments, and only run the right validator for the current environment.
+This is useful when your configuration for different environments (let's say `production` and `development`) comes from different files you don't necessarily have access to during development. You would want to write different validators for your `development` and `production` environments, and only run the right validator for the current environment.
 
 Here is an example of the option using:
 
@@ -631,7 +631,7 @@ settings = Dynaconf(
     settings_files=['setting.toml', '.secrets.toml'],
     environments=True,
     validators=[
-        # Ensure some parameters exists for both envs
+        # Ensure some parameters exist for both envs
         Validator('VERSION', 'NAME', 'SERVERS', envs=['development', 'production'], must_exist=True),
 
         # Ensure some parameter validate certain condition in dev env
