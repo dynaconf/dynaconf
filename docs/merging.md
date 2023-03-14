@@ -9,7 +9,7 @@ You can globally turn on the merging strategy by setting [merge_enable](https://
 
 ## Merging existing data structures
 
-If your settings has existing variables of types `list` or `dict` and you want to `merge` instead of `override` then 
+If your settings have existing variables of types `list` or `dict` and you want to `merge` instead of `override` then 
 the `dynaconf_merge` and `dynaconf_merge_unique` stanzas can mark that variable as a candidate for merging.
 
 For **dict** value:
@@ -77,7 +77,7 @@ So the above will result in
 DATABASE = {'password': 1234, 'user': 'admin', 'ARGS': {'timeout': 30, 'retries': 5}}
 ```
 
-> **IMPORTANT** lower case keys are respected only on *nix systems, unfortunately Windows environment variables are case insensitive and Python reads it as all upper cases, that means that if you are running on Windows the dictionary can have only upper case keys.
+> **IMPORTANT** lower case keys are respected only on *nix systems. Unfortunately, Windows environment variables are case insensitive and Python reads it as all upper cases, which means that if you are running on Windows the dictionary can have only upper case keys.
 
 You can also export a toml dictionary.
 
@@ -232,7 +232,7 @@ parameters = {enabled=false}
 password = 9999
 ```
 
-So with above the values will be:
+So with the above eg, the values will be:
 
 ```python
 settings.COLORS == ["pink"]
@@ -254,9 +254,9 @@ colors = ["pink"]
 parameters = {enabled=false}
 ```
 
-By adding `dynaconf_merge` to the top root of the file mark entire file to be merged.
+By adding `dynaconf_merge` to the top root of the file, the entire file will be marked for merge.
 
-And then the values will be updated in to existing data structures.
+And then the values will be updated into existing data structures.
 
 ```python
 settings.COLORS == ["pink", "green", "blue"]
@@ -283,9 +283,9 @@ colors = ["pink", "dynaconf_merge"]
 parameters = {enabled=false, dynaconf_merge=true}
 ```
 
-By adding `dynaconf_merge` to a `list` or `dict` marks it as a merge candidate.
+By adding `dynaconf_merge` to a `list` or `dict`, those will be marked as merge candidates.
 
-And then the values will be updated in to existing data structures.
+And then the values will be updated into existing data structures.
 
 ```python
 settings.COLORS == ["pink", "green", "blue"]
@@ -308,7 +308,7 @@ dynaconf_merge = {enabled=false}
 
 ### Dunder merging for nested structures
 
-For nested structures the recommendation is to use dunder merging because it it easier to read and also it has no limitations in terms of nesting levels.
+For nested structures, the recommendation is to use dunder merging because it is easier to read and also has no limitations in terms of nesting levels.
 
 ```ini
 # settings.local.yaml
@@ -325,7 +325,7 @@ The use of `__` to denote nested level will ensure the key is merged with existi
 > 
 > This is useful for `Django` settings.
 
-Lets say you have a configuration like this:
+Let's say you have a configuration like this:
 
 `settings.py`
 
@@ -349,7 +349,7 @@ So
 DATABASES['default']['ENGINE'] = 'other.module'
 ```
 
-Can be expressed as environment variables as:
+Can be expressed as environment variables:
 
 ```bash
 export DYNACONF_DATABASES__default__ENGINE=other.module
@@ -370,9 +370,9 @@ DATABASES = {
 ```
 
 !!! warning
-    lower case keys are respected only on *nix systems, unfortunately Windows environment variables are case insensitive and Python reads it as all upper cases, that means that if you are running on Windows the dictionary can have only upper case keys.
-    **Also** only first level keys are case insensitive, which means `DYNACONF_FOO__BAR=1` is different than `DYNACONF_FOO__bar=1`  
-    **in other words**, except by the first level key, you must follow strictly the case of the variable key.
+    lower case keys are respected only on *nix systems. Unfortunately, Windows environment variables are case insensitive and Python reads it as all upper cases, which means that if you are running on Windows the dictionary can have only upper case keys.
+    **Also** only first level keys are case insensitive, which means `DYNACONF_FOO__BAR=1` is different than `DYNACONF_FOO__bar=1`.</br>
+**In other words**, except by the first level key, you must follow strictly the case of the variable key.
 
 Now if you want to add a new item to `ARGS` key:
 
@@ -474,7 +474,7 @@ DATABASES = {
 
 > **New in 2.0.0**
 
-To merge exported variables there is the **dynaconf_merge** tokens, example:
+To merge exported variables there is the **dynaconf_merge** tokens. Example:
 
 Your main settings file (e.g `settings.toml`) has an existing `DATABASE` dict setting on `[default]` env.
 
@@ -529,7 +529,7 @@ settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234
 
 ## Known caveats
 
-The **dynaconf_merge** and **@merge** functionalities works only for the first level keys, it will not merge subdicts or nested lists (yet).
+The **dynaconf_merge** and **@merge** functionalities work only for the first level keys, it will not merge subdicts or nested lists (yet).
 
 
 ## More examples
