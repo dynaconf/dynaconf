@@ -1,3 +1,12 @@
+## Overview
+
+Dynaconf provides global and local tools to control if the value of conflicting settings (which have the same key) will be merged or will override one another.
+
+By default, nothing is merged. Also, only container types can be merged (`list` and `dict`). Non-container types, such as `str` and `int`, will always override the previous value (If you want to merge them, wrap them in a `list` or `dict`).
+
+You can globally turn on the merging strategy by setting [merge_enable](https://www.dynaconf.com/configuration/#merge_enabled) option to `True` (via instance settings or envvars).
+
+
 ## Merging existing data structures
 
 If your settings has existing variables of types `list` or `dict` and you want to `merge` instead of `override` then 
@@ -309,16 +318,8 @@ parameters__enabled = false
 
 The use of `__` to denote nested level will ensure the key is merged with existing values read more in [merging existing values](#merging-existing-values).
 
-### Global merge
 
-```bash
-export MERGE_ENABLED_FOR_DYNACONF=true
-```
-
-or put it in your `.env` file then Dynaconf will automatically merge all existing variables.
-
-
-### Nested keys in dictionaries via environment variables.
+## Nested keys in dictionaries via environment variables.
 
 > **New in 2.1.0**
 > 
@@ -469,7 +470,7 @@ DATABASES = {
 }
 ```
 
-### Using the `dynaconf_merge` mark on configuration files.
+## Using the `dynaconf_merge` mark on configuration files.
 
 > **New in 2.0.0**
 
@@ -526,7 +527,7 @@ settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234
 
 > **BEWARE**: Using `MERGE_ENABLED_FOR_DYNACONF` can lead to unexpected results because you do not have granular control of what is being merged or overwritten so the recommendation is to use other options.
 
-### Known caveats
+## Known caveats
 
 The **dynaconf_merge** and **@merge** functionalities works only for the first level keys, it will not merge subdicts or nested lists (yet).
 
