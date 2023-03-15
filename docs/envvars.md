@@ -13,13 +13,14 @@ In addition to that Dynaconf offers some approaches you may want to **Optionally
 
 ## Environment variables
 
-You can override any setting key by exporting an environment variable prefixed by `DYNACONF_` (or by the [custom prefix](configuration/#custom-prefix))
+You can override any setting key by exporting an environment variable prefixed by `DYNACONF_` (or by the [custom prefix](configuration/#custom-prefix)).
+
+!!! warning
+    Dynaconf will only look for UPPERCASE prefixed envvars. This means envvar exported as `dynaconf_value` or `myprefix_value` won't be loaded, while `DYNACONF_VALUE` and `MYPREFIX_VALUE` (when proper set) will.
 
 ### Example
 
-!!! info
-    When loading environment variables, dynaconf will parse the value using `toml` language
-    so it will try to automatically convert to the proper data type.
+Notice that when loading environment variables, dynaconf will parse the value using `toml` language so it will try to automatically convert to the proper data type.
 
 ```bash
 export DYNACONF_NAME=Bruno                                   # str: "Bruno"
@@ -31,16 +32,6 @@ export DYNACONF_PERSON="{name='Bruno', email='foo@bar.com'}" # dict: {"name": "B
 export DYNACONF_STRING_NUM="'76'"                            # str: "76"
 export DYNACONF_PERSON__IS_ADMIN=true                        # bool: True (nested)
 ```
-
-!!! warning
-    When exporting data structures such as `dict` and `list` you have to use one of:  
-    ```
-    export DYNACONF_TOML_DICT={key="value"}
-    export DYNACONF_TOML_LIST=["item"]
-    export DYNACONF_JSON_DICT='@json {"key": "value"}'
-    export DYNACONF_JSON_LIST='@json ["item"]'
-    ```
-    Those 2 ways are the only ways for dynaconf to load `dicts` and `lists` from envvars.
 
 
 With the above it is now possible to read the settings in your `program.py` using:
@@ -65,6 +56,16 @@ assert settings.STRING_NUM == "76"
     existing settings solution. You can access using `.notation`, `[item] indexing`, `.get method`
     and also it allows `.notation.nested` for data structures like dicts.
     **Also variable access is case insensitive for the first level key**
+
+!!! warning
+    When exporting data structures such as `dict` and `list` you have to use one of:  
+    ```
+    export DYNACONF_TOML_DICT={key="value"}
+    export DYNACONF_TOML_LIST=["item"]
+    export DYNACONF_JSON_DICT='@json {"key": "value"}'
+    export DYNACONF_JSON_LIST='@json ["item"]'
+    ```
+    Those 2 ways are the only ways for dynaconf to load `dicts` and `lists` from envvars.
 
 ## Custom Prefix
 
