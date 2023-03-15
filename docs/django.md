@@ -114,9 +114,13 @@ If you don't want to manually create your config files take a look at the [CLI](
 
 ## Customizations
 
-It is possible to customize how your django project will load settings, example: You want your users to customize a settings file defined in `export PROJECTNAME_SETTINGS=/path/to/settings.toml` and you want environment variables to be loaded from `PROJECTNAME_VARNAME`
+### Loading settings
 
-Edit django `settings.py` and modify the dynaconf extension part:
+It is possible to customize how your django project will load settings.
+
+Example: you want your users to customize a settings file defined in `export PROJECTNAME_SETTINGS=/path/to/settings.toml` and you want environment variables to be loaded from `PROJECTNAME_VARNAME`
+
+To achieve that, edit django `settings.py` and modify the dynaconf extension part:
 
 from:
 
@@ -152,6 +156,48 @@ Your settings are now read from `/etc/projectname/settings.toml` (dynaconf will 
 You can have additional settings read from `/etc/projectname/plugins/*` any supported file from this folder will be loaded.
 
 You can set more options, take a look on [configuration](/configuration/)
+
+### Use django function inside custom settings
+
+If you need to use django function inside your settings, you can register custom converters.
+
+Example: if you need to user `reverse_lazy`, you might do this:
+
+```python
+# settings.py
+
+...
+
+# HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
+
+import dynaconf
+from dynaconf.utils import parse_conf
+from django.urls import reverse_lazy
+
+# register custom converter
+parse_conf.converters["@reverse_lazy"] = (
+    lambda value: value.set_casting(reverse_lazy)
+    if isinstance(value, parse_conf.Lazy)
+    else reverse_lazy(value)
+)
+
+# regular setup
+settings = dynaconf.DjangoDynaconf(__name__)
+
+# HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
+```
+
+And then the following code would work:
+
+```yaml
+# settings.yaml
+
+default:
+    LOGIN_URL: "@reverse_lazy account_login"
+```
+
+!!! note
+    Some common converters may be added to Dynaconf in future releases. See [#865](https://github.com/dynaconf/dynaconf/issues/865)
 
 ## Reading Settings on Standalone Scripts
 

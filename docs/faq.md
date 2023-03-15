@@ -66,3 +66,9 @@ def post(settings: Dynaconf) -> dict:
 ```
 
 See more about [hooks](https://www.dynaconf.com/advanced/#hooks)
+
+## Django functions inside settings
+
+> I use some django utility functions in my django `settings.py`. Can I still use them if I choose to use `yaml` to manage my config?
+
+Yes, you may add a custom converter for any functions you like. Refer [here](/django/#use-django-function-inside-custom-settings) for a full example.
