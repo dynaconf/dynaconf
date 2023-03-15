@@ -282,13 +282,12 @@ class Validator:
             if self.must_exist in (False, None) and value is empty:
                 continue
 
-            if self.cast:
-                # value or default value already set
-                # by settings.setdefault above
-                # however we need to cast it
-                # so we call .set again
-                value = self.cast(settings.get(name))
-                settings.set(name, value)
+            # value or default value already set
+            # by settings.setdefault above
+            # however we need to cast it
+            # so we call .set again
+            value = self.cast(settings.get(name))
+            settings.set(name, value)
 
             # is there a callable condition?
             if self.condition is not None:
