@@ -42,6 +42,13 @@ def identity(value, other):
 
 def is_type_of(value, other):
     """Type check"""
+
+    # auto transform quoted types
+    if isinstance(other, str):
+        from dynaconf.utils.parse_conf import type_map
+
+        other = type_map[other]
+
     return isinstance(value, other)
 
 

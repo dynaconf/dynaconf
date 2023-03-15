@@ -228,6 +228,16 @@ def evaluate_lazy_format(f):
     return evaluate
 
 
+# is there another way to make this conversion?
+type_map: dict[str, type] = {
+    "int": int,
+    "float": float,
+    "str": str,
+    "bool": bool,
+    "list": list,
+    "dict": dict,
+}
+
 converters = {
     "@str": lambda value: value.set_casting(str)
     if isinstance(value, Lazy)
@@ -248,6 +258,11 @@ converters = {
     )
     if isinstance(value, Lazy)
     else json.loads(value),
+    "@type": lambda value: value.set_casting(
+        type
+    )  # don't know what this really does
+    if isinstance(value, Lazy)
+    else type_map.get(value),
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions

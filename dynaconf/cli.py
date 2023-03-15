@@ -12,9 +12,11 @@ from pathlib import Path
 
 from dynaconf import constants
 from dynaconf import default_settings
+from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf import settings as legacy_settings
+from dynaconf.loaders import toml_loader
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
@@ -713,7 +715,6 @@ def validate(path):  # pragma: no cover
     # reads the 'dynaconf_validators.toml' from path
     # for each section register the validator for specific env
     # call validate
-
     path = Path(path)
 
     if not str(path).endswith(".toml"):
@@ -723,16 +724,19 @@ def validate(path):  # pragma: no cover
         click.echo(click.style(f"{path} not found", fg="white", bg="red"))
         sys.exit(1)
 
-    try:  # try tomlib first
-        validation_data = tomllib.load(open(str(path), "rb"))
-    except UnicodeDecodeError:  # fallback to legacy toml (TBR in 4.0.0)
-        warnings.warn(
-            "TOML files should have only UTF-8 encoded characters. "
-            "starting on 4.0.0 dynaconf will stop allowing invalid chars.",
-        )
-        validation_data = toml.load(
-            open(str(path), encoding=default_settings.ENCODING_FOR_DYNACONF),
-        )
+    # I added this Dynaconf instance to use the standard loaders/converters
+    # data processing require passing a settings instance.
+    # This can be avoided with some extra work
+    temp_settings = Dynaconf()
+    toml_loader.load(temp_settings, filename=str(path))
+    validation_data = temp_settings.as_dict()
+    temp_settings = None  # does this induce garbage collector? don't know
+
+    # guarantee there is an environment
+    if not validation_data.get(
+        "DEFAULT"
+    ):  # it is mandatory to have DEFAULT, right?
+        validation_data = {"DEFAULT": validation_data}
 
     success = True
     for env, name_data in validation_data.items():
@@ -740,7 +744,8 @@ def validate(path):  # pragma: no cover
             if not isinstance(data, dict):  # pragma: no cover
                 click.echo(
                     click.style(
-                        f"Invalid rule for parameter '{name}'",
+                        f"Invalid rule for parameter '{name}'"
+                        "(this will be skipped)",
                         fg="white",
                         bg="yellow",
                     )
