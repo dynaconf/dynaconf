@@ -72,3 +72,36 @@ See more about [hooks](https://www.dynaconf.com/advanced/#hooks)
 > I use some django utility functions in my django `settings.py`. Can I still use them if I choose to use `yaml` to manage my config?
 
 Yes, you may add a custom converter for any functions you like. Refer [here](/django/#use-django-function-inside-custom-settings) for a full example.
+### Default-override workflow
+
+> I'd like to use a base-file as default settings (like django settings.py) and a user-file settings where I would add my custom overrides more explicitly. Can this be done?
+
+Yes, this is entirely possible. By default, top-level settings with different keys will both be kept, while the ones with the same keys will be overridden.
+
+```yaml
+# settingsA.yaml
+name="John"
+
+# settingsB.yaml
+age=23
+
+# resultant
+name="John"
+age=23
+```
+
+Note that this will override entire nested structures too (like `lists` or `dicts`).
+
+```yaml
+# settingsA.yaml
+bucket=[1,2,3,4]
+
+# settingsB.yaml
+bucket=["a", "b", "c", "d"]
+
+# resultant (default)
+bucket=["a", "b", "c", "d"]
+```
+
+To control how you want to merge these structures, you may want to have a look at [merging](https://www.dynaconf.com/merging/)
+There are several ways you can merge data: settings the global option [merge_enabled](), using double dunder syntax or marking a whole file, a specific env, or just an option for merging. Choose what fits best for your case.
