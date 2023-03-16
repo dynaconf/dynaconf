@@ -4,6 +4,7 @@
 file formats, you are recommended to choose one format but you can also use
 mixed settings formats across your application.
 
+
 !!! tip
     You are not required to use settings files, if not specified dynaconf
     can load your data only from [environment variables](/envvars/)
@@ -71,71 +72,61 @@ settings.name == "Bruno"
     The default encoding when loading the settings files is `utf-8` and it can be customized
     via `encoding` parameter.
 
-## Settings file location
+## Loading setting files
 
-Dynaconf will search files specified in `settings_file` option starting the search tree
-on the current working dir (the directory where your program is located).
+Dynaconf will start looking for the each file defined in `settings_files` from the folder where your entrypoint python file is located (like `app.py`). Then, it will look in each parent down to the root of the system. For each visited folder, it will also try looking inside a `/config` folder.
 
-Ex:
+- If you define [root_path](/configuration/#root_path), it will look start looking from there, instead. Keep in mind that `root_path` is relative to `cwd`, which is from where the python interpreter was called.
+- For each file specified in `settings_files` dynaconf will also try to load an optional `name`**.local.**`extension`. Eg, `settings_file="settings.toml"` will look for `settings.local.toml` too.
+- Absolute paths are recognized and dynaconf will attempt to load them directly.
+- Blobs are accepeted.
 
-```py
-from dynaconf import Dynaconf
+Define it in your settings instance or exporting the corresponding envvars.
 
-settings = Dynaconf(settings_files=["settings.toml", "/etc/program/foo.yaml"])
+```python
+# default
+settings = Dynaconf(settings_files=["settings.toml", "*.yaml"])
+
+# using root_path
+settings = Dynaconf(
+    root_path="my/project/root"
+    settings_files=["settings.toml", "*.yaml"],
+)
+```
+
+```bash
+export ROOT_PATH_FOR_DYNACONF='my/project/root'
+export SETTINGS_FILES_FOR_DYNACONF='["settings.toml", "*.yaml"]'
 ```
 
 !!! info
     To use `python -m module`, where the module uses dynaconf you will need to
     specify your `settings.toml` path, for example, like this: `settings_file="module/config/settings.toml"`.
 
-### settings.toml
-
-In the above example, dynaconf will try to load `settings.toml` from the same
-directory where the program is located, also known as `.` and then will
-keep traversing the folders in backwards order until the root is located.
-
-root is either the path where the program was invoked, or the O.S root or the root
-specified in `root_path`.
-
-### /etc/program/foo.yaml
-
-Dynaconf will then recognize this as an absolute path and will try to load it directly from
-the specified location.
-
-
 ---
 
-## Local Settings files
+## Includes and Preloads
 
-For each file specified in `settings_files` dynaconf will also try to load
-an optional `name`**.local.**`extension`.
+If you need, you can specify files to be loaded before or after the `settings_files` using the options `pre_load` and `includes`. Their loading strategy is more strict, and will basically use `root_path` as the basepath. If `root_path` is not defined, `includes` will also try using the last found settings directory as the basepath.
 
-For example, `settings_files=["settings.toml"]` will make dynaconf to search for `settings.toml` and then also search for `settings.local.toml`
-
-
----
-
-## Includes
-
-You can also specify includes so dynaconf can include those settings after the normal loading.
-
-### as a parameter
+They can be defined in the Dynaconf instance or in a file:
 
 ```py
-settings = Dynaconf(includes=["path/to/file.toml", "or/a/glob/*.yaml])
+# in Dynaconf instance
+settings = Dynaconf(
+    includes=["path/to/file.toml", "or/a/glob/*.yaml"],
+    pre_load=["path/to/file.toml", "or/a/glob/*.yaml"])
 ```
 
-### as a variable in a file
+or
 
 ```toml
+# in toml file
 dynaconf_include = ["path/to/file.toml"]
+dynaconf_pre_load = ["path/to/file.toml"]
 key = value
 anotherkey = value
 ```
-
-!!! note
-    The paths passed to includes are relative to the `root_path` of Dynaconf instance or if that is not set, relative
-    to the directory where the first loaded file is located, includes also accepts globs and absolute paths.
 
 ---
 
