@@ -303,7 +303,26 @@ class Validator:
             # operations
             for op_name, op_value in self.operations.items():
                 op_function = getattr(validator_conditions, op_name)
-                if not op_function(value, op_value):
+                op_succeeded = False
+
+                # 'is_type_of' special error handling - related to #879
+                if op_name == "is_type_of":
+                    # auto transform quoted types
+                    if isinstance(op_value, str):
+                        op_value = dict(__builtins__).get(op_value, op_value)
+
+                    # invalid type (not in __builtins__) may raise TypeError
+                    try:
+                        op_succeeded = op_function(value, op_value)
+                    except TypeError:
+                        raise ValidationError(
+                            f"Invalid type '{op_value}' for condition "
+                            "'is_type_of'. Should provide a valid type"
+                        )
+                else:
+                    op_succeeded = op_function(value, op_value)
+
+                if not op_succeeded:
                     _message = self.messages["operations"].format(
                         name=name,
                         operation=op_function.__name__,

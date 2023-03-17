@@ -53,3 +53,35 @@ def test_invalidates_correctly(config_option, validator_file):
     stdout = result.stdout.lower()
     assert "error" in stdout
     assert "validation success" not in stdout
+
+
+@pytest.mark.parametrize(
+    "validator_file, error_msg",
+    (
+        (
+            pytest.param(
+                "validators_invalid_toml.toml",
+                "error parsing toml",
+                id="invalid-toml-token",
+            ),
+            pytest.param(
+                "validators_invalid_type.toml",
+                "error: invalid type",
+                id="invalid-builtin-type",
+            ),
+        )
+    ),
+)
+def test_wrong_validator_rule_gives_error_msg_correctly(validator_file, error_msg):
+    cmd = (
+        "dynaconf",
+        "-i",
+        "config.settings_noenvs",
+        "validate",
+        "-p",
+        validator_file,
+    )
+    result = subprocess.run(cmd, text=True, capture_output=True)
+    stdout = result.stdout.lower()
+    assert error_msg in stdout
+    assert "validation success" not in stdout
