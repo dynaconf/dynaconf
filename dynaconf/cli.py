@@ -16,7 +16,6 @@ from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf import settings as legacy_settings
-from dynaconf.loaders import toml_loader
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
