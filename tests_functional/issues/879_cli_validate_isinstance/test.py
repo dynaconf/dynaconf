@@ -19,11 +19,6 @@ import pytest
                 "validators_noenvs.toml",
                 id="with-envs-false",
             ),
-            pytest.param(
-                "config.settings_noenvs",
-                "validators_noenvs_only_quoted.toml",
-                id="with-quoted-type-only",
-            ),
         )
     ),
 )

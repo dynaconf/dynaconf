@@ -724,19 +724,31 @@ def validate(path):  # pragma: no cover
         click.echo(click.style(f"{path} not found", fg="white", bg="red"))
         sys.exit(1)
 
-    # I added this Dynaconf instance to use the standard loaders/converters
-    # data processing require passing a settings instance.
-    # This can be avoided with some extra work
-    temp_settings = Dynaconf()
-    toml_loader.load(temp_settings, filename=str(path))
-    validation_data = temp_settings.as_dict()
-    temp_settings = None  # does this induce garbage collector? don't know
+    # parse validator file
+    try:  # try tomlib first
+        validation_data = tomllib.load(open(str(path), "rb"))
+    except UnicodeDecodeError:  # fallback to legacy toml (TBR in 4.0.0)
+        warnings.warn(
+            "TOML files should have only UTF-8 encoded characters. "
+            "starting on 4.0.0 dynaconf will stop allowing invalid chars.",
+        )
+        validation_data = toml.load(
+            open(str(path), encoding=default_settings.ENCODING_FOR_DYNACONF),
+        )
+    except tomllib.TOMLDecodeError as e:
+        click.echo(
+            click.style(
+                f"Error parsing TOML: {e}. Maybe it should be quoted.",
+                fg="white",
+                bg="red",
+            )
+        )
+        sys.exit(1)
 
     # guarantee there is an environment
-    if not validation_data.get(
-        "DEFAULT"
-    ):  # it is mandatory to have DEFAULT, right?
-        validation_data = {"DEFAULT": validation_data}
+    validation_data = {k.lower(): v for k, v in validation_data.items()}
+    if not validation_data.get("default"):
+        validation_data = {"default": validation_data}
 
     success = True
     for env, name_data in validation_data.items():

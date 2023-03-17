@@ -1,2 +1,2 @@
 [default]
-should_be_number={is_type_of="@type int"}
+should_be_number={is_type_of="int"}

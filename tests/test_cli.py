@@ -454,13 +454,13 @@ def test_validate(tmpdir):
         ],
         {"SETTINGS_FILE_FOR_DYNACONF": str(toml_invalid)},
     )
-    assert "age must lte 30 but it is 35 in env DEFAULT" in result
+    assert "age must lte 30 but it is 35 in env default" in result
     assert (
         "project must eq hello_world but it is This is not hello_world "
-        "in env PRODUCTION" in result
+        "in env production" in result
     )
     assert (
         "host must is_not_in ['test.com'] but it is test.com in env "
-        "PRODUCTION" in result
+        "production" in result
     )
     assert "Validation success!" not in result
