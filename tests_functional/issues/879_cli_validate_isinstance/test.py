@@ -72,7 +72,9 @@ def test_invalidates_correctly(config_option, validator_file):
         )
     ),
 )
-def test_wrong_validator_rule_gives_error_msg_correctly(validator_file, error_msg):
+def test_wrong_validator_rule_gives_error_msg_correctly(
+    validator_file, error_msg
+):
     cmd = (
         "dynaconf",
         "-i",

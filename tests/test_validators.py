@@ -875,3 +875,16 @@ def test_ensure_cast_works_for_non_default_values(tmpdir):
     settings.validators.validate()
 
     assert isinstance(settings.offset, int), type(settings.offset)
+
+
+def test_is_type_of__raises__with_type_error():
+    """
+    When invalid type is given to is_type_of,
+    should raise ValidationError
+    """
+    settings = Dynaconf(
+        validators=[Validator("ENV_FOR_DYNACONF", is_type_of="invalid")]
+    )
+
+    with pytest.raises(ValidationError):
+        settings.validators.validate()

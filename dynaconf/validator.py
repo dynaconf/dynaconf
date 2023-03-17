@@ -309,7 +309,9 @@ class Validator:
                 if op_name == "is_type_of":
                     # auto transform quoted types
                     if isinstance(op_value, str):
-                        op_value = dict(__builtins__).get(op_value, op_value)
+                        op_value = __builtins__.get(  # type: ignore
+                            op_value, op_value
+                        )
 
                     # invalid type (not in __builtins__) may raise TypeError
                     try:
