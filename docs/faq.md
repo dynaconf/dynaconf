@@ -72,6 +72,7 @@ See more about [hooks](https://www.dynaconf.com/advanced/#hooks)
 > I use some django utility functions in my django `settings.py`. Can I still use them if I choose to use `yaml` to manage my config?
 
 Yes, you may add a custom converter for any functions you like. Refer [here](/django/#use-django-function-inside-custom-settings) for a full example.
+
 ### Default-override workflow
 
 > I'd like to use a base-file as default settings (like django settings.py) and a user-file settings where I would add my custom overrides more explicitly. Can this be done?
