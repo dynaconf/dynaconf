@@ -282,13 +282,12 @@ class Validator:
             if self.must_exist in (False, None) and value is empty:
                 continue
 
-            if self.cast:
-                # value or default value already set
-                # by settings.setdefault above
-                # however we need to cast it
-                # so we call .set again
-                value = self.cast(settings.get(name))
-                settings.set(name, value)
+            # value or default value already set
+            # by settings.setdefault above
+            # however we need to cast it
+            # so we call .set again
+            value = self.cast(settings.get(name))
+            settings.set(name, value)
 
             # is there a callable condition?
             if self.condition is not None:
@@ -304,7 +303,28 @@ class Validator:
             # operations
             for op_name, op_value in self.operations.items():
                 op_function = getattr(validator_conditions, op_name)
-                if not op_function(value, op_value):
+                op_succeeded = False
+
+                # 'is_type_of' special error handling - related to #879
+                if op_name == "is_type_of":
+                    # auto transform quoted types
+                    if isinstance(op_value, str):
+                        op_value = __builtins__.get(  # type: ignore
+                            op_value, op_value
+                        )
+
+                    # invalid type (not in __builtins__) may raise TypeError
+                    try:
+                        op_succeeded = op_function(value, op_value)
+                    except TypeError:
+                        raise ValidationError(
+                            f"Invalid type '{op_value}' for condition "
+                            "'is_type_of'. Should provide a valid type"
+                        )
+                else:
+                    op_succeeded = op_function(value, op_value)
+
+                if not op_succeeded:
                     _message = self.messages["operations"].format(
                         name=name,
                         operation=op_function.__name__,

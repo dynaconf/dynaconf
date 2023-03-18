@@ -12,6 +12,7 @@ from pathlib import Path
 
 from dynaconf import constants
 from dynaconf import default_settings
+from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf import settings as legacy_settings
@@ -713,7 +714,6 @@ def validate(path):  # pragma: no cover
     # reads the 'dynaconf_validators.toml' from path
     # for each section register the validator for specific env
     # call validate
-
     path = Path(path)
 
     if not str(path).endswith(".toml"):
@@ -723,6 +723,7 @@ def validate(path):  # pragma: no cover
         click.echo(click.style(f"{path} not found", fg="white", bg="red"))
         sys.exit(1)
 
+    # parse validator file
     try:  # try tomlib first
         validation_data = tomllib.load(open(str(path), "rb"))
     except UnicodeDecodeError:  # fallback to legacy toml (TBR in 4.0.0)
@@ -733,6 +734,20 @@ def validate(path):  # pragma: no cover
         validation_data = toml.load(
             open(str(path), encoding=default_settings.ENCODING_FOR_DYNACONF),
         )
+    except tomllib.TOMLDecodeError as e:
+        click.echo(
+            click.style(
+                f"Error parsing TOML: {e}. Maybe it should be quoted.",
+                fg="white",
+                bg="red",
+            )
+        )
+        sys.exit(1)
+
+    # guarantee there is an environment
+    validation_data = {k.lower(): v for k, v in validation_data.items()}
+    if not validation_data.get("default"):
+        validation_data = {"default": validation_data}
 
     success = True
     for env, name_data in validation_data.items():
@@ -740,7 +755,8 @@ def validate(path):  # pragma: no cover
             if not isinstance(data, dict):  # pragma: no cover
                 click.echo(
                     click.style(
-                        f"Invalid rule for parameter '{name}'",
+                        f"Invalid rule for parameter '{name}'"
+                        "(this will be skipped)",
                         fg="white",
                         bg="yellow",
                     )
