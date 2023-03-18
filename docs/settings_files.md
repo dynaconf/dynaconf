@@ -4,6 +4,7 @@
 file formats, you are recommended to choose one format but you can also use
 mixed settings formats across your application.
 
+
 !!! tip
     You are not required to use settings files, if not specified dynaconf
     can load your data only from [environment variables](/envvars/)
@@ -18,7 +19,7 @@ mixed settings formats across your application.
 - **.env** - Useful to automate the loading of environment variables.
 
 !!! info
-    Create your settings in desired format and specify it on `settings_files`
+    Create your settings in the desired format and specify it on `settings_files`
     argument on your dynaconf instance or pass it in `-f <format>` if using `dynaconf init` command.
 
 !!! tip
@@ -27,7 +28,7 @@ mixed settings formats across your application.
     read more on [extending dynaconf](/advanced/)
 
 !!! warning
-    To use the `.ini` or `.properties` file format you need to install extra dependency
+    To use the `.ini` or `.properties` file format you need to install an extra dependency
     `pip install configobj` or `pip install dynaconf[ini]`
 
 ## Reading settings from files
@@ -71,77 +72,67 @@ settings.name == "Bruno"
     The default encoding when loading the settings files is `utf-8` and it can be customized
     via `encoding` parameter.
 
-## Settings file location
+## Loading setting files
 
-Dynaconf will search files specified in `settings_file` option starting the search tree
-on the current working dir (the directory where your program is located).
+Dynaconf will start looking for each file defined in `settings_files` from the folder where your entry point python file is located (like `app.py`). Then, it will look at each parent down to the root of the system. For each visited folder, it will also try looking inside a `/config` folder.
 
-Ex:
+- If you define [root_path](/configuration/#root_path), it will look start looking from there, instead. Keep in mind that `root_path` is relative to `cwd`, which is from where the python interpreter was called.
+- For each file specified in `settings_files` dynaconf will also try to load an optional `name`**.local.**`extension`. Eg, `settings_file="settings.toml"` will look for `settings.local.toml` too.
+- Absolute paths are recognized and dynaconf will attempt to load them directly.
+- Blobs are accepted.
 
-```py
-from dynaconf import Dynaconf
+Define it in your settings instance or export the corresponding envvars.
 
-settings = Dynaconf(settings_files=["settings.toml", "/etc/program/foo.yaml"])
+```python
+# default
+settings = Dynaconf(settings_files=["settings.toml", "*.yaml"])
+
+# using root_path
+settings = Dynaconf(
+    root_path="my/project/root"
+    settings_files=["settings.toml", "*.yaml"],
+)
+```
+
+```bash
+export ROOT_PATH_FOR_DYNACONF='my/project/root'
+export SETTINGS_FILES_FOR_DYNACONF='["settings.toml", "*.yaml"]'
 ```
 
 !!! info
     To use `python -m module`, where the module uses dynaconf you will need to
     specify your `settings.toml` path, for example, like this: `settings_file="module/config/settings.toml"`.
 
-### settings.toml
-
-In the above example, dynaconf will try to load `settings.toml` from the same
-directory where the program is located, also known as `.` and then will
-keep traversing the folders in backwards order until the root is located.
-
-root is either the path where the program was invoked, or the O.S root or the root
-specified in `root_path`.
-
-### /etc/program/foo.yaml
-
-Dynaconf will then recognize this as an absolute path and will try to load it directly from
-the specified location.
-
-
 ---
 
-## Local Settings files
+## Includes and Preloads
 
-For each file specified in `settings_files` dynaconf will also try to load
-an optional `name`**.local.**`extension`.
+If you need, you can specify files to be loaded before or after the `settings_files` using the options [preload](/configuration/#preload) and [includes](/configuration/#includes). Their loading strategy is more strict, and will use `root_path` as the basepath for the relative paths provided. If `root_path` is not defined, `includes` will also try using the last found settings directory as the basepath.
 
-For example, `settings_files=["settings.toml"]` will make dynaconf to search for `settings.toml` and then also search for `settings.local.toml`
-
-
----
-
-## Includes
-
-You can also specify includes so dynaconf can include those settings after the normal loading.
-
-### as a parameter
+They can be defined in the Dynaconf instance or in a file:
 
 ```py
-settings = Dynaconf(includes=["path/to/file.toml", "or/a/glob/*.yaml])
+# in Dynaconf instance
+settings = Dynaconf(
+    includes=["path/to/file.toml", "or/a/glob/*.yaml"],
+    preload=["path/to/file.toml", "or/a/glob/*.yaml"])
 ```
 
-### as a variable in a file
+or
 
 ```toml
-dynaconf_include = ["path/to/file.toml"]
+# in toml file
+dynaconf_includes = ["path/to/file.toml"]
+dynaconf_preload = ["path/to/file.toml"]
 key = value
 anotherkey = value
 ```
-
-!!! note
-    The paths passed to includes are relative to the `root_path` of Dynaconf instance or if that is not set, relative
-    to the directory where the first loaded file is located, includes also accepts globs and absolute paths.
 
 ---
 
 ## Layered environments on files
 
-It is also possible to make dynaconf to read the files separated by layered 
+It is also possible to make dynaconf read the files separated by layered 
 environments so each section or first level key is loaded as a
 distinct environment.
 
@@ -195,14 +186,14 @@ distinct environment.
     name = "admin"
     ```
 
+!!! info
+    You can define a custom environment using the name you want, like `[testing]` or `[anything]`
 
-> ℹ️ You can define custom environment using the name you want
-`[default]` and `[global]` are the only environments that are special.
-You can for example name it `[testing]` or `[anything]`
+    `[default]` and `[global]` are the only environments that are special.
 
 === "program.py"
 
-    Then in your program you can use environment variables 
+    Then in your program, you can use environment variables 
     to switch environments.
 
     `#!bash export ENV_FOR_DYNACONF=development`
@@ -226,7 +217,6 @@ You can for example name it `[testing]` or `[anything]`
     It is also possible to switch environments programmatically passing
     `env="development"` to `Dynaconf` class on instantiation.
 
-
 ### YAML Caveats
 
 #### Nonetypes
@@ -247,7 +237,7 @@ When using a validator to set a default value for those values you might want to
 Validator("key", default="thing", apply_default_on_none=True)
 ```
 
-This way dynaconf will consider the default value even if setting is `None` on yaml.
+This way dynaconf will consider the default value even if the setting is `None` on yaml.
 
 or on yaml you can set the value to `@empty`
 
