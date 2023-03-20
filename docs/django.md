@@ -175,11 +175,7 @@ from dynaconf.utils import parse_conf
 from django.urls import reverse_lazy
 
 # register custom converter
-parse_conf.converters["@reverse_lazy"] = (
-    lambda value: value.set_casting(reverse_lazy)
-    if isinstance(value, parse_conf.Lazy)
-    else reverse_lazy(value)
-)
+parse_conf.converters["@reverse_lazy"] = lambda value: parse_conf.Lazy(value, casting=reverse_lazy)
 
 # regular setup
 settings = dynaconf.DjangoDynaconf(__name__)
