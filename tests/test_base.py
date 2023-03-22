@@ -6,6 +6,8 @@ import pytest
 
 from dynaconf import Dynaconf
 from dynaconf import LazySettings
+from dynaconf import ValidationError
+from dynaconf import Validator
 from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.strategies.filtering import PrefixFilter
@@ -1074,3 +1076,156 @@ def test_list_entries_from_yaml_should_not_duplicate_when_merged(tmpdir):
 
     assert settings.from_env("default").SOME_LIST == expected_default_value
     assert settings.from_env("other").SOME_LIST == expected_other_value
+
+
+# #712
+# introduce update(validate), set(validate) and load_file(validate)
+# and global VALIDATE_ON_UPDATE option
+
+# parametrize data to tests
+validate_on_update_data = (
+    pytest.param(
+        {"value_a": "foo"},  # valid data
+        {"value_b": "bar"},  # invalid data
+        id="simple-value",
+    ),
+    pytest.param(
+        {"value_a__nested": "foo"},
+        {"value_b__nested": "bar"},
+        id="dunder-value",
+    ),
+)
+
+
+@pytest.mark.parametrize("valid_data,invalid_data", validate_on_update_data)
+def test_update__validate_on_update_is_false(valid_data, invalid_data):
+    """
+    When `Dynaconf(validate_on_update=False)`
+    Should behave correctly (bypass, pass or raise)
+    """
+    # should bypass
+    settings = Dynaconf()  # validate_on_update default is false
+    settings.validators.register(Validator("value_a", must_exist=True))
+    settings.update(invalid_data)
+
+    # should raise
+    with pytest.raises(ValidationError):
+        settings.update(invalid_data, validate=True)
+
+    # should pass
+    assert not settings.exists("value_a")
+    settings.update(valid_data, validate=True)
+
+
+@pytest.mark.parametrize("valid_data,invalid_data", validate_on_update_data)
+def test_update__validate_on_update_is_true(valid_data, invalid_data):
+    """
+    When `Dynaconf(validate_on_update=True)`
+    Should behave correctly (bypass, pass or raise)
+    """
+    # should bypass
+    settings = Dynaconf(validate_on_update=True)
+    settings.validators.register(Validator("value_a", must_exist=True))
+    settings.update(invalid_data, validate=False)
+
+    # should raise
+    with pytest.raises(ValidationError):
+        settings.update(invalid_data)
+
+    # should pass
+    assert not settings.exists("value_a")
+    settings.update(valid_data)
+
+
+def test_set__validate_on_update_is_false():
+    """
+    When `Dynaconf(validate_on_update=False)`
+    Should behave correctly (bypass, pass or raise)
+    """
+    # should bypass
+    settings = Dynaconf()  # validate = false
+    settings.validators.register(Validator("value_a", must_exist=True))
+    settings.set("value_b", "foo")
+
+    # should raise
+    with pytest.raises(ValidationError):
+        settings.set("value_b", "foo", validate=True)
+
+    # should pass
+    assert not settings.exists("value_a")
+    settings.set("value_a", "foo", validate=True)
+
+
+def test_set__validate_on_update_is_true():
+    """
+    When `Dynaconf(validate_on_update=True)`
+    Should behave correctly (bypass, pass or raise)
+    """
+    # should bypass
+    settings = Dynaconf(validate_on_update=True)
+    settings.validators.register(Validator("value_a", must_exist=True))
+    settings.set("value_b__nested", "foo", validate=False)
+
+    # should raise
+    with pytest.raises(ValidationError):
+        settings.set("value_b__nested", "foo")
+
+    # should pass
+    assert not settings.exists("value_a")
+    settings.set("value_a__nested", "foo")
+
+
+def test_load_file__validate_on_update_is_false(tmpdir):
+    """
+    When `Dynaconf(validate_on_update=False)`
+    Should behave correctly (bypass, pass or raise)
+    """
+    # setup files
+    file_with_valid = tmpdir.join("settings-valid.toml")
+    with open(file_with_valid.strpath, "w", encoding="utf-8") as f:
+        f.write("value_a__nested='foo'")
+
+    file_with_invalid = tmpdir.join("settings-invalid.toml")
+    with open(file_with_invalid.strpath, "w", encoding="utf-8") as f:
+        f.write("value_b__nested='foo'")
+
+    # should bypass when
+    settings = Dynaconf()  # validate = false
+    settings.validators.register(Validator("value_a", must_exist=True))
+    settings.load_file(file_with_invalid)
+
+    # should raise
+    with pytest.raises(ValidationError):
+        settings.load_file(file_with_invalid, validate=True)
+
+    # should pass
+    assert not settings.exists("value_a")
+    settings.load_file(file_with_valid, validate=True)
+
+
+def test_load_file__validate_on_update_is_true(tmpdir):
+    """
+    When `Dynaconf(validate_on_update=True)`
+    Should behave correctly (bypass, pass or raise)
+    """
+    # setup files
+    file_with_valid = tmpdir.join("settings-valid.toml")
+    with open(file_with_valid.strpath, "w", encoding="utf-8") as f:
+        f.write("value_a='foo'")
+
+    file_with_invalid = tmpdir.join("settings-invalid.toml")
+    with open(file_with_invalid.strpath, "w", encoding="utf-8") as f:
+        f.write("value_b='foo'")
+
+    # should bypass when
+    settings = Dynaconf(validate_on_update=True)
+    settings.validators.register(Validator("value_a", must_exist=True))
+    settings.load_file(file_with_invalid, validate=False)
+
+    # should raise
+    with pytest.raises(ValidationError):
+        settings.load_file(file_with_invalid)
+
+    # should pass
+    assert not settings.exists("value_a")
+    settings.load_file(file_with_valid)
