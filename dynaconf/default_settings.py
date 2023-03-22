@@ -246,6 +246,8 @@ APPLY_DEFAULT_ON_NONE_FOR_DYNACONF = get(
     "APPLY_DEFAULT_ON_NONE_FOR_DYNACONF", None
 )
 
+VALIDATE_ON_UPDATE_FOR_DYNACONF = get("VALIDATE_ON_UPDATE", False)
+
 
 # Backwards compatibility with renamed variables
 for old, new in RENAMED_VARS.items():

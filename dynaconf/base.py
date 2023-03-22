@@ -802,7 +802,9 @@ class Settings:
         for key in keys:
             self.unset(key, force=force)
 
-    def _dotted_set(self, dotted_key, value, tomlfy=False, **kwargs):
+    def _dotted_set(
+        self, dotted_key, value, tomlfy=False, validate=empty, **kwargs
+    ):
         """Sets dotted keys as nested dictionaries.
 
         Dotted set will always reassign the value, to merge use `@merge` token
@@ -813,7 +815,10 @@ class Settings:
 
         Keyword Arguments:
             tomlfy {bool} -- Perform toml parsing (default: {False})
+            validate {bool} --
         """
+        if validate is empty:
+            validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF") # pragma: nocover
 
         split_keys = dotted_key.split(".")
         existing_data = self.get(split_keys[0], {})
@@ -831,7 +836,7 @@ class Settings:
                 new=new_data,
                 full_path=split_keys,
             )
-        self.update(data=new_data, tomlfy=tomlfy, **kwargs)
+        self.update(data=new_data, tomlfy=tomlfy, validate=validate, **kwargs)
 
     def set(
         self,
@@ -841,6 +846,7 @@ class Settings:
         tomlfy=False,
         dotted_lookup=empty,
         is_secret="DeprecatedArgument",  # noqa
+        validate=empty,
         merge=False,
     ):
         """Set a value storing references for the loader
@@ -850,7 +856,11 @@ class Settings:
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
+        :param validate: Bool define if validation will be triggered
         """
+        if validate is empty:
+            validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
+
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
 
@@ -861,7 +871,11 @@ class Settings:
 
         if "." in key and dotted_lookup is True:
             return self._dotted_set(
-                key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
+                key,
+                value,
+                loader_identifier=loader_identifier,
+                tomlfy=tomlfy,
+                validate=validate,
             )
 
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
@@ -917,6 +931,9 @@ class Settings:
             # a default value and goes away only when explicitly unset
             self._defaults[key] = value
 
+        if validate:
+            self.validators.validate()
+
     def update(
         self,
         data=None,
@@ -925,6 +942,7 @@ class Settings:
         merge=False,
         is_secret="DeprecatedArgument",  # noqa
         dotted_lookup=empty,
+        validate=empty,
         **kwargs,
     ):
         """
@@ -943,9 +961,14 @@ class Settings:
         :param loader_identifier: Only to be used by custom loaders
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
+        :param validate: Bool define if validators will trigger automatically
         :param kwargs: extra values to update
         :return: None
         """
+
+        if validate is empty:
+            validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
+
         data = data or {}
         data.update(kwargs)
         for key, value in data.items():
@@ -956,6 +979,7 @@ class Settings:
                 tomlfy=tomlfy,
                 merge=merge,
                 dotted_lookup=dotted_lookup,
+                validate=validate,
             )
 
     def _merge_before_set(self, existing, value):
