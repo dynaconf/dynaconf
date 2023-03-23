@@ -19,7 +19,7 @@ yaml.SafeDumper.yaml_representers[
 )
 
 
-def load(obj, env=None, silent=True, key=None, filename=None):
+def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
     """
     Reads and loads in to "obj" a single key or all keys from source file.
 
@@ -50,6 +50,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         extensions=YAML_EXTENSIONS,
         file_reader=yaml_reader,
         string_reader=yaml_reader,
+        validate=validate,
     )
     loader.load(
         filename=filename,

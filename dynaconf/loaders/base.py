@@ -29,6 +29,7 @@ class BaseLoader:
         file_reader,
         string_reader,
         opener_params=None,
+        validate=False,
     ):
         """Instantiates a loader for different sources"""
         self.obj = obj
@@ -41,6 +42,7 @@ class BaseLoader:
             "mode": "r",
             "encoding": obj.get("ENCODING_FOR_DYNACONF", "utf-8"),
         }
+        self.validate = validate
 
     @staticmethod
     def warn_not_installed(obj, identifier):  # pragma: no cover
@@ -184,6 +186,7 @@ class BaseLoader:
                 loader_identifier=identifier,
                 merge=file_merge,
                 dotted_lookup=file_dotted_lookup,
+                validate=self.validate,
             )
         elif key in data:
             self.obj.set(
@@ -192,4 +195,5 @@ class BaseLoader:
                 loader_identifier=identifier,
                 merge=file_merge,
                 dotted_lookup=file_dotted_lookup,
+                validate=self.validate,
             )

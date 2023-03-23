@@ -20,17 +20,31 @@ except FileNotFoundError:
 IDENTIFIER = "env"
 
 
-def load(obj, env=None, silent=True, key=None):
+def load(obj, env=None, silent=True, key=None, validate=False):
     """Loads envvars with prefixes:
 
     `DYNACONF_` (default global) or `$(ENVVAR_PREFIX_FOR_DYNACONF)_`
     """
     global_prefix = obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
     if global_prefix is False or global_prefix.upper() != "DYNACONF":
-        load_from_env(obj, "DYNACONF", key, silent, IDENTIFIER + "_global")
+        load_from_env(
+            obj,
+            "DYNACONF",
+            key,
+            silent,
+            IDENTIFIER + "_global",
+            validate=validate,
+        )
 
     # Load the global env if exists and overwrite everything
-    load_from_env(obj, global_prefix, key, silent, IDENTIFIER + "_global")
+    load_from_env(
+        obj,
+        global_prefix,
+        key,
+        silent,
+        IDENTIFIER + "_global",
+        validate=validate,
+    )
 
 
 def load_from_env(
@@ -40,6 +54,7 @@ def load_from_env(
     silent=False,
     identifier=IDENTIFIER,
     env=False,  # backwards compatibility bc renamed param
+    validate=False,
 ):
     if prefix is False and env is not False:
         prefix = env
@@ -58,7 +73,13 @@ def load_from_env(
         value = environ.get(f"{env_}{key}")
         if value:
             try:  # obj is a Settings
-                obj.set(key, value, loader_identifier=identifier, tomlfy=True)
+                obj.set(
+                    key,
+                    value,
+                    loader_identifier=identifier,
+                    tomlfy=True,
+                    validate=validate,
+                )
             except AttributeError:  # obj is a dict
                 obj[key] = parse_conf_data(
                     value, tomlfy=True, box_settings=obj
@@ -88,7 +109,7 @@ def load_from_env(
             filter_strategy = obj.get("FILTER_STRATEGY")
             if filter_strategy:
                 data = filter_strategy(data)
-            obj.update(data, loader_identifier=identifier)
+            obj.update(data, loader_identifier=identifier, validate=validate)
 
 
 def write(settings_path, settings_data, **kwargs):

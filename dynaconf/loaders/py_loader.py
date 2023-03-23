@@ -15,16 +15,25 @@ from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 
 
-def load(obj, settings_module, identifier="py", silent=False, key=None):
+def load(
+    obj,
+    settings_module,
+    identifier="py",
+    silent=False,
+    key=None,
+    validate=False,
+):
     """Tries to import a python module"""
     mod, loaded_from = get_module(obj, settings_module, silent)
     if not (mod and loaded_from):
         return
-    load_from_python_object(obj, mod, settings_module, key, identifier)
+    load_from_python_object(
+        obj, mod, settings_module, key, identifier, validate=validate
+    )
 
 
 def load_from_python_object(
-    obj, mod, settings_module, key=None, identifier=None
+    obj, mod, settings_module, key=None, identifier=None, validate=False
 ):
     file_merge = getattr(mod, "dynaconf_merge", False) or getattr(
         mod, "DYNACONF_MERGE", False
@@ -42,6 +51,7 @@ def load_from_python_object(
                     setting_value,
                     loader_identifier=identifier,
                     merge=file_merge,
+                    validate=validate,
                 )
 
     obj._loaded_py_modules.append(mod.__name__)
@@ -49,7 +59,7 @@ def load_from_python_object(
 
 
 def try_to_load_from_py_module_name(
-    obj, name, key=None, identifier="py", silent=False
+    obj, name, key=None, identifier="py", silent=False, validate=False
 ):
     """Try to load module by its string name.
 
@@ -66,7 +76,9 @@ def try_to_load_from_py_module_name(
 
     with ctx:
         mod = importlib.import_module(str(name))
-        load_from_python_object(obj, mod, name, key, identifier)
+        load_from_python_object(
+            obj, mod, name, key, identifier, validate=validate
+        )
         return True  # loaded ok!
     # if it reaches this point that means exception occurred, module not found.
     return False

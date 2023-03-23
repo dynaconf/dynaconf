@@ -818,7 +818,9 @@ class Settings:
             validate {bool} --
         """
         if validate is empty:
-            validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF") # pragma: nocover
+            validate = self.get(
+                "VALIDATE_ON_UPDATE_FOR_DYNACONF"
+            )  # pragma: nocover
 
         split_keys = dotted_key.split(".")
         existing_data = self.get(split_keys[0], {})
@@ -1078,7 +1080,9 @@ class Settings:
             if last_loader and last_loader == env_loader:
                 last_loader.load(self, env, silent, key)
 
-    def load_file(self, path=None, env=None, silent=True, key=None):
+    def load_file(
+        self, path=None, env=None, silent=True, key=None, validate=empty
+    ):
         """Programmatically load files from ``path``.
 
         :param path: A single filename or a file list
@@ -1086,6 +1090,9 @@ class Settings:
         :param silent: Should raise errors?
         :param key: Load a single key?
         """
+        if validate is empty:
+            validate = self.get("VALIDATE_ON_UPDATE")
+
         env = (env or self.current_env).upper()
         files = ensure_a_list(path)
         if files:
@@ -1131,6 +1138,9 @@ class Settings:
                         filename=path,
                     )
                     already_loaded.add(path)
+
+        if validate:
+            self.validators.validate()  # pragma: nocover
 
     @property
     def _root_path(self):
