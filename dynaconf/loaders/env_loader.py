@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from os import environ
 
 from dynaconf.utils import missing
@@ -7,15 +8,10 @@ from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
 
 DOTENV_IMPORTED = False
-try:
+with suppress(ImportError, FileNotFoundError):
     from dynaconf.vendor.dotenv import cli as dotenv_cli
 
     DOTENV_IMPORTED = True
-except ImportError:
-    pass
-except FileNotFoundError:
-    pass
-
 
 IDENTIFIER = "env"
 
@@ -114,7 +110,7 @@ def load_from_env(
 
 def write(settings_path, settings_data, **kwargs):
     """Write data to .env file"""
-    if not DOTENV_IMPORTED:
+    if not DOTENV_IMPORTED:  # pragma: no cover
         return
     for key, value in settings_data.items():
         quote_mode = (
