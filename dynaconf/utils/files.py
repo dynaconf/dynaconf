@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import inspect
-import io
 import os
 
 from dynaconf.utils import deduplicate
@@ -55,7 +54,7 @@ def find_file(filename=".env", project_root=None, skip_files=None, **kwargs):
     search_tree = []
     try:
         work_dir = os.getcwd()
-    except FileNotFoundError:
+    except FileNotFoundError:  # pragma: no cover
         return ""
     skip_files = skip_files or []
 

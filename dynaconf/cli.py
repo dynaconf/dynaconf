@@ -31,10 +31,9 @@ from dynaconf.vendor import tomllib
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
 CWD = None
-try:
+with suppress(FileNotFoundError):
     CWD = Path.cwd()
-except FileNotFoundError:
-    pass
+
 EXTS = ["ini", "toml", "yaml", "json", "py", "env"]
 WRITERS = ["ini", "toml", "yaml", "json", "py", "redis", "vault", "env"]
 
