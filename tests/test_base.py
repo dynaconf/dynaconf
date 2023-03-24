@@ -1103,10 +1103,13 @@ def test_update__validate_on_update_is_false(valid_data, invalid_data):
     When `Dynaconf(validate_on_update=False)`
     Should behave correctly (bypass, pass or raise)
     """
-    # should bypass
     settings = Dynaconf()  # validate_on_update default is false
     settings.validators.register(Validator("value_a", must_exist=True))
+
+    # should bypass
     settings.update(invalid_data)
+    settings.update(invalid_data, validate="random")
+    settings.update(invalid_data, validate=123)
 
     # should raise
     with pytest.raises(ValidationError):
@@ -1123,10 +1126,13 @@ def test_update__validate_on_update_is_true(valid_data, invalid_data):
     When `Dynaconf(validate_on_update=True)`
     Should behave correctly (bypass, pass or raise)
     """
-    # should bypass
     settings = Dynaconf(validate_on_update=True)
     settings.validators.register(Validator("value_a", must_exist=True))
+
+    # should bypass
     settings.update(invalid_data, validate=False)
+    settings.update(invalid_data, validate="random")
+    settings.update(invalid_data, validate=123)
 
     # should raise
     with pytest.raises(ValidationError):
@@ -1137,15 +1143,43 @@ def test_update__validate_on_update_is_true(valid_data, invalid_data):
     settings.update(valid_data)
 
 
+def test_update__validate_on_update_is_str_all():
+    """
+    When `Dynaconf(validate_on_update="all")`
+    Should behave correctly (bypass, pass or raise)
+    """
+    settings = Dynaconf(validate_on_update="all")
+    settings.validators.register(Validator("value_a", must_exist=True))
+    settings.validators.register(Validator("value_int", eq=42))
+
+    # should bypass
+    settings.update({"value_b": "foo"}, validate=False)
+    settings.update({"value_b": "foo"}, validate="random")
+    settings.update({"value_b": "foo"}, validate=123)
+
+    # should raise and accumulate errors
+    with pytest.raises(ValidationError) as e:
+        settings.update({"value_b": "not_a", "value_int": 41})
+
+    assert len(e.value.details) == 2
+
+    # should pass
+    assert not settings.exists("value_a")
+    settings.update({"value_a": "exists", "value_int": 42})
+
+
 def test_set__validate_on_update_is_false():
     """
     When `Dynaconf(validate_on_update=False)`
     Should behave correctly (bypass, pass or raise)
     """
-    # should bypass
     settings = Dynaconf()  # validate = false
     settings.validators.register(Validator("value_a", must_exist=True))
+
+    # should bypass
     settings.set("value_b", "foo")
+    settings.set("value_b", "foo", validate="random")
+    settings.set("value_b", "foo", validate=123)
 
     # should raise
     with pytest.raises(ValidationError):
@@ -1161,10 +1195,13 @@ def test_set__validate_on_update_is_true():
     When `Dynaconf(validate_on_update=True)`
     Should behave correctly (bypass, pass or raise)
     """
-    # should bypass
     settings = Dynaconf(validate_on_update=True)
     settings.validators.register(Validator("value_a", must_exist=True))
+
+    # should bypass
     settings.set("value_b__nested", "foo", validate=False)
+    settings.set("value_b__nested", "foo", validate="random")
+    settings.set("value_b__nested", "foo", validate=123)
 
     # should raise
     with pytest.raises(ValidationError):
@@ -1175,24 +1212,88 @@ def test_set__validate_on_update_is_true():
     settings.set("value_a__nested", "foo")
 
 
-def test_load_file__validate_on_update_is_false(tmpdir):
+def test_set__validate_on_update_is_str_all():
+    """
+    When `Dynaconf(validate_on_update="all")`
+    Should behave correctly (bypass, pass or raise)
+    """
+    settings = Dynaconf(validate_on_update="all")
+    settings.validators.register(Validator("value_a", must_exist=True))
+
+    # should bypass
+    settings.set("value_b__nested", "foo", validate=False)
+    settings.set("value_b__nested", "foo", validate="random")
+    settings.set("value_b__nested", "foo", validate=123)
+
+    # should raise. "all" doesn't make difference here
+    with pytest.raises(ValidationError):
+        settings.set("value_b__nested", "foo")
+
+    # should pass
+    assert not settings.exists("value_a")
+    settings.set("value_a__nested", "foo")
+
+
+def mkfile(tmp_dir, filename: str, data: str):
+    """
+    Test utility function to create tmp files
+    """
+    file = tmp_dir.join(filename)
+    with open(file.strpath, "w", encoding="utf-8") as f:
+        f.write(data)
+    return file
+
+
+params__load_file__data = (
+    pytest.param(
+        {"fname": "valid.toml", "data": "value_a='foo'\nvalue_int=42"},
+        {"fname": "invalid.toml", "data": "value_b='foo'\nvalue_int=41"},
+        id="load-toml",
+    ),
+    pytest.param(
+        {"fname": "valid.ini", "data": "value_a='foo'\nvalue_int='@int 42'"},
+        {"fname": "invalid.ini", "data": "value_b='foo'\nvalue_int='@int 41'"},
+        id="load-ini",
+    ),
+    pytest.param(
+        {"fname": "valid.yaml", "data": "value_a: 'foo'\nvalue_int: 42"},
+        {"fname": "invalid.yaml", "data": "value_b: 'foo'\nvalue_int: 41"},
+        id="load-yaml",
+    ),
+    pytest.param(
+        {"fname": "valid.json", "data": '{"value_a":"foo",\n"value_int":42}'},
+        {
+            "fname": "invalid.json",
+            "data": '{"value_b":"foo",\n"value_int":41}',
+        },
+        id="load-json",
+    ),
+    pytest.param(
+        {"fname": "valid.py", "data": 'VALUE_A="foo"\nVALUE_INT=42'},
+        {"fname": "invalid.py", "data": 'VALUE_B="foo"\nVALUE_INT=41'},
+        id="load-py",
+    ),
+)
+
+
+@pytest.mark.parametrize("valid,invalid", params__load_file__data)
+def test_load_file__validate_on_update_is_false(tmpdir, valid, invalid):
     """
     When `Dynaconf(validate_on_update=False)`
     Should behave correctly (bypass, pass or raise)
     """
     # setup files
-    file_with_valid = tmpdir.join("settings-valid.toml")
-    with open(file_with_valid.strpath, "w", encoding="utf-8") as f:
-        f.write("value_a__nested='foo'")
+    file_with_valid = mkfile(tmpdir, valid["fname"], valid["data"])
+    file_with_invalid = mkfile(tmpdir, invalid["fname"], invalid["data"])
 
-    file_with_invalid = tmpdir.join("settings-invalid.toml")
-    with open(file_with_invalid.strpath, "w", encoding="utf-8") as f:
-        f.write("value_b__nested='foo'")
-
-    # should bypass when
+    # setup dyna
     settings = Dynaconf()  # validate = false
     settings.validators.register(Validator("value_a", must_exist=True))
+
+    # should bypass when
     settings.load_file(file_with_invalid)
+    settings.load_file(file_with_invalid, validate="random")
+    settings.load_file(file_with_invalid, validate=123)
 
     # should raise
     with pytest.raises(ValidationError):
@@ -1203,28 +1304,57 @@ def test_load_file__validate_on_update_is_false(tmpdir):
     settings.load_file(file_with_valid, validate=True)
 
 
-def test_load_file__validate_on_update_is_true(tmpdir):
+@pytest.mark.parametrize("valid,invalid", params__load_file__data)
+def test_load_file__validate_on_update_is_true(tmpdir, valid, invalid):
     """
     When `Dynaconf(validate_on_update=True)`
     Should behave correctly (bypass, pass or raise)
     """
     # setup files
-    file_with_valid = tmpdir.join("settings-valid.toml")
-    with open(file_with_valid.strpath, "w", encoding="utf-8") as f:
-        f.write("value_a='foo'")
+    file_with_valid = mkfile(tmpdir, valid["fname"], valid["data"])
+    file_with_invalid = mkfile(tmpdir, invalid["fname"], invalid["data"])
 
-    file_with_invalid = tmpdir.join("settings-invalid.toml")
-    with open(file_with_invalid.strpath, "w", encoding="utf-8") as f:
-        f.write("value_b='foo'")
-
-    # should bypass when
+    # setup dyna
     settings = Dynaconf(validate_on_update=True)
     settings.validators.register(Validator("value_a", must_exist=True))
+
+    # should bypass when
     settings.load_file(file_with_invalid, validate=False)
 
     # should raise
     with pytest.raises(ValidationError):
         settings.load_file(file_with_invalid)
+
+    # should pass
+    assert not settings.exists("value_a")
+    settings.load_file(file_with_valid)
+
+
+@pytest.mark.parametrize("valid,invalid", params__load_file__data)
+def test_load_file__validate_on_update_is_str_all(tmpdir, valid, invalid):
+    """
+    When `Dynaconf(validate_on_update="all")`
+    Should behave correctly (bypass, pass or raise accumulating errors)
+    """
+    # setup files
+    file_with_valid = mkfile(tmpdir, valid["fname"], valid["data"])
+    file_with_invalid = mkfile(tmpdir, invalid["fname"], invalid["data"])
+
+    # setup dyna
+    settings = Dynaconf(validate_on_update="all")
+    settings.validators.register(Validator("value_a", must_exist=True))
+    settings.validators.register(Validator("value_int", eq=42))
+
+    # should bypass
+    settings.load_file(file_with_invalid, validate=False)
+    settings.load_file(file_with_invalid, validate="random")
+    settings.load_file(file_with_invalid, validate=123)
+
+    # should raise and accumulate errors
+    with pytest.raises(ValidationError) as e:
+        settings.load_file(file_with_invalid)
+
+    assert len(e.value.details) == 2
 
     # should pass
     assert not settings.exists("value_a")

@@ -35,6 +35,7 @@ from dynaconf.utils.parse_conf import converters
 from dynaconf.utils.parse_conf import get_converter
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
+from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
 from dynaconf.vendor.box.box_list import BoxList
 
@@ -933,7 +934,7 @@ class Settings:
             # a default value and goes away only when explicitly unset
             self._defaults[key] = value
 
-        if validate:
+        if validate is True:
             self.validators.validate()
 
     def update(
@@ -974,15 +975,23 @@ class Settings:
         data = data or {}
         data.update(kwargs)
         for key, value in data.items():
-            self.set(
-                key,
-                value,
-                loader_identifier=loader_identifier,
-                tomlfy=tomlfy,
-                merge=merge,
-                dotted_lookup=dotted_lookup,
-                validate=validate,
-            )
+            # update() will handle validation later
+            with suppress(ValidationError):
+                self.set(
+                    key,
+                    value,
+                    loader_identifier=loader_identifier,
+                    tomlfy=tomlfy,
+                    merge=merge,
+                    dotted_lookup=dotted_lookup,
+                    validate=validate,
+                )
+
+        # handle param `validate`
+        if validate is True:
+            self.validators.validate()
+        elif validate == "all":
+            self.validators.validate_all()
 
     def _merge_before_set(self, existing, value):
         """Merge the new value being set with the existing value before set"""
@@ -1091,7 +1100,7 @@ class Settings:
         :param key: Load a single key?
         """
         if validate is empty:
-            validate = self.get("VALIDATE_ON_UPDATE")
+            validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
 
         env = (env or self.current_env).upper()
         files = ensure_a_list(path)
@@ -1099,12 +1108,14 @@ class Settings:
             already_loaded = set()
             for _filename in files:
 
-                if py_loader.try_to_load_from_py_module_name(
-                    obj=self, name=_filename, silent=True
-                ):
-                    # if it was possible to load from module name
-                    # continue the loop.
-                    continue
+                # load_file() will handle validation later
+                with suppress(ValidationError):
+                    if py_loader.try_to_load_from_py_module_name(
+                        obj=self, name=_filename, silent=True
+                    ):
+                        # if it was possible to load from module name
+                        # continue the loop.
+                        continue
 
                 root_dir = str(self._root_path or os.getcwd())
 
@@ -1130,17 +1141,24 @@ class Settings:
                 for path in paths + local_paths:
                     if path in already_loaded:  # pragma: no cover
                         continue
-                    settings_loader(
-                        obj=self,
-                        env=env,
-                        silent=silent,
-                        key=key,
-                        filename=path,
-                    )
-                    already_loaded.add(path)
 
-        if validate:
-            self.validators.validate()  # pragma: nocover
+                    # load_file() will handle validation later
+                    with suppress(ValidationError):
+                        settings_loader(
+                            obj=self,
+                            env=env,
+                            silent=silent,
+                            key=key,
+                            filename=path,
+                            validate=validate,
+                        )
+                        already_loaded.add(path)
+
+        # handle param `validate`
+        if validate is True:
+            self.validators.validate()
+        elif validate == "all":
+            self.validators.validate_all()
 
     @property
     def _root_path(self):
