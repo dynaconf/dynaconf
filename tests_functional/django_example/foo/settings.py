@@ -65,7 +65,13 @@ sys.path.append(".")
 
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 # Read more at https://www.dynaconf.com/django/
+from django.urls import reverse_lazy  # noqa
 import dynaconf  # noqa
+from dynaconf.utils import parse_conf  # noqa
+
+parse_conf.converters["@reverse_lazy"] = lambda value: parse_conf.Lazy(
+    value, casting=reverse_lazy
+)
 
 settings = dynaconf.DjangoDynaconf(
     __name__,

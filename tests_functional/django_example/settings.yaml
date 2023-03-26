@@ -8,6 +8,7 @@ default:
   SECRET_KEY: 1234
   STATIC_ROOT: .
   STATIC_URL: /static/
+  LOGIN_URL: "@reverse_lazy admin:login"
   ALLOWED_HOSTS:
     - '*'
   INSTALLED_APPS:

@@ -52,6 +52,7 @@ class SettingsTest(TestCase):
         self.assertEqual(settings.PASSWORD, "My5up3r53c4et")
         self.assertEqual(settings.USERNAME, "admin_user_from_env")
         self.assertEqual(settings.FOO, "It overrides every other env")
+        self.assertEqual(settings.LOGIN_URL, "/admin/login/")
 
     def test_override_settings_context(self):
         self.assertEqual(settings.ISSUE, 596)
