@@ -276,6 +276,20 @@ def get_converter(converter_key, value, box_settings):
     return converted_value
 
 
+def add_converter(converter_key, casting_callable):
+    global converters
+
+    def converter_callable(value, box_settings=None):
+        if isinstance(value, Lazy):
+            # value got here as a Lazy object, needs evaluation
+            return Lazy(value(box_settings), casting=casting_callable)
+        else:
+            # value is good to go
+            return Lazy(value, casting=casting_callable)
+
+    converters[f"@{converter_key}"] = converter_callable
+
+
 def parse_with_toml(data):
     """Uses TOML syntax to parse data"""
     try:  # try tomllib first

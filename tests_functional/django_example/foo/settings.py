@@ -69,9 +69,7 @@ from django.urls import reverse_lazy  # noqa
 import dynaconf  # noqa
 from dynaconf.utils import parse_conf  # noqa
 
-parse_conf.converters["@reverse_lazy"] = lambda value: parse_conf.Lazy(
-    value, casting=reverse_lazy
-)
+parse_conf.add_converter("reverse_lazy", reverse_lazy)
 
 settings = dynaconf.DjangoDynaconf(
     __name__,
