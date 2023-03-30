@@ -83,7 +83,7 @@ pip install dynaconf
         ```
 
     === "config.py"
-        On this file a new instance of **Dynaconf** settings object is
+        In this file a new instance of **Dynaconf** settings object is
         initialized and configured.
 
         ```python
@@ -93,7 +93,7 @@ pip install dynaconf
             settings_files=['settings.toml', '.secrets.toml'],
         )
         ```
-        More options described on [Dynaconf Configuration](/configuration/)
+        More options are described on [Dynaconf Configuration](/configuration/)
 
     === "settings.toml"
         **Optionally** store settings in a file (or in multiple files)
@@ -111,17 +111,17 @@ pip install dynaconf
         More details in [Settings Files](/settings_files/)
 
     === ".secrets.toml"
-        **Optionally** store sensitive data in a local only file `.secrets.toml`
+        **Optionally** store sensitive data in a local-only file `.secrets.toml`
         ```toml
         password = "s3cr3t"
         token = "dfgrfg5d4g56ds4gsdf5g74984we5345-"
         message = "This file doesn't go to your pub repo"
         ```
 
-        > ⚠️ `dynaconf init` command puts the `.secrets.*` in yout `.gitignore` to avoid it to be exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
+        > ⚠️ `dynaconf init` command puts the `.secrets.*` in your `.gitignore` to avoid it being exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
 
         ```ini
-        # Secrets doesn't go to public repos
+        # Secrets don't go to public repos
         .secrets.*
         ```
 
@@ -140,14 +140,14 @@ pip install dynaconf
 
     ---
 
-    > ℹ️ You can create the files yourself instead of using the `dynaconf init` command and it give any name you want instead of the default `config.py` (the file must be in your importable python path)
+    > ℹ️ You can create the files yourself instead of using the `dynaconf init` command and it gives any name you want instead of the default `config.py` (the file must be in your importable python path)
 
 ??? "Or using Flask"
 
     #### Using Flask
 
     === "app.py"
-        In your Flask project import `FlaskDynaconf` extension and initialize as a Flask extension.
+        In your Flask project import `FlaskDynaconf` extension and initialize it as a Flask extension.
         ```python hl_lines="2 6"
         from flask import Flask
         from dynaconf import FlaskDynaconf
@@ -185,12 +185,12 @@ pip install dynaconf
         SQLALCHEMY_DB_URI = "postgresql://..."
         ```
 
-        > ℹ️ On Flask, settings files are layered in multiple environments by default, you can disable it passing `environments=False` to FlaskDynaconf extension.
+        > ℹ️ On Flask, settings files are layered in multiple environments by default, you can disable it by passing `environments=False` to FlaskDynaconf extension.
 
         More details in [Settings Files](/settings_files/)
 
     === ".secrets.toml"
-        **Optionally** store sensitive data in a local only file `.secrets.toml`
+        **Optionally** store sensitive data in a local-only file `.secrets.toml`
         ```toml
         [development]
         password = "s3cr3t"
@@ -198,10 +198,10 @@ pip install dynaconf
         message = "This file doesn't go to your pub repo"
         ```
 
-        > ⚠️ put `.secrets.*` in yout `.gitignore` to avoid it to be exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
+        > ⚠️ put `.secrets.*` in your `.gitignore` to avoid it being exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
 
         ```ini
-        # Secrets doesn't go to public repos
+        # Secrets don't go to public repos
         .secrets.*
         ```
 
@@ -237,7 +237,7 @@ pip install dynaconf
     dynaconf init -f yaml
     ```
 
-    Then follow the instructions on terminal.
+    Then follow the instructions on the terminal.
 
     ```plain
     Django app detected
@@ -248,7 +248,7 @@ pip install dynaconf
     🔑 .secrets.yaml created to hold your secrets.
 
     🙈 the .secrets.yaml is also included in `.gitignore`
-    beware to not push your secrets to a public repo
+    beware of not pushing your secrets to a public repo
     or use dynaconf builtin support for Vault Servers.
 
     ⁉  path/to/yourproject/settings.py is found do you want to add dynaconf? [y/N]:
@@ -258,11 +258,11 @@ pip install dynaconf
 
     ```plain
     🎠  Now your Django settings are managed by Dynaconf
-    🎉  Dynaconf is configured! read more on https://dynaconf.com
+    🎉  Dynaconf is configured! read more at https://dynaconf.com
     ```
 
     > ℹ️ On Django the recommended file format is **yaml** because it can hold
-    complex data structures easier, however you can choose to use toml,json,ini or even keep your settings in .py format.
+    complex data structures easier, however, you can choose to use toml, json, ini or even keep your settings in .py format.
 
     === "appname/views.py"
         On your Django views, models and all other places you can now use
@@ -299,12 +299,12 @@ pip install dynaconf
                 - 'server.prod.com'
         ```
 
-        > ℹ️ On Django settings files are layered in multiple environments by default, you can disable it passing `environments=False` to FlaskDynaconf extension.
+        > ℹ️ On Django settings files are layered in multiple environments by default, you can disable it by passing `environments=False` to FlaskDynaconf extension.
 
         More details in [Settings Files](/settings_files/)
 
     === ".secrets.yaml"
-        **Optionally** store sensitive data in a local only file `.secrets.toml`
+        **Optionally** store sensitive data in a local-only file `.secrets.toml`
         ```yaml
         development:
             SECRET_KEY: 43grng9398534nfkjer
@@ -312,10 +312,10 @@ pip install dynaconf
             SECRET_KEY: vfkjndkjg098gdf90gudfsg
         ```
 
-        > ⚠️ put `.secrets.*` in yout `.gitignore` to avoid it to be exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
+        > ⚠️ put `.secrets.*` in your `.gitignore` to avoid it being exposed on public repos but it is your responsibility to keep it safe in your local environment, also the recommendation for production environments is to use the built-in support for Hashicorp Vault service for password and tokens.
 
         ```ini
-        # Secrets doesn't go to public repos
+        # Secrets don't go to public repos
         .secrets.*
         ```
 
@@ -404,7 +404,7 @@ mixed settings formats across your application.
 - **.env** - Useful to automate the loading of environment variables.
 
 !!! info
-    Create your settings in desired format and specify it on `settings_files`
+    Create your settings in the desired format and specify it on `settings_files`
     argument on your dynaconf instance or pass it in `-f <format>` if using `dynaconf init` command.
 
 !!! tip
@@ -415,7 +415,7 @@ mixed settings formats across your application.
 #### Reading settings from files
 
 On files by default dynaconf loads all the existing keys and sections
-as first level settings.
+as first-level settings.
 
 === "settings.toml"
     ```toml
@@ -451,12 +451,12 @@ settings.name == "Bruno"
 
 #### Layered environments on files
 
-It is also possible to make dynaconf to read the files separated by layered
-environments so each section or first level key is loaded as a
+It is also possible to make dynaconf read the files separated by layered
+environments so each section or first-level key is loaded as a
 distinct environment.
 
 !!! warning
-    To enable layered environments the argument `environments` must be set to `True`, otherwise dynaconf will ignore layers and read all first level keys as normal values.
+    To enable layered environments the argument `environments` must be set to `True`, otherwise, dynaconf will ignore layers and read all first-level keys as normal values.
 
 === "config.py"
     ```py
@@ -509,7 +509,7 @@ distinct environment.
     ```
 
 
-> ℹ️ You can define custom environment using the name you want
+> ℹ️ You can define a custom environment using the name you want
 `[default]` and `[global]` are the only environments that are special.
 You can for example name it `[testing]` or `[anything]`
 
@@ -606,13 +606,13 @@ validate your settings in 2 ways.
     Once passed in on `validators` argument, Dynaconf will evaluate each of
     the rules before your settings are first read.
 
-    Alternative way is registering validators using.
+    An alternative way is registering validators using.
 
     ```py
     settings.validators.register(Validator("field", **rules))
     ```
 
-    You can also force the earlier validation placing a call to `validate`
+    You can also force the earlier validation by making a call to `validate`
     after your settings instantiation.
 
     ```py
@@ -623,7 +623,7 @@ validate your settings in 2 ways.
 
 ??? "Writing Validators as a toml file"
 
-    You can also alternativelly place a `dynaconf_validators.toml` file in the
+    You can also alternatively place a `dynaconf_validators.toml` file in the
     root of your project.
 
     ```toml
@@ -632,7 +632,7 @@ validate your settings in 2 ways.
     port = {gte=5000, lte=9000}
     ```
 
-    Following the same rules used in the `Validator` class, then you can trigger the validation via command line using.
+    Following the same rules used in the `Validator` class, then you can trigger the validation via the command line using.
 
     ```bash
     dynaconf -i config.settings validate
@@ -680,3 +680,4 @@ This project is licensed under the terms of the MIT license.
 
 
 If you are looking for something similar to Dynaconf to use in your Rust projects: https://github.com/rubik/hydroconf
+
