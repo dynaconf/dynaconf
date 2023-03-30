@@ -171,11 +171,10 @@ Example: if you need to use `reverse_lazy`, you might do this:
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 
 import dynaconf
-from dynaconf.utils import parse_conf
 from django.urls import reverse_lazy
 
 # register custom converter
-parse_conf.converters["@reverse_lazy"] = lambda value: parse_conf.Lazy(value, casting=reverse_lazy)
+dynaconf.add_converter("reverse_lazy", reverse_lazy)
 
 # regular setup
 settings = dynaconf.DjangoDynaconf(__name__)
@@ -189,7 +188,8 @@ And then the following code would work:
 # settings.yaml
 
 default:
-    LOGIN_URL: "@reverse_lazy account_login"
+    ADMIN_NAMESPACE: admin
+    LOGIN_URL: "@reverse_lazy @format {this.ADMIN_NAMESPACE}:login"
 ```
 
 !!! note
