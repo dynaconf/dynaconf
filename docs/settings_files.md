@@ -122,8 +122,7 @@ or
 
 ```toml
 # in toml file
-dynaconf_includes = ["path/to/file.toml"]
-dynaconf_preload = ["path/to/file.toml"]
+dynaconf_include = ["path/to/file.toml"]
 key = value
 anotherkey = value
 ```

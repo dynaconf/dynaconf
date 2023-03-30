@@ -233,7 +233,7 @@ source, settings files will be read, envvars parsed and external loaders connect
 
 ### **includes**
 
-> type=`list`, default=`[]` </br>
+> type=`list | str`, default=`[]` </br>
 > env-var=`INCLUDES_FOR_DYNACONF`
 
 After loading the files specified in `settings_files` dynaconf will load all the files added to `includes` in a post-load process.
@@ -242,7 +242,8 @@ After loading the files specified in `settings_files` dynaconf will load all the
     Includes can also be added inside files itself, ex:
 
     ```toml
-    includes: ['otherfile.toml']
+    dynaconf_include: ['otherfile.toml'] # or
+    dynaconf_include: 'otherfile.toml'
     key: "value"
     ```
 
@@ -360,7 +361,7 @@ DATABASES = {
 
 ### **preload**
 
-> type=`list`, default=`[]` </br>
+> type=`list | str`, default=`[]` </br>
 > env-var=`PRELOAD_FOR_DYNACONF`
 
 Sometimes you might need to load some file before dynaconf starts looking for its `settings_files` or `includes`, you can have for example a `dynaconf.toml` to hold dynaconf's configuration.
