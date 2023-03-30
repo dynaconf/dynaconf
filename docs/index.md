@@ -666,6 +666,12 @@ pip install dynaconf[redis]
 
 Read more on [external loaders](/advanced/#creating-new-loaders)
 
+## Extensions
+
+Community extensions will be linked here (open for recommendations).
+
+- [pytest-dynaconf]() - Set your Dynaconf environment to testing when running pytest.
+
 ## License
 
 This project is licensed under the terms of the MIT license.
