@@ -7,6 +7,7 @@ from json import JSONDecoder
 from typing import Any
 from typing import Iterator
 from typing import TYPE_CHECKING
+from typing import TypeVar
 
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -290,7 +291,10 @@ def trimmed_split(
     return [s]  # raw un-splitted
 
 
-def ensure_a_list(data: Any) -> list[int] | list[str]:
+T = TypeVar("T")
+
+
+def ensure_a_list(data: T) -> list[T]:
     """Ensure data is a list or wrap it in a list"""
     if not data:
         return []

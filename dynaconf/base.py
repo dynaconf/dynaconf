@@ -1045,7 +1045,7 @@ class Settings:
 
     def load_includes(self, env, silent, key):
         """Do we have any nested includes we need to process?"""
-        includes = self.get("DYNACONF_INCLUDE", [])
+        includes = ensure_a_list(self.get("DYNACONF_INCLUDE"))
         includes.extend(ensure_a_list(self.get("INCLUDES_FOR_DYNACONF")))
         if includes:
             self.load_file(path=includes, env=env, silent=silent, key=key)

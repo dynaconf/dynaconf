@@ -73,7 +73,7 @@ See more about [hooks](https://www.dynaconf.com/advanced/#hooks)
 
 Yes, you may add a custom converter for any functions you like. Refer [here](/django/#use-django-functions-inside-custom-settings) for a full example.
 
-### Default-override workflow
+## Default-override workflow
 
 > I'd like to use a base-file as default settings (like django settings.py) and a user-file settings where I would add my custom overrides more explicitly. Can this be done?
 
@@ -104,5 +104,29 @@ bucket=["a", "b", "c", "d"]
 bucket=["a", "b", "c", "d"]
 ```
 
-To control how you want to merge these structures, you may want to have a look at [merging](https://www.dynaconf.com/merging/)
-There are several ways you can merge data: settings the global option [merge_enabled](), using double dunder syntax or marking a whole file, a specific env, or just an option for merging. Choose what fits best for your case.
+To control how you want to merge these structures, you may want to have a look at [merging](/merging/)
+There are several ways you can merge data: settings the global option [merge_enabled](/configuration/#merge_enabled), using dunder syntax or marking a whole file, a specific env, or just an option for merging. Choose what fits best for your case.
+
+## Error with Pyinstaller executable
+
+> I had some trouble running an executable app that uses Dynaconf. What could it be?
+
+A [user reported](https://github.com/dynaconf/dynaconf/issues/770) this situation while using Pyinstaller. For his case, the fix was to package *dynaconf* and *python-dotenv[cli]* without compiling by using the `--collect-all` argument of pyinstaller.
+
+## Dynaconf instance from dict
+
+> I would like a Dynaconf object to be created from a python dict, while still being able to use validators on it. Is it possible?
+
+Yes, it is possible.
+
+Let's say you got a stringfied json directly from an API and you'd like to integrate it to a Dynaconf object using some validation. You could do this:
+
+```python
+data = get_data_as_dict()
+
+settings = Dynaconf()
+
+settings.validators.register(Validator("aws", "elasticsearch", must_exist=True))
+settings.update(data)
+settings.validators.validate()
+```
