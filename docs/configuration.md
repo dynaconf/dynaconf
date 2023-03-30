@@ -474,6 +474,38 @@ skip_files=["path/to/ignored.toml"]
 
 ---
 
+### **validate_on_update**
+
+> type=`False | True | "all"`, default=`False` </br>
+> env-var=`VALIDATE_ON_UPDATE_FOR_DYNACONF`
+
+Defines if validation will be triggered when a Dynaconf instance
+is updated with the methods `update()`, `set()` or `load_file()`.
+Also defines which raising strategy will be used (see more on [Validation](/validation/#trigger-on-data-update)).
+
+Valid options are:
+
+- `False` (default): auto-trigger off
+- `True`: trigger as `settings.validate()`, which raises on first errors
+- `"all"`: trigger as `settings.validate_all()`, which accumulates errors
+
+
+</br>
+
+This behaviour can also be defined on a per-call basis. Just provide
+the parameter `validate` to any of the data-update methods.
+
+Eg:
+
+```python
+settings = Dynaconf(validate_on_update="all")
+settings.validators.register(Validator("value_a", must_exist=True))
+
+settings.update({"value_b": "foo"}, validate=False) # will bypass validation
+settings.update({"value_b": "foo"}, validate=True) # will call .validate()
+settings.update({"value_b": "foo"}) # will call .validate_all()
+```
+
 ### **validators**
 
 > type=`list`, default=`[]` </br>

@@ -19,7 +19,10 @@ PROJECT = "This is not hello_world"
 
 ## Validating in Python programmatically
 
-At any point of your program you can do:
+### On instantiation
+
+When you instantiate your settings, Dynaconf will run all the validators
+you've defined agaisnt your initial data.
 
 ```python
 from pathlib import Path
@@ -63,6 +66,59 @@ settings = Dynaconf(
 
 The above will raise `dynaconf.validators.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")` and `dynaconf.validators.ValidationError("PROJECT must be eq='hello_world' but it is 'This is not hello_world' in env PRODUCTION")`
 
+### Lazy validation
+
+Instead of passing `validators=` argument to `Dynaconf` class you can register validators
+after the instance is created and trigger it manually.
+
+<h4>Register</h4>
+
+First, register some validators. This won't trigger the validation yet.
+
+```python
+settings = Dynaconf()
+
+settings.validators.register(
+    Validator("MYSQL_HOST", eq="development.com", env="DEVELOPMENT"),
+    Validator("MYSQL_HOST", ne="development.com", env="PRODUCTION"),
+)
+```
+
+<h4>Trigger manually</h4>
+
+You may choose two strategies for the validation:
+
+- `validate`: raises `ValidationError` on the first error found
+- `validate_all`: raises `ValidationError` at the end. Accumulative error data is stored at `details`
+
+```python
+# raises on first error found
+settings.validators.validate()
+
+# raises after all possible errors are evaluated
+try:
+    settings.validators.validate_all()
+except dynaconf.ValidationError as e:
+    accumulative_errors = e.details
+    print(accumulative_errors)
+```
+
+<h4>Trigger on data update</h4>
+
+By default, if the data of an instance is updated with `update`, `set` or `load_file` methods,
+no validation will be triggered.
+
+You can override this globally with the option [validate_on_update](/configuration/#validate_on_update) or
+set this on a per-call basis.
+
+```python
+# validate_on_update=False (default)
+settings.update({"NEW_VALUE": 123}, validate=True) # triggers validators.validate()
+settings.update({"NEW_VALUE": 123}, validate="all") # triggers validators.validate_all()
+
+# validate_on_update=True or "all"
+settings.update({"NEW_VALUE": 123}) # will trigger with the global strategy
+```
 
 ## Validator parameters 
 
@@ -248,40 +304,8 @@ Validator(
 )
 ```
 
-## Lazy validation
 
-Instead of passing `validators=` argument to `Dynaconf` class you can register validators after the instance is created.
-
-```python
-settings = Dynaconf(...)
-
-custom_msg = "You cannot set {name} to {value} in env {env}"
-settings.validators.register(
-    Validator("MYSQL_HOST", eq="development.com", env="DEVELOPMENT"),
-    Validator("MYSQL_HOST", ne="development.com", env="PRODUCTION"),
-    Validator("VERSION", ne=1, messages={"operations": custom_msg}),
-    Validator("BLABLABLA", must_exist=True),
-)
-```
-
-Having the list of validators registered you can call one of:
-
-### Validate and raise on the first error:
-
-```python
-settings.validators.validate()
-```
-
-### Validate and accumulate errors, raise only after all validators are evaluated.
-
-```python
-settings.validators.validate_all()
-```
-
-The raised `ValidationError` will have an attribute `details` holding information about each
-error raised.
-
-### Providing default or computed values
+## Providing default or computed values
 
 
 Validators can be used to provide default or computed values.

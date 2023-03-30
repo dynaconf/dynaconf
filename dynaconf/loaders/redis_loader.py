@@ -13,7 +13,7 @@ except ImportError:
 IDENTIFIER = "redis"
 
 
-def load(obj, env=None, silent=True, key=None):
+def load(obj, env=None, silent=True, key=None, validate=False):
     """Reads and loads in to "settings" a single key or all keys from redis
 
     :param obj: the settings instance
@@ -43,14 +43,16 @@ def load(obj, env=None, silent=True, key=None):
                         value, tomlfy=True, box_settings=obj
                     )
                     if parsed_value:
-                        obj.set(key, parsed_value)
+                        obj.set(key, parsed_value, validate=validate)
             else:
                 data = {
                     key: parse_conf_data(value, tomlfy=True, box_settings=obj)
                     for key, value in redis.hgetall(holder.upper()).items()
                 }
                 if data:
-                    obj.update(data, loader_identifier=IDENTIFIER)
+                    obj.update(
+                        data, loader_identifier=IDENTIFIER, validate=validate
+                    )
         except Exception:
             if silent:
                 return False
