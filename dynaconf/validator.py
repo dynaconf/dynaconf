@@ -287,7 +287,7 @@ class Validator:
             # however we need to cast it
             # so we call .set again
             value = self.cast(settings.get(name))
-            settings.set(name, value)
+            settings.set(name, value, validate=False)
 
             # is there a callable condition?
             if self.condition is not None:

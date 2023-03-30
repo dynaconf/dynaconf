@@ -62,7 +62,7 @@ def get_client(obj):
     return client
 
 
-def load(obj, env=None, silent=None, key=None):
+def load(obj, env=None, silent=None, key=None, validate=False):
     """Reads and loads in to "settings" a single key or all keys from vault
 
     :param obj: the settings instance
@@ -125,9 +125,14 @@ def load(obj, env=None, silent=None, key=None):
                     data.get(key), tomlfy=True, box_settings=obj
                 )
                 if value:
-                    obj.set(key, value)
+                    obj.set(key, value, validate=validate)
             elif data:
-                obj.update(data, loader_identifier=IDENTIFIER, tomlfy=True)
+                obj.update(
+                    data,
+                    loader_identifier=IDENTIFIER,
+                    tomlfy=True,
+                    validate=validate,
+                )
         except Exception:
             if silent:
                 return False
