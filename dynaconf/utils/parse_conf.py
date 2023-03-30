@@ -276,6 +276,22 @@ def get_converter(converter_key, value, box_settings):
     return converted_value
 
 
+def add_converter(converter_key, func):
+    """Adds a new converter to the converters dict"""
+    if not converter_key.startswith("@"):
+        converter_key = f"@{converter_key}"
+
+    converters[converter_key] = wraps(func)(
+        lambda value: value.set_casting(func)
+        if isinstance(value, Lazy)
+        else Lazy(
+            value,
+            casting=func,
+            formatter=BaseFormatter(lambda x, **_: x, converter_key),
+        )
+    )
+
+
 def parse_with_toml(data):
     """Uses TOML syntax to parse data"""
     try:  # try tomllib first
