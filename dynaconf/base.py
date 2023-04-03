@@ -864,6 +864,9 @@ class Settings:
                 key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
             )
 
+        # Fix for #905
+        saved_value = value if loader_identifier == "setdefault" else None
+
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
         existing = getattr(self, key, None)
@@ -896,9 +899,13 @@ class Settings:
             if merge:
                 value = object_merge(existing, value)
             else:
-                # `dynaconf_merge` may be used within the key structure
-                # Or merge_enabled is set to True
-                value = self._merge_before_set(existing, value)
+                # Fix for #905
+                if loader_identifier == "setdefault":
+                    value = saved_value
+                else:
+                    # `dynaconf_merge` may be used within the key structure
+                    # Or merge_enabled is set to True
+                    value = self._merge_before_set(existing, value)
 
         if isinstance(value, dict):
             value = DynaBox(value, box_settings=self)
