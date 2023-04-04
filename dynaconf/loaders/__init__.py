@@ -135,7 +135,13 @@ def execute_hooks(
 
 
 def settings_loader(
-    obj, settings_module=None, env=None, silent=True, key=None, filename=None
+    obj,
+    settings_module=None,
+    env=None,
+    silent=True,
+    key=None,
+    filename=None,
+    validate=False,
 ):
     """Loads from defined settings module
 
@@ -201,7 +207,12 @@ def settings_loader(
 
             if mod_file.endswith(loader["ext"]):
                 loader["loader"].load(
-                    obj, filename=mod_file, env=env, silent=silent, key=key
+                    obj,
+                    filename=mod_file,
+                    env=env,
+                    silent=silent,
+                    key=key,
+                    validate=validate,
                 )
                 continue
 
@@ -214,7 +225,7 @@ def settings_loader(
 
         # must be Python file or module
         # load from default defined module settings.py or .secrets.py if exists
-        py_loader.load(obj, mod_file, key=key)
+        py_loader.load(obj, mod_file, key=key, validate=validate)
 
         # load from the current env e.g: development_settings.py
         env = env or obj.current_env
@@ -241,11 +252,17 @@ def settings_loader(
             identifier=f"py_{env.upper()}",
             silent=True,
             key=key,
+            validate=validate,
         )
 
         # load from global_settings.py
         py_loader.load(
-            obj, global_mod_file, identifier="py_global", silent=True, key=key
+            obj,
+            global_mod_file,
+            identifier="py_global",
+            silent=True,
+            key=key,
+            validate=validate,
         )
 
 

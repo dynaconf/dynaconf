@@ -35,6 +35,7 @@ from dynaconf.utils.parse_conf import converters
 from dynaconf.utils.parse_conf import get_converter
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
+from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
 from dynaconf.vendor.box.box_list import BoxList
 
@@ -802,7 +803,9 @@ class Settings:
         for key in keys:
             self.unset(key, force=force)
 
-    def _dotted_set(self, dotted_key, value, tomlfy=False, **kwargs):
+    def _dotted_set(
+        self, dotted_key, value, tomlfy=False, validate=empty, **kwargs
+    ):
         """Sets dotted keys as nested dictionaries.
 
         Dotted set will always reassign the value, to merge use `@merge` token
@@ -813,7 +816,12 @@ class Settings:
 
         Keyword Arguments:
             tomlfy {bool} -- Perform toml parsing (default: {False})
+            validate {bool} --
         """
+        if validate is empty:
+            validate = self.get(
+                "VALIDATE_ON_UPDATE_FOR_DYNACONF"
+            )  # pragma: nocover
 
         split_keys = dotted_key.split(".")
         existing_data = self.get(split_keys[0], {})
@@ -831,7 +839,7 @@ class Settings:
                 new=new_data,
                 full_path=split_keys,
             )
-        self.update(data=new_data, tomlfy=tomlfy, **kwargs)
+        self.update(data=new_data, tomlfy=tomlfy, validate=validate, **kwargs)
 
     def set(
         self,
@@ -841,6 +849,7 @@ class Settings:
         tomlfy=False,
         dotted_lookup=empty,
         is_secret="DeprecatedArgument",  # noqa
+        validate=empty,
         merge=False,
     ):
         """Set a value storing references for the loader
@@ -850,7 +859,11 @@ class Settings:
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
+        :param validate: Bool define if validation will be triggered
         """
+        if validate is empty:
+            validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
+
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
 
@@ -861,7 +874,11 @@ class Settings:
 
         if "." in key and dotted_lookup is True:
             return self._dotted_set(
-                key, value, loader_identifier=loader_identifier, tomlfy=tomlfy
+                key,
+                value,
+                loader_identifier=loader_identifier,
+                tomlfy=tomlfy,
+                validate=validate,
             )
 
         # Fix for #905
@@ -924,6 +941,9 @@ class Settings:
             # a default value and goes away only when explicitly unset
             self._defaults[key] = value
 
+        if validate is True:
+            self.validators.validate()
+
     def update(
         self,
         data=None,
@@ -932,6 +952,7 @@ class Settings:
         merge=False,
         is_secret="DeprecatedArgument",  # noqa
         dotted_lookup=empty,
+        validate=empty,
         **kwargs,
     ):
         """
@@ -950,20 +971,34 @@ class Settings:
         :param loader_identifier: Only to be used by custom loaders
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
+        :param validate: Bool define if validators will trigger automatically
         :param kwargs: extra values to update
         :return: None
         """
+
+        if validate is empty:
+            validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
+
         data = data or {}
         data.update(kwargs)
         for key, value in data.items():
-            self.set(
-                key,
-                value,
-                loader_identifier=loader_identifier,
-                tomlfy=tomlfy,
-                merge=merge,
-                dotted_lookup=dotted_lookup,
-            )
+            # update() will handle validation later
+            with suppress(ValidationError):
+                self.set(
+                    key,
+                    value,
+                    loader_identifier=loader_identifier,
+                    tomlfy=tomlfy,
+                    merge=merge,
+                    dotted_lookup=dotted_lookup,
+                    validate=validate,
+                )
+
+        # handle param `validate`
+        if validate is True:
+            self.validators.validate()
+        elif validate == "all":
+            self.validators.validate_all()
 
     def _merge_before_set(self, existing, value):
         """Merge the new value being set with the existing value before set"""
@@ -1061,7 +1096,9 @@ class Settings:
             if last_loader and last_loader == env_loader:
                 last_loader.load(self, env, silent, key)
 
-    def load_file(self, path=None, env=None, silent=True, key=None):
+    def load_file(
+        self, path=None, env=None, silent=True, key=None, validate=empty
+    ):
         """Programmatically load files from ``path``.
 
         :param path: A single filename or a file list
@@ -1069,18 +1106,23 @@ class Settings:
         :param silent: Should raise errors?
         :param key: Load a single key?
         """
+        if validate is empty:
+            validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
+
         env = (env or self.current_env).upper()
         files = ensure_a_list(path)
         if files:
             already_loaded = set()
             for _filename in files:
 
-                if py_loader.try_to_load_from_py_module_name(
-                    obj=self, name=_filename, silent=True
-                ):
-                    # if it was possible to load from module name
-                    # continue the loop.
-                    continue
+                # load_file() will handle validation later
+                with suppress(ValidationError):
+                    if py_loader.try_to_load_from_py_module_name(
+                        obj=self, name=_filename, silent=True
+                    ):
+                        # if it was possible to load from module name
+                        # continue the loop.
+                        continue
 
                 root_dir = str(self._root_path or os.getcwd())
 
@@ -1106,14 +1148,24 @@ class Settings:
                 for path in paths + local_paths:
                     if path in already_loaded:  # pragma: no cover
                         continue
-                    settings_loader(
-                        obj=self,
-                        env=env,
-                        silent=silent,
-                        key=key,
-                        filename=path,
-                    )
-                    already_loaded.add(path)
+
+                    # load_file() will handle validation later
+                    with suppress(ValidationError):
+                        settings_loader(
+                            obj=self,
+                            env=env,
+                            silent=silent,
+                            key=key,
+                            filename=path,
+                            validate=validate,
+                        )
+                        already_loaded.add(path)
+
+        # handle param `validate`
+        if validate is True:
+            self.validators.validate()
+        elif validate == "all":
+            self.validators.validate_all()
 
     @property
     def _root_path(self):
