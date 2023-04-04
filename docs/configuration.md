@@ -79,8 +79,40 @@ The list of enabled loaders that dynaconf will use to load settings files, if yo
 > type=`str`, default=`"default"` </br>
 > env-var=`DEFAULT_ENV_FOR_DYNACONF`
 
-When `environments` is set, dynaconf will use this value as the environment holding the default values,
-ex: in a `toml` file it will be `[default]` section.
+When `environments=True`, this defines the environment name that will hold the default/fallback values.
+
+Eg.
+
+```toml
+# settings.toml
+
+[my_default]
+test_value = "test value from default"
+other_value = "other value from default"
+
+[development]
+# no test_value here
+other_value = "other value from dev"
+```
+
+```py
+>>> settings = Dynaconf(
+...     settings_file="settings.toml",
+...     environments=True,
+...     default_env="my_default",
+...     env="development", # this is the active env, by default
+... )
+ 
+>>> settings.other_value
+"other value from dev"
+
+>>> settings.test_value
+"test value from default" # fallback to `my_default`
+```
+
+!!! note
+		The `default_env` is not the environment that will be active on startup. For this, see [`env`](/configuration/#env).
+
 
 ---
 
