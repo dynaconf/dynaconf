@@ -93,8 +93,8 @@ class FlaskDynaconf:
                 "install it with: pip install flask"
             )
         self.kwargs = {k.upper(): v for k, v in kwargs.items()}
-        kwargs.setdefault("ENVVAR_PREFIX", "FLASK")
-        env_prefix = f"{kwargs['ENVVAR_PREFIX']}_ENV"  # FLASK_ENV
+        self.kwargs.setdefault("ENVVAR_PREFIX", "FLASK")
+        env_prefix = f"{self.kwargs['ENVVAR_PREFIX']}_ENV"  # FLASK_ENV
         kwargs.setdefault("ENV_SWITCHER", env_prefix)
         kwargs.setdefault("ENVIRONMENTS", True)
         kwargs.setdefault("load_dotenv", True)

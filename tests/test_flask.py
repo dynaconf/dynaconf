@@ -142,3 +142,22 @@ def test_flask_with_dot_env():
 def test_flask_dotenv_cli():
     with flask_app.test_client() as client:
         assert client.get("/test").data == b"hello flask"
+
+
+def test_envvar_prefix_works_case_insensitive(tmpdir):
+    """assert using lowercase envvar_prefix works. #848"""
+
+    # setup .env file
+    file = tmpdir.join(".env")
+    with open(file, "w", encoding="utf-8") as f:
+        f.write("MYPREFIX_appname='from myprefix'\nFLASK_appname='from flask'")
+
+    # when using lowercase envvar_prefix, should work
+    app = Flask(__name__)
+    FlaskDynaconf(
+        app,
+        dotenv_path=file,
+        load_dotenv=True,
+        envvar_prefix="MYPREFIX",
+    )
+    assert app.config.appname == "from myprefix"
