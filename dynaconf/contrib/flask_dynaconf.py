@@ -95,10 +95,10 @@ class FlaskDynaconf:
         self.kwargs = {k.upper(): v for k, v in kwargs.items()}
         self.kwargs.setdefault("ENVVAR_PREFIX", "FLASK")
         env_prefix = f"{self.kwargs['ENVVAR_PREFIX']}_ENV"  # FLASK_ENV
-        kwargs.setdefault("ENV_SWITCHER", env_prefix)
-        kwargs.setdefault("ENVIRONMENTS", True)
-        kwargs.setdefault("load_dotenv", True)
-        kwargs.setdefault(
+        self.kwargs.setdefault("ENV_SWITCHER", env_prefix)
+        self.kwargs.setdefault("ENVIRONMENTS", True)
+        self.kwargs.setdefault("LOAD_DOTENV", True)
+        self.kwargs.setdefault(
             "default_settings_paths", dynaconf.DEFAULT_SETTINGS_FILES
         )
 

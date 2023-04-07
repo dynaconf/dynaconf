@@ -144,20 +144,23 @@ def test_flask_dotenv_cli():
         assert client.get("/test").data == b"hello flask"
 
 
-def test_envvar_prefix_works_case_insensitive(tmpdir):
-    """assert using lowercase envvar_prefix works. #848"""
-
-    # setup .env file
-    file = tmpdir.join(".env")
-    with open(file, "w", encoding="utf-8") as f:
-        f.write("MYPREFIX_appname='from myprefix'\nFLASK_appname='from flask'")
-
-    # when using lowercase envvar_prefix, should work
+def test_setting_instance_options_works_case_insensitive():
+    """
+    assert that dynaconf options (that are modified by FlaskDynaconf)
+    can be set by the user in a case insensitive manner. see #848
+    """
     app = Flask(__name__)
     FlaskDynaconf(
         app,
-        dotenv_path=file,
-        load_dotenv=True,
-        envvar_prefix="MYPREFIX",
+        envVar_prefix="MYPREFIX",
+        eNv_swItcHer="MY_ENV_SWITCHER",
+        enViroNments=False,
+        lOaD_dOtenv=False,
     )
-    assert app.config.appname == "from myprefix"
+    assert app.config.envvar_prefix_for_dynaconf == "MYPREFIX"
+    assert app.config.env_switcher_for_dynaconf == "MY_ENV_SWITCHER"
+    assert app.config.environments_for_dynaconf is False
+
+    # oddly, using '_for_dynaconf' won't work, altough
+    # the option functionality seems to work as expected
+    assert app.config.load_dotenv is False
