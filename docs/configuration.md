@@ -474,6 +474,47 @@ skip_files=["path/to/ignored.toml"]
 
 ---
 
+### **sysenv_fallback**
+
+> type=`bool | list[str]`, default=`False` </br>
+> env-var=`SYSENV_FALLBACK_FOR_DYNACONF`
+
+Defines if dynaconf will try to load system environment variables (unprefixed)
+as a fallback when using `settings.get()`.
+
+Valid options are:
+
+- `False` (default): won't try to load system envvar
+- `True`: will try to load sys envvar for any name requested in `get()`
+- `list[str]`: will try to load sys envvar for the names provided in the list
+
+
+</br>
+
+This behaviour can also be defined on a per-call basis by providing
+the parameter `sysenv_fallback` to `settings.get()`
+
+Eg:
+
+```python
+from dynaconf import Dynaconf
+
+# will look for PATH (uppercase) in the system environment variables
+settings = Dynaconf(sysenv_fallback=True)
+settings.get("path")
+
+# can be set on a per-call basis
+settings = Dynaconf()
+settings.get("path", sysenv_fallback=True)
+
+# if a list is used, it filters what names are allowed.
+settings = Dynaconf(sysenv_fallback=["path"])
+settings.get("path")
+settings.get("user") # won't try loading unprefixed USER
+```
+
+---
+
 ### **validate_on_update**
 
 > type=`False | True | "all"`, default=`False` </br>
