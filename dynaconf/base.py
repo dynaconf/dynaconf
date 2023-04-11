@@ -424,6 +424,7 @@ class Settings:
         fresh=False,
         dotted_lookup=empty,
         parent=None,
+        sysenv_fallback=None,
     ):
         """
         Get a value from settings store, this is the preferred way to access::
@@ -437,8 +438,12 @@ class Settings:
         :param fresh: Should reload from loaders store before access?
         :param dotted_lookup: Should perform dotted-path lookup?
         :param parent: Is there a pre-loaded parent in a nested data?
+        :param sysenv_fallback: Should fallback to system environ if not found?
         :return: The value if found, default or None
         """
+        if sysenv_fallback is None:
+            sysenv_fallback = self._store.get("SYSENV_FALLBACK_FOR_DYNACONF")
+
         nested_sep = self._store.get("NESTED_SEPARATOR_FOR_DYNACONF")
         if nested_sep and nested_sep in key:
             # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
@@ -456,14 +461,23 @@ class Settings:
                 parent=parent,
             )
 
+        key = upperfy(key)
+
+        # handles system environment fallback
+        if default is None:
+            key_in_sysenv_fallback_list = isinstance(
+                sysenv_fallback, list
+            ) and key in [upperfy(k) for k in sysenv_fallback]
+            if sysenv_fallback is True or key_in_sysenv_fallback_list:
+                default = self.environ.get(key)
+
+        # default values should behave exactly Dynaconf parsed values
         if default is not None:
-            # default values should behave exactly Dynaconf parsed values
             if isinstance(default, list):
                 default = BoxList(default)
             elif isinstance(default, dict):
                 default = DynaBox(default)
 
-        key = upperfy(key)
         if key in self._deleted:
             return default
 

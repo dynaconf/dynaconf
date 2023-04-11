@@ -246,7 +246,12 @@ APPLY_DEFAULT_ON_NONE_FOR_DYNACONF = get(
     "APPLY_DEFAULT_ON_NONE_FOR_DYNACONF", None
 )
 
+# Auto trigger validation when Settings update methods are called directly
+# (set, update, load_file)
 VALIDATE_ON_UPDATE_FOR_DYNACONF = get("VALIDATE_ON_UPDATE_FOR_DYNACONF", False)
+
+# Use system environ as fallback when a setting was not set
+SYSENV_FALLBACK_FOR_DYNACONF = get("SYSENV_FALLBACK_FOR_DYNACONF", False)
 
 
 # Backwards compatibility with renamed variables
