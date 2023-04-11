@@ -1372,6 +1372,7 @@ def test_get_with_sysenv_fallback_global_as_false():
     assert settings.sysenv_fallback_for_dynaconf is False
     assert not settings.get("test_key")
 
+
 def test_get_with_sysenv_fallback_global_as_true():
     """
     When sysenv_fallback is True
@@ -1402,6 +1403,7 @@ def test_get_with_sysenv_fallback_global_as_list():
     assert not settings.get("test_key")
     assert settings.get("foo_key") == "FOO_VALUE"
 
+
 def test_get_with_sysenv_fallback_local_overrides():
     """
     When there are local overrides
@@ -1415,7 +1417,9 @@ def test_get_with_sysenv_fallback_local_overrides():
     assert not settings.get("test_key")
     assert not settings.get("test_key", sysenv_fallback=["foo_key"])
     assert settings.get("test_key", sysenv_fallback=True) == "TEST_VALUE"
-    assert settings.get("test_key", sysenv_fallback=["test_key"]) == "TEST_VALUE"
+    assert (
+        settings.get("test_key", sysenv_fallback=["test_key"]) == "TEST_VALUE"
+    )
 
     # global is True
     settings = Dynaconf(sysenv_fallback=True)
