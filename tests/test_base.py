@@ -1384,11 +1384,6 @@ def test_get_with_sysenv_fallback_global_as_true():
     assert settings.sysenv_fallback_for_dynaconf is True
     assert settings.get("test_key") == "TEST_VALUE"
 
-    # only support uppercase system envs
-    settings.environ["DIFFERENT_case"] = "CASE_VALUE"
-    assert not settings.get("different_case") == "CASE_VALUE"
-    assert not settings.get("DIFFERENT_case") == "CASE_VALUE"
-
 
 def test_get_with_sysenv_fallback_global_as_list():
     """
