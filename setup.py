@@ -32,7 +32,6 @@ test_requirements = [
     "django",
     "python-dotenv",
     "toml",
-    "codecov",
     "redis",
     "hvac",
     "configobj",
