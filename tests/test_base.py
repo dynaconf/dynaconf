@@ -1359,3 +1359,67 @@ def test_load_file__validate_on_update_is_str_all(tmpdir, valid, invalid):
     # should pass
     assert not settings.exists("value_a")
     settings.load_file(file_with_valid)
+
+
+def test_get_with_sysenv_fallback_global_as_false():
+    """
+    When global sysenv_fallback is False
+    Should not fallback to sys envvars (default)
+    """
+    settings = Dynaconf(sysenv_fallback=False)
+    settings.environ["TEST_KEY"] = "TEST_VALUE"
+
+    assert settings.sysenv_fallback_for_dynaconf is False
+    assert not settings.get("test_key")
+
+
+def test_get_with_sysenv_fallback_global_as_true():
+    """
+    When sysenv_fallback is True
+    Should fallback to sys envvars for uppercase envvar-names only
+    """
+    settings = Dynaconf(sysenv_fallback=True)
+    settings.environ["TEST_KEY"] = "TEST_VALUE"
+
+    assert settings.sysenv_fallback_for_dynaconf is True
+    assert settings.get("test_key") == "TEST_VALUE"
+
+
+def test_get_with_sysenv_fallback_global_as_list():
+    """
+    When sysenv_fallback is list
+    Should fallback to sys envvars only for listed names
+    """
+    settings = Dynaconf(sysenv_fallback=["FOO_KEY"])
+    settings.environ["TEST_KEY"] = "TEST_VALUE"
+    settings.environ["FOO_KEY"] = "FOO_VALUE"
+
+    assert isinstance(settings.sysenv_fallback_for_dynaconf, list)
+    assert not settings.get("test_key")
+    assert settings.get("foo_key") == "FOO_VALUE"
+
+
+def test_get_with_sysenv_fallback_local_overrides():
+    """
+    When there are local overrides
+    Should behave according to the overrides
+    """
+    # global is False
+    settings = Dynaconf(sysenv_fallback=False)
+    settings.environ["TEST_KEY"] = "TEST_VALUE"
+
+    assert settings.sysenv_fallback_for_dynaconf is False
+    assert not settings.get("test_key")
+    assert not settings.get("test_key", sysenv_fallback=["foo_key"])
+    assert settings.get("test_key", sysenv_fallback=True) == "TEST_VALUE"
+    assert (
+        settings.get("test_key", sysenv_fallback=["test_key"]) == "TEST_VALUE"
+    )
+
+    # global is True
+    settings = Dynaconf(sysenv_fallback=True)
+    settings.environ["ANOTHER_TEST"] = "ANOTHER_VALUE"
+
+    assert settings.sysenv_fallback_for_dynaconf is True
+    assert settings.get("another_test") == "ANOTHER_VALUE"
+    assert not settings.get("another_test", sysenv_fallback=False)
