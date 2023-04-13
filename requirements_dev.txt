@@ -12,7 +12,6 @@ gitchangelog
 boto3
 
 # testing
-codecov
 pytest
 pytest-cov
 pytest-mock
