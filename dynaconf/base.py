@@ -1115,10 +1115,16 @@ class Settings:
     ):
         """Programmatically load files from ``path``.
 
+        When using relative paths, the basedir fallbacks in this order:
+        - ROOT_PATH_FOR_DYNACONF
+        - Directory of the last loaded file
+        - CWD
+
         :param path: A single filename or a file list
         :param env: Which env to load from file (default current_env)
         :param silent: Should raise errors?
         :param key: Load a single key?
+        :param validate: Should trigger validation?
         """
         if validate is empty:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
