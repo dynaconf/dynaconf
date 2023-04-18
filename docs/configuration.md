@@ -269,6 +269,23 @@ source, settings files will be read, envvars parsed and external loaders connect
 > env-var=`INCLUDES_FOR_DYNACONF`
 
 After loading the files specified in `settings_files` dynaconf will load all the files added to `includes` in a post-load process.
+Note that:
+
+- Globs are allowed
+- When relative paths are given it will use [root_path](/configuration#root_path) as their basedir.
+- If `root_path` is not defined explicitly, will fallback to the directory of the last loaded setting or
+to the `cwd`. Eg:
+
+```python
+# will look for src/extra.yaml
+Dynaconf(root_path="src/", includes="extra.yaml")
+
+# will look for conf/extra.yaml
+Dynaconf(setings_files="conf/settings.yaml", includes="extra.yaml")
+
+# will look for $PWD/extra.yaml
+Dynaconf(includes="extra.yaml")
+```
 
 !!! tip
     Includes can also be added inside files itself, ex:
@@ -284,13 +301,6 @@ After loading the files specified in `settings_files` dynaconf will load all the
     ```bash
     export INCLUDES_FOR_DYNACONF="['otherfile.toml', 'path/*.yaml']"
     ```
-
-    **Includes allows the use of globs**
-
-!!! warning
-    includes are loaded relative to the first loaded file, so if you have a `settings_files=['conf/settings.toml']` and `includes=["*.yaml"]`
-    the yaml files will be loaded relative to the `conf` folder. Unless you specify the absolute path or pass `root_path` to the Dynaconf
-    initializer.
 
 ---
 
@@ -433,9 +443,19 @@ default = {
 > type=`str`, default=`None` </br>
 > env-var=`ROOT_PATH_FOR_DYNACONF`
 
-The working path for dynaconf to use as starting point when searching for files:
+The working path for dynaconf to use as the starting point when searching for files.
 
-Read more on [settings_files](/settings_files/#load)
+Note that:
+
+- For relative path, uses `cwd` as its basepath
+- When not explicitly set, the internal value for `root_path` will be set as follow:
+    - The place of the last loaded file, if any files were already loaded
+    - CWD
+
+Read more on [settings_files](/settings_files/#load).
+
+!!! note
+     The `cwd` is from where the python interpreter was called.
 
 ---
 

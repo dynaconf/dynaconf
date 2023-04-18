@@ -77,9 +77,9 @@ settings.name == "Bruno"
 Dynaconf will start looking for each file defined in `settings_files` from the folder where your entry point python file is located (like `app.py`). Then, it will look at each parent down to the root of the system. For each visited folder, it will also try looking inside a `/config` folder.
 
 - If you define [root_path](/configuration/#root_path), it will look start looking from there, instead. Keep in mind that `root_path` is relative to `cwd`, which is from where the python interpreter was called.
-- For each file specified in `settings_files` dynaconf will also try to load an optional `name`**.local.**`extension`. Eg, `settings_file="settings.toml"` will look for `settings.local.toml` too.
 - Absolute paths are recognized and dynaconf will attempt to load them directly.
-- Blobs are accepted.
+- For each file specified in `settings_files` dynaconf will also try to load an optional `name`**.local.**`extension`. Eg, `settings_file="settings.toml"` will look for `settings.local.toml` too.
+- Globs are accepted.
 
 Define it in your settings instance or export the corresponding envvars.
 
