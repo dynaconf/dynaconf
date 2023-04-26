@@ -1,5 +1,5 @@
 {
     "password": "pass",
-    "token_policies": [ "admin", "default" ],
-    "token_bound_cidrs": [ "127.0.0.1/32", "128.252.0.0/16" ]
+    "policies": [ "admin", "default" ],
+    "metadata": { "admin": "true" }
 }
