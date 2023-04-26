@@ -12,7 +12,7 @@ except ImportError:
 
 try:
     from hvac import Client
-    from hvac.exceptions import InvalidPath
+    from hvac.exceptions import InvalidPath, Forbidden
 except ImportError:
     raise ImportError(
         "vault package is not installed in your environment. "
@@ -39,6 +39,12 @@ def get_client(obj):
         )
     elif obj.VAULT_ROOT_TOKEN_FOR_DYNACONF is not None:
         client.token = obj.VAULT_ROOT_TOKEN_FOR_DYNACONF
+    elif obj.VAULT_USERNAME_FOR_DYNACONF is not None:
+        client.auth.userpass.login(
+            username=obj.VAULT_USERNAME_FOR_DYNACONF,
+            password=obj.VAULT_PASSWORD_FOR_DYNACONF,
+        )
+
     elif obj.VAULT_AUTH_WITH_IAM_FOR_DYNACONF:
         if boto3 is None:
             raise ImportError(
@@ -86,6 +92,9 @@ def load(obj, env=None, silent=None, key=None, validate=False):
     except InvalidPath:
         # The given path is not a directory
         dirs = []
+    except Forbidden:
+        # The given token does not have permission to list the given path
+        dirs = []
     # First look for secrets into environments less store
     if not obj.ENVIRONMENTS_FOR_DYNACONF:
         # By adding '', dynaconf will now read secrets from environments-less
@@ -109,6 +118,8 @@ def load(obj, env=None, silent=None, key=None, validate=False):
         except InvalidPath:
             # If the path doesn't exist, ignore it and set data to None
             data = None
+        except Forbidden:
+            dirs = []
         if data:
             # There seems to be a data dict within a data dict,
             # extract the inner data
