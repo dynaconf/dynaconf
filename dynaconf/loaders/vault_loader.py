@@ -119,7 +119,7 @@ def load(obj, env=None, silent=None, key=None, validate=False):
             # If the path doesn't exist, ignore it and set data to None
             data = None
         except Forbidden:
-            dirs = []
+            data = None
         if data:
             # There seems to be a data dict within a data dict,
             # extract the inner data
