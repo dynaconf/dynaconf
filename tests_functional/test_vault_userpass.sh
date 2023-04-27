@@ -19,8 +19,5 @@ dynaconf -i dynaconf.settings write vault -e dev -s SECRET=vault_works_in_dev
 dynaconf -i dynaconf.settings write vault -e prod -s SECRET=vault_works_in_prod
 sleep 2
 python vault_userpass_example.py
-# await input
-echo "Press enter to continue"
-read
 docker stop dynaconf_with_vault  || true
 cd ../../
