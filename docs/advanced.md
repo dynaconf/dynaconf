@@ -61,13 +61,31 @@ You can also set the merging individually for each settings variable as seen on
 
 ## Programmatically loading a settings file
 
+You can load files from within a python script.
+
+When using relative paths, it will use `root_path` as its basepath.
+Learn more about how `root_path` fallback works [here](/configuration#root_path).
+
 ```python
-from dynaconf import settings
-settings.load_file(path="/path/to/file.toml")  # list or `;/,` separated allowed
+from dynaconf import Dynaconf
+
+settings = Dynaconf()
+
+# single file
+settings.load_file(path="/path/to/file.toml")
+
+# list
+settings.load_file(path=["/path/to/file.toml", "/path/to/another-file.toml"])
+
+# separated by ; or ,
+settings.load_file(path="/path/to/file.toml;/path/to/another-file.toml")
 ```
 
-> **NOTE**: programmatically loaded file is not persisted, once `env` is changed via `setenv|using_env`, or a `reload` or `configure` is invoked it will be cleaned, to persist it needs to go to `INCLUDES_FOR_DYNACONF` variable or you need to load it programmatically again.
+Notice that data loaded by this method is not persisted.
 
+Once `env` is changed via `setenv|using_env`, `reload` or `configure` invocation, its loaded data
+will be cleaned. To persist consider using `INCLUDES_FOR_DYNACONF` variable or assuring it will
+be loaded programmatically again.
 
 ## Prefix filtering
 
