@@ -11,6 +11,7 @@ test_functional:
 
 test_vault:
 	./tests_functional/test_vault.sh
+	./tests_functional/test_vault_userpass.sh
 
 test_redis:
 	./tests_functional/test_redis.sh
