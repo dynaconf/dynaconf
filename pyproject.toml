@@ -1,0 +1,101 @@
+[build-system]
+requires = [ "setuptools>=38.6.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dynaconf"
+description = "The dynamic configurator for your Python Project"
+readme = { file = "README.md", content-type = "text/markdown" }
+authors = [
+  { name = "Bruno Rocha", email = "rochacbruno@gmail.com" }
+]
+license = { text = "MIT" }
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Framework :: Django", "Framework :: Flask",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Utilities",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+requires-python = ">=3.8"
+dependencies = [
+  "setuptools",
+]
+dynamic = [ "version" ]
+
+[project.urls]
+Homepage = "https://github.com/dynaconf/dynaconf"
+
+[project.scripts]
+dynaconf = "dynaconf.cli:main"
+
+[project.optional-dependencies]
+redis = [ "redis" ]
+vault = [ "hvac" ]
+yaml = [ "ruamel.yaml" ]
+toml = [ "toml" ]
+ini = [ "configobj" ]
+configobj = [ "configobj" ]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "pytest-mock",
+    "flake8",
+    "pep8-naming",
+    "flake8-debugger",
+    "flake8-print",
+    "flake8-todo",
+    "radon",
+    "flask>=0.12",
+    "django",
+    "python-dotenv",
+    "toml",
+    "redis",
+    "hvac",
+    "configobj",
+]
+all = [ "redis", "ruamel.yaml", "configobj", "hvac", "dynaconf[test]" ]
+
+[tool.setuptools]
+license-files = [ "LICENSE", "vendor_licenses/*" ]
+include-package-data = true
+zip-safe = false
+platforms = [ "any" ]
+
+[tool.setuptools.packages.find]
+exclude = [
+  "tests",
+  "tests.*",
+  "tests_functional",
+  "tests_functional.*",
+  "docs",
+  "legacy_docs",
+  "legacy_docs.*",
+  "docs.*",
+  "build",
+  "build.*",
+  "dynaconf.vendor_src",
+  "dynaconf/vendor_src",
+  "dynaconf.vendor_src.*",
+  "dynaconf/vendor_src/*",
+]
+namespaces = false
+
+[tool.setuptools.dynamic]
+version = { file = "dynaconf/VERSION" }
+
+[tool.flake8]
+ignore = "F403\nW504\nW503\nF841\nE401\nF401\nE402"
+max-line-length = "79"
