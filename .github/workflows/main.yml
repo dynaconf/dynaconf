@@ -56,7 +56,7 @@ jobs:
         run: pip install --user --upgrade pip
       - name: Install project and test cli
         run: |
-          python setup.py install
+          python -m pip install .
           dynaconf init -v FOO=running_on_ci -y
           dynaconf -i config.settings write toml -v OTHERVALUE=Hello_CI -y
           dynaconf -i config.settings list | grep -c running_on_ci

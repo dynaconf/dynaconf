@@ -72,7 +72,7 @@ pep8:
 
 dist: clean
 	@make minify_vendor
-	@python setup.py sdist bdist_wheel
+	@python -m build
 	@make source_vendor
 
 publish:
