@@ -33,6 +33,7 @@ from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import converters
 from dynaconf.utils.parse_conf import get_converter
+from dynaconf.utils.parse_conf import Lazy
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidationError
@@ -900,7 +901,11 @@ class Settings:
 
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
-        existing = getattr(self, key, None)
+
+        # Fix for #869 - The call to getattr trigger early evaluation
+        existing = (
+            getattr(self, key, None) if not isinstance(value, Lazy) else None
+        )
 
         if getattr(value, "_dynaconf_del", None):
             # just in case someone use a `@del` in a first level var.
