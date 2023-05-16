@@ -563,7 +563,7 @@ settings.databases.name == "mydb"             # Nested keys traversing
 settings['password'] == "secret123"           # dict like item access
 settings['databases.schema'] == "main"        # Nested items traversing
 settings.get("nonexisting", "default value")  # Default values just like a dict
-settings("number", cast=int)                  # customizable forcing of casting
+settings("number", cast="@int")                  # customizable forcing of casting
 
 for key, value in settings.items():           # dict like iteration
     print(key, value)
