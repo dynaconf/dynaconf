@@ -14,7 +14,7 @@ except ImportError:  # pragma: no cover
 
 
 import dynaconf
-import pkg_resources
+from importlib.metadata import EntryPoint
 
 
 class FlaskDynaconf:
@@ -220,11 +220,11 @@ class DynaconfConfig(Config):
             return
 
         for object_reference in app.config[key]:
-            # add a placeholder `name` to create a valid entry point
-            entry_point_spec = f"__name = {object_reference}"
             # parse the entry point specification
-            entry_point = pkg_resources.EntryPoint.parse(entry_point_spec)
+            entry_point = EntryPoint(
+                name=None, group=None, value=object_reference
+            )
             # dynamically resolve the entry point
-            initializer = entry_point.resolve()
+            initializer = entry_point.load()
             # Invoke extension initializer
             initializer(app)
