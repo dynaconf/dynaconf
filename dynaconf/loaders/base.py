@@ -118,9 +118,20 @@ class BaseLoader:
             )
 
     def _load_all_envs(self, source_data, silent=True, key=None):
-        """Load configs from files separating by each environment"""
-
-        for file_data in source_data.values():
+        """
+        Load configs from files separating by each environment
+        source_data should have format:
+            {
+                "path/to/src": {
+                    "env": {...},
+                    "env2": {...}
+                }
+            }
+        """
+        for file_name, file_data in source_data.items():
+            # set source metadata
+            load_order = len(self.obj._loaded_by_loaders)
+            identifier = SourceMetadata(self.identifier, file_name, self.env, load_order)
 
             # env name is checked in lower
             file_data = {k.lower(): value for k, value in file_data.items()}
@@ -146,7 +157,7 @@ class BaseLoader:
 
                 self._set_data_to_obj(
                     data,
-                    f"{self.identifier}_{env}",
+                    f"{self.identifier}_{env}::{file_name}",
                     file_merge,
                     key,
                     file_dotted_lookup=file_dotted_lookup,
@@ -197,3 +208,34 @@ class BaseLoader:
                 dotted_lookup=file_dotted_lookup,
                 validate=self.validate,
             )
+
+class SourceMetadata:
+    """
+    Usefull metadata about some loaded source (file, envvar, etc).
+
+    Notes:
+        - Can be unique identified by: loader[type]::identifier::env (no load_order)
+        - @load_order should probably be set by a counter, such as the length
+          of setting._loaded_by_loaders
+
+    Examples:
+        SourceMetadata(
+            loader="envvar", identifier="global", env="default", load_order=1)
+        )
+        SourceMetadata(
+            loader="yaml", identifier="path/to/file.yml", env="dev", load_order=0)
+        )
+    """
+
+    def __init__(self, loader: str, identifier: str, env: str, load_order: int):
+        """Should be immutable"""
+        self.loader = loader
+        self.identifier = identifier
+        self.env = env
+        self.load_order = load_order
+
+    def __hash__(self):
+        return hash((self.loader, self.identifier, self.env))
+
+    def __str__(self):
+        return "[{}] {}::{}::{}".format(self.load_order, self.loader, self.env, self.identifier)

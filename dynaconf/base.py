@@ -1091,7 +1091,7 @@ class Settings:
             enable_external_loaders(self)
 
             loaders = self.loaders
-
+        # non setting_file or py_module loaders
         for core_loader in loaders:
             core_loader.load(self, env, silent=silent, key=key)
 
