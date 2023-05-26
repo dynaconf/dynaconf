@@ -2,7 +2,9 @@ import os
 from pprint import pprint
 from textwrap import dedent
 
-from dynaconf import Dynaconf
+from dynaconf import Dynaconf, Validator
+from dynaconf.loaders.base import SourceMetadata
+from dynaconf.utils.inspect import dump_data_by_source
 
 
 def test_only_settings(tmp_path):
@@ -15,6 +17,7 @@ def test_only_settings(tmp_path):
         f.write("foo: from_file_b")
 
     setting = Dynaconf(settings_file=[file_a, file_b])
+    dump_data_by_source(setting)
     assert setting.foo == "from_file_b"
 
 
@@ -29,7 +32,10 @@ def test_settings_plus_envvar(tmp_path):
         f.write("foo: from_file_b")
 
     setting = Dynaconf(settings_file=[file_a, file_b])
+    dump_data_by_source(setting)
     assert setting.foo == "from_envvar"
+    assert setting.loaded_by_loaders[SourceMetadata("yaml", str(file_a), "default")]
+    assert setting.loaded_by_loaders[SourceMetadata("yaml", str(file_b), "default")]
 
 
 def create_file(filename, data):
@@ -42,8 +48,6 @@ def test_only_envvar():
     # setup
     os.environ["DYNACONF_FOO"] = "from_envvar"
     setting = Dynaconf()
-    print()
-    print(setting._loaded_by_loaders)
     assert setting.foo == "from_envvar"
 
 
@@ -72,6 +76,33 @@ def test_settings_plus_envvar_with_environments(tmp_path):
     )
 
     setting = Dynaconf(settings_file=[file_a, file_b], environments=True)
-    print()
-    pprint(setting._loaded_by_loaders)
     assert setting.foo == "from_envvar"
+
+
+def test_only_validate_default():
+    setting = Dynaconf(validators=[Validator("foo", default="from_validation_default")])
+    print()
+    print(setting.loaded_by_loaders)
+    assert setting.foo == "from_validation_default"
+
+
+def test_validate_default_plus_envvar():
+    os.environ["DYNACONF_FOO"] = "from_envvar"
+    setting = Dynaconf(
+        validators=[Validator("foo", "bar", default="from_validation_default")]
+    )
+    assert setting.foo == "from_envvar"
+
+
+def test_only_setting_file_envless_load(tmp_path):
+    file_a = tmp_path / "a.yaml"
+    create_file(file_a, "foo: from_file_a_DEFAULT")
+
+    setting = Dynaconf(
+        settings_file=file_a,
+    )
+
+    print()
+    print(setting.loaded_by_loaders)
+    assert setting.foo == "from_file_a_DEFAULT"
+    # assert setting.loaded_by_loaders[("yaml", str(file_a), "default")]
