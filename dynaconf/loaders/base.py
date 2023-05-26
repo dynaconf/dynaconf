@@ -6,6 +6,7 @@ import warnings
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import upperfy
+from typing import NamedTuple
 
 
 class BaseLoader:
@@ -110,10 +111,13 @@ class BaseLoader:
 
     def _envless_load(self, source_data, silent=True, key=None):
         """Load all the keys from each file without env separation"""
-        for file_data in source_data.values():
+        for file_name, file_data in source_data.items():
+            # set source metadata
+            source_metadata = SourceMetadata(self.identifier, file_name, "default")
+
             self._set_data_to_obj(
                 file_data,
-                self.identifier,
+                source_metadata,
                 key=key,
             )
 
@@ -129,9 +133,6 @@ class BaseLoader:
             }
         """
         for file_name, file_data in source_data.items():
-            # set source metadata
-            load_order = len(self.obj._loaded_by_loaders)
-            identifier = SourceMetadata(self.identifier, file_name, self.env, load_order)
 
             # env name is checked in lower
             file_data = {k.lower(): value for k, value in file_data.items()}
@@ -145,6 +146,9 @@ class BaseLoader:
             for env in build_env_list(self.obj, self.env):
                 env = env.lower()  # lower for better comparison
 
+                # set source metadata
+                source_metadata = SourceMetadata(self.identifier, file_name, env)
+
                 try:
                     data = file_data[env] or {}
                 except KeyError:
@@ -157,7 +161,7 @@ class BaseLoader:
 
                 self._set_data_to_obj(
                     data,
-                    f"{self.identifier}_{env}::{file_name}",
+                    source_metadata,
                     file_merge,
                     key,
                     file_dotted_lookup=file_dotted_lookup,
@@ -209,33 +213,17 @@ class BaseLoader:
                 validate=self.validate,
             )
 
-class SourceMetadata:
+class SourceMetadata(NamedTuple):
     """
     Usefull metadata about some loaded source (file, envvar, etc).
 
-    Notes:
-        - Can be unique identified by: loader[type]::identifier::env (no load_order)
-        - @load_order should probably be set by a counter, such as the length
-          of setting._loaded_by_loaders
+    Serve as a unique identifier for data from a specific env
+    and a specific source (file, envvar, validationd default, etc)
 
     Examples:
-        SourceMetadata(
-            loader="envvar", identifier="global", env="default", load_order=1)
-        )
-        SourceMetadata(
-            loader="yaml", identifier="path/to/file.yml", env="dev", load_order=0)
-        )
+        SourceMetadata(loader="envvar", identifier="os", env="global")
+        SourceMetadata(loader="yaml", identifier="path/to/file.yml", env="dev")
     """
-
-    def __init__(self, loader: str, identifier: str, env: str, load_order: int):
-        """Should be immutable"""
-        self.loader = loader
-        self.identifier = identifier
-        self.env = env
-        self.load_order = load_order
-
-    def __hash__(self):
-        return hash((self.loader, self.identifier, self.env))
-
-    def __str__(self):
-        return "[{}] {}::{}::{}".format(self.load_order, self.loader, self.env, self.identifier)
+    loader: str
+    identifier: str
+    env: str
