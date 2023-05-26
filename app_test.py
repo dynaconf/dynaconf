@@ -9,7 +9,8 @@ import pytest
 from dynaconf import Dynaconf
 from dynaconf import Validator
 from dynaconf.loaders.base import SourceMetadata
-from dynaconf.utils.inspect import dump_data_by_source, inspect_key
+from dynaconf.utils.inspect import dump_data_by_source
+from dynaconf.utils.inspect import inspect_key
 
 
 def create_file(filename, data):
@@ -142,6 +143,7 @@ def test_merging(tmp_path):
     print(setting.foo)
     pprint(setting._loaded_by_loaders)
 
+
 def test_merging_with_token(tmp_path):
     file_a = tmp_path / "a.yaml"
     file_b = tmp_path / "b.yaml"
@@ -152,6 +154,7 @@ def test_merging_with_token(tmp_path):
     dump_data_by_source(setting)
     # source_metadata = SourceMetadata("yaml", file_b, "default", merged=True)
     # assert setting._loaded_by_loaders[source_metadata].merged is True
+
 
 def test_inspect_key(tmp_path):
     os.environ["DYNACONF_FOO"] = "hello"

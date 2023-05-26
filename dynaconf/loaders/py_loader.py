@@ -9,6 +9,7 @@ from contextlib import suppress
 from pathlib import Path
 
 from dynaconf import default_settings
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import DynaconfDict
 from dynaconf.utils import object_merge
 from dynaconf.utils import upperfy
@@ -27,8 +28,13 @@ def load(
     mod, loaded_from = get_module(obj, settings_module, silent)
     if not (mod and loaded_from):
         return
+
+    # setup SourceMetadata (for inspecting)
+    loader_identifier = SourceMetadata(identifier, mod.__name__, "global")
+
+    # breakpoint()
     load_from_python_object(
-        obj, mod, settings_module, key, identifier, validate=validate
+        obj, mod, settings_module, key, loader_identifier, validate=validate
     )
 
 
@@ -74,10 +80,13 @@ def try_to_load_from_py_module_name(
     """
     ctx = suppress(ImportError, TypeError) if silent else suppress()
 
+    # setup SourceMetadata (for inspecting)
+    loader_identifier = SourceMetadata(identifier, name, "global")
+
     with ctx:
         mod = importlib.import_module(str(name))
         load_from_python_object(
-            obj, mod, name, key, identifier, validate=validate
+            obj, mod, name, key, loader_identifier, validate=validate
         )
         return True  # loaded ok!
     # if it reaches this point that means exception occurred, module not found.

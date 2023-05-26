@@ -64,6 +64,9 @@ def load_from_env(
         prefix = prefix.upper()
         env_ = f"{prefix}_"
 
+    # set source metadata
+    source_metadata = SourceMetadata(identifier, "unique", "global")
+
     # Load a single environment variable explicitly.
     if key:
         key = upperfy(key)
@@ -73,7 +76,7 @@ def load_from_env(
                 obj.set(
                     key,
                     value,
-                    loader_identifier=identifier,
+                    loader_identifier=source_metadata,
                     tomlfy=True,
                     validate=validate,
                 )
@@ -86,9 +89,6 @@ def load_from_env(
     else:
         # Only known variables should be loaded from environment?
         ignore_unknown = obj.get("IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF")
-
-        # set source metadata
-        source_metadata = SourceMetadata(identifier, "unique", "global")
 
         # prepare data
         trim_len = len(env_)
