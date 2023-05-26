@@ -19,6 +19,7 @@ from dynaconf.loaders import execute_hooks
 from dynaconf.loaders import py_loader
 from dynaconf.loaders import settings_loader
 from dynaconf.loaders import yaml_loader
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import BANNER
 from dynaconf.utils import compat_kwargs
 from dynaconf.utils import ensure_a_list
@@ -367,7 +368,9 @@ class Settings:
             self.set(
                 item,
                 default,
-                loader_identifier="setdefault",
+                loader_identifier=SourceMetadata(
+                    "validation_default", "unique", "global"
+                ),
                 tomlfy=True,
             )
             return default
@@ -574,6 +577,7 @@ class Settings:
     @property
     def loaded_by_loaders(self):
         """Gets the internal mapping of LOADER -> values"""
+        # return {k.loader:data for k, data in self._loaded_by_loaders}
         return self._loaded_by_loaders
 
     def from_env(self, env="", keep=False, **kwargs):
@@ -860,7 +864,7 @@ class Settings:
         self,
         key,
         value,
-        loader_identifier=None,
+        loader_identifier: SourceMetadata | None=None,
         tomlfy=False,
         dotted_lookup=empty,
         is_secret="DeprecatedArgument",  # noqa
@@ -919,6 +923,11 @@ class Settings:
         if getattr(value, "_dynaconf_merge_unique", False):
             # just in case someone use a `@merge_unique` in a first level var
             if existing:
+                # update SourceMetadata (for inspecting purposes)
+                loader_identifier = SourceMetadata(
+                    loader_identifier.loader,
+                    loader_identifier.identifier,
+                    loader_identifier.env, merged=True) if loader_identifier else None
                 value = object_merge(existing, value.unwrap(), unique=True)
             else:
                 value = value.unwrap()
@@ -926,6 +935,11 @@ class Settings:
         if getattr(value, "_dynaconf_merge", False):
             # just in case someone use a `@merge` in a first level var
             if existing:
+                # update SourceMetadata (for inspecting purposes)
+                loader_identifier = SourceMetadata(
+                    loader_identifier.loader,
+                    loader_identifier.identifier,
+                    loader_identifier.env, merged=True) if loader_identifier else None
                 value = object_merge(existing, value.unwrap())
             else:
                 value = value.unwrap()
@@ -936,7 +950,7 @@ class Settings:
                 value = object_merge(existing, value)
             else:
                 # Fix for #905
-                if loader_identifier == "setdefault":
+                if loader_identifier and loader_identifier.loader == "validation_default":
                     value = saved_value
                 else:
                     # `dynaconf_merge` may be used within the key structure

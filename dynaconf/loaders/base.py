@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import io
 import warnings
+from typing import NamedTuple
 
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import upperfy
-from typing import NamedTuple
 
 
 class BaseLoader:
@@ -113,7 +113,9 @@ class BaseLoader:
         """Load all the keys from each file without env separation"""
         for file_name, file_data in source_data.items():
             # set source metadata
-            source_metadata = SourceMetadata(self.identifier, file_name, "default")
+            source_metadata = SourceMetadata(
+                self.identifier, file_name, "default"
+            )
 
             self._set_data_to_obj(
                 file_data,
@@ -147,7 +149,9 @@ class BaseLoader:
                 env = env.lower()  # lower for better comparison
 
                 # set source metadata
-                source_metadata = SourceMetadata(self.identifier, file_name, env)
+                source_metadata = SourceMetadata(
+                    self.identifier, file_name, env
+                )
 
                 try:
                     data = file_data[env] or {}
@@ -213,6 +217,7 @@ class BaseLoader:
                 validate=self.validate,
             )
 
+
 class SourceMetadata(NamedTuple):
     """
     Usefull metadata about some loaded source (file, envvar, etc).
@@ -224,6 +229,8 @@ class SourceMetadata(NamedTuple):
         SourceMetadata(loader="envvar", identifier="os", env="global")
         SourceMetadata(loader="yaml", identifier="path/to/file.yml", env="dev")
     """
+
     loader: str
     identifier: str
     env: str
+    merged: bool = False
