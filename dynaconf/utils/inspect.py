@@ -1,3 +1,4 @@
+"""Inspecting module"""
 from __future__ import annotations
 
 from textwrap import dedent
@@ -33,27 +34,32 @@ def dump_data_by_source(obj: Dynaconf, key_dotted_path: str = ""):
     Dumps data from `settings.loaded_by_loaders` in order of loading.
 
     TODO:
-        - Proper indent data with streams, not str return (see docs)
-        - Add template system, maybe with jinja, so there can be presets
-          and user-defined views
+        - Proper indent `data` field with streams. According to docs, this way
+          is low performant
+        - add types?
+        - fix `...` being printed in `data` sometimes
+
+    NICE_TO_HAVE:
+        - more flexible display, like a template system (maybe later)
+        - load-history sorting (asc/desc)
 
     Example:
         >>> settings = Dynaconf(...)
         >>> dump_data_by_source(settings)
         01:
-            loader: yaml
-            identifier: 'path/to/file.yml'
-            env: default
-            data:
-                foo: bar
-                spam: eggs
+          loader: yaml
+          identifier: 'path/to/file.yml'
+          env: default
+          data:
+            foo: bar
+            spam: eggs
         02:
-            loader: yaml
-            identifier: 'path/to/file.yml'
-            env: development
-            data:
-                foo: bar_from_dev
-                spam: eggs_from_dev
+          loader: yaml
+          identifier: 'path/to/file.yml'
+          env: development
+          data:
+            foo: bar_from_dev
+            spam: eggs_from_dev
         (...)
     """
     pad = "  "
@@ -67,7 +73,7 @@ def dump_data_by_source(obj: Dynaconf, key_dotted_path: str = ""):
                 else data
             )
         except KeyError:
-            # this source does not contain the requested key
+            # skip, for this source does not contain the requested key
             continue
         print(f"{order_count:02}:")
         print(f"{pad}loaded_by: {repr(source_metadata.loader)}")
