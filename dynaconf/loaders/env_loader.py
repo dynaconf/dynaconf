@@ -3,10 +3,10 @@ from __future__ import annotations
 from contextlib import suppress
 from os import environ
 
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import missing
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
-from dynaconf.loaders.base import SourceMetadata
 
 DOTENV_IMPORTED = False
 with suppress(ImportError, FileNotFoundError):
@@ -88,7 +88,7 @@ def load_from_env(
         ignore_unknown = obj.get("IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF")
 
         # set source metadata
-        source_metadata = SourceMetadata(identifier, "os", "global")
+        source_metadata = SourceMetadata(identifier, "unique", "global")
 
         # prepare data
         trim_len = len(env_)
@@ -110,7 +110,9 @@ def load_from_env(
             filter_strategy = obj.get("FILTER_STRATEGY")
             if filter_strategy:
                 data = filter_strategy(data)
-            obj.update(data, loader_identifier=source_metadata, validate=validate)
+            obj.update(
+                data, loader_identifier=source_metadata, validate=validate
+            )
 
 
 def write(settings_path, settings_data, **kwargs):
