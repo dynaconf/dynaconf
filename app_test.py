@@ -25,6 +25,7 @@ def teardown():
 
 
 def test_only_settings(tmp_path):
+    """Should have correct source/file in SourceMetadata"""
     # setup
     file_a = tmp_path / "a.yaml"
     file_b = tmp_path / "b.yaml"
@@ -32,6 +33,8 @@ def test_only_settings(tmp_path):
     create_file(file_b, "foo: from_file_b")
 
     setting = Dynaconf(settings_file=[file_a, file_b])
+    print()
+    inspect_key(setting, "foo")
 
     source_metadata_a = SourceMetadata("yaml", str(file_a), "default")
     source_metadata_b = SourceMetadata("yaml", str(file_b), "default")
@@ -45,6 +48,7 @@ def test_only_settings(tmp_path):
 
 
 def test_settings_plus_envvar(tmp_path):
+    """Should have correct envvar SourceMetadata"""
     # setup
     os.environ["DYNACONF_FOO"] = "from_envvar"
     file_a = tmp_path / "a.yaml"
@@ -55,6 +59,8 @@ def test_settings_plus_envvar(tmp_path):
         f.write("foo: from_file_b")
 
     setting = Dynaconf(settings_file=[file_a, file_b])
+    print()
+    inspect_key(setting, "foo")
 
     source_environ = SourceMetadata("env_global", "unique", "global")
     source_file_a = SourceMetadata("yaml", str(file_a), "default")
@@ -65,14 +71,8 @@ def test_settings_plus_envvar(tmp_path):
     assert setting._loaded_by_loaders[source_file_b] == {"FOO": "from_file_b"}
 
 
-def test_only_envvar():
-    # setup
-    os.environ["DYNACONF_FOO"] = "from_envvar"
-    setting = Dynaconf()
-    assert setting.foo == "from_envvar"
-
-
 def test_settings_plus_envvar_with_environments(tmp_path):
+    """Should have the expected order"""
     # setup
     os.environ["DYNACONF_FOO"] = "from_envvar"
     file_a = tmp_path / "a.yaml"
@@ -97,6 +97,9 @@ def test_settings_plus_envvar_with_environments(tmp_path):
     )
 
     setting = Dynaconf(settings_file=[file_a, file_b], environments=True)
+    print()
+    inspect_key(setting, "foo")
+
     assert setting.foo == "from_envvar"
 
 
@@ -104,6 +107,8 @@ def test_only_validate_default():
     setting = Dynaconf(
         validators=[Validator("foo", default="from_validation_default")]
     )
+    inspect_key(setting, "foo")
+
     assert setting.foo == "from_validation_default"
 
 
@@ -112,6 +117,9 @@ def test_only_validate_default_with_environment():
         validators=[Validator("foo", default="from_validation_default")],
         environment=True,
     )
+    print()
+    inspect_key(setting, "foo")
+
     assert setting.foo == "from_validation_default"
 
 
@@ -120,6 +128,9 @@ def test_validate_default_plus_envvar():
     setting = Dynaconf(
         validators=[Validator("foo", "bar", default="from_validation_default")]
     )
+    print()
+    inspect_key(setting, "foo")
+
     assert setting.foo == "from_envvar"
 
 
@@ -128,43 +139,39 @@ def test_only_setting_file_envless_load(tmp_path):
     create_file(file_a, "foo: from_file_a_DEFAULT")
 
     setting = Dynaconf(settings_file=file_a)
+    print()
+    inspect_key(setting, "foo")
 
     assert setting.foo == "from_file_a_DEFAULT"
 
 
-def test_merging(tmp_path):
+def test_merging_with_keyword(tmp_path):
+    """SourceMetadata should have merge=True"""
     file_a = tmp_path / "a.yaml"
     file_b = tmp_path / "b.yaml"
     create_file(file_a, "foo: [1,2]")
-    create_file(file_b, "foo: [3,4, dynaconf_merge]")
+    create_file(file_b, "foo: [3,4, dynaconf_merge]\nbar: baz")
 
     setting = Dynaconf(settings_file=[file_a, file_b])
     print()
-    print(setting.foo)
-    pprint(setting._loaded_by_loaders)
+    inspect_key(setting, "foo")
+
+    source_metadata = SourceMetadata("yaml", file_b, "default", merged=True)
+    assert setting._loaded_by_loaders[source_metadata].merged is True
 
 
 def test_merging_with_token(tmp_path):
+    """SourceMetadata should have merge=True"""
     file_a = tmp_path / "a.yaml"
     file_b = tmp_path / "b.yaml"
     create_file(file_a, "foo: [1,2]")
     create_file(file_b, "foo: '@merge [3,4]'\nbar: baz")
 
     setting = Dynaconf(settings_file=[file_a, file_b])
-    dump_data_by_source(setting)
-    # source_metadata = SourceMetadata("yaml", file_b, "default", merged=True)
-    # assert setting._loaded_by_loaders[source_metadata].merged is True
-
-
-def test_inspect_key(tmp_path):
-    os.environ["DYNACONF_FOO"] = "hello"
-    file_a = tmp_path / "a.yaml"
-    file_b = tmp_path / "b.yaml"
-    create_file(file_a, "foo: [1,2]\nbar: asdf")
-    create_file(file_b, "foo: 123\nspam: eggs")
-
-    setting = Dynaconf(settings_file=[file_a, file_b])
     print()
     inspect_key(setting, "foo")
-    # source_metadata = SourceMetadata("yaml", file_b, "default", merged=True)
-    # assert setting._loaded_by_loaders[source_metadata].merged is True
+
+    source_metadata = SourceMetadata(
+        "yaml", str(file_b), "default", merged=True
+    )
+    assert setting._loaded_by_loaders[source_metadata]

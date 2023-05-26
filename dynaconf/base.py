@@ -10,6 +10,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
 from pathlib import Path
+from typing import Any
 
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
@@ -223,7 +224,7 @@ class Settings:
         self._deleted = set()
         self._store = DynaBox(box_settings=self)
         self._env_cache = {}
-        self._loaded_by_loaders = {}
+        self._loaded_by_loaders: dict[SourceMetadata, Any] = {}
         self._loaders = []
         self._defaults = DynaBox(box_settings=self)
         self.environ = os.environ
