@@ -47,6 +47,7 @@ class BaseLoader:
 
     @staticmethod
     def warn_not_installed(obj, identifier):  # pragma: no cover
+        # TODO have a look into this, may be affected
         if identifier not in obj._not_installed_warnings:
             warnings.warn(
                 f"{identifier} support is not installed in your environment. "
@@ -150,7 +151,7 @@ class BaseLoader:
 
                 # set source metadata
                 source_metadata = SourceMetadata(
-                    self.identifier, file_name, env
+                    self.identifier, file_name, env, bool(file_merge)
                 )
 
                 try:
@@ -174,7 +175,7 @@ class BaseLoader:
     def _set_data_to_obj(
         self,
         data,
-        identifier,
+        identifier: SourceMetadata,
         file_merge=None,
         key=False,
         file_dotted_lookup=None,
