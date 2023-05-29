@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import build_env_list
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
@@ -51,7 +52,11 @@ def load(obj, env=None, silent=True, key=None, validate=False):
                 }
                 if data:
                     obj.update(
-                        data, loader_identifier=IDENTIFIER, validate=validate
+                        data,
+                        loader_identifier=SourceMetadata(
+                            IDENTIFIER, "unique", "global"
+                        ),
+                        validate=validate,
                     )
         except Exception:
             if silent:

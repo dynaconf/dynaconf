@@ -2,6 +2,7 @@
 # pip install hvac
 from __future__ import annotations
 
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import build_env_list
 from dynaconf.utils.parse_conf import parse_conf_data
 
@@ -140,7 +141,9 @@ def load(obj, env=None, silent=None, key=None, validate=False):
             elif data:
                 obj.update(
                     data,
-                    loader_identifier=IDENTIFIER,
+                    loader_identifier=SourceMetadata(
+                        IDENTIFIER, "unique", "global"
+                    ),
                     tomlfy=True,
                     validate=validate,
                 )
