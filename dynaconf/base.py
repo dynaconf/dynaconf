@@ -932,12 +932,7 @@ class Settings:
             if existing:
                 # update SourceMetadata (for inspecting purposes)
                 loader_identifier = (
-                    SourceMetadata(
-                        loader_identifier.loader,
-                        loader_identifier.identifier,
-                        loader_identifier.env,
-                        merged=True,
-                    )
+                    loader_identifier._replace(merged=True)
                     if loader_identifier
                     else None
                 )
@@ -950,12 +945,7 @@ class Settings:
             if existing:
                 # update SourceMetadata (for inspecting purposes)
                 loader_identifier = (
-                    SourceMetadata(
-                        loader_identifier.loader,
-                        loader_identifier.identifier,
-                        loader_identifier.env,
-                        merged=True,
-                    )
+                    loader_identifier._replace(merged=True)
                     if loader_identifier
                     else None
                 )
@@ -966,6 +956,11 @@ class Settings:
         if existing is not None and existing != value:
             # `dynaconf_merge` used in file root `merge=True`
             if merge:
+                loader_identifier = (
+                    loader_identifier._replace(merged=True)
+                    if loader_identifier
+                    else None
+                )
                 value = object_merge(existing, value)
             else:
                 # Fix for #905
@@ -977,7 +972,10 @@ class Settings:
                 else:
                     # `dynaconf_merge` may be used within the key structure
                     # Or merge_enabled is set to True
-                    value = self._merge_before_set(existing, value)
+                    value, updated_identifier = self._merge_before_set(
+                        existing, value, loader_identifier
+                    )
+                    loader_identifier = updated_identifier
 
         if isinstance(value, dict):
             value = DynaBox(value, box_settings=self)
@@ -1055,8 +1053,13 @@ class Settings:
         elif validate == "all":
             self.validators.validate_all()
 
-    def _merge_before_set(self, existing, value):
-        """Merge the new value being set with the existing value before set"""
+    def _merge_before_set(
+        self, existing, value, identifier: SourceMetadata | None = None
+    ):
+        """
+        Merge the new value being set with the existing value before set
+        Returns the merged value and the updated identifier (for inspecting).
+        """
         global_merge = getattr(self, "MERGE_ENABLED_FOR_DYNACONF", False)
         if isinstance(value, dict):
             local_merge = value.pop(
@@ -1067,6 +1070,9 @@ class Settings:
                 value = local_merge
 
             if global_merge or local_merge:
+                identifier = (
+                    identifier._replace(merged=True) if identifier else None
+                )
                 value = object_merge(existing, value)
 
         if isinstance(value, (list, tuple)):
@@ -1082,8 +1088,11 @@ class Settings:
                     except ValueError:  # EAFP
                         value.remove("dynaconf_merge_unique")
                         unique = True
+                identifier = (
+                    identifier._replace(merged=True) if identifier else None
+                )
                 value = object_merge(existing, value, unique=unique)
-        return value
+        return value, identifier
 
     @property
     def loaders(self):  # pragma: no cover

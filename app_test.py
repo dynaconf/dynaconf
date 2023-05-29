@@ -145,7 +145,7 @@ def test_only_setting_file_envless_load(tmp_path):
     assert setting.foo == "from_file_a_DEFAULT"
 
 
-def test_merging_with_keyword(tmp_path):
+def test_merging_with_keyword_in_list(tmp_path):
     """SourceMetadata should have merge=True"""
     file_a = tmp_path / "a.yaml"
     file_b = tmp_path / "b.yaml"
@@ -156,8 +156,91 @@ def test_merging_with_keyword(tmp_path):
     print()
     inspect_key(setting, "foo")
 
-    source_metadata = SourceMetadata("yaml", file_b, "default", merged=True)
-    assert setting._loaded_by_loaders[source_metadata].merged is True
+    source_metadata = SourceMetadata(
+        "yaml", str(file_b), "default", merged=True
+    )
+    assert setting._loaded_by_loaders[source_metadata]
+
+
+def test_merging_with_keyword_in_dict(tmp_path):
+    """SourceMetadata should have merge=True"""
+    file_a = tmp_path / "a.yaml"
+    file_b = tmp_path / "b.yaml"
+    create_file(
+        file_a,
+        """\
+        foo:
+          a: 123
+          b: hello
+        """,
+    )
+    create_file(
+        file_b,
+        """\
+        foo:
+          a: replaced_by_file_b
+          c: new_value
+          dynaconf_merge: true
+        """,
+    )
+
+    setting = Dynaconf(settings_file=[file_a, file_b])
+    print()
+    inspect_key(setting, "foo")
+
+    source_metadata = SourceMetadata(
+        "yaml", str(file_b), "default", merged=True
+    )
+    assert setting._loaded_by_loaders[source_metadata]
+
+
+def test_merging_with_top_file_keywork(tmp_path):
+    """SourceMetadata should have merge=True"""
+    file_a = tmp_path / "a.yaml"
+    file_b = tmp_path / "b.yaml"
+    create_file(
+        file_a,
+        """\
+        foo:
+          a: 123
+          b: hello
+        """,
+    )
+    create_file(
+        file_b,
+        """\
+        dynaconf_merge: true
+        foo:
+          a: replaced_by_file_b
+          c: new_value
+        """,
+    )
+
+    setting = Dynaconf(settings_file=[file_a, file_b])
+    print()
+    inspect_key(setting, "foo")
+
+    source_metadata = SourceMetadata(
+        "yaml", str(file_b), "default", merged=True
+    )
+    assert setting._loaded_by_loaders[source_metadata]
+
+
+def test_merging_with_global_config(tmp_path):
+    """SourceMetadata should have merge=True"""
+    file_a = tmp_path / "a.yaml"
+    file_b = tmp_path / "b.yaml"
+    create_file(file_a, "foo: [1,2]")
+    create_file(file_b, "foo: [3,4]\nbar: baz")
+
+    setting = Dynaconf(settings_file=[file_a, file_b], merge_enabled=True)
+    print()
+    inspect_key(setting, "foo")
+
+    source_metadata = SourceMetadata(
+        "yaml", str(file_b), "default", merged=True
+    )
+    assert setting._loaded_by_loaders[source_metadata]
 
 
 def test_merging_with_token(tmp_path):
@@ -173,5 +256,45 @@ def test_merging_with_token(tmp_path):
 
     source_metadata = SourceMetadata(
         "yaml", str(file_b), "default", merged=True
+    )
+    assert setting._loaded_by_loaders[source_metadata]
+
+
+def test_merging_with_token_and_environments(tmp_path):
+    """SourceMetadata should have merge=True"""
+    file_a = tmp_path / "a.yaml"
+    file_b = tmp_path / "b.yaml"
+    create_file(
+        file_a,
+        """\
+        default:
+          foo:
+            a: from_default_a
+        development:
+          foo:
+            a: 123
+            b: hello
+        """,
+    )
+    create_file(
+        file_b,
+        """\
+        default:
+          foo:
+            a: from_default_b
+        development:
+          foo:
+            dynaconf_merge: true
+            a: replaced_by_dev_b
+            c: new_value
+        """,
+    )
+
+    setting = Dynaconf(settings_file=[file_a, file_b], environments=True)
+    print()
+    inspect_key(setting, "foo")
+
+    source_metadata = SourceMetadata(
+        "yaml", str(file_b), "development", merged=True
     )
     assert setting._loaded_by_loaders[source_metadata]

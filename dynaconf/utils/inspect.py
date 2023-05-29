@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from django.utils.version import sys
 from lark.utils import suppress
 
+from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.ruamel import yaml
 
 if TYPE_CHECKING:
@@ -72,6 +73,9 @@ def dump_data_by_source(obj: Dynaconf, key_dotted_path: str = ""):
                 if key_dotted_path
                 else data
             )
+
+            # DynaBox may cause serializing issues with the dumper
+            data = dict(data) if isinstance(data, DynaBox) else data
         except KeyError:
             # skip, for this source does not contain the requested key
             continue
