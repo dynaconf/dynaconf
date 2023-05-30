@@ -4,51 +4,133 @@ from __future__ import annotations
 import sys
 from typing import Any
 from typing import Callable
+from typing import Protocol
 from typing import TextIO
 from typing import TYPE_CHECKING
 
+from dynaconf.loaders import yaml_loader
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.vendor.box.box_list import BoxList
+from dynaconf.vendor.ruamel.yaml import representer
 from dynaconf.vendor.ruamel.yaml import YAML
 
+
+class DumperType(Protocol):
+    def __call__(self, data: dict, filename: str = "") -> None:
+        ...
+
+
+def yaml_dump(data: dict, filename: str = ""):
+    """
+    Write to stdout or to filename, if provided.
+
+    Adaptor for dynaconf.loaders.yaml_loader:write
+    """
+    if filename:
+        yaml_loader.write(filename, data, merge=False, mode="a")
+    else:
+        yaml_loader.dump(data)
+
+
 if TYPE_CHECKING:
-    from dynaconf.base import Settings
+    from dynaconf.base import LazySettings, Settings
 
 
-def inspect_key(setting, key_dotted_path: str):
-    """
-    Dumps loading history about a specific key (as dotted path)
-    """
-    print("[current-key-data]")
-    print(f"- key: {repr(key_dotted_path)}")
-    print(f"- value: {repr(setting.get(key_dotted_path))}")
-    print(f"- env: {repr(setting.current_env)}")
-    print("\n[loading-history]")
-    dump_data_by_source(setting, key_dotted_path, ascendent_order=True)
+# Public
 
 
-DumperType = Callable[[dict, TextIO], None]
-
-
-def dump_data_by_source(
-    obj: Settings,
+def inspect(
+    settings: Settings | LazySettings,
     key_dotted_path: str = "",
-    ascendent_order: bool = True,
-    dumper: DumperType = YAML().dump,
-    output_stream: TextIO = sys.stdout,
+    ascending_order: bool = True,
+    format: str = "yaml",
+    to_file: str = "",
 ):
     """
-    Dumps data from `settings.loaded_by_loaders` in order of loading.
+    Prints loading history about a specific key (as dotted path)
+    Optionally, writes data to file in desired format instead.
+    """
+    # choose dumper
+    if format.lower() == "yaml":
+        dumper = yaml_dump
+    else:
+        raise ValueError(f"Unsupported format: {format}")
+
+    # load current env data about key or all
+    if key_dotted_path:
+        try:
+            current_data_dict = {
+                "env": settings.current_env,
+                "key": key_dotted_path,
+                "value": settings.get(key_dotted_path),
+            }
+        except KeyError:
+            # key not found
+            raise
+    else:
+        current_data_dict = settings.as_dict()
+
+    # write to stdout or to file
+    if not to_file:
+        print("[current-key-data]")
+        dumper(current_data_dict)
+
+        print("\n[loading-history]")
+        _dump_data_loading_history(
+            settings,
+            key_dotted_path,
+            ascendent_order=ascending_order,
+            dumper=dumper,
+        )
+    else:
+        dumper(current_data_dict, to_file)
+        _dump_data_loading_history(
+            settings,
+            key_dotted_path,
+            ascendent_order=ascending_order,
+            dumper=dumper,
+            filename=to_file,
+        )
+
+
+# Implementations
+
+
+def ensure_serializable(data: BoxList | DynaBox) -> dict | list:
+    """
+    Converts box dict or list types to regular python dict or list
+    Bypasses other values.
+    """
+    if isinstance(data, BoxList):
+        return list(data)
+    elif isinstance(data, DynaBox):
+        return dict(data)
+    else:
+        return data
+
+
+def _dump_data_loading_history(
+    obj: Settings | LazySettings,
+    key_dotted_path: str = "",
+    ascendent_order: bool = True,
+    dumper: DumperType = yaml_dump,
+    filename: str = "",
+):
+    """
+    Dumps all data from `settings.loaded_by_loaders` in order of loading.
+    If @key_dotted_path is provided, filter by that key-path.
 
     Args:
         obj: Setting object which contain the data
         key_dotted_path: dot-path to desired key. Use all if not provided
         ascendent_order: if True, first loaded data goes on top
         dumper: function that can dump a dict with nested structures
-        output_stream: where to dump (Eg. opened file, stdout, pipe)
+        filename: filename to write. Dump to stdout otherwise
+
 
     Example:
         >>> settings = Dynaconf(...)
-        >>> dump_data_by_source(settings)
+        >>> dump_data_loading_hitory(settings)
         01:
           loader: yaml
           identifier: 'path/to/file.yml'
@@ -91,7 +173,7 @@ def dump_data_by_source(
         output_data = {
             f"{order_count:02}": {**source_metadata._asdict(), "data": data}
         }
-        dumper(output_data, output_stream)
+        dumper(output_data, filename)
 
 
 def get_data_by_key(data: dict, key_dotted_path: str, default: Any = None):

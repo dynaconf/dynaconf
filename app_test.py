@@ -9,8 +9,7 @@ import pytest
 from dynaconf import Dynaconf
 from dynaconf import Validator
 from dynaconf.loaders.base import SourceMetadata
-from dynaconf.utils.inspect import dump_data_by_source
-from dynaconf.utils.inspect import inspect_key
+from dynaconf.utils.inspect import inspect
 
 
 def create_file(filename, data):
@@ -34,7 +33,7 @@ def test_only_settings(tmp_path):
 
     setting = Dynaconf(settings_file=[file_a, file_b])
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     source_metadata_a = SourceMetadata("yaml", str(file_a), "default")
     source_metadata_b = SourceMetadata("yaml", str(file_b), "default")
@@ -60,7 +59,7 @@ def test_settings_plus_envvar(tmp_path):
 
     setting = Dynaconf(settings_file=[file_a, file_b])
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     source_environ = SourceMetadata("env_global", "unique", "global")
     source_file_a = SourceMetadata("yaml", str(file_a), "default")
@@ -98,7 +97,7 @@ def test_settings_plus_envvar_with_environments(tmp_path):
 
     setting = Dynaconf(settings_file=[file_a, file_b], environments=True)
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     assert setting.foo == "from_envvar"
 
@@ -107,7 +106,7 @@ def test_only_validate_default():
     setting = Dynaconf(
         validators=[Validator("foo", default="from_validation_default")]
     )
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     assert setting.foo == "from_validation_default"
 
@@ -118,7 +117,7 @@ def test_only_validate_default_with_environment():
         environment=True,
     )
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     assert setting.foo == "from_validation_default"
 
@@ -129,7 +128,7 @@ def test_validate_default_plus_envvar():
         validators=[Validator("foo", "bar", default="from_validation_default")]
     )
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     assert setting.foo == "from_envvar"
 
@@ -140,7 +139,7 @@ def test_only_setting_file_envless_load(tmp_path):
 
     setting = Dynaconf(settings_file=file_a)
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     assert setting.foo == "from_file_a_DEFAULT"
 
@@ -154,7 +153,7 @@ def test_merging_with_keyword_in_list(tmp_path):
 
     setting = Dynaconf(settings_file=[file_a, file_b])
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     source_metadata = SourceMetadata(
         "yaml", str(file_b), "default", merged=True
@@ -186,7 +185,7 @@ def test_merging_with_keyword_in_dict(tmp_path):
 
     setting = Dynaconf(settings_file=[file_a, file_b])
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     source_metadata = SourceMetadata(
         "yaml", str(file_b), "default", merged=True
@@ -218,7 +217,7 @@ def test_merging_with_top_file_keywork(tmp_path):
 
     setting = Dynaconf(settings_file=[file_a, file_b])
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     source_metadata = SourceMetadata(
         "yaml", str(file_b), "default", merged=True
@@ -235,7 +234,7 @@ def test_merging_with_global_config(tmp_path):
 
     setting = Dynaconf(settings_file=[file_a, file_b], merge_enabled=True)
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     source_metadata = SourceMetadata(
         "yaml", str(file_b), "default", merged=True
@@ -252,7 +251,7 @@ def test_merging_with_token(tmp_path):
 
     setting = Dynaconf(settings_file=[file_a, file_b])
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     source_metadata = SourceMetadata(
         "yaml", str(file_b), "default", merged=True
@@ -292,7 +291,7 @@ def test_merging_with_token_and_environments(tmp_path):
 
     setting = Dynaconf(settings_file=[file_a, file_b], environments=True)
     print()
-    inspect_key(setting, "foo")
+    inspect(setting, "foo")
 
     source_metadata = SourceMetadata(
         "yaml", str(file_b), "development", merged=True

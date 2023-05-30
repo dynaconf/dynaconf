@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import io
+import sys
 from pathlib import Path
 from warnings import warn
 
@@ -59,12 +59,13 @@ def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
     )
 
 
-def write(settings_path, settings_data, merge=True):
+def write(settings_path, settings_data, merge=True, mode="w"):
     """Write data to a settings file.
 
     :param settings_path: the filepath
     :param settings_data: a dictionary with data
     :param merge: boolean if existing file should be merged with new data
+    :param stdout: boolean if should output to stdout instead of file
     """
     settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover
@@ -75,7 +76,7 @@ def write(settings_path, settings_data, merge=True):
 
     with open(
         str(settings_path),
-        "w",
+        mode,
         encoding=default_settings.ENCODING_FOR_DYNACONF,
     ) as open_file:
         yaml.dump(
@@ -86,3 +87,15 @@ def write(settings_path, settings_data, merge=True):
             indent=2,
             default_flow_style=False,
         )
+
+
+def dump(settings_data, explicit_start=True):
+    """Write to stdout"""
+    yaml.dump(
+        settings_data,
+        sys.stdout,
+        Dumper=yaml.dumper.SafeDumper,
+        explicit_start=explicit_start,
+        indent=2,
+        default_flow_style=False,
+    )
