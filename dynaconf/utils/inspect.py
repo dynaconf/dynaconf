@@ -1,21 +1,17 @@
 """Inspecting module"""
 from __future__ import annotations
 
-from textwrap import dedent
-from textwrap import indent
+import sys
 from typing import Any
 from typing import Callable
+from typing import TextIO
 from typing import TYPE_CHECKING
 
-from django.utils.version import sys
-from lark.utils import suppress
-
 from dynaconf.utils.boxing import DynaBox
-from dynaconf.vendor.ruamel import yaml
+from dynaconf.vendor.ruamel.yaml import YAML
 
 if TYPE_CHECKING:
-    from dynaconf import Dynaconf
-    from dynaconf.loaders.base import SourceMetadata
+    from dynaconf.base import Settings
 
 
 def inspect_key(setting, key_dotted_path: str):
@@ -27,22 +23,28 @@ def inspect_key(setting, key_dotted_path: str):
     print(f"- value: {repr(setting.get(key_dotted_path))}")
     print(f"- env: {repr(setting.current_env)}")
     print("\n[loading-history]")
-    dump_data_by_source(setting, key_dotted_path)
+    dump_data_by_source(setting, key_dotted_path, ascendent_order=True)
 
 
-def dump_data_by_source(obj: Dynaconf, key_dotted_path: str = ""):
+DumperType = Callable[[dict, TextIO], None]
+
+
+def dump_data_by_source(
+    obj: Settings,
+    key_dotted_path: str = "",
+    ascendent_order: bool = True,
+    dumper: DumperType = YAML().dump,
+    output_stream: TextIO = sys.stdout,
+):
     """
     Dumps data from `settings.loaded_by_loaders` in order of loading.
 
-    TODO:
-        - Proper indent `data` field with streams. According to docs, this way
-          is low performant
-        - add types?
-        - fix `...` being printed in `data` sometimes
-
-    NICE_TO_HAVE:
-        - more flexible display, like a template system (maybe later)
-        - load-history sorting (asc/desc)
+    Args:
+        obj: Setting object which contain the data
+        key_dotted_path: dot-path to desired key. Use all if not provided
+        ascendent_order: if True, first loaded data goes on top
+        dumper: function that can dump a dict with nested structures
+        output_stream: where to dump (Eg. opened file, stdout, pipe)
 
     Example:
         >>> settings = Dynaconf(...)
@@ -63,11 +65,17 @@ def dump_data_by_source(obj: Dynaconf, key_dotted_path: str = ""):
             spam: eggs_from_dev
         (...)
     """
-    pad = "  "
-    order_count = 0
-    for source_metadata, data in obj._loaded_by_loaders.items():
-        order_count += 1
+    loaded_iter = (
+        obj._loaded_by_loaders.items()
+        if ascendent_order is True
+        else reversed(obj._loaded_by_loaders.items())
+    )
+    order_count = 0 if ascendent_order else len(obj._loaded_by_loaders) + 1
+    order_increment = 1 if ascendent_order else -1
+    for source_metadata, data in loaded_iter:
+        order_count += order_increment
         try:
+            # filter by key or get all
             data = (
                 get_data_by_key(data, key_dotted_path)
                 if key_dotted_path
@@ -79,19 +87,11 @@ def dump_data_by_source(obj: Dynaconf, key_dotted_path: str = ""):
         except KeyError:
             # skip, for this source does not contain the requested key
             continue
-        print(f"{order_count:02}:")
-        print(f"{pad}loaded_by: {repr(source_metadata.loader)}")
-        print(f"{pad}identifier: {repr(source_metadata.identifier)}")
-        print(f"{pad}environment: {repr(source_metadata.env)}")
-        print(f"{pad}merged: {repr(source_metadata.merged)}")
-        print(f"{pad}data:")
-        # TODO docs don't recommended this. should indent streams directly
-        print(
-            indent(
-                yaml.dump(data, Dumper=yaml.RoundTripDumper), prefix=pad * 2
-            ),
-            end="",
-        )
+
+        output_data = {
+            f"{order_count:02}": {**source_metadata._asdict(), "data": data}
+        }
+        dumper(output_data, output_stream)
 
 
 def get_data_by_key(data: dict, key_dotted_path: str, default: Any = None):
