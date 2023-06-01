@@ -1,184 +1,188 @@
 """Inspecting module"""
 from __future__ import annotations
 
+import json
 import sys
+from functools import partial
 from typing import Any
 from typing import Callable
-from typing import Protocol
+from typing import Literal
 from typing import TextIO
 from typing import TYPE_CHECKING
+from typing import Union
 
 from dynaconf.loaders import yaml_loader
+from dynaconf.utils.boxing import Box
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.box.box_list import BoxList
 from dynaconf.vendor.ruamel.yaml import representer
 from dynaconf.vendor.ruamel.yaml import YAML
 
-
-class DumperType(Protocol):
-    def __call__(self, data: dict, filename: str = "") -> None:
-        ...
-
-
-def yaml_dump(data: dict, filename: str = ""):
-    """
-    Write to stdout or to filename, if provided.
-
-    Adaptor for dynaconf.loaders.yaml_loader:write
-    """
-    if filename:
-        yaml_loader.write(filename, data, merge=False, mode="a")
-    else:
-        yaml_loader.dump(data)
-
-
 if TYPE_CHECKING:
     from dynaconf.base import LazySettings, Settings
+    from dynaconf.loaders.base import SourceMetadata
+
+
+# Dumpers config
+
+json_pretty = partial(json.dump, indent=2)
+json_compact = json.dump
+
+builtin_dumpers = {
+    "yaml": YAML().dump,
+    "json_pretty": json_pretty,
+    "json_compact": json_compact,
+}
+
+OutputFormat = Union[
+    Literal["yaml"], Literal["json_pretty"], Literal["json_compact"]
+]
+DumperType = Callable[[dict, TextIO], None]
 
 
 # Public
 
 
-def inspect(
+def inspect_settings(
     settings: Settings | LazySettings,
     key_dotted_path: str = "",
     ascending_order: bool = True,
-    format: str = "yaml",
     to_file: str = "",
+    output_format: OutputFormat = "yaml",
+    custom_dumper: DumperType | None = None,
 ):
     """
-    Prints loading history about a specific key (as dotted path)
+    Prints loading history about a specific key (as dotted path string)
     Optionally, writes data to file in desired format instead.
+
+    Args:
+        settings: a Dynaconf instance
+        key_dotted_path: string dotted path. E.g "path.to.key"
+        ascending_order: if True, newest to oldest loading order
+        fo_file: if specified, write to this filename
+        output_format: available output format options
+        custom_dumper: if provided, it is used instead of builtins
     """
     # choose dumper
-    if format.lower() == "yaml":
-        dumper = yaml_dump
-    else:
-        raise ValueError(f"Unsupported format: {format}")
+    try:
+        dumper = builtin_dumpers[output_format.lower()]
+    except KeyError:
+        raise ValueError(
+            f"The desired format is not available: {output_format}"
+        )
 
-    # load current env data about key or all
-    if key_dotted_path:
-        try:
-            current_data_dict = {
+    dumper = dumper if not custom_dumper else custom_dumper
+
+    # prepare output (current settings + history)
+    history = get_history(settings)
+    output_dict = {
+        "header": {
+            "current": {
                 "env": settings.current_env,
-                "key": key_dotted_path,
-                "value": settings.get(key_dotted_path),
-            }
-        except KeyError:
-            # key not found
-            raise
-    else:
-        current_data_dict = settings.as_dict()
+                "key": key_dotted_path or "(all)",
+                "value": settings.get(key_dotted_path)
+                if key_dotted_path
+                else settings.as_dict(),
+            },
+            "history_ordering": "ascending"
+            if ascending_order
+            else "descending",
+        },
+        "history": history if ascending_order else reversed(history),
+    }
+    output_dict["header"]["current"]["value"] = _ensure_serializable(
+        output_dict["header"]["current"]["value"]
+    )
 
     # write to stdout or to file
     if not to_file:
-        print("[current-key-data]")
-        dumper(current_data_dict)
-
-        print("\n[loading-history]")
-        _dump_data_loading_history(
-            settings,
-            key_dotted_path,
-            ascendent_order=ascending_order,
-            dumper=dumper,
-        )
+        dumper(output_dict, sys.stdout)
     else:
-        dumper(current_data_dict, to_file)
-        _dump_data_loading_history(
-            settings,
-            key_dotted_path,
-            ascendent_order=ascending_order,
-            dumper=dumper,
-            filename=to_file,
-        )
+        with open(
+            to_file, "w", encoding=settings.get("ENCODER_FOR_DYNACONF")
+        ) as f:
+            dumper(output_dict, f)
 
 
-# Implementations
-
-
-def ensure_serializable(data: BoxList | DynaBox) -> dict | list:
-    """
-    Converts box dict or list types to regular python dict or list
-    Bypasses other values.
-    """
-    if isinstance(data, BoxList):
-        return list(data)
-    elif isinstance(data, DynaBox):
-        return dict(data)
-    else:
-        return data
-
-
-def _dump_data_loading_history(
+def get_history(
     obj: Settings | LazySettings,
     key_dotted_path: str = "",
-    ascendent_order: bool = True,
-    dumper: DumperType = yaml_dump,
-    filename: str = "",
-):
+    filter_src_metadata: Callable[[SourceMetadata], bool] = lambda x: True,
+) -> list[dict]:
     """
-    Dumps all data from `settings.loaded_by_loaders` in order of loading.
-    If @key_dotted_path is provided, filter by that key-path.
+    Gets data from `settings.loaded_by_loaders` in order of loading with
+    optional filtering options.
+
+    Returns a list of dict in ascending order, where the
+    dict contains the data and it's source metadata.
 
     Args:
         obj: Setting object which contain the data
         key_dotted_path: dot-path to desired key. Use all if not provided
-        ascendent_order: if True, first loaded data goes on top
-        dumper: function that can dump a dict with nested structures
-        filename: filename to write. Dump to stdout otherwise
-
+        filter_src_metadata: takes SourceMetadata and returns a boolean
 
     Example:
         >>> settings = Dynaconf(...)
-        >>> dump_data_loading_hitory(settings)
-        01:
-          loader: yaml
-          identifier: 'path/to/file.yml'
-          env: default
-          data:
-            foo: bar
-            spam: eggs
-        02:
-          loader: yaml
-          identifier: 'path/to/file.yml'
-          env: development
-          data:
-            foo: bar_from_dev
-            spam: eggs_from_dev
-        (...)
+        >>> get_history_data(settings)
+        [
+            {
+                "loader": "yaml"
+                "identifier": "path/to/file.yml"
+                "env": "default"
+                "data": {"foo": 123, "spam": "eggs"
+            },
+            {
+                "loader": "yaml"
+                "identifier": "path/to/file.yml"
+                "env": "default"
+                "data": {"foo": 123, "spam": "eggs"
+            }
+        ]
     """
-    loaded_iter = (
-        obj._loaded_by_loaders.items()
-        if ascendent_order is True
-        else reversed(obj._loaded_by_loaders.items())
-    )
-    order_count = 0 if ascendent_order else len(obj._loaded_by_loaders) + 1
-    order_increment = 1 if ascendent_order else -1
-    for source_metadata, data in loaded_iter:
-        order_count += order_increment
+    result = []
+    for source_metadata, data in obj._loaded_by_loaders.items():
+        # filter by source_metadata
+        if filter_src_metadata(source_metadata) is False:
+            continue
+
+        # filter by key path
         try:
-            # filter by key or get all
             data = (
-                get_data_by_key(data, key_dotted_path)
+                _get_data_by_key(data, key_dotted_path)
                 if key_dotted_path
                 else data
             )
-
-            # DynaBox may cause serializing issues with the dumper
-            data = dict(data) if isinstance(data, DynaBox) else data
         except KeyError:
-            # skip, for this source does not contain the requested key
-            continue
+            continue  # skip: source doesn't contain the requested key
 
-        output_data = {
-            f"{order_count:02}": {**source_metadata._asdict(), "data": data}
-        }
-        dumper(output_data, filename)
+        # Format output
+        data = _ensure_serializable(data)
+        result.append({**source_metadata._asdict(), "value": data})
+    return result
 
 
-def get_data_by_key(data: dict, key_dotted_path: str, default: Any = None):
+def _ensure_serializable(data: BoxList | DynaBox) -> dict | list:
     """
-    Returns data in key
+    Converts box dict or list types to regular python dict or list
+    Bypasses other values.
+    {
+        "foo": [1,2,3, {"a": "A", "b": "B"}],
+        "bar": {"a": "A", "b": [1,2,3]},
+    }
+    """
+    if isinstance(data, (BoxList, list)):
+        return [_ensure_serializable(v) for v in data]
+    elif isinstance(data, (DynaBox, dict)):
+        return {
+            k: _ensure_serializable(v) for k, v in data.items()  # type: ignore
+        }
+    else:
+        return data
+
+
+def _get_data_by_key(data: dict, key_dotted_path: str, default: Any = None):
+    """
+    Returns value found in data[key] using dot-path string (e.g, "path.to.key")
     Raises if not found
     """
     path = key_dotted_path.split(".")
@@ -190,6 +194,6 @@ def get_data_by_key(data: dict, key_dotted_path: str, default: Any = None):
                 data = data[int(node)]
     except (ValueError, IndexError, KeyError):
         if not default:
-            raise KeyError(f"Path not found in data: {repr(key_dotted_path)}")
+            raise KeyError(f"Path not found in data: {key_dotted_path!r}")
         return default
     return data

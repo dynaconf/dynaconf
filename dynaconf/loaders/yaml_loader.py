@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+from typing import TextIO
 from warnings import warn
 
 from dynaconf import default_settings
@@ -59,7 +60,7 @@ def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
     )
 
 
-def write(settings_path, settings_data, merge=True, mode="w"):
+def write(settings_path, settings_data, merge=True):
     """Write data to a settings file.
 
     :param settings_path: the filepath
@@ -76,7 +77,7 @@ def write(settings_path, settings_data, merge=True, mode="w"):
 
     with open(
         str(settings_path),
-        mode,
+        "w",
         encoding=default_settings.ENCODING_FOR_DYNACONF,
     ) as open_file:
         yaml.dump(
@@ -87,15 +88,3 @@ def write(settings_path, settings_data, merge=True, mode="w"):
             indent=2,
             default_flow_style=False,
         )
-
-
-def dump(settings_data, explicit_start=True):
-    """Write to stdout"""
-    yaml.dump(
-        settings_data,
-        sys.stdout,
-        Dumper=yaml.dumper.SafeDumper,
-        explicit_start=explicit_start,
-        indent=2,
-        default_flow_style=False,
-    )

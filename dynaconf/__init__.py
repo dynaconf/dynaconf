@@ -4,7 +4,7 @@ from dynaconf.base import LazySettings  # noqa
 from dynaconf.constants import DEFAULT_SETTINGS_FILES
 from dynaconf.contrib import DjangoDynaconf  # noqa
 from dynaconf.contrib import FlaskDynaconf  # noqa
-from dynaconf.utils.inspect import inspect
+from dynaconf.utils.inspect import inspect_settings
 from dynaconf.utils.parse_conf import add_converter  # noqa
 from dynaconf.validator import ValidationError  # noqa
 from dynaconf.validator import Validator  # noqa
@@ -31,5 +31,5 @@ __all__ = [
     "ValidationError",
     "DjangoDynaconf",
     "add_converter",
-    "inspect",
+    "inspect_settings",
 ]
