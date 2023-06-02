@@ -4,7 +4,6 @@ Test dynaconf.utils.inspect:inspect
 from __future__ import annotations
 
 import os
-from pprint import pprint
 from textwrap import dedent
 
 import pytest
@@ -15,11 +14,10 @@ from dynaconf.utils.inspect import get_history
 from dynaconf.utils.inspect import inspect_settings
 from dynaconf.validator import Validator
 from dynaconf.vendor.ruamel import yaml
+import copy
+from unittest import mock
 
 
-@pytest.fixture(autouse=True, scope="function")
-def teardown():
-    os.environ.clear()
 
 
 def create_file(filename: str, data: str) -> str:
@@ -33,22 +31,23 @@ def is_dict_subset(original: dict, partial: dict) -> bool:
     return {**original, **partial} == original
 
 
-default_file_data = """\
-foo: from_yaml
-dicty:
-  a: A
-  b:
-    - 1
-    - c:
-      d: D
-listy:
-  - 1
-  - a:
-    b: B
-    c:
-      - 1
-      - 2
-"""
+
+@pytest.fixture(autouse=True, scope="function")
+def teardown():
+    backup = copy.deepcopy(os.environ)
+    for key in os.environ.keys():
+        if key.startswith(("DYNACONF_", "FLASK_", "DJANGO_")):
+            del os.environ[key]
+    yield
+    os.environ.update(backup)
+
+
+@pytest.fixture(autouse=True, scope="module")
+def module_teardown():
+    yield
+    for key in os.environ.keys():
+        if key.startswith(("DYNACONF_", "FLASK_", "DJANGO_")):
+            del os.environ[key]
 
 
 def test_ensure_serializable():
@@ -445,7 +444,7 @@ def test_inspect_print_all(tmp_path, capsys):
     assert stdout.startswith(dedent(expected))
 
 
-def test_inspect_to_file_key(tmp_path, capsys):
+def test_inspect_to_file_key(tmp_path):
     os.environ["DYNACONF_FOO"] = "from_environ"
     os.environ["DYNACONF_BAR"] = "environ_only"
     filename = create_file(tmp_path / "a.yaml", "foo: from_yaml")
