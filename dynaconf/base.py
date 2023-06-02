@@ -343,10 +343,13 @@ class Settings:
         """Redirects to store object"""
         return self.store.values()
 
-    def setdefault(self, item, default, apply_default_on_none=False):
+    def setdefault(
+        self, item, default, apply_default_on_none=False, env: str = "unknown"
+    ):
         """Returns value if exists or set it as the given default
 
         apply_default_on_none: if True, default is set when value is None
+        env: used to create the source identifier
         """
         value = self.get(item, empty)
 
@@ -364,15 +367,15 @@ class Settings:
                 )
             )
         )
+        loader_identifier = SourceMetadata(
+            "validation_default", "unique", env.lower()
+        )
 
         if apply_default:
             self.set(
                 item,
                 default,
-                # loader_identifier="_setdefault_",
-                loader_identifier=SourceMetadata(
-                    "validation_default", "unique", "global"
-                ),
+                loader_identifier=loader_identifier,
                 tomlfy=True,
             )
             return default
@@ -903,7 +906,8 @@ class Settings:
             )
 
         # Fix for #905
-        saved_value = (
+        # parsed_conf default value was causing duplication
+        value_not_parsed = (
             value
             if loader_identifier
             and loader_identifier.loader == "validation_default"
@@ -968,7 +972,7 @@ class Settings:
                     loader_identifier
                     and loader_identifier.loader == "validation_default"
                 ):
-                    value = saved_value
+                    value = value_not_parsed
                 else:
                     # `dynaconf_merge` may be used within the key structure
                     # Or merge_enabled is set to True
@@ -985,10 +989,10 @@ class Settings:
         super().__setattr__(key, value)
 
         # set loader identifiers so cleaners know which keys to clean
-        if loader_identifier and loader_identifier in self.loaded_by_loaders:
-            self.loaded_by_loaders[loader_identifier][key] = value
+        if loader_identifier and loader_identifier in self._loaded_by_loaders:
+            self._loaded_by_loaders[loader_identifier][key] = value
         elif loader_identifier:
-            self.loaded_by_loaders[loader_identifier] = {key: value}
+            self._loaded_by_loaders[loader_identifier] = {key: value}
         elif loader_identifier is None:
             # if .set is called without loader identifier it becomes
             # a default value and goes away only when explicitly unset

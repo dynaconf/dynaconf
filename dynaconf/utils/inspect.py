@@ -11,11 +11,8 @@ from typing import TextIO
 from typing import TYPE_CHECKING
 from typing import Union
 
-from dynaconf.loaders import yaml_loader
-from dynaconf.utils.boxing import Box
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.box.box_list import BoxList
-from dynaconf.vendor.ruamel.yaml import representer
 from dynaconf.vendor.ruamel.yaml import YAML
 
 if TYPE_CHECKING:
