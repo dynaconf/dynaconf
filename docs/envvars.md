@@ -154,13 +154,9 @@ object we can add in our python code:
 ```python
 # app.py
 from pathlib import Path
-from dynaconf.utils import parse_conf
+from dynaconf import add_converter
 
-parse_conf.converters["@path"] = (
-    lambda value: value.set_casting(Path)
-    if isinstance(value, parse_conf.Lazy)
-    else Path(value)
-)
+add_converter("path", Path)
 ```
 
 In the settings file we can now use the @path casting token. Like with other

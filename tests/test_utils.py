@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-import io
 import json
 import os
 from collections import namedtuple
+from pathlib import Path
+from textwrap import dedent
 
 import pytest
 
+from dynaconf import add_converter
 from dynaconf import default_settings
 from dynaconf import Dynaconf
 from dynaconf.loaders.json_loader import DynaconfEncoder
@@ -482,3 +484,26 @@ def test_env_list():
         "other",
         "global",
     ]
+
+
+def create_file(filename: str, data: str) -> str:
+    with open(filename, "w") as f:
+        f.write(dedent(data))
+    return filename
+
+
+def test_add_converter_path_example(tmp_path):
+    """Assert add_converter Path example works"""
+    add_converter("path", Path)
+    fn = create_file(
+        tmp_path / "settings.toml",
+        """\
+        my_path = "@path /home/foo/example.txt"
+        parent = "@path @format {env[HOME]}/parent"
+        child = "@path @format {this.parent}/child"
+        """,
+    )
+    settings = Dynaconf(settings_file=fn)
+    assert isinstance(settings.my_path, Path)
+    assert isinstance(settings.parent, Path)
+    assert isinstance(settings.child, Path)
