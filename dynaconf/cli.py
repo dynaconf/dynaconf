@@ -12,10 +12,10 @@ from pathlib import Path
 
 from dynaconf import constants
 from dynaconf import default_settings
-from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf import settings as legacy_settings
+from dynaconf.base import Settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
@@ -101,6 +101,7 @@ def set_settings(ctx, instance=None):
                 settings = LazySettings(create_new_settings=True)
         else:
             settings = LazySettings()
+    settings: Settings = settings
 
 
 def import_settings(dotted_path):
@@ -782,6 +783,44 @@ def validate(path):  # pragma: no cover
     else:
         click.echo(click.style("Validation error!", fg="white", bg="red"))
         sys.exit(1)
+
+
+from dynaconf.utils.inspect import builtin_dumpers, inspect_settings
+
+INSPECT_FORMATS = list(builtin_dumpers.keys())
+
+
+@main.command()
+@click.option("--key", "-k", help="Filters result by key.")
+@click.option("--env", "-e", help="Filters result by environment.", default="")
+@click.option(
+    "--format",
+    "-f",
+    help="The output format.",
+    default="json",
+    type=click.Choice(INSPECT_FORMATS),
+)
+@click.option(
+    "--descending",
+    "-d",
+    help="Set history order to 'last-first' (loaded)",
+    default=False,
+    is_flag=True,
+)
+def inspect(key, env, format, descending):  # pragma: no cover
+    """
+    Inspect the loading history of the given settings instance.
+
+    Filters by key and environement, otherwise shows all.
+    """
+    inspect_settings(
+        settings,
+        key_dotted_path=key,
+        env=env,
+        output_format=format,
+        ascending_order=(not descending),
+    )
+    print()
 
 
 if __name__ == "__main__":  # pragma: no cover

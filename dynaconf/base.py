@@ -647,6 +647,10 @@ class Settings:
         new_data["FORCE_ENV_FOR_DYNACONF"] = env
         new_settings = LazySettings(**new_data)
         self._env_cache[cache_key] = new_settings
+
+        # update source metadata for inspecting
+        self._loaded_by_loaders.update(new_settings._loaded_by_loaders)
+
         return new_settings
 
     @contextmanager

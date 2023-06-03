@@ -27,13 +27,11 @@ json_compact = json.dump
 
 builtin_dumpers = {
     "yaml": YAML().dump,
-    "json_pretty": json_pretty,
-    "json_compact": json_compact,
+    "json": json_pretty,
+    "json-compact": json_compact,
 }
 
-OutputFormat = Union[
-    Literal["yaml"], Literal["json_pretty"], Literal["json_compact"]
-]
+OutputFormat = Union[Literal["yaml"], Literal["json"], Literal["json-compact"]]
 DumperType = Callable[[dict, TextIO], None]
 
 
@@ -43,6 +41,7 @@ DumperType = Callable[[dict, TextIO], None]
 def inspect_settings(
     settings: Settings | LazySettings,
     key_dotted_path: str = "",
+    env: str = "",
     ascending_order: bool = True,
     to_file: str = "",
     output_format: OutputFormat = "yaml",
@@ -71,24 +70,39 @@ def inspect_settings(
     dumper = dumper if not custom_dumper else custom_dumper
 
     # prepare output (current settings + history)
-    history = get_history(settings)
+    def env_filter(src: SourceMetadata) -> bool:
+        if env:
+            return src.env.lower() == env.lower()
+        return True
+
+    history = get_history(settings, filter_src_metadata=env_filter)
+    if ascending_order:
+        history.reverse()
+    history_order = "ascending" if ascending_order else "descending"
+
+    settings = settings if not env else settings.from_env(env)
+    header_env = env or "None"
+    header_key = key_dotted_path or "None"
+    header_value = (
+        settings.get(key_dotted_path)
+        if key_dotted_path
+        else settings.as_dict()
+    )
+
     output_dict = {
         "header": {
-            "current": {
-                "env": settings.current_env,
-                "key": key_dotted_path or "(all)",
-                "value": settings.get(key_dotted_path)
-                if key_dotted_path
-                else settings.as_dict(),
+            "filters": {
+                "env": header_env,
+                "key": header_key,
+                "history_ordering": history_order,
             },
-            "history_ordering": "ascending"
-            if ascending_order
-            else "descending",
+            "active_value": header_value,
         },
-        "history": history if ascending_order else reversed(history),
+        "history": history,
     }
-    output_dict["header"]["current"]["value"] = _ensure_serializable(
-        output_dict["header"]["current"]["value"]
+
+    output_dict["header"]["active_value"] = _ensure_serializable(
+        output_dict["header"]["active_value"]
     )
 
     # write to stdout or to file

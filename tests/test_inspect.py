@@ -3,8 +3,11 @@ Test dynaconf.utils.inspect:inspect
 """
 from __future__ import annotations
 
+import copy
 import os
+from pprint import pprint
 from textwrap import dedent
+from unittest import mock
 
 import pytest
 
@@ -14,10 +17,6 @@ from dynaconf.utils.inspect import get_history
 from dynaconf.utils.inspect import inspect_settings
 from dynaconf.validator import Validator
 from dynaconf.vendor.ruamel import yaml
-import copy
-from unittest import mock
-
-
 
 
 def create_file(filename: str, data: str) -> str:
@@ -29,7 +28,6 @@ def create_file(filename: str, data: str) -> str:
 def is_dict_subset(original: dict, partial: dict) -> bool:
     """Check if partial dict is subset of original dict."""
     return {**original, **partial} == original
-
 
 
 @pytest.fixture(autouse=True, scope="function")
@@ -267,8 +265,8 @@ def test_get_history_env_true__file_plus_envvar(tmp_path):
     create_file(
         file_a,
         """\n
-        default.foo="from_default_file"
-        development.foo="from_development_file"
+        default.foo="from_default_env"
+        development.foo="from_development_env"
         """,
     )
 
@@ -281,14 +279,14 @@ def test_get_history_env_true__file_plus_envvar(tmp_path):
         "identifier": str(file_a),
         "env": "default",
         "merged": False,
-        "value": {"FOO": "from_default_file"},
+        "value": {"FOO": "from_default_env"},
     }
     assert history[1] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "development",
         "merged": False,
-        "value": {"FOO": "from_development_file"},
+        "value": {"FOO": "from_development_env"},
     }
     assert history[2] == {
         "loader": "env_global",
@@ -414,11 +412,11 @@ def test_inspect_print_key(tmp_path, capsys):
     stdout, stderr = capsys.readouterr()
     expected = """\
     header:
-      current:
-        env: main
+      filters:
+        env: None
         key: foo
-        value: from_environ
-      history_ordering: ascending
+        history_ordering: ascending
+      active_value: from_environ
     """
     assert stdout.startswith(dedent(expected))
 
@@ -433,13 +431,13 @@ def test_inspect_print_all(tmp_path, capsys):
     stdout, stderr = capsys.readouterr()
     expected = """\
     header:
-      current:
-        env: main
-        key: (all)
-        value:
-          FOO: from_environ
-          BAR: environ_only
-      history_ordering: ascending
+      filters:
+        env: None
+        key: None
+        history_ordering: ascending
+      active_value:
+        FOO: from_environ
+        BAR: environ_only
     """
     assert stdout.startswith(dedent(expected))
 
@@ -457,8 +455,8 @@ def test_inspect_to_file_key(tmp_path):
     with open(file_out) as f:
         file_content = yaml.YAML().load(f)
 
-    assert file_content["header"]["current"]["key"] == "foo"
-    assert file_content["header"]["current"]["value"] == "from_environ"
+    assert file_content["header"]["filters"]["key"] == "foo"
+    assert file_content["header"]["active_value"] == "from_environ"
 
 
 def test_inspect_to_file_all(tmp_path):
@@ -474,8 +472,141 @@ def test_inspect_to_file_all(tmp_path):
     with open(file_out) as f:
         file_content = yaml.YAML().load(f)
 
-    assert file_content["header"]["current"]["key"] == "(all)"
-    assert file_content["header"]["current"]["value"] == {
+    assert file_content["header"]["filters"]["key"] == "None"
+    assert file_content["header"]["active_value"] == {
         "FOO": "from_environ",
         "BAR": "environ_only",
+    }
+
+
+def test_inspect_env_filter(tmp_path, capsys):
+    """
+    Caveat: env filter will show current default env values too.
+            History will be filtered properly.
+    """
+    filename = create_file(
+        tmp_path / "a.toml",
+        """\
+        default.foo="from_env_default"
+        development.foo="from_env_dev"
+        prod.bar="prod_only"
+        """,
+    )
+
+    settings = Dynaconf(settings_file=filename, environments=True)
+
+    inspect_settings(settings, output_format="yaml", env="prod")
+    stdout, stderr = capsys.readouterr()
+    expected = """\
+    header:
+      filters:
+        env: prod
+        key: None
+        history_ordering: ascending
+      active_value:
+        FOO: from_env_default
+        BAR: prod_only
+    """
+    assert stdout.startswith(dedent(expected))
+
+
+def test_caveat__get_history_env_true(tmp_path):
+    """
+    Given environments=True and sources=file
+    Should return correct metadata history
+
+    Caveat:
+        An environment that is not a builtin env name, like (default,
+        global, development) and that is not the 'current_env' will not
+        be loaded and, thus, will not be shown in history.
+
+        Possible workaround:
+        a) leave for the user to trigger this env loaded.
+           >>> settings.from_env("production")
+        b) add a global config for loading all envs, even if they are
+           not in the builtin env names.
+    """
+    file_a = tmp_path / "a.toml"
+    create_file(
+        file_a,
+        """\n
+        default.foo="from_default_env"
+        development.foo="from_development_env"
+        production.foo="from_production_env"
+        """,
+    )
+
+    settings = Dynaconf(settings_file=file_a, environments=True)
+    history = get_history(settings)
+
+    assert len(history) == 2
+    assert history[0] == {
+        "loader": "toml",
+        "identifier": str(file_a),
+        "env": "default",
+        "merged": False,
+        "value": {"FOO": "from_default_env"},
+    }
+    assert history[1] == {
+        "loader": "toml",
+        "identifier": str(file_a),
+        "env": "development",
+        "merged": False,
+        "value": {"FOO": "from_development_env"},
+    }
+
+    with pytest.raises(IndexError):
+        assert history[2] == {
+            "loader": "toml",
+            "identifier": str(file_a),
+            "env": "production",
+            "merged": False,
+            "value": {"FOO": "from_production_env"},
+        }
+
+
+def test_caveat__get_history_env_true_workaround(tmp_path):
+    """
+    Given environments=True and sources=file
+    Should return correct metadata history
+
+    Caveat: see original test
+    Workaround: force loading with desired 'current_env'
+    """
+    file_a = tmp_path / "a.toml"
+    create_file(
+        file_a,
+        """\n
+        default.foo="from_default_env"
+        development.foo="from_development_env"
+        production.foo="from_production_env"
+        """,
+    )
+
+    settings = Dynaconf(settings_file=file_a, environments=True)
+    settings.from_env("production")
+    history = get_history(settings)
+
+    assert len(history) == 3
+    assert history[0] == {
+        "loader": "toml",
+        "identifier": str(file_a),
+        "env": "default",
+        "merged": False,
+        "value": {"FOO": "from_default_env"},
+    }
+    assert history[1] == {
+        "loader": "toml",
+        "identifier": str(file_a),
+        "env": "development",
+        "merged": False,
+        "value": {"FOO": "from_development_env"},
+    }
+
+    assert history[2] == {
+        "loader": "toml",
+        "identifier": str(file_a),
+        "env": "production",
+        "merged": False,
+        "value": {"FOO": "from_production_env"},
     }

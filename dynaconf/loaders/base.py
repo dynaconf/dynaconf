@@ -148,6 +148,7 @@ class BaseLoader:
 
             for env in build_env_list(self.obj, self.env):
                 env = env.lower()  # lower for better comparison
+                # print(self.env, file_data)
 
                 # set source metadata
                 source_metadata = SourceMetadata(
