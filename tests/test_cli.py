@@ -475,10 +475,9 @@ def create_file(filename: str, data: str):
 
 
 def test_inspect_no_args(tmp_path):
-    """
-    sources from: envvar + file
-    command: dynaconf inspect
-    """
+    """Inspect command with no arguments"""
+    print(tmp_path)
+
     environ = {"DYNACONF_FOO": "from_environ"}
     setting_file = tmp_path / "a.toml"
     create_file(setting_file, "foo='from_file'")
@@ -491,36 +490,32 @@ def test_inspect_no_args(tmp_path):
     )
 
     result = run(["-i", "app.settings", "inspect"], env=environ)
+    expected_header = """\
+        {
+          "header": {
+            "filters": {
+              "env": "None",
+              "key": "None",
+              "history_ordering": "ascending"
+            },
+            "active_value": {
+              "FOO": "from_environ"
+            }
+          },
+        """
     assert result
-    assert result.startswith(
-        dedent(
-            """\
-    {
-      "header": {
-        "current": {
-          "env": "main",
-          "key": "(all)",
-          "value": {
-            "FOO": "from_environ"
-          }
-        },
-        "history_ordering": "ascending"
-      },
-    """
-        )
-    )
+    assert result.startswith(dedent(expected_header))
 
 
-def test_inspect_yaml_format():
-    """
-    sources from: envvar + file
-    command: dynaconf inspect
-    """
+def test_inspect_yaml_format(tmp_path):
+    """Inspect command with format argument"""
+    print(tmp_path)
+
     environ = {"DYNACONF_FOO": "from_environ"}
-    setting_file = "a.toml"
+    setting_file = tmp_path / "a.toml"
     create_file(setting_file, "foo='from_file'")
     create_file(
-        "app.py",
+        tmp_path / "app.py",
         f"""\
         from dynaconf import Dynaconf
         settings = Dynaconf(settings_file="{setting_file}")
@@ -528,30 +523,26 @@ def test_inspect_yaml_format():
     )
 
     result = run(["-i", "app.settings", "inspect", "-f", "yaml"], env=environ)
-    assert result
-    assert result.startswith(
-        dedent(
-            """\
+    expected_header = """\
         header:
-          current:
-            env: main
-            key: (all)
-            value:
-              FOO: from_environ
-          history_ordering: ascending
+          filters:
+            env: None
+            key: None
+            history_ordering: ascending
+          active_value:
+            FOO: from_environ
         """
-        )
-    )
+    assert result
+    assert result.startswith(dedent(expected_header))
 
 
 def test_inspect_key_filter(tmp_path):
-    """
-    sources from: envvar + file
-    command: dynaconf inspect
-    """
+    """Inspect command with key filter argument"""
+
     environ = {
         "DYNACONF_FOO": "from_environ",
     }
+
     setting_file = tmp_path / "a.toml"
     create_file(setting_file, "foo='from_file'\nbar='file_only'")
     create_file(
@@ -563,29 +554,25 @@ def test_inspect_key_filter(tmp_path):
     )
 
     result = run(["-i", "app.settings", "inspect", "-k", "bar"], env=environ)
-    assert result
-    assert result.startswith(
-        dedent(
-            """\
+    expected_header = """\
         {
           "header": {
-            "current": {
-              "env": "main",
+            "filters": {
+              "env": "None",
               "key": "bar",
-              "value": "file_only"
+              "history_ordering": "ascending"
             },
-            "history_ordering": "ascending"
+            "active_value": "file_only"
           },
         """
-        )
-    )
+    assert result
+    assert result.startswith(dedent(expected_header))
 
 
 def test_inspect_env_filter(tmp_path):
-    """
-    sources from: envvar + file
-    command: dynaconf inspect
-    """
+    """Inspect command with env filter argument"""
+    print(tmp_path)
+
     environ = {}
     setting_file = tmp_path / "a.toml"
     create_file(
@@ -593,7 +580,7 @@ def test_inspect_env_filter(tmp_path):
         """\
         default.foo='from_env_default'
         development.foo='from_env_development'
-        production.bar='prod_only_no_foo_here'
+        prod.bar='prod_only_and_foo_default'
         """,
     )
     create_file(
@@ -607,22 +594,78 @@ def test_inspect_env_filter(tmp_path):
         """,
     )
 
-    result = run(["-i", "app.settings", "inspect"], env=environ)
-    print(result)
+    result = run(["-i", "app.settings", "inspect", "-e", "prod"], env=environ)
+    expected_header = """\
+        {
+          "header": {
+            "filters": {
+              "env": "prod",
+              "key": "None",
+              "history_ordering": "ascending"
+            },
+            "active_value": {
+              "FOO": "from_env_default",
+              "BAR": "prod_only_and_foo_default"
+            }
+          },
+        """
+    assert result
+    assert result.startswith(dedent(expected_header))
 
-    # assert result
-    # assert result.startswith(
-    #     dedent(
-    #         """\
-    #     {
-    #       "header": {
-    #         "current": {
-    #           "env": "prod",
-    #           "key": "bar",
-    #           "value": "file_only"
-    #         },
-    #         "history_ordering": "ascending"
-    #       },
-    #     """
-    #     )
-    # )
+
+def test_inspect_all_args(tmp_path):
+    """Inspect command with all arguments"""
+    print(tmp_path)
+
+    environ = {"DYNACONF_BAR": "actual value but not in history"}
+    setting_file = tmp_path / "a.toml"
+    create_file(
+        setting_file,
+        """\
+        default.foo='from_env_default'
+        development.foo='from_env_development'
+        prod.bar='prod_only'
+        """,
+    )
+    create_file(
+        tmp_path / "app.py",
+        f"""\
+        from dynaconf import Dynaconf
+        settings = Dynaconf(
+            settings_file="{setting_file}",
+            environments=True
+        )
+        """,
+    )
+
+    result = run(
+        [
+            "-i",
+            "app.settings",
+            "inspect",
+            "--key",
+            "bar",
+            "--env",
+            "prod",
+            "--format",
+            "yaml",
+        ],
+        env=environ,
+    )
+    expected_result = f"""\
+        header:
+          filters:
+            env: prod
+            key: bar
+            history_ordering: ascending
+          active_value: actual value but not in history
+        history:
+        - loader: toml
+          identifier: {setting_file}
+          env: prod
+          merged: false
+          value:
+            BAR: prod_only\n
+        """
+    assert result
+    assert result == dedent(expected_result)

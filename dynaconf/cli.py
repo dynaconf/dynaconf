@@ -9,13 +9,13 @@ import warnings
 import webbrowser
 from contextlib import suppress
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from dynaconf import constants
 from dynaconf import default_settings
 from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf import settings as legacy_settings
-from dynaconf.base import Settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
@@ -27,6 +27,10 @@ from dynaconf.validator import Validator
 from dynaconf.vendor import click
 from dynaconf.vendor import toml
 from dynaconf.vendor import tomllib
+
+
+if TYPE_CHECKING:
+    from dynaconf.base import Settings
 
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
@@ -101,7 +105,6 @@ def set_settings(ctx, instance=None):
                 settings = LazySettings(create_new_settings=True)
         else:
             settings = LazySettings()
-    settings: Settings = settings
 
 
 def import_settings(dotted_path):

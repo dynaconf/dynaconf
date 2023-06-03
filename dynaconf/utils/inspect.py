@@ -75,12 +75,14 @@ def inspect_settings(
             return src.env.lower() == env.lower()
         return True
 
-    history = get_history(settings, filter_src_metadata=env_filter)
+    original_settings = settings
+    settings = settings if not env else settings.from_env(env)
+
+    history = get_history(original_settings, filter_src_metadata=env_filter)
     if ascending_order:
         history.reverse()
     history_order = "ascending" if ascending_order else "descending"
 
-    settings = settings if not env else settings.from_env(env)
     header_env = env or "None"
     header_key = key_dotted_path or "None"
     header_value = (
