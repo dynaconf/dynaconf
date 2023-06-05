@@ -260,7 +260,9 @@ def main(ctx, instance):
 @click.option("--django", default=os.environ.get("DJANGO_SETTINGS_MODULE"))
 @click.pass_context
 def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
-    """Inits a dynaconf project
+    """
+    Inits a dynaconf project.
+
     By default it creates a settings.toml and a .secrets.toml
     for [default|development|staging|testing|production|global] envs.
 
@@ -517,8 +519,11 @@ def get(key, default, env, unparse):
     help="Output file is flat (do not include [env] name)",
 )
 def _list(env, key, more, loader, _all=False, output=None, flat=False):
-    """Lists all user defined config values
-    and if `--all` is passed it also shows dynaconf internal variables.
+    """
+    Lists user defined settings or all (including internal configs).
+
+    By default, shows only user defined. If `--all` is passed it also shows
+    dynaconf internal variables aswell.
     """
     if env:
         env = env.strip()
@@ -639,7 +644,7 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
 )
 @click.option("-y", default=False, is_flag=True)
 def write(to, _vars, _secrets, path, env, y):
-    """Writes data to specific source"""
+    """Writes data to specific source."""
     _vars = split_vars(_vars)
     _secrets = split_vars(_secrets)
     loader = importlib.import_module(f"dynaconf.loaders.{to}_loader")
@@ -712,8 +717,11 @@ def write(to, _vars, _secrets, path, env, y):
     "--path", "-p", default=CWD, help="defaults to current directory"
 )
 def validate(path):  # pragma: no cover
-    """Validates Dynaconf settings based on rules defined in
-    dynaconf_validators.toml"""
+    """
+    Validates Dynaconf settings based on provided rules.
+
+    Rules should be defined in dynaconf_validators.toml
+    """
     # reads the 'dynaconf_validators.toml' from path
     # for each section register the validator for specific env
     # call validate
@@ -806,7 +814,7 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
 @click.option(
     "--descending",
     "-d",
-    help="Set history order to 'last-first' (loaded)",
+    help="Set history loading order to 'last-first'",
     default=False,
     is_flag=True,
 )

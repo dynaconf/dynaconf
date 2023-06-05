@@ -59,6 +59,67 @@ To disable the merging of the data, you can set the `dynaconf_merge` to False.
 You can also set the merging individually for each settings variable as seen on
 [merging](/merging/) documentation.
 
+
+## `inspect_settings`
+
+> **NEW** in version 3.2.0
+
+Inspect the loading history of all ingested data by its source identities.
+
+This function relates all ingested data to its source by establishing a set of
+source metadata on loading-time:
+
+- **loader**: which kind of loader *(yaml, envvar, validation_default)*
+- **identifier**: specific identifier *(eg: filename for files)*
+- **env**: which env this data belongs to *(global, main, development, etc)*
+- **merged**: if this data has been merged *(True or False)*
+
+It also provides key and environment filters to narrow down the results,
+descending/ascending sorting flag and some built-in output formats.
+
+Sample usage:
+
+```python
+$ export DYNACONF_FOO=from_environ
+$ export DYNACONF_BAR=environ_only
+$ cat file_a.yaml
+foo: from_yaml
+
+$ python
+>>> from dynaconf import Dynaconf, inspect_settings
+>>> settings = Dynaconf()
+>>> inspect_settings(settings, key_dotted_path="foo", output_format="yaml")
+header:
+  filters:
+    env: None
+    key: foo
+    history_ordering: ascending
+  active_value: from_environ
+history:
+- loader: yaml
+  identifier: file_a.yaml
+  env: default
+  merged: false
+  value:
+    FOO: from_yaml
+- loader: env_global
+  identifier: unique
+  env: global
+  merged: false
+  value:
+    FOO: from_environ
+    BAR: environ_only
+```
+
+To save to a file use:
+
+```python
+inspect_setting(setting, to_file="filename.json", output_format="json")
+```
+
+Dynaconf supports some builtin formats, but you can use a custom dumper too that
+can dump nested dict/list structure into a `TextIO` stream.
+
 ## Programmatically loading a settings file
 
 You can load files from within a python script.
