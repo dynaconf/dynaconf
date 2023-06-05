@@ -496,9 +496,9 @@ def test_add_converter_path_example(tmp_path):
     """Assert add_converter Path example works"""
     add_converter("path", Path)
     fn = create_file(
-        tmp_path / "settings.toml",
+        tmp_path / "settings.yaml",
         f"""\
-        my_path = "@path {Path.home()}"
+        my_path: "@path {Path.home()}"
         """,
     )
     settings = Dynaconf(settings_file=fn)
