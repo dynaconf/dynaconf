@@ -47,7 +47,6 @@ class BaseLoader:
 
     @staticmethod
     def warn_not_installed(obj, identifier):  # pragma: no cover
-        # TODO have a look into this, may be affected
         if identifier not in obj._not_installed_warnings:
             warnings.warn(
                 f"{identifier} support is not installed in your environment. "

@@ -823,7 +823,7 @@ def inspect(key, env, format, descending):  # pragma: no cover
         output_format=format,
         ascending_order=(not descending),
     )
-    print()
+    print()  # noqa
 
 
 if __name__ == "__main__":  # pragma: no cover

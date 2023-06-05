@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
-from hvac.utils import dedent
 
 from dynaconf import default_settings
 from dynaconf import LazySettings
@@ -17,13 +18,32 @@ from dynaconf.utils.files import read_file
 from dynaconf.vendor.click.testing import CliRunner
 
 
-runner = CliRunner()
 settings = LazySettings(OPTION_FOR_TESTS=True, environments=True)
 
 
 def run(cmd, env=None, attr="output"):
+    runner = CliRunner()
     result = runner.invoke(main, cmd, env=env, catch_exceptions=False)
     return getattr(result, attr)
+
+
+# ensure runner won't get modified os.environ
+os_environ = os.environ.copy()
+
+
+def run_subprocess(cmd: list[str], env: dict | None = None):
+    """
+    Alternative test runner utility.
+
+    Although it seems slower than click's runner, it seems to solve isolation
+    issues when using envvar and tmp_files.
+    """
+    env = env or {}
+    environ = {**os_environ.copy(), **env}
+    result = subprocess.run(
+        ["dynaconf", *cmd], capture_output=True, env=environ
+    )
+    return result.stdout.decode("utf-8")
 
 
 def test_version():
@@ -469,7 +489,8 @@ def test_validate(tmpdir):
 
 def create_file(filename: str, data: str):
     """Utility to write data to filename."""
-    with open(filename, "w") as f:
+    encoding = str(default_settings.ENCODING_FOR_DYNACONF)
+    with open(filename, "w", encoding=encoding) as f:
         f.write(dedent(data))
     return filename
 
@@ -489,7 +510,7 @@ def test_inspect_no_args(tmp_path):
         """,
     )
 
-    result = run(["-i", "app.settings", "inspect"], env=environ)
+    result = run_subprocess(["-i", "app.settings", "inspect"], env=environ)
     expected_header = """\
         {
           "header": {
@@ -522,7 +543,9 @@ def test_inspect_yaml_format(tmp_path):
         """,
     )
 
-    result = run(["-i", "app.settings", "inspect", "-f", "yaml"], env=environ)
+    result = run_subprocess(
+        ["-i", "app.settings", "inspect", "-f", "yaml"], env=environ
+    )
     expected_header = """\
         header:
           filters:
@@ -540,6 +563,7 @@ def test_inspect_key_filter(tmp_path):
     """Inspect command with key filter argument"""
 
     environ = {
+        **os.environ.copy(),
         "DYNACONF_FOO": "from_environ",
     }
 
@@ -553,7 +577,10 @@ def test_inspect_key_filter(tmp_path):
         """,
     )
 
-    result = run(["-i", "app.settings", "inspect", "-k", "bar"], env=environ)
+    # result = run(["-i", "app.settings", "inspect", "-k", "bar"], env=environ)
+    result = run_subprocess(
+        ["-i", "app.settings", "inspect", "-k", "bar"], env=environ
+    )
     expected_header = """\
         {
           "header": {
@@ -594,7 +621,9 @@ def test_inspect_env_filter(tmp_path):
         """,
     )
 
-    result = run(["-i", "app.settings", "inspect", "-e", "prod"], env=environ)
+    result = run_subprocess(
+        ["-i", "app.settings", "inspect", "-e", "prod"], env=environ
+    )
     expected_header = """\
         {
           "header": {
@@ -615,8 +644,6 @@ def test_inspect_env_filter(tmp_path):
 
 def test_inspect_all_args(tmp_path):
     """Inspect command with all arguments"""
-    print(tmp_path)
-
     environ = {"DYNACONF_BAR": "actual value but not in history"}
     setting_file = tmp_path / "a.toml"
     create_file(
@@ -638,7 +665,7 @@ def test_inspect_all_args(tmp_path):
         """,
     )
 
-    result = run(
+    result = run_subprocess(
         [
             "-i",
             "app.settings",
