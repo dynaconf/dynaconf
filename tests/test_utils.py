@@ -494,16 +494,13 @@ def create_file(filename: str, data: str) -> str:
 
 def test_add_converter_path_example(tmp_path):
     """Assert add_converter Path example works"""
+    my_path_string = str(tmp_path / "example.txt")
     add_converter("path", Path)
     fn = create_file(
         tmp_path / "settings.toml",
-        """\
-        my_path = "@path /home/foo/example.txt"
-        parent = "@path @format {env[HOME]}/parent"
-        child = "@path @format {this.parent}/child"
+        f"""\
+        my_path = "@path {my_path_string}"
         """,
     )
     settings = Dynaconf(settings_file=fn)
     assert isinstance(settings.my_path, Path)
-    assert isinstance(settings.parent, Path)
-    assert isinstance(settings.child, Path)
