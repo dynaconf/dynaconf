@@ -494,12 +494,11 @@ def create_file(filename: str, data: str) -> str:
 
 def test_add_converter_path_example(tmp_path):
     """Assert add_converter Path example works"""
-    my_path_string = str(tmp_path / "example.txt")
     add_converter("path", Path)
     fn = create_file(
         tmp_path / "settings.toml",
         f"""\
-        my_path = "@path {my_path_string}"
+        my_path = "@path {Path.home()}"
         """,
     )
     settings = Dynaconf(settings_file=fn)
