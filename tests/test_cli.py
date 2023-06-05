@@ -16,11 +16,11 @@ from dynaconf.utils.files import read_file
 from dynaconf.vendor.click.testing import CliRunner
 
 
+runner = CliRunner()
 settings = LazySettings(OPTION_FOR_TESTS=True, environments=True)
 
 
 def run(cmd, env=None, attr="output"):
-    runner = CliRunner()
     result = runner.invoke(main, cmd, env=env, catch_exceptions=False)
     return getattr(result, attr)
 

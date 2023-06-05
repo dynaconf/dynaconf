@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from collections import namedtuple
 from pathlib import Path
 from textwrap import dedent
@@ -492,6 +493,10 @@ def create_file(filename: str, data: str) -> str:
     return filename
 
 
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
 def test_add_converter_path_example(tmp_path):
     """Assert add_converter Path example works"""
     add_converter("path", Path)
