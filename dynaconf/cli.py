@@ -46,9 +46,6 @@ ENC = default_settings.ENCODING_FOR_DYNACONF
 
 def set_settings(ctx, instance=None):
     """Pick correct settings instance and set it to a global variable."""
-
-    global settings
-
     settings = None
 
     _echo_enabled = ctx.invoked_subcommand not in ["get", None]
@@ -67,11 +64,12 @@ def set_settings(ctx, instance=None):
 
             flask_app = ScriptInfo().load_app()
             settings = FlaskDynaconf(flask_app, **flask_app.config).settings
-            _echo_enabled and click.echo(
-                click.style(
-                    "Flask app detected", fg="white", bg="bright_black"
+            if _echo_enabled:
+                click.echo(
+                    click.style(
+                        "Flask app detected", fg="white", bg="bright_black"
+                    )
                 )
-            )
     elif "DJANGO_SETTINGS_MODULE" in os.environ:  # pragma: no cover
         sys.path.insert(0, os.path.abspath(os.getcwd()))
         try:
@@ -82,8 +80,8 @@ def set_settings(ctx, instance=None):
         except AttributeError:
             settings = LazySettings()
 
-        if settings is not None:
-            _echo_enabled and click.echo(
+        if settings is not None and _echo_enabled:
+            click.echo(
                 click.style(
                     "Django app detected", fg="white", bg="bright_black"
                 )
@@ -105,6 +103,7 @@ def set_settings(ctx, instance=None):
                 settings = LazySettings(create_new_settings=True)
         else:
             settings = LazySettings()
+    return settings
 
 
 def import_settings(dotted_path):
@@ -132,7 +131,7 @@ def import_settings(dotted_path):
         raise click.UsageError(e)
 
 
-def split_vars(_vars):
+def split_vars(_vars, settings):
     """Splits values like foo=bar=zaz in {'foo': 'bar=zaz'}"""
     return (
         {
@@ -174,7 +173,7 @@ def show_banner(ctx, param, value):
     """Shows dynaconf awesome banner"""
     if not value or ctx.resilient_parsing:
         return
-    set_settings(ctx)
+    settings = set_settings(ctx)
     click.echo(settings.dynaconf_banner)
     click.echo("Learn more at: http://github.com/dynaconf/dynaconf")
     ctx.exit()
@@ -217,7 +216,8 @@ def main(ctx, instance):
     """Dynaconf - Command Line Interface\n
     Documentation: https://dynaconf.com/
     """
-    set_settings(ctx, instance)
+    settings = set_settings(ctx, instance)
+    ctx.obj = settings
 
 
 @main.command()
@@ -274,6 +274,8 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
 
     The --env/-e is deprecated (kept for compatibility but unused)
     """
+    settings = ctx.obj
+
     click.echo("⚙️  Configuring your Dynaconf environment")
     click.echo("-" * 42)
     if "FLASK_APP" in os.environ:  # pragma: no cover
@@ -326,14 +328,14 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
                 "      settings = Dynaconf(**options)\n"
             )
         sys.path.append(str(path))
-        set_settings(ctx, "config.settings")
+        settings = set_settings(ctx, "config.settings")
 
     env = settings.current_env.lower()
 
     loader = importlib.import_module(f"dynaconf.loaders.{fileformat}_loader")
     # Turn foo=bar=zaz in {'foo': 'bar=zaz'}
-    env_data = split_vars(_vars)
-    _secrets = split_vars(_secrets)
+    env_data = split_vars(_vars, settings)
+    _secrets = split_vars(_secrets, settings)
 
     # create placeholder data for every env
     settings_data = {}
@@ -451,11 +453,14 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     help="Unparse data by adding markers such as @none, @int etc..",
     is_flag=True,
 )
-def get(key, default, env, unparse):
+@click.pass_context
+def get(ctx, key, default, env, unparse):
     """Returns the raw value for a settings key.
 
     If result is a dict, list or tuple it is printes as a valid json string.
     """
+    settings = ctx.obj
+
     if env:
         env = env.strip()
     if key:
@@ -518,13 +523,16 @@ def get(key, default, env, unparse):
     default=False,
     help="Output file is flat (do not include [env] name)",
 )
-def _list(env, key, more, loader, _all=False, output=None, flat=False):
+@click.pass_context
+def _list(ctx, env, key, more, loader, _all=False, output=None, flat=False):
     """
     Lists user defined settings or all (including internal configs).
 
     By default, shows only user defined. If `--all` is passed it also shows
     dynaconf internal variables aswell.
     """
+    settings = ctx.obj
+
     if env:
         env = env.strip()
     if key:
@@ -643,10 +651,13 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
     ),
 )
 @click.option("-y", default=False, is_flag=True)
-def write(to, _vars, _secrets, path, env, y):
+@click.pass_context
+def write(ctx, to, _vars, _secrets, path, env, y):
     """Writes data to specific source."""
-    _vars = split_vars(_vars)
-    _secrets = split_vars(_secrets)
+    settings = ctx.obj
+
+    _vars = split_vars(_vars, settings)
+    _secrets = split_vars(_secrets, settings)
     loader = importlib.import_module(f"dynaconf.loaders.{to}_loader")
 
     if to in EXTS:
@@ -716,12 +727,14 @@ def write(to, _vars, _secrets, path, env, y):
 @click.option(
     "--path", "-p", default=CWD, help="defaults to current directory"
 )
-def validate(path):  # pragma: no cover
+@click.pass_context
+def validate(ctx, path):  # pragma: no cover
     """
     Validates Dynaconf settings based on provided rules.
 
     Rules should be defined in dynaconf_validators.toml
     """
+    settings = ctx.obj
     # reads the 'dynaconf_validators.toml' from path
     # for each section register the validator for specific env
     # call validate
@@ -818,12 +831,14 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
     default=False,
     is_flag=True,
 )
-def inspect(key, env, format, descending):  # pragma: no cover
+@click.pass_context
+def inspect(ctx, key, env, format, descending):  # pragma: no cover
     """
     Inspect the loading history of the given settings instance.
 
     Filters by key and environement, otherwise shows all.
     """
+    settings = ctx.obj
     inspect_settings(
         settings,
         key_dotted_path=key,
