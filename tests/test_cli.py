@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
 from pathlib import Path
 from textwrap import dedent
 
@@ -25,25 +24,6 @@ def run(cmd, env=None, attr="output"):
     runner = CliRunner()
     result = runner.invoke(main, cmd, env=env, catch_exceptions=False)
     return getattr(result, attr)
-
-
-# ensure runner won't get modified os.environ
-os_environ = os.environ.copy()
-
-
-def run_subprocess(cmd: list[str], env: dict | None = None):
-    """
-    Alternative test runner utility.
-
-    Although it seems slower than click's runner, it seems to solve isolation
-    issues when using envvar and tmp_files.
-    """
-    env = env or {}
-    environ = {**os_environ.copy(), **env}
-    result = subprocess.run(
-        ["dynaconf", *cmd], capture_output=True, env=environ
-    )
-    return result.stdout.decode("utf-8")
 
 
 def test_version():
@@ -487,7 +467,7 @@ def test_validate(tmpdir):
     assert "Validation success!" not in result
 
 
-def create_file(filename: str, data: str):
+def create_file(filename: str | Path, data: str):
     """Utility to write data to filename."""
     encoding = str(default_settings.ENCODING_FOR_DYNACONF)
     with open(filename, "w", encoding=encoding) as f:
@@ -495,22 +475,31 @@ def create_file(filename: str, data: str):
     return filename
 
 
+def clear_dotenv(tmp_path):
+    Path(tmp_path / ".env").unlink()
+
+
 def test_inspect_no_args(tmp_path):
     """Inspect command with no arguments"""
-    print(tmp_path)
+    clear_dotenv(tmp_path)
 
-    environ = {"DYNACONF_FOO": "from_environ"}
+    instance_name = "inspect_no_args"
     setting_file = tmp_path / "a.toml"
-    create_file(setting_file, "foo='from_file'")
+    environ = {"DYNACONF_FOO": "from_environ_no_args"}
+    cmd = ["-i", f"{instance_name}.settings", "inspect"]
+
     create_file(
-        tmp_path / "app.py",
+        tmp_path / f"{instance_name}.py",
         f"""\
-        from dynaconf import Dynaconf
-        settings = Dynaconf(settings_file="{str(setting_file)}")
+        settings = __import__('dynaconf').Dynaconf(
+            settings_file="{setting_file}"
+        )
         """,
     )
 
-    result = run_subprocess(["-i", "app.settings", "inspect"], env=environ)
+    create_file(setting_file, "foo='from_file_no_args'")
+
+    result = run(cmd, env=environ)
     expected_header = """\
         {
           "header": {
@@ -520,7 +509,7 @@ def test_inspect_no_args(tmp_path):
               "history_ordering": "ascending"
             },
             "active_value": {
-              "FOO": "from_environ"
+              "FOO": "from_environ_no_args"
             }
           },
         """
@@ -530,22 +519,27 @@ def test_inspect_no_args(tmp_path):
 
 def test_inspect_yaml_format(tmp_path):
     """Inspect command with format argument"""
-    print(tmp_path)
+    clear_dotenv(tmp_path)
 
-    environ = {"DYNACONF_FOO": "from_environ"}
+    instance_name = "inspect_yaml_format"
     setting_file = tmp_path / "a.toml"
-    create_file(setting_file, "foo='from_file'")
+    environ = {
+        "DYNACONF_FOO": "from_environ_yaml_format",
+    }
+    cmd = ["-i", f"{instance_name}.settings", "inspect", "-f", "yaml"]
+
     create_file(
-        tmp_path / "app.py",
+        tmp_path / f"{instance_name}.py",
         f"""\
-        from dynaconf import Dynaconf
-        settings = Dynaconf(settings_file="{setting_file}")
+        settings = __import__('dynaconf').Dynaconf(
+            settings_file="{setting_file}"
+        )
         """,
     )
 
-    result = run_subprocess(
-        ["-i", "app.settings", "inspect", "-f", "yaml"], env=environ
-    )
+    create_file(setting_file, "bar='from_file_yaml_format'")
+
+    result = run(cmd, env=environ)
     expected_header = """\
         header:
           filters:
@@ -553,7 +547,8 @@ def test_inspect_yaml_format(tmp_path):
             key: None
             history_ordering: ascending
           active_value:
-            FOO: from_environ
+            BAR: from_file_yaml_format
+            FOO: from_environ_yaml_format
         """
     assert result
     assert result.startswith(dedent(expected_header))
@@ -561,26 +556,31 @@ def test_inspect_yaml_format(tmp_path):
 
 def test_inspect_key_filter(tmp_path):
     """Inspect command with key filter argument"""
+    clear_dotenv(tmp_path)
 
-    environ = {
-        **os.environ.copy(),
-        "DYNACONF_FOO": "from_environ",
-    }
-
+    instance_name = "inspect_key_filter"
     setting_file = tmp_path / "a.toml"
-    create_file(setting_file, "foo='from_file'\nbar='file_only'")
+    environ = {"DYNACONF_FOO": "from_environ_key_filter"}
+    cmd = ["-i", f"{instance_name}.settings", "inspect", "-k", "bar"]
+
     create_file(
-        tmp_path / "app.py",
+        tmp_path / f"{instance_name}.py",
         f"""\
-        from dynaconf import Dynaconf
-        settings = Dynaconf(settings_file="{setting_file}")
+        settings = __import__('dynaconf').Dynaconf(
+            settings_file="{setting_file}"
+        )
         """,
     )
 
-    # result = run(["-i", "app.settings", "inspect", "-k", "bar"], env=environ)
-    result = run_subprocess(
-        ["-i", "app.settings", "inspect", "-k", "bar"], env=environ
+    create_file(
+        setting_file,
+        """\
+        foo='from_file_key_filter'
+        bar='file_only'
+        """,
     )
+
+    result = run(cmd, env=environ)
     expected_header = """\
         {
           "header": {
@@ -598,20 +598,15 @@ def test_inspect_key_filter(tmp_path):
 
 def test_inspect_env_filter(tmp_path):
     """Inspect command with env filter argument"""
-    print(tmp_path)
+    clear_dotenv(tmp_path)
 
-    environ = {}
+    instance_name = "inspect_env_filter"
     setting_file = tmp_path / "a.toml"
+    environ = {}
+    cmd = ["-i", f"{instance_name}.settings", "inspect", "-e", "prod"]
+
     create_file(
-        setting_file,
-        """\
-        default.foo='from_env_default'
-        development.foo='from_env_development'
-        prod.bar='prod_only_and_foo_default'
-        """,
-    )
-    create_file(
-        tmp_path / "app.py",
+        tmp_path / f"{instance_name}.py",
         f"""\
         from dynaconf import Dynaconf
         settings = Dynaconf(
@@ -621,9 +616,16 @@ def test_inspect_env_filter(tmp_path):
         """,
     )
 
-    result = run_subprocess(
-        ["-i", "app.settings", "inspect", "-e", "prod"], env=environ
+    create_file(
+        setting_file,
+        """\
+        default.foo='from_env_default'
+        development.foo='from_env_development'
+        prod.bar='prod_only_and_foo_default'
+        """,
     )
+
+    result = run(cmd, env=environ)
     expected_header = """\
         {
           "header": {
@@ -644,18 +646,25 @@ def test_inspect_env_filter(tmp_path):
 
 def test_inspect_all_args(tmp_path):
     """Inspect command with all arguments"""
-    environ = {"DYNACONF_BAR": "actual value but not in history"}
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_all_args"  # should be unique for isolation
     setting_file = tmp_path / "a.toml"
+    environ = {"DYNACONF_BAR": "actual value but not in history"}
+    cmd = [
+        "-i",
+        f"{instance_name}.settings",
+        "inspect",
+        "--key",
+        "bar",
+        "--env",
+        "prod",
+        "--format",
+        "yaml",
+    ]
+
     create_file(
-        setting_file,
-        """\
-        default.foo='from_env_default'
-        development.foo='from_env_development'
-        prod.bar='prod_only'
-        """,
-    )
-    create_file(
-        tmp_path / "app.py",
+        tmp_path / f"{instance_name}.py",
         f"""\
         from dynaconf import Dynaconf
         settings = Dynaconf(
@@ -665,20 +674,16 @@ def test_inspect_all_args(tmp_path):
         """,
     )
 
-    result = run_subprocess(
-        [
-            "-i",
-            "app.settings",
-            "inspect",
-            "--key",
-            "bar",
-            "--env",
-            "prod",
-            "--format",
-            "yaml",
-        ],
-        env=environ,
+    create_file(
+        setting_file,
+        """\
+        default.foo='from_env_default'
+        development.foo='from_env_development'
+        prod.bar='prod_only'
+        """,
     )
+
+    result = run(cmd, env=environ)
     expected_result = f"""\
         header:
           filters:
