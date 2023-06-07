@@ -471,7 +471,7 @@ def create_file(filename: str | Path, data: str):
     """Utility to write data to filename."""
     encoding = str(default_settings.ENCODING_FOR_DYNACONF)
     with open(filename, "w", encoding=encoding) as f:
-        f.write(dedent(data))
+        f.write(dedent(rf"{data}"))
     return filename
 
 
@@ -490,7 +490,7 @@ def test_inspect_no_args(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        rf"""\
+        f"""\
         settings = __import__('dynaconf').Dynaconf(
             settings_file="{setting_file}"
         )
@@ -530,7 +530,7 @@ def test_inspect_yaml_format(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        rf"""\
+        f"""\
         settings = __import__('dynaconf').Dynaconf(
             settings_file="{setting_file}"
         )
@@ -565,7 +565,7 @@ def test_inspect_key_filter(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        rf"""\
+        f"""\
         settings = __import__('dynaconf').Dynaconf(
             settings_file="{setting_file}"
         )
@@ -607,7 +607,7 @@ def test_inspect_env_filter(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        rf"""\
+        f"""\
         from dynaconf import Dynaconf
         settings = Dynaconf(
             settings_file="{setting_file}",
@@ -665,7 +665,7 @@ def test_inspect_all_args(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        rf"""\
+        f"""\
         from dynaconf import Dynaconf
         settings = Dynaconf(
             settings_file="{setting_file}",
