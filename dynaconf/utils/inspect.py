@@ -78,7 +78,11 @@ def inspect_settings(
     original_settings = settings
     settings = settings if not env else settings.from_env(env)
 
-    history = get_history(original_settings, filter_src_metadata=env_filter)
+    history = get_history(
+        original_settings,
+        key_dotted_path=key_dotted_path,
+        filter_src_metadata=env_filter
+    )
     if ascending_order:
         history.reverse()
     history_order = "ascending" if ascending_order else "descending"

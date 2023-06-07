@@ -401,24 +401,136 @@ def test_get_history_env_true__merge_marks(tmp_path):
         "value": {"LISTY": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]},
     }
 
+def test_get_history_key_filter(tmp_path):
+    """Asserts key filtering throught get_history param works"""
+    file_a = tmp_path / "file_a.toml"
+    file_b = tmp_path / "file_b.toml"
+    file_c = tmp_path / "file_c.toml"
+    create_file(file_a, "a='aA'\nb='aB'\nc='aC'")
+    create_file(file_b, "a='bA'\nb='bB'\nc='bC'")
+    create_file(file_c, "a='cA'\nb='cB'\nc='cC'")
+
+    settings = Dynaconf(settings_file=[file_a, file_b, file_c])
+    history = get_history(settings, key_dotted_path="a")
+    assert history[0]["value"] == 'aA'
+    assert history[1]["value"] == 'bA'
+    assert history[2]["value"] == 'cA'
+
+def test_get_history_key_filter_nested(tmp_path):
+    """Asserts key filtering throught get_history param works"""
+    file_a = tmp_path / "file_a.toml"
+    file_b = tmp_path / "file_b.toml"
+    file_c = tmp_path / "file_c.toml"
+    create_file(file_a, "a.b='aB'\na.c='aC'")
+    create_file(file_b, "a.b='bB'\na.c='bC'")
+    create_file(file_c, "a.b='cB'\na.c='cC'")
+
+    settings = Dynaconf(settings_file=[file_a, file_b, file_c])
+    history = get_history(settings, key_dotted_path="a.c")
+    assert len(history) == 3
+    assert history[0]["value"] == 'aC'
+    assert history[1]["value"] == 'bC'
+    assert history[2]["value"] == 'cC'
+
+def test_get_history_env_filter(tmp_path):
+    """Asserts env filtering through env_filter function works"""
+    file_a = tmp_path / "file_a.toml"
+    file_b = tmp_path / "file_b.toml"
+    create_file(file_a, """\
+        [default]
+        foo="from_default_a"
+        [development]
+        foo="from_development_a"
+        [prod]
+        foo="from_prod_a"
+        """
+    )
+    create_file(file_b, """\
+        [default]
+        foo="from_default_b"
+        [development]
+        foo="from_development_b"
+        [prod]
+        foo="from_prod_b"
+        """
+    )
+
+    settings = Dynaconf(settings_file=[file_a, file_b], environments=True)
+    settings.from_env("prod") # CAVEAT: activate loading of prod
+    history = get_history(settings, filter_src_metadata=lambda x: x.env.lower() == "prod")
+
+    assert len(history) == 2
+    assert history[0]["value"] == {"FOO": "from_prod_a"}
+    assert history[1]["value"] == {"FOO": "from_prod_b"}
+
+def test_get_history_env_and_key_filter(tmp_path):
+    """Asserts combined use of filters works"""
+    file_a = tmp_path / "file_a.toml"
+    file_b = tmp_path / "file_b.toml"
+    create_file(file_a, """\
+        [default]
+        foo="from_default_a"
+        bar="from_default_a"
+        [development]
+        foo="from_development_a"
+        bar="from_development_a"
+        [prod]
+        foo="from_prod_a"
+        bar="from_prod_a"
+        """
+    )
+    create_file(file_b, """\
+        [default]
+        foo="from_default_b"
+        bar="from_default_b"
+        [development]
+        foo="from_development_b"
+        bar="from_development_b"
+        [prod]
+        foo="from_prod_b"
+        bar="from_prod_b"
+        """
+    )
+
+    settings = Dynaconf(settings_file=[file_a, file_b], environments=True)
+    settings.from_env("prod") # CAVEAT: activate loading of prod
+    history = get_history(
+        settings,
+        key_dotted_path="bar",
+        filter_src_metadata=lambda x: x.env.lower() == "prod"
+    )
+    assert len(history) == 2
+    assert history[0]["value"] == "from_prod_a"
+    assert history[1]["value"] == "from_prod_b"
 
 def test_inspect_print_key(tmp_path, capsys):
     os.environ["DYNACONF_FOO"] = "from_environ"
     os.environ["DYNACONF_BAR"] = "environ_only"
     filename = create_file(tmp_path / "a.yaml", "foo: from_yaml")
     settings = Dynaconf(settings_file=filename)
-    inspect_settings(settings, "foo", output_format="yaml")
 
+    inspect_settings(settings, "foo", output_format="yaml")
     stdout, stderr = capsys.readouterr()
-    expected = """\
+    expected = f"""\
     header:
       filters:
         env: None
         key: foo
         history_ordering: ascending
       active_value: from_environ
+    history:
+    - loader: env_global
+      identifier: unique
+      env: global
+      merged: false
+      value: from_environ
+    - loader: yaml
+      identifier: {filename}
+      env: default
+      merged: false
+      value: from_yaml
     """
-    assert stdout.startswith(dedent(expected))
+    assert stdout == dedent(expected)
 
 
 def test_inspect_print_all(tmp_path, capsys):
@@ -494,10 +606,10 @@ def test_inspect_env_filter(tmp_path, capsys):
     )
 
     settings = Dynaconf(settings_file=filename, environments=True)
-
     inspect_settings(settings, output_format="yaml", env="prod")
+
     stdout, stderr = capsys.readouterr()
-    expected = """\
+    expected = f"""\
     header:
       filters:
         env: prod
@@ -506,8 +618,15 @@ def test_inspect_env_filter(tmp_path, capsys):
       active_value:
         FOO: from_env_default
         BAR: prod_only
+    history:
+    - loader: toml
+      identifier: {filename}
+      env: prod
+      merged: false
+      value:
+        BAR: prod_only
     """
-    assert stdout.startswith(dedent(expected))
+    assert stdout == dedent(expected)
 
 
 def test_caveat__get_history_env_true(tmp_path):
