@@ -77,7 +77,7 @@ def inspect_settings(
 
     setting_envs = {_env.env for _env in settings._loaded_by_loaders.keys()}
     if env and env.lower() not in setting_envs:
-        raise EnvNotFound(f"The provided env is not valid: {env!r}")
+        raise EnvNotFound(f"The requested env is not valid: {env!r}")
 
     def env_filter(src: SourceMetadata) -> bool:
         return src.env.lower() == env.lower() if env else True
@@ -126,7 +126,7 @@ def inspect_settings(
         dumper = builtin_dumpers[output_format.lower()]
     except KeyError:
         raise InvalidOutputFormat(
-            f"The desired format is not available: {output_format}"
+            f"The desired format is not available: {output_format!r}"
         )
 
     dumper = dumper if not custom_dumper else custom_dumper

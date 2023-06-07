@@ -701,3 +701,83 @@ def test_inspect_all_args(tmp_path):
         """
     assert result
     assert result == dedent(expected_result)
+
+
+def test_inspect_invalid_key(tmp_path):
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_invalid_key"
+    environ = {}
+    cmd = [
+        "-i",
+        f"{instance_name}.settings",
+        "inspect",
+        "--key",
+        "dont_exist",
+    ]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        """\
+        from dynaconf import Dynaconf
+        settings = Dynaconf(environments=True)
+        """,
+    )
+
+    result = run(cmd, env=environ)
+    assert result == "The requested key was not found: 'dont_exist'\n"
+
+
+def test_inspect_invalid_env(tmp_path):
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_invalid_env"
+    environ = {}
+    cmd = [
+        "-i",
+        f"{instance_name}.settings",
+        "inspect",
+        "--env",
+        "dont_exist",
+    ]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        """\
+        from dynaconf import Dynaconf
+        settings = Dynaconf(environments=True)
+        """,
+    )
+
+    result = run(cmd, env=environ)
+    assert result == "The requested env is not valid: 'dont_exist'\n"
+
+
+def test_inspect_invalid_format(tmp_path):
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_invalid_format"
+    environ = {}
+    cmd = [
+        "-i",
+        f"{instance_name}.settings",
+        "inspect",
+        "--format",
+        "dont_exist",
+    ]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        """\
+        from dynaconf import Dynaconf
+        settings = Dynaconf()
+        """,
+    )
+
+    result = run(cmd, env=environ)
+    expected = (
+        "Error: Invalid value for '--format' / '-f': "
+        "invalid choice: dont_exist."
+    )
+
+    assert expected in result

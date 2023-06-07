@@ -809,7 +809,13 @@ def validate(ctx, path):  # pragma: no cover
         sys.exit(1)
 
 
-from dynaconf.utils.inspect import builtin_dumpers, inspect_settings
+from dynaconf.utils.inspect import (
+    KeyNotFound,
+    builtin_dumpers,
+    inspect_settings,
+    EnvNotFound,
+    InvalidOutputFormat,
+)
 
 INSPECT_FORMATS = list(builtin_dumpers.keys())
 
@@ -839,14 +845,18 @@ def inspect(ctx, key, env, format, descending):  # pragma: no cover
     Filters by key and environement, otherwise shows all.
     """
     settings = ctx.obj
-    inspect_settings(
-        settings,
-        key_dotted_path=key,
-        env=env,
-        output_format=format,
-        ascending_order=(not descending),
-    )
-    print()  # noqa
+    try:
+        inspect_settings(
+            settings,
+            key_dotted_path=key,
+            env=env,
+            output_format=format,
+            ascending_order=(not descending),
+        )
+        click.echo()
+    except (KeyNotFound, EnvNotFound, InvalidOutputFormat) as err:
+        click.echo(err)
+        sys.exit(1)
 
 
 if __name__ == "__main__":  # pragma: no cover
