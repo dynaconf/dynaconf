@@ -490,7 +490,7 @@ def test_inspect_no_args(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        f"""\
+        rf"""\
         settings = __import__('dynaconf').Dynaconf(
             settings_file="{setting_file}"
         )
@@ -530,7 +530,7 @@ def test_inspect_yaml_format(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        f"""\
+        rf"""\
         settings = __import__('dynaconf').Dynaconf(
             settings_file="{setting_file}"
         )
@@ -565,7 +565,7 @@ def test_inspect_key_filter(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        f"""\
+        rf"""\
         settings = __import__('dynaconf').Dynaconf(
             settings_file="{setting_file}"
         )
@@ -607,7 +607,7 @@ def test_inspect_env_filter(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        f"""\
+        rf"""\
         from dynaconf import Dynaconf
         settings = Dynaconf(
             settings_file="{setting_file}",
@@ -665,7 +665,7 @@ def test_inspect_all_args(tmp_path):
 
     create_file(
         tmp_path / f"{instance_name}.py",
-        f"""\
+        rf"""\
         from dynaconf import Dynaconf
         settings = Dynaconf(
             settings_file="{setting_file}",
