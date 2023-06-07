@@ -693,7 +693,7 @@ def test_inspect_all_args(tmp_path):
           active_value: actual value but not in history
         history:
         - loader: toml
-          identifier: {setting_file}
+          identifier: {setting_file.as_posix()}
           env: prod
           merged: false
           value:
