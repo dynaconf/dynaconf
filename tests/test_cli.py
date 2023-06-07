@@ -680,6 +680,7 @@ def test_inspect_all_args(tmp_path):
         default.foo='from_env_default'
         development.foo='from_env_development'
         prod.bar='prod_only'
+        prod.spam='should_appear'
         """,
     )
 
@@ -696,8 +697,7 @@ def test_inspect_all_args(tmp_path):
           identifier: {setting_file.as_posix()}
           env: prod
           merged: false
-          value:
-            BAR: prod_only\n
+          value: prod_only\n
         """
     assert result
     assert result == dedent(expected_result)

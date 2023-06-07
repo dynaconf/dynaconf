@@ -35,6 +35,18 @@ OutputFormat = Union[Literal["yaml"], Literal["json"], Literal["json-compact"]]
 DumperType = Callable[[dict, TextIO], None]
 
 
+class KeyNotFound(Exception):
+    pass
+
+
+class EnvNotFound(Exception):
+    pass
+
+
+class InvalidOutputFormat(Exception):
+    pass
+
+
 # Public
 
 
@@ -59,30 +71,28 @@ def inspect_settings(
         output_format: available output format options
         custom_dumper: if provided, it is used instead of builtins
     """
-    # choose dumper
-    try:
-        dumper = builtin_dumpers[output_format.lower()]
-    except KeyError:
-        raise ValueError(
-            f"The desired format is not available: {output_format}"
-        )
-
-    dumper = dumper if not custom_dumper else custom_dumper
-
-    # prepare output (current settings + history)
-    def env_filter(src: SourceMetadata) -> bool:
-        if env:
-            return src.env.lower() == env.lower()
-        return True
-
+    # get filtered history
     original_settings = settings
     settings = settings if not env else settings.from_env(env)
+
+    setting_envs = {_env.env for _env in settings._loaded_by_loaders.keys()}
+    if env and env.lower() not in setting_envs:
+        raise EnvNotFound(f"The provided env is not valid: {env!r}")
+
+    def env_filter(src: SourceMetadata) -> bool:
+        return src.env.lower() == env.lower() if env else True
 
     history = get_history(
         original_settings,
         key_dotted_path=key_dotted_path,
-        filter_src_metadata=env_filter
+        filter_src_metadata=env_filter,
     )
+    if key_dotted_path and not history:
+        raise KeyNotFound(
+            f"The requested key was not found: {key_dotted_path!r}"
+        )
+
+    # setup output format
     if ascending_order:
         history.reverse()
     history_order = "ascending" if ascending_order else "descending"
@@ -110,6 +120,16 @@ def inspect_settings(
     output_dict["header"]["active_value"] = _ensure_serializable(
         output_dict["header"]["active_value"]
     )
+
+    # choose dumper
+    try:
+        dumper = builtin_dumpers[output_format.lower()]
+    except KeyError:
+        raise InvalidOutputFormat(
+            f"The desired format is not available: {output_format}"
+        )
+
+    dumper = dumper if not custom_dumper else custom_dumper
 
     # write to stdout or to file
     if not to_file:

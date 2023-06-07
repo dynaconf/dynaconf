@@ -13,8 +13,11 @@ import pytest
 
 from dynaconf import Dynaconf
 from dynaconf.utils.inspect import _ensure_serializable
+from dynaconf.utils.inspect import EnvNotFound
 from dynaconf.utils.inspect import get_history
 from dynaconf.utils.inspect import inspect_settings
+from dynaconf.utils.inspect import InvalidOutputFormat
+from dynaconf.utils.inspect import KeyNotFound
 from dynaconf.validator import Validator
 from dynaconf.vendor.ruamel import yaml
 
@@ -401,6 +404,7 @@ def test_get_history_env_true__merge_marks(tmp_path):
         "value": {"LISTY": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]},
     }
 
+
 def test_get_history_key_filter(tmp_path):
     """Asserts key filtering throught get_history param works"""
     file_a = tmp_path / "file_a.toml"
@@ -412,9 +416,10 @@ def test_get_history_key_filter(tmp_path):
 
     settings = Dynaconf(settings_file=[file_a, file_b, file_c])
     history = get_history(settings, key_dotted_path="a")
-    assert history[0]["value"] == 'aA'
-    assert history[1]["value"] == 'bA'
-    assert history[2]["value"] == 'cA'
+    assert history[0]["value"] == "aA"
+    assert history[1]["value"] == "bA"
+    assert history[2]["value"] == "cA"
+
 
 def test_get_history_key_filter_nested(tmp_path):
     """Asserts key filtering throught get_history param works"""
@@ -428,46 +433,56 @@ def test_get_history_key_filter_nested(tmp_path):
     settings = Dynaconf(settings_file=[file_a, file_b, file_c])
     history = get_history(settings, key_dotted_path="a.c")
     assert len(history) == 3
-    assert history[0]["value"] == 'aC'
-    assert history[1]["value"] == 'bC'
-    assert history[2]["value"] == 'cC'
+    assert history[0]["value"] == "aC"
+    assert history[1]["value"] == "bC"
+    assert history[2]["value"] == "cC"
+
 
 def test_get_history_env_filter(tmp_path):
     """Asserts env filtering through env_filter function works"""
     file_a = tmp_path / "file_a.toml"
     file_b = tmp_path / "file_b.toml"
-    create_file(file_a, """\
+    create_file(
+        file_a,
+        """\
         [default]
         foo="from_default_a"
         [development]
         foo="from_development_a"
         [prod]
         foo="from_prod_a"
-        """
+        """,
     )
-    create_file(file_b, """\
+    create_file(
+        file_b,
+        """\
         [default]
         foo="from_default_b"
         [development]
         foo="from_development_b"
         [prod]
         foo="from_prod_b"
-        """
+        """,
     )
 
     settings = Dynaconf(settings_file=[file_a, file_b], environments=True)
-    settings.from_env("prod") # CAVEAT: activate loading of prod
-    history = get_history(settings, filter_src_metadata=lambda x: x.env.lower() == "prod")
+    settings.from_env("prod")  # CAVEAT: activate loading of prod
+    history = get_history(
+        settings, filter_src_metadata=lambda x: x.env.lower() == "prod"
+    )
 
     assert len(history) == 2
     assert history[0]["value"] == {"FOO": "from_prod_a"}
     assert history[1]["value"] == {"FOO": "from_prod_b"}
 
+
 def test_get_history_env_and_key_filter(tmp_path):
     """Asserts combined use of filters works"""
     file_a = tmp_path / "file_a.toml"
     file_b = tmp_path / "file_b.toml"
-    create_file(file_a, """\
+    create_file(
+        file_a,
+        """\
         [default]
         foo="from_default_a"
         bar="from_default_a"
@@ -477,9 +492,11 @@ def test_get_history_env_and_key_filter(tmp_path):
         [prod]
         foo="from_prod_a"
         bar="from_prod_a"
-        """
+        """,
     )
-    create_file(file_b, """\
+    create_file(
+        file_b,
+        """\
         [default]
         foo="from_default_b"
         bar="from_default_b"
@@ -489,19 +506,20 @@ def test_get_history_env_and_key_filter(tmp_path):
         [prod]
         foo="from_prod_b"
         bar="from_prod_b"
-        """
+        """,
     )
 
     settings = Dynaconf(settings_file=[file_a, file_b], environments=True)
-    settings.from_env("prod") # CAVEAT: activate loading of prod
+    settings.from_env("prod")  # CAVEAT: activate loading of prod
     history = get_history(
         settings,
         key_dotted_path="bar",
-        filter_src_metadata=lambda x: x.env.lower() == "prod"
+        filter_src_metadata=lambda x: x.env.lower() == "prod",
     )
     assert len(history) == 2
     assert history[0]["value"] == "from_prod_a"
     assert history[1]["value"] == "from_prod_b"
+
 
 def test_inspect_print_key(tmp_path, capsys):
     os.environ["DYNACONF_FOO"] = "from_environ"
@@ -729,3 +747,39 @@ def test_caveat__get_history_env_true_workaround(tmp_path):
         "merged": False,
         "value": {"FOO": "from_production_env"},
     }
+
+
+def test_inspect_exception_key_not_found():
+    settings = Dynaconf()
+    with pytest.raises(KeyNotFound):
+        inspect_settings(settings, key_dotted_path="non_existant")
+
+
+def test_inspect_empty_settings(capsys):
+    settings = Dynaconf()
+    inspect_settings(settings)
+    stdout, stderr = capsys.readouterr()
+    expected = """\
+        header:
+          filters:
+            env: None
+            key: None
+            history_ordering: ascending
+          active_value: {}
+        history: []
+        """
+    assert stdout == dedent(expected)
+
+
+def test_inspect_exception_env_not_found():
+    settings = Dynaconf(environments=True)
+    with pytest.raises(EnvNotFound):
+        inspect_settings(settings, env="non_existant")
+
+
+def test_inspect_exception_invalid_format():
+    settings = Dynaconf()
+    with pytest.raises(InvalidOutputFormat):
+        inspect_settings(
+            settings, output_format="invalid_format"  # type: ignore
+        )
