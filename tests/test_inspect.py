@@ -13,6 +13,7 @@ import pytest
 
 from dynaconf import Dynaconf
 from dynaconf.utils.inspect import _ensure_serializable
+from dynaconf.utils.inspect import _get_data_by_key
 from dynaconf.utils.inspect import EnvNotFound
 from dynaconf.utils.inspect import get_history
 from dynaconf.utils.inspect import inspect_settings
@@ -68,6 +69,15 @@ def test_ensure_serializable():
     assert normal_dict.__class__ == dict
     assert normal_dict["b"].__class__ == list  # type: ignore
     assert normal_dict["b"][3].__class__ == dict  # type: ignore
+
+
+def test_get_data_by_key():
+    data = {"a": "A", "b": [1, 2, 3, {"a": "A", "b": "B"}], "c": {"d": "D"}}
+    assert _get_data_by_key(data, "a", upperfy_key=False) == "A"
+    assert _get_data_by_key(data, "b.1", upperfy_key=False) == 2
+    assert _get_data_by_key(data, "b.3.b", upperfy_key=False) == "B"
+    assert _get_data_by_key(data, "c.d", upperfy_key=False) == "D"
+    assert _get_data_by_key(data, "this.doesnt.exist", default="foo") == "foo"
 
 
 def test_get_history_general(tmp_path):

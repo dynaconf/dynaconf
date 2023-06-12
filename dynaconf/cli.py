@@ -29,7 +29,7 @@ from dynaconf.vendor import toml
 from dynaconf.vendor import tomllib
 
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import Settings
 
 os.environ["PYTHONIOENCODING"] = "utf-8"

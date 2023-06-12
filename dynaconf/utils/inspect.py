@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import sys
+from contextlib import suppress
 from functools import partial
 from typing import Any
 from typing import Callable
@@ -15,7 +16,7 @@ from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.box.box_list import BoxList
 from dynaconf.vendor.ruamel.yaml import YAML
 
-if TYPE_CHECKING:
+if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings, Settings
     from dynaconf.loaders.base import SourceMetadata
 
@@ -217,18 +218,24 @@ def _ensure_serializable(data: BoxList | DynaBox) -> dict | list:
         return data
 
 
-def _get_data_by_key(data: dict, key_dotted_path: str, default: Any = None):
+def _get_data_by_key(
+    data: dict, key_dotted_path: str, default: Any = None, upperfy_key=True
+):
     """
-    Returns value found in data[key] using dot-path string (e.g, "path.to.key")
-    Raises if not found
+    Returns value found in data[key] using dot-path str (e.g, "path.to.key").
+    Accepts integers as list index:
+        data = {'a': ['b', 'c', 'd']}
+        path = 'a.1'
+        _get_data_by_key(data, path) == 'c'
+    Raises KeyError if not found
     """
     path = key_dotted_path.split(".")
     try:
         for node in path:
-            if isinstance(data, dict):
-                data = data[node.upper()]
-            elif isinstance(data, list):
-                data = data[int(node)]
+            node_key = node.upper() if upperfy_key else node
+            with suppress(ValueError):
+                node_key = int(node_key)
+            data = data[node_key]
     except (ValueError, IndexError, KeyError):
         if not default:
             raise KeyError(f"Path not found in data: {key_dotted_path!r}")
