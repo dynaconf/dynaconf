@@ -37,6 +37,7 @@ def load(obj, env=None, silent=True, key=None, validate=False):
     for env_name in env_list:
         holder = f"{prefix.upper()}_{env_name.upper()}"
         try:
+            source_metadata = SourceMetadata(IDENTIFIER, "unique", env_name)
             if key:
                 value = redis.hget(holder.upper(), key)
                 if value:
@@ -44,7 +45,12 @@ def load(obj, env=None, silent=True, key=None, validate=False):
                         value, tomlfy=True, box_settings=obj
                     )
                     if parsed_value:
-                        obj.set(key, parsed_value, validate=validate)
+                        obj.set(
+                            key,
+                            parsed_value,
+                            validate=validate,
+                            loader_identifier=source_metadata,
+                        )
             else:
                 data = {
                     key: parse_conf_data(value, tomlfy=True, box_settings=obj)
@@ -53,9 +59,7 @@ def load(obj, env=None, silent=True, key=None, validate=False):
                 if data:
                     obj.update(
                         data,
-                        loader_identifier=SourceMetadata(
-                            IDENTIFIER, "unique", "global"
-                        ),
+                        loader_identifier=source_metadata,
                         validate=validate,
                     )
         except Exception:

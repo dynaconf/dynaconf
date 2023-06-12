@@ -9,6 +9,7 @@ from dynaconf import LazySettings
 from dynaconf.loaders.vault_loader import list_envs
 from dynaconf.loaders.vault_loader import load
 from dynaconf.loaders.vault_loader import write
+from dynaconf.utils.inspect import get_history
 
 
 def custom_checker(ip_address, port):
@@ -107,3 +108,24 @@ def test_read_from_vault_kv2_with_different_environments(docker_vault):
     assert settings.secret == "vault_works_in_default"
     assert settings.from_env("dev").secret == "vault_works_in_dev"
     assert settings.from_env("prod").secret == "vault_works_in_prod"
+
+
+@pytest.mark.integration
+def test_vault_has_proper_source_metadata(docker_vault):
+    os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_KV_VERSION_FOR_DYNACONF"] = "2"
+    os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
+    settings = LazySettings(environments=["dev", "prod"])
+    for env in ["default", "dev", "prod"]:
+        with settings.using_env(env):
+            write(settings, {"SECRET": f"vault_works_in_{env}"})
+    load(settings)
+    history = get_history(
+        settings, filter_src_metadata=lambda s: s.loader == "vault"
+    )
+    assert history[0]["env"] == "default"
+    assert history[0]["value"]["SECRET"] == "vault_works_in_default"
+    assert history[1]["env"] == "dev"
+    assert history[1]["value"]["SECRET"] == "vault_works_in_dev"
+    assert history[2]["env"] == "prod"
+    assert history[2]["value"]["SECRET"] == "vault_works_in_prod"

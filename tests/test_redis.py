@@ -8,6 +8,7 @@ from dynaconf import LazySettings
 from dynaconf.loaders.redis_loader import delete
 from dynaconf.loaders.redis_loader import load
 from dynaconf.loaders.redis_loader import write
+from dynaconf.utils.inspect import get_history
 
 
 def custom_checker(ip_address, port):
@@ -106,3 +107,18 @@ def test_delete_all_from_redis(docker_redis):
     settings = LazySettings(environments=True)
     delete(settings)
     assert load(settings, key="OTHER_SECRET") is None
+
+
+@pytest.mark.integration
+def test_redis_has_proper_source_metadata(docker_redis):
+    os.environ["REDIS_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["REDIS_HOST_FOR_DYNACONF"] = "localhost"
+    os.environ["REDIS_PORT_FOR_DYNACONF"] = "6379"
+    settings = LazySettings(environments=True)
+    write(settings, {"SECRET": "redis_works_perfectly"})
+    load(settings)
+    history = get_history(
+        settings, filter_src_metadata=lambda s: s.loader == "redis"
+    )
+    assert history[0]["env"] == "development"  # default when environments=True
+    assert history[0]["value"]["SECRET"] == "redis_works_perfectly"
