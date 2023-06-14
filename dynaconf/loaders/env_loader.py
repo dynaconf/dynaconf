@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import suppress
 from os import environ
 
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import missing
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
@@ -63,6 +64,9 @@ def load_from_env(
         prefix = prefix.upper()
         env_ = f"{prefix}_"
 
+    # set source metadata
+    source_metadata = SourceMetadata(identifier, "unique", "global")
+
     # Load a single environment variable explicitly.
     if key:
         key = upperfy(key)
@@ -72,7 +76,7 @@ def load_from_env(
                 obj.set(
                     key,
                     value,
-                    loader_identifier=identifier,
+                    loader_identifier=source_metadata,
                     tomlfy=True,
                     validate=validate,
                 )
@@ -86,6 +90,7 @@ def load_from_env(
         # Only known variables should be loaded from environment?
         ignore_unknown = obj.get("IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF")
 
+        # prepare data
         trim_len = len(env_)
         data = {
             key[trim_len:]: parse_conf_data(
@@ -105,7 +110,9 @@ def load_from_env(
             filter_strategy = obj.get("FILTER_STRATEGY")
             if filter_strategy:
                 data = filter_strategy(data)
-            obj.update(data, loader_identifier=identifier, validate=validate)
+            obj.update(
+                data, loader_identifier=source_metadata, validate=validate
+            )
 
 
 def write(settings_path, settings_data, **kwargs):

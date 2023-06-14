@@ -2,6 +2,7 @@
 # pip install hvac
 from __future__ import annotations
 
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import build_env_list
 from dynaconf.utils.parse_conf import parse_conf_data
 
@@ -125,6 +126,7 @@ def load(obj, env=None, silent=None, key=None, validate=False):
             # extract the inner data
             data = data.get("data", {}).get("data", {})
         try:
+            source_metadata = SourceMetadata(IDENTIFIER, "unique", env)
             if (
                 obj.VAULT_KV_VERSION_FOR_DYNACONF == 2
                 and obj.ENVIRONMENTS_FOR_DYNACONF
@@ -136,11 +138,16 @@ def load(obj, env=None, silent=None, key=None, validate=False):
                     data.get(key), tomlfy=True, box_settings=obj
                 )
                 if value:
-                    obj.set(key, value, validate=validate)
+                    obj.set(
+                        key,
+                        value,
+                        validate=validate,
+                        loader_identifier=source_metadata,
+                    )
             elif data:
                 obj.update(
                     data,
-                    loader_identifier=IDENTIFIER,
+                    loader_identifier=source_metadata,
                     tomlfy=True,
                     validate=validate,
                 )

@@ -10,6 +10,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
 from pathlib import Path
+from typing import Any
 
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
@@ -19,6 +20,7 @@ from dynaconf.loaders import execute_hooks
 from dynaconf.loaders import py_loader
 from dynaconf.loaders import settings_loader
 from dynaconf.loaders import yaml_loader
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import BANNER
 from dynaconf.utils import compat_kwargs
 from dynaconf.utils import ensure_a_list
@@ -222,7 +224,7 @@ class Settings:
         self._deleted = set()
         self._store = DynaBox(box_settings=self)
         self._env_cache = {}
-        self._loaded_by_loaders = {}
+        self._loaded_by_loaders: dict[SourceMetadata, Any] = {}
         self._loaders = []
         self._defaults = DynaBox(box_settings=self)
         self.environ = os.environ
@@ -341,10 +343,13 @@ class Settings:
         """Redirects to store object"""
         return self.store.values()
 
-    def setdefault(self, item, default, apply_default_on_none=False):
+    def setdefault(
+        self, item, default, apply_default_on_none=False, env: str = "unknown"
+    ):
         """Returns value if exists or set it as the given default
 
         apply_default_on_none: if True, default is set when value is None
+        env: used to create the source identifier
         """
         value = self.get(item, empty)
 
@@ -362,12 +367,15 @@ class Settings:
                 )
             )
         )
+        loader_identifier = SourceMetadata(
+            "validation_default", "unique", env.lower()
+        )
 
         if apply_default:
             self.set(
                 item,
                 default,
-                loader_identifier="setdefault",
+                loader_identifier=loader_identifier,
                 tomlfy=True,
             )
             return default
@@ -574,6 +582,7 @@ class Settings:
     @property
     def loaded_by_loaders(self):
         """Gets the internal mapping of LOADER -> values"""
+        # return {k.loader:data for k, data in self._loaded_by_loaders}
         return self._loaded_by_loaders
 
     def from_env(self, env="", keep=False, **kwargs):
@@ -638,6 +647,10 @@ class Settings:
         new_data["FORCE_ENV_FOR_DYNACONF"] = env
         new_settings = LazySettings(**new_data)
         self._env_cache[cache_key] = new_settings
+
+        # update source metadata for inspecting
+        self._loaded_by_loaders.update(new_settings._loaded_by_loaders)
+
         return new_settings
 
     @contextmanager
@@ -860,7 +873,7 @@ class Settings:
         self,
         key,
         value,
-        loader_identifier=None,
+        loader_identifier: SourceMetadata | None = None,
         tomlfy=False,
         dotted_lookup=empty,
         is_secret="DeprecatedArgument",  # noqa
@@ -897,7 +910,13 @@ class Settings:
             )
 
         # Fix for #905
-        saved_value = value if loader_identifier == "setdefault" else None
+        # parsed_conf default value was causing duplication
+        value_not_parsed = (
+            value
+            if loader_identifier
+            and loader_identifier.loader == "validation_default"
+            else None
+        )
 
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
@@ -919,6 +938,12 @@ class Settings:
         if getattr(value, "_dynaconf_merge_unique", False):
             # just in case someone use a `@merge_unique` in a first level var
             if existing:
+                # update SourceMetadata (for inspecting purposes)
+                loader_identifier = (
+                    loader_identifier._replace(merged=True)
+                    if loader_identifier
+                    else None
+                )
                 value = object_merge(existing, value.unwrap(), unique=True)
             else:
                 value = value.unwrap()
@@ -926,6 +951,12 @@ class Settings:
         if getattr(value, "_dynaconf_merge", False):
             # just in case someone use a `@merge` in a first level var
             if existing:
+                # update SourceMetadata (for inspecting purposes)
+                loader_identifier = (
+                    loader_identifier._replace(merged=True)
+                    if loader_identifier
+                    else None
+                )
                 value = object_merge(existing, value.unwrap())
             else:
                 value = value.unwrap()
@@ -933,15 +964,26 @@ class Settings:
         if existing is not None and existing != value:
             # `dynaconf_merge` used in file root `merge=True`
             if merge:
+                loader_identifier = (
+                    loader_identifier._replace(merged=True)
+                    if loader_identifier
+                    else None
+                )
                 value = object_merge(existing, value)
             else:
                 # Fix for #905
-                if loader_identifier == "setdefault":
-                    value = saved_value
+                if (
+                    loader_identifier
+                    and loader_identifier.loader == "validation_default"
+                ):
+                    value = value_not_parsed
                 else:
                     # `dynaconf_merge` may be used within the key structure
                     # Or merge_enabled is set to True
-                    value = self._merge_before_set(existing, value)
+                    value, updated_identifier = self._merge_before_set(
+                        existing, value, loader_identifier
+                    )
+                    loader_identifier = updated_identifier
 
         if isinstance(value, dict):
             value = DynaBox(value, box_settings=self)
@@ -951,10 +993,10 @@ class Settings:
         super().__setattr__(key, value)
 
         # set loader identifiers so cleaners know which keys to clean
-        if loader_identifier and loader_identifier in self.loaded_by_loaders:
-            self.loaded_by_loaders[loader_identifier][key] = value
+        if loader_identifier and loader_identifier in self._loaded_by_loaders:
+            self._loaded_by_loaders[loader_identifier][key] = value
         elif loader_identifier:
-            self.loaded_by_loaders[loader_identifier] = {key: value}
+            self._loaded_by_loaders[loader_identifier] = {key: value}
         elif loader_identifier is None:
             # if .set is called without loader identifier it becomes
             # a default value and goes away only when explicitly unset
@@ -1019,8 +1061,13 @@ class Settings:
         elif validate == "all":
             self.validators.validate_all()
 
-    def _merge_before_set(self, existing, value):
-        """Merge the new value being set with the existing value before set"""
+    def _merge_before_set(
+        self, existing, value, identifier: SourceMetadata | None = None
+    ):
+        """
+        Merge the new value being set with the existing value before set
+        Returns the merged value and the updated identifier (for inspecting).
+        """
         global_merge = getattr(self, "MERGE_ENABLED_FOR_DYNACONF", False)
         if isinstance(value, dict):
             local_merge = value.pop(
@@ -1031,6 +1078,9 @@ class Settings:
                 value = local_merge
 
             if global_merge or local_merge:
+                identifier = (
+                    identifier._replace(merged=True) if identifier else None
+                )
                 value = object_merge(existing, value)
 
         if isinstance(value, (list, tuple)):
@@ -1046,8 +1096,11 @@ class Settings:
                     except ValueError:  # EAFP
                         value.remove("dynaconf_merge_unique")
                         unique = True
+                identifier = (
+                    identifier._replace(merged=True) if identifier else None
+                )
                 value = object_merge(existing, value, unique=unique)
-        return value
+        return value, identifier
 
     @property
     def loaders(self):  # pragma: no cover
@@ -1091,7 +1144,7 @@ class Settings:
             enable_external_loaders(self)
 
             loaders = self.loaders
-
+        # non setting_file or py_module loaders
         for core_loader in loaders:
             core_loader.load(self, env, silent=silent, key=key)
 

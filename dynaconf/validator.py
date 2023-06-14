@@ -6,11 +6,14 @@ from types import MappingProxyType
 from typing import Any
 from typing import Callable
 from typing import Sequence
+from typing import TYPE_CHECKING
 
 from dynaconf import validator_conditions
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils.functional import empty
 
+if TYPE_CHECKING:
+    from dynaconf.base import LazySettings, Settings
 
 EQUALITY_ATTRS = (
     "names",
@@ -167,7 +170,7 @@ class Validator:
 
     def validate(
         self,
-        settings: Any,
+        settings: Settings,
         only: str | Sequence | None = None,
         exclude: str | Sequence | None = None,
         only_current_env: bool = False,
@@ -216,13 +219,14 @@ class Validator:
             return
 
         for env in self.envs:
-            self._validate_items(
-                settings.from_env(env), only=only, exclude=exclude
-            )
+            env_settings: Settings = settings.from_env(env)
+            self._validate_items(env_settings, only=only, exclude=exclude)
+            # merge source metadata into original settings for history inspect
+            settings._loaded_by_loaders.update(env_settings._loaded_by_loaders)
 
     def _validate_items(
         self,
-        settings: Any,
+        settings: Settings,
         env: str | None = None,
         only: str | Sequence | None = None,
         exclude: str | Sequence | None = None,
@@ -264,6 +268,7 @@ class Validator:
                 name,
                 default_value,
                 apply_default_on_none=self.apply_default_on_none,
+                env=env,
             )
 
             # is name required but not exists?
@@ -437,7 +442,7 @@ class AndValidator(CombinedValidator):
 class ValidatorList(list):
     def __init__(
         self,
-        settings: Any,
+        settings: Settings,
         validators: Sequence[Validator] | None = None,
         *args: Validator,
         **kwargs: Any,

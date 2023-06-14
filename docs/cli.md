@@ -28,13 +28,12 @@ Options:
   --help               Show this message and exit.
 
 Commands:
-  get       Returns the raw value for a settings key
-  init      Inits a dynaconf project By default it creates a settings.toml...
-  list      Lists all user defined config values and if `--all` is passed
-            it...
-
-  validate  Validates Dynaconf settings based on rules defined in...
-  write     Writes data to specific source
+  get       Returns the raw value for a settings key.
+  init      Inits a dynaconf project.
+  inspect   Inspect the loading history of the given settings instance.
+  list      Lists user defined settings or all (including internal configs).
+  validate  Validates Dynaconf settings based on provided rules.
+  write     Writes data to specific source.
 ```
 
 ### dynaconf init
@@ -69,10 +68,12 @@ as well as `.gitignore` file ignoring the generated `.secrets.toml`
 
 > For sensitive data in production is recommended using [Vault Server](/secrets/)
 
-```
+```bash
 Usage: dynaconf init [OPTIONS]
 
-  Inits a dynaconf project By default it creates a settings.toml and a
+  Inits a dynaconf project.
+
+  By default it creates a settings.toml and a
   .secrets.toml for [default|development|staging|testing|production|global]
   envs.
 
@@ -101,6 +102,63 @@ Options:
 
 Note that `-i`/`--instance` cannot be used with `init` as `-i` must point to an existing instance of the settings.
 
+  
+### Dynaconf inspect
+
+> **NEW in 3.2.0**
+
+Inspect and dump data's loading history about a specific key or environment.
+
+This command is also available as a utility function at `dynaconf.inspect_settings` ([learn more](/advanced#inspect_settings)).
+
+```
+Usage: dynaconf inspect [OPTIONS]
+
+  Inspect the loading history of the given settings instance.
+
+  Filters by key and environement, otherwise shows all.
+
+Options:
+  -k, --key TEXT                  Filters result by key.
+  -e, --env TEXT                  Filters result by environment.
+  -f, --format [yaml|json|json-compact]
+                                  The output format.
+  -d, --descending                Set history loading order to 'last-first'
+  --help                          Show this message and exit.
+```
+
+
+Sample usage:
+
+```yaml
+# dynaconf -i app.settings inspect -k foo -f yaml
+header:
+  filters:
+    env: None
+    key: foo
+    history_ordering: ascending
+  active_value: from_environ
+history:
+- loader: yaml
+  identifier: file_a.yaml
+  env: default
+  merged: false
+  value:
+    FOO: from_yaml
+- loader: env_global
+  identifier: unique
+  env: global
+  merged: false
+  value:
+    FOO: from_environ
+    BAR: environ_only
+```
+
+To save to a file, use regular stream redirect methods:
+
+```bash
+$ dynaconf -i app.settings inspect -k foo -f yaml > dump.yaml
+```
 
 ### Dynaconf get
 
@@ -109,7 +167,9 @@ Get raw value for a single key
 ```bash
 Usage: dynaconf get [OPTIONS] KEY
 
-  Returns the raw value for a settings key
+  Returns the raw value for a settings key.
+
+  If result is a dict, list or tuple it is printes as a valid json string.
 
 Options:
   -d, --default TEXT  Default value if settings doesn't exist
@@ -132,8 +192,10 @@ List all defined parameters and optionally export to a json file.
 ```
 Usage: dynaconf list [OPTIONS]
 
-  Lists all user defined config values and if `--all` is passed it also
-  shows dynaconf internal variables.
+  Lists user defined settings or all (including internal configs).
+
+  By default, shows only user defined. If `--all` is passed it also shows
+  dynaconf internal variables aswell.
 
 Options:
   -e, --env TEXT     Filters the env to get the values

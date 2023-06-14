@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import io
 import warnings
+from typing import NamedTuple
 
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
@@ -110,17 +111,30 @@ class BaseLoader:
 
     def _envless_load(self, source_data, silent=True, key=None):
         """Load all the keys from each file without env separation"""
-        for file_data in source_data.values():
+        for file_name, file_data in source_data.items():
+            # set source metadata
+            source_metadata = SourceMetadata(
+                self.identifier, file_name, "default"
+            )
+
             self._set_data_to_obj(
                 file_data,
-                self.identifier,
+                source_metadata,
                 key=key,
             )
 
     def _load_all_envs(self, source_data, silent=True, key=None):
-        """Load configs from files separating by each environment"""
-
-        for file_data in source_data.values():
+        """
+        Load configs from files separating by each environment
+        source_data should have format:
+            {
+                "path/to/src": {
+                    "env": {...},
+                    "env2": {...}
+                }
+            }
+        """
+        for file_name, file_data in source_data.items():
 
             # env name is checked in lower
             file_data = {k.lower(): value for k, value in file_data.items()}
@@ -133,6 +147,12 @@ class BaseLoader:
 
             for env in build_env_list(self.obj, self.env):
                 env = env.lower()  # lower for better comparison
+                # print(self.env, file_data)
+
+                # set source metadata
+                source_metadata = SourceMetadata(
+                    self.identifier, file_name, env, bool(file_merge)
+                )
 
                 try:
                     data = file_data[env] or {}
@@ -146,7 +166,7 @@ class BaseLoader:
 
                 self._set_data_to_obj(
                     data,
-                    f"{self.identifier}_{env}",
+                    source_metadata,
                     file_merge,
                     key,
                     file_dotted_lookup=file_dotted_lookup,
@@ -155,7 +175,7 @@ class BaseLoader:
     def _set_data_to_obj(
         self,
         data,
-        identifier,
+        identifier: SourceMetadata,
         file_merge=None,
         key=False,
         file_dotted_lookup=None,
@@ -197,3 +217,21 @@ class BaseLoader:
                 dotted_lookup=file_dotted_lookup,
                 validate=self.validate,
             )
+
+
+class SourceMetadata(NamedTuple):
+    """
+    Usefull metadata about some loaded source (file, envvar, etc).
+
+    Serve as a unique identifier for data from a specific env
+    and a specific source (file, envvar, validationd default, etc)
+
+    Examples:
+        SourceMetadata(loader="envvar", identifier="os", env="global")
+        SourceMetadata(loader="yaml", identifier="path/to/file.yml", env="dev")
+    """
+
+    loader: str
+    identifier: str
+    env: str
+    merged: bool = False

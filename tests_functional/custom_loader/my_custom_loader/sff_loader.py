@@ -2,6 +2,8 @@
 # Take a look in dynaconf/loaders/json_loader.py
 from __future__ import annotations
 
+from dynaconf.base import SourceMetadata
+
 
 def load(obj, env=None, silent=True, key=None, filename=None):
     """
@@ -38,10 +40,13 @@ def load(obj, env=None, silent=True, key=None, filename=None):
 
     data = dict(zip(keys, values))
 
+    # support for inspecting data loaded by this loader
+    source_metadata = SourceMetadata("sff", found_file, "default")
+
     if key:
         value = data.get(key.lower())  # sff format have lower case keys
-        obj.set(key, value)
+        obj.set(key, value, loader_identifier=source_metadata)
     else:
-        obj.update(data)
+        obj.update(data, loader_identifier=source_metadata)
 
     obj._loaded_files.append(found_file)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import build_env_list
 from dynaconf.utils import upperfy
 from dynaconf.utils.parse_conf import parse_conf_data
@@ -36,6 +37,7 @@ def load(obj, env=None, silent=True, key=None, validate=False):
     for env_name in env_list:
         holder = f"{prefix.upper()}_{env_name.upper()}"
         try:
+            source_metadata = SourceMetadata(IDENTIFIER, "unique", env_name)
             if key:
                 value = redis.hget(holder.upper(), key)
                 if value:
@@ -43,7 +45,12 @@ def load(obj, env=None, silent=True, key=None, validate=False):
                         value, tomlfy=True, box_settings=obj
                     )
                     if parsed_value:
-                        obj.set(key, parsed_value, validate=validate)
+                        obj.set(
+                            key,
+                            parsed_value,
+                            validate=validate,
+                            loader_identifier=source_metadata,
+                        )
             else:
                 data = {
                     key: parse_conf_data(value, tomlfy=True, box_settings=obj)
@@ -51,7 +58,9 @@ def load(obj, env=None, silent=True, key=None, validate=False):
                 }
                 if data:
                     obj.update(
-                        data, loader_identifier=IDENTIFIER, validate=validate
+                        data,
+                        loader_identifier=source_metadata,
+                        validate=validate,
                     )
         except Exception:
             if silent:
