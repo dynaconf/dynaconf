@@ -237,11 +237,14 @@ def load(
         logger.warning(f"SOPS error: {_output.stderr}")
     decrypted_config = yaml.load(_output.stdout, Loader=yaml.CLoader)
 
+    # support for inspecting
+    source_metadata = SourceMetadata('sops', sops_file, env)
+
     if key:
         value = decrypted_config.get(key.lower())
-        obj.set(key, value)
+        obj.set(key, value, loader_identifier=source_metadata)
     else:
-        obj.update(decrypted_config)
+        obj.update(decrypted_config, loader_identifier=source_metadata)
 
     obj._loaded_files.append(sops_file)
 ```
