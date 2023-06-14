@@ -41,7 +41,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     data = dict(zip(keys, values))
 
     # support for inspecting data loaded by this loader
-    source_metadata = SourceMetadata('sff', found_file, "default")
+    source_metadata = SourceMetadata("sff", found_file, "default")
 
     if key:
         value = data.get(key.lower())  # sff format have lower case keys
