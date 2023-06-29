@@ -32,7 +32,6 @@ def load(
     # setup SourceMetadata (for inspecting)
     loader_identifier = SourceMetadata(identifier, mod.__name__, "global")
 
-    # breakpoint()
     load_from_python_object(
         obj, mod, settings_module, key, loader_identifier, validate=validate
     )

@@ -261,6 +261,10 @@ class Box(dict):
     def items(self):
         return [(x, self[x]) for x in self.keys()]
 
+    def _safe_items(self):
+        """Get items list without triggering recursive evaluation"""
+        return [(x, self._safe_get(x)) for x in self.keys()]
+
     def __get_default(self, item):
         default_value = self._box_config['default_box_attr']
         if default_value in (self.__class__, dict):

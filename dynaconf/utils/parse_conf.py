@@ -267,7 +267,12 @@ converters = {
 }
 
 
-def get_converter(converter_key, value, box_settings):
+def apply_converter(converter_key, value, box_settings):
+    """
+    Get converter and apply it to @value.
+
+    Lazy converters will return Lazy objects for later evaluation.
+    """
     converter = converters[converter_key]
     try:
         converted_value = converter(value, box_settings=box_settings)
@@ -356,7 +361,7 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
 
         # Parse the converters iteratively
         for converter_key in converter_key_list[::-1]:
-            value = get_converter(converter_key, value, box_settings)
+            value = apply_converter(converter_key, value, box_settings)
     else:
         value = parse_with_toml(data) if tomlfy else data
 
@@ -367,6 +372,11 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
 
 
 def parse_conf_data(data, tomlfy=False, box_settings=None):
+    """
+    Apply parsing tokens recursively and return transformed data.
+
+    Strings with lazy parser (e.g, @format) will become Lazy objects.
+    """
 
     # fix for https://github.com/dynaconf/dynaconf/issues/595
     if isnamedtupleinstance(data):
@@ -382,7 +392,16 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
             for item in data
         ]
 
-    if isinstance(data, (dict, DynaBox)):
+    if isinstance(data, DynaBox):
+        # recursively parse inner dict items
+        _parsed = DynaBox({}, box_settings=box_settings)
+        for k, v in data._safe_items():
+            _parsed[str(k)] = parse_conf_data(
+                v, tomlfy=tomlfy, box_settings=box_settings
+            )
+        return _parsed
+
+    if isinstance(data, dict):
         # recursively parse inner dict items
         _parsed = {}
         for k, v in data.items():

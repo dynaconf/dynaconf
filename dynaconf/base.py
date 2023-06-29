@@ -33,8 +33,8 @@ from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import find_file
 from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
+from dynaconf.utils.parse_conf import apply_converter
 from dynaconf.utils.parse_conf import converters
-from dynaconf.utils.parse_conf import get_converter
 from dynaconf.utils.parse_conf import Lazy
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
@@ -415,7 +415,7 @@ class Settings:
         # If we've reached the end, or parent key not found, then return result
         if not keys or result == default:
             if cast and cast in converters:
-                return get_converter(cast, result, box_settings=self)
+                return apply_converter(cast, result, box_settings=self)
             elif cast is True:
                 return parse_conf_data(result, tomlfy=True, box_settings=self)
             return result
@@ -500,7 +500,7 @@ class Settings:
 
         data = (parent or self.store).get(key, default)
         if cast:
-            data = get_converter(cast, data, box_settings=self)
+            data = apply_converter(cast, data, box_settings=self)
         return data
 
     def exists(self, key, fresh=False):
@@ -539,7 +539,7 @@ class Settings:
         data = self.environ.get(key, default)
         if data:
             if cast in converters:
-                data = get_converter(cast, data, box_settings=self)
+                data = apply_converter(cast, data, box_settings=self)
             elif cast is True:
                 data = parse_conf_data(data, tomlfy=True, box_settings=self)
         return data
@@ -862,8 +862,11 @@ class Settings:
         tree[split_keys[-1]] = value
 
         if existing_data:
+            old_data = DynaBox(
+                {split_keys[0]: existing_data}, box_settings=self
+            )
             new_data = object_merge(
-                old=DynaBox({split_keys[0]: existing_data}),
+                old=old_data,
                 new=new_data,
                 full_path=split_keys,
             )
@@ -985,7 +988,7 @@ class Settings:
                     )
                     loader_identifier = updated_identifier
 
-        if isinstance(value, dict):
+        if isinstance(value, dict) and not isinstance(value, DynaBox):
             value = DynaBox(value, box_settings=self)
 
         self.store[key] = value

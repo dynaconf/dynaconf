@@ -48,6 +48,14 @@ class DynaBox(Box):
             n_item = find_the_correct_casing(item, self) or item
             return super().__getitem__(n_item, *args, **kwargs)
 
+    def _safe_get(self, item, *args, **kwargs):
+        """Get item bypassing recursive evaluation"""
+        try:
+            return super().__getitem__(item, *args, **kwargs)
+        except (AttributeError, KeyError):
+            n_item = find_the_correct_casing(item, self) or item
+            return super().__getitem__(n_item, *args, **kwargs)
+
     def __copy__(self):
         return self.__class__(
             super(Box, self).copy(),
