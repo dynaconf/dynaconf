@@ -5,7 +5,7 @@ services:
         ports:
             - 6379:6379
     vault:
-        image: vault
+        image: hashicorp/vault:latest
         ports:
             - 8200:8200
         environment:
