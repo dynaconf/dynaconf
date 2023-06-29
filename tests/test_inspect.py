@@ -14,11 +14,11 @@ import pytest
 from dynaconf import Dynaconf
 from dynaconf.utils.inspect import _ensure_serializable
 from dynaconf.utils.inspect import _get_data_by_key
-from dynaconf.utils.inspect import EnvNotFound
+from dynaconf.utils.inspect import EnvNotFoundError
 from dynaconf.utils.inspect import get_history
 from dynaconf.utils.inspect import inspect_settings
-from dynaconf.utils.inspect import InvalidOutputFormat
-from dynaconf.utils.inspect import KeyNotFound
+from dynaconf.utils.inspect import KeyNotFoundError
+from dynaconf.utils.inspect import OutputFormatError
 from dynaconf.validator import Validator
 from dynaconf.vendor.ruamel import yaml
 
@@ -761,7 +761,7 @@ def test_caveat__get_history_env_true_workaround(tmp_path):
 
 def test_inspect_exception_key_not_found():
     settings = Dynaconf()
-    with pytest.raises(KeyNotFound):
+    with pytest.raises(KeyNotFoundError):
         inspect_settings(settings, key_dotted_path="non_existant")
 
 
@@ -783,13 +783,13 @@ def test_inspect_empty_settings(capsys):
 
 def test_inspect_exception_env_not_found():
     settings = Dynaconf(environments=True)
-    with pytest.raises(EnvNotFound):
+    with pytest.raises(EnvNotFoundError):
         inspect_settings(settings, env="non_existant")
 
 
 def test_inspect_exception_invalid_format():
     settings = Dynaconf()
-    with pytest.raises(InvalidOutputFormat):
+    with pytest.raises(OutputFormatError):
         inspect_settings(
             settings, output_format="invalid_format"  # type: ignore
         )
