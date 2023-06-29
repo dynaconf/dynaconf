@@ -1,5 +1,10 @@
 #!/bin/bash
-docker run --rm --name dynaconf_with_vault -d -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' -p 8200:8200 vault || true
+docker run --rm \
+    --name dynaconf_with_vault -d \
+    -e 'VAULT_DEV_ROOT_TOKEN_ID=myroot' \
+    -p 8200:8200 \
+    hashicorp/vault:latest \
+    || true
 sleep 5
 cd tests_functional/vault_userpass
 pwd

@@ -216,7 +216,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     services:
       vault:
-        image: vault
+        image: hashicorp/vault:latest
         ports:
           - 8200:8200
         env:
