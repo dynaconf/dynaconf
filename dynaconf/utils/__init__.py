@@ -70,7 +70,16 @@ def object_merge(
             if correct_case_key:
                 new[correct_case_key] = new.pop(new_key)
 
-        for old_key, value in old.items():
+        def safe_items(data):
+            """
+            Get items from DynaBox without triggering recursive evaluation
+            """
+            if data.__class__.__name__ == "DynaBox":
+                return data._safe_items()
+            else:
+                return data.items()
+
+        for old_key, value in safe_items(old):
 
             # This is for when the dict exists internally
             # but the new value on the end of full path is the same
@@ -412,7 +421,13 @@ def recursively_evaluate_lazy_format(
 
     For example: Evaluate values inside lists and dicts
     """
+    return _recursively_evaluate_lazy_format(value, settings)
 
+
+def _recursively_evaluate_lazy_format(
+    value: Any, settings: Settings | LazySettings
+) -> Any:
+    """Recursive implementation. Separate for easier debugging."""
     if getattr(value, "_dynaconf_lazy_format", None):
         value = value(settings)
 
@@ -420,7 +435,7 @@ def recursively_evaluate_lazy_format(
         # Keep the original type, can be a BoxList
         value = value.__class__(
             [
-                recursively_evaluate_lazy_format(item, settings)
+                _recursively_evaluate_lazy_format(item, settings)
                 for item in value
             ]
         )

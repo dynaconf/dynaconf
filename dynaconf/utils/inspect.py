@@ -36,15 +36,15 @@ OutputFormat = Union[Literal["yaml"], Literal["json"], Literal["json-compact"]]
 DumperType = Callable[[dict, TextIO], None]
 
 
-class KeyNotFound(Exception):
+class KeyNotFoundError(Exception):
     pass
 
 
-class EnvNotFound(Exception):
+class EnvNotFoundError(Exception):
     pass
 
 
-class InvalidOutputFormat(Exception):
+class OutputFormatError(Exception):
     pass
 
 
@@ -78,7 +78,7 @@ def inspect_settings(
 
     setting_envs = {_env.env for _env in settings._loaded_by_loaders.keys()}
     if env and env.lower() not in setting_envs:
-        raise EnvNotFound(f"The requested env is not valid: {env!r}")
+        raise EnvNotFoundError(f"The requested env is not valid: {env!r}")
 
     def env_filter(src: SourceMetadata) -> bool:
         return src.env.lower() == env.lower() if env else True
@@ -89,7 +89,7 @@ def inspect_settings(
         filter_src_metadata=env_filter,
     )
     if key_dotted_path and not history:
-        raise KeyNotFound(
+        raise KeyNotFoundError(
             f"The requested key was not found: {key_dotted_path!r}"
         )
 
@@ -126,7 +126,7 @@ def inspect_settings(
     try:
         dumper = builtin_dumpers[output_format.lower()]
     except KeyError:
-        raise InvalidOutputFormat(
+        raise OutputFormatError(
             f"The desired format is not available: {output_format!r}"
         )
 

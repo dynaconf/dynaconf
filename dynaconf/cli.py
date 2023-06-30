@@ -810,11 +810,11 @@ def validate(ctx, path):  # pragma: no cover
 
 
 from dynaconf.utils.inspect import (
-    KeyNotFound,
+    KeyNotFoundError,
     builtin_dumpers,
     inspect_settings,
-    EnvNotFound,
-    InvalidOutputFormat,
+    EnvNotFoundError,
+    OutputFormatError,
 )
 
 INSPECT_FORMATS = list(builtin_dumpers.keys())
@@ -854,7 +854,7 @@ def inspect(ctx, key, env, format, descending):  # pragma: no cover
             ascending_order=(not descending),
         )
         click.echo()
-    except (KeyNotFound, EnvNotFound, InvalidOutputFormat) as err:
+    except (KeyNotFoundError, EnvNotFoundError, OutputFormatError) as err:
         click.echo(err)
         sys.exit(1)
 
