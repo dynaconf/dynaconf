@@ -297,7 +297,7 @@ class Settings:
                     is False
                 ):
                     # only matches exact casing, first levels always upper
-                    return self._store.to_dict()[name]
+                    return self._store.__getattribute__(name)
                 # perform lookups for upper, and casefold
                 return self._store[name]
         # in case of RESERVED_ATTRS or KeyError above, keep default behaviour
