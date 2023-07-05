@@ -68,13 +68,13 @@ sys.path.append(".")
 import dynaconf  # noqa
 
 
-def reverse_lazy_wrapper(*args, **kwargs):
+def django_ready():
     from django.urls import reverse_lazy  # noqa
 
-    return reverse_lazy(*args, **kwargs)
+    dynaconf.add_converter("reverse_lazy", reverse_lazy)
 
 
-dynaconf.add_converter("reverse_lazy", reverse_lazy_wrapper)
+dynaconf.django_ready = django_ready
 
 settings = dynaconf.DjangoDynaconf(
     __name__,

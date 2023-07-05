@@ -12,6 +12,7 @@ from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
+import dynaconf
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
 from dynaconf.loaders import enable_external_loaders
@@ -1155,6 +1156,7 @@ class Settings:
         self._store._box_config["_bypass_evaluation"] = True
         execute_hooks("post", self, env, silent=silent, key=key)
         self._store._box_config["_bypass_evaluation"] = False
+        dynaconf.django_ready()
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
