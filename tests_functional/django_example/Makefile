@@ -8,4 +8,4 @@ test:
 	PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings python standalone_script.py
 	PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings dynaconf list
 	PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings dynaconf get DEBUG
-	# PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings python inspect
+	PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings dynaconf inspect
