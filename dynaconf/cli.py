@@ -77,7 +77,9 @@ def set_settings(ctx, instance=None):
         try:
             # Django extension v2
             from django.conf import settings  # noqa
+            import django
 
+            django.setup()
             settings.DYNACONF.configure()
         except AttributeError:
             settings = LazySettings()

@@ -65,10 +65,16 @@ sys.path.append(".")
 
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 # Read more at https://www.dynaconf.com/django/
-from django.urls import reverse_lazy  # noqa
 import dynaconf  # noqa
 
-dynaconf.add_converter("reverse_lazy", reverse_lazy)
+
+def reverse_lazy_wrapper(*args, **kwargs):
+    from django.urls import reverse_lazy  # noqa
+
+    return reverse_lazy(*args, **kwargs)
+
+
+dynaconf.add_converter("reverse_lazy", reverse_lazy_wrapper)
 
 settings = dynaconf.DjangoDynaconf(
     __name__,
