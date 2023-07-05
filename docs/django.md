@@ -159,9 +159,14 @@ You can set more options, take a look at [configuration](/configuration/)
 
 ### Use Django functions inside custom settings
 
-If you need to use django functions inside your settings, you can register custom converters.
+If you need to use django functions inside your settings, you can register custom
+converters with the `add_converters` utility.
 
-Example: if you need to use `reverse_lazy`, you might do this:
+When defining those in `settings.py`, there are some django functions that can't
+be imported in the module scope (as they may depend on django registry loading).
+If that's the case you may wrap these in a special hook function.
+
+For example, if you need to use `reverse_lazy`, you might do this:
 
 ```python
 # settings.py
@@ -171,10 +176,13 @@ Example: if you need to use `reverse_lazy`, you might do this:
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 
 import dynaconf
-from django.urls import reverse_lazy
 
-# register custom converter
-dynaconf.add_converter("reverse_lazy", reverse_lazy)
+# put your converters here and bind to dynaconf.django_ready hook
+def converters_setup():
+  from django.urls import reverse_lazy
+  dynaconf.add_converter("reverse_lazy", reverse_lazy)
+
+dynaconf.django_ready = converters_setup
 
 # regular setup
 settings = dynaconf.DjangoDynaconf(__name__)
