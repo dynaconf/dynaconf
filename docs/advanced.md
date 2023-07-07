@@ -37,11 +37,20 @@ before the `app.py` is fully loaded.
 
 ### Hooks for the solution
 
-In the same path of any settings file, you can create a `dynaconf_hooks.py` file
-this file will be loaded after all the settings files are loaded.
+A hook is basically a function that takes an optional read-only `settings`
+positional argument and return data to be merged on the Settings object.
 
-`dynaconf_hooks.py`
+There are two ways to add hooks: from special modules or directly in a Dynaconf
+instantiation.
+
+#### Module approach
+
+With the module approach, you can create a `dynaconf_hooks.py` file in the same
+path as any settings file. Then, the hooks from this module will be loaded
+after the regular loading process.
+
 ```py
+# dynaconf_hooks.py
 
 def post(settings):
     data = {"dynaconf_merge": True}
@@ -54,11 +63,23 @@ def post(settings):
 Dynaconf will execute the `post` function and will merge the returned data with
 the existing settings.
 
-To disable the merging of the data, you can set the `dynaconf_merge` to False.
+#### Instance approach
+
+With the instance approach, just add your hook function to Dynaconf `post_hook`
+initialization argument. It accepts a single `Callable` or a list of `Callable`
+
+```python
+def hook_function(settings):
+    data = {"dynaconf_merge": True}
+    if settings.DEBUG:
+        data["DATABASE_URL"] = "sqlite://"
+    return data
+
+settings = Dynaconf(post_hooks=hook_function)
+```
 
 You can also set the merging individually for each settings variable as seen on
 [merging](/merging/) documentation.
-
 
 ## `inspect_settings`
 

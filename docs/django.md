@@ -163,9 +163,8 @@ If you need to use django functions inside your settings, you can register custo
 converters with the `add_converters` utility.
 
 When defining those in `settings.py`, there are some django functions that can't
-be imported in the module scope (as they may depend on django registry loading).
-If that's the case you may add them in a [hook](/advanced#hooks) that executes after
-loading.
+be imported directly in the module scope. Because of that, you may add them in
+a [hook](/advanced#hooks) that executes after loading.
 
 For example, if you need to use `reverse_lazy`, you might do this:
 
@@ -173,27 +172,15 @@ For example, if you need to use `reverse_lazy`, you might do this:
 # myprj/settings.py
 
 import dynaconf
-settings = dynaconf.DjangoDynaconf(__name__)
 
-# HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
-```
-
-```python
-# myprj/dynaconf_hooks.py
-
-from __future__ import annotations
-import dynaconf
-
-
-def post(settings):
-    # special django setup
+def converters_setup():
     from django.urls import reverse_lazy  # noqa
+
     dynaconf.add_converter("reverse_lazy", reverse_lazy)
 
-    # regular hook usage
-    data = {}
-    data["HOOKED"] = True
-    return data
+settings = dynaconf.DjangoDynaconf(__name__, post_hooks=converters_setup)
+
+# HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
 ```
 
 And then the following code would work:
