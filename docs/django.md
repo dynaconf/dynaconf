@@ -164,30 +164,36 @@ converters with the `add_converters` utility.
 
 When defining those in `settings.py`, there are some django functions that can't
 be imported in the module scope (as they may depend on django registry loading).
-If that's the case you may wrap these in a special hook function.
+If that's the case you may add them in a [hook](/advanced#hooks) that executes after
+loading.
 
 For example, if you need to use `reverse_lazy`, you might do this:
 
 ```python
-# settings.py
-
-...
-
-# HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
+# myprj/settings.py
 
 import dynaconf
-
-# put your converters here and bind to dynaconf.django_ready hook
-def converters_setup():
-  from django.urls import reverse_lazy
-  dynaconf.add_converter("reverse_lazy", reverse_lazy)
-
-dynaconf.django_ready = converters_setup
-
-# regular setup
 settings = dynaconf.DjangoDynaconf(__name__)
 
 # HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
+```
+
+```python
+# myprj/dynaconf_hooks.py
+
+from __future__ import annotations
+import dynaconf
+
+
+def post(settings):
+    # special django setup
+    from django.urls import reverse_lazy  # noqa
+    dynaconf.add_converter("reverse_lazy", reverse_lazy)
+
+    # regular hook usage
+    data = {}
+    data["HOOKED"] = True
+    return data
 ```
 
 And then the following code would work:
@@ -202,6 +208,8 @@ default:
 
 !!! note
     Some common converters may be added to Dynaconf in future releases. See [#865](https://github.com/dynaconf/dynaconf/issues/865)
+
+    For `gettext`, see [#648](https://github.com/dynaconf/dynaconf/issues/648)
 
 ## Reading Settings on Standalone Scripts
 

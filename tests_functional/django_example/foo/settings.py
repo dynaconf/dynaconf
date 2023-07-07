@@ -67,15 +67,6 @@ sys.path.append(".")
 # Read more at https://www.dynaconf.com/django/
 import dynaconf  # noqa
 
-
-def django_ready():
-    from django.urls import reverse_lazy  # noqa
-
-    dynaconf.add_converter("reverse_lazy", reverse_lazy)
-
-
-dynaconf.django_ready = django_ready
-
 settings = dynaconf.DjangoDynaconf(
     __name__,
     PRELOAD_FOR_DYNACONF=[

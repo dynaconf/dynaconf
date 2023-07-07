@@ -1156,7 +1156,6 @@ class Settings:
         self._store._box_config["_bypass_evaluation"] = True
         execute_hooks("post", self, env, silent=silent, key=key)
         self._store._box_config["_bypass_evaluation"] = False
-        dynaconf.django_ready()
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""

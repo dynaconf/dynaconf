@@ -21,12 +21,6 @@ settings = LazySettings(
 )
 
 
-def django_ready():
-    """
-    Hook to be executed when django is ready. Should be overriden.
-    """
-    ...
-
 
 # This is the new recommended base class alias
 Dynaconf = LazySettings  # noqa
