@@ -303,7 +303,7 @@ def trimmed_split(
 T = TypeVar("T")
 
 
-def ensure_a_list(data: T) -> list[T]:
+def ensure_a_list(data: T | list[T]) -> list[T]:
     """Ensure data is a list or wrap it in a list"""
     if not data:
         return []

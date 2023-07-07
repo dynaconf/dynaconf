@@ -21,7 +21,6 @@ settings = LazySettings(
 )
 
 
-
 # This is the new recommended base class alias
 Dynaconf = LazySettings  # noqa
 
