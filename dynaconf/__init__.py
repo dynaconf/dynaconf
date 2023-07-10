@@ -20,6 +20,7 @@ settings = LazySettings(
     default_settings_paths=DEFAULT_SETTINGS_FILES,
 )
 
+
 # This is the new recommended base class alias
 Dynaconf = LazySettings  # noqa
 

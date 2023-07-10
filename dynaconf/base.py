@@ -11,12 +11,14 @@ from contextlib import contextmanager
 from contextlib import suppress
 from pathlib import Path
 from typing import Any
+from typing import Callable
 
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
 from dynaconf.loaders import enable_external_loaders
 from dynaconf.loaders import env_loader
-from dynaconf.loaders import execute_hooks
+from dynaconf.loaders import execute_instance_hooks
+from dynaconf.loaders import execute_module_hooks
 from dynaconf.loaders import py_loader
 from dynaconf.loaders import settings_loader
 from dynaconf.loaders import yaml_loader
@@ -239,6 +241,9 @@ class Settings:
 
         self.validators = ValidatorList(
             self, validators=kwargs.pop("validators", None)
+        )
+        self._post_hooks: list[Callable] = ensure_a_list(
+            kwargs.get("post_hooks", [])
         )
 
         compat_kwargs(kwargs)
@@ -1152,7 +1157,13 @@ class Settings:
             core_loader.load(self, env, silent=silent, key=key)
 
         self.load_includes(env, silent=silent, key=key)
-        execute_hooks("post", self, env, silent=silent, key=key)
+        self._store._box_config["_bypass_evaluation"] = True
+
+        # execute hooks
+        execute_module_hooks("post", self, env, silent=silent, key=key)
+        execute_instance_hooks(self, "post", self._post_hooks)
+
+        self._store._box_config["_bypass_evaluation"] = False
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
@@ -1421,5 +1432,6 @@ RESERVED_ATTRS = (
         "_validate_only",
         "_validate_exclude",
         "_validate_only_current_env",
+        "_post_hooks",
     ]
 )

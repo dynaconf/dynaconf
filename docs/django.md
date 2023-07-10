@@ -159,25 +159,26 @@ You can set more options, take a look at [configuration](/configuration/)
 
 ### Use Django functions inside custom settings
 
-If you need to use django functions inside your settings, you can register custom converters.
+If you need to use django functions inside your settings, you can register custom
+converters with the `add_converters` utility.
 
-Example: if you need to use `reverse_lazy`, you might do this:
+When defining those in `settings.py`, there are some django functions that can't
+be imported directly in the module scope. Because of that, you may add them in
+a [hook](/advanced#hooks) that executes after loading.
+
+For example, if you need to use `reverse_lazy`, you might do this:
 
 ```python
-# settings.py
-
-...
-
-# HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
+# myprj/settings.py
 
 import dynaconf
-from django.urls import reverse_lazy
 
-# register custom converter
-dynaconf.add_converter("reverse_lazy", reverse_lazy)
+def converters_setup():
+    from django.urls import reverse_lazy  # noqa
 
-# regular setup
-settings = dynaconf.DjangoDynaconf(__name__)
+    dynaconf.add_converter("reverse_lazy", reverse_lazy)
+
+settings = dynaconf.DjangoDynaconf(__name__, post_hooks=converters_setup)
 
 # HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
 ```
@@ -194,6 +195,8 @@ default:
 
 !!! note
     Some common converters may be added to Dynaconf in future releases. See [#865](https://github.com/dynaconf/dynaconf/issues/865)
+
+    For `gettext`, see [#648](https://github.com/dynaconf/dynaconf/issues/648)
 
 ## Reading Settings on Standalone Scripts
 

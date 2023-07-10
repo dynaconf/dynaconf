@@ -65,10 +65,15 @@ sys.path.append(".")
 
 # HERE STARTS DYNACONF EXTENSION LOAD (Keep at the very bottom of settings.py)
 # Read more at https://www.dynaconf.com/django/
-from django.urls import reverse_lazy  # noqa
+
 import dynaconf  # noqa
 
-dynaconf.add_converter("reverse_lazy", reverse_lazy)
+
+def converters_setup():
+    from django.urls import reverse_lazy  # noqa
+
+    dynaconf.add_converter("reverse_lazy", reverse_lazy)
+
 
 settings = dynaconf.DjangoDynaconf(
     __name__,
@@ -78,7 +83,9 @@ settings = dynaconf.DjangoDynaconf(
         "foo.a_plugin_folder.settings",
     ],
     ENVVAR_FOR_DYNACONF="PULP_SETTINGS",
+    post_hooks=converters_setup,
 )  # noqa
+
 # HERE ENDS DYNACONF EXTENSION LOAD (No more code below this line)
 
 

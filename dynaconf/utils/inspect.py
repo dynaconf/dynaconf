@@ -215,7 +215,7 @@ def _ensure_serializable(data: BoxList | DynaBox) -> dict | list:
             k: _ensure_serializable(v) for k, v in data.items()  # type: ignore
         }
     else:
-        return data
+        return data if isinstance(data, (int, bool, float)) else str(data)
 
 
 def _get_data_by_key(
