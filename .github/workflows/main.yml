@@ -20,6 +20,13 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# When a Push is made on an existing branch/PR
+# it cancells any pre running job and
+# let only the latest executing
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 jobs:
   linter:
     strategy:
