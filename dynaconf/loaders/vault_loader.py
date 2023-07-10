@@ -109,7 +109,9 @@ def load(obj, env=None, silent=None, key=None, validate=False):
         try:
             if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2:
                 data = client.secrets.kv.v2.read_secret_version(
-                    path, mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF
+                    path,
+                    mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
+                    raise_on_deleted_version=True,  # keep default behavior
                 )
             else:
                 data = client.secrets.kv.read_secret(
