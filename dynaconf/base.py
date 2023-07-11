@@ -1124,6 +1124,7 @@ class Settings:
     def reload(self, env=None, silent=None):  # pragma: no cover
         """Clean end Execute all loaders"""
         self.clean()
+        self._loaded_hooks.clear()
         self.execute_loaders(env, silent)
 
     def execute_loaders(
