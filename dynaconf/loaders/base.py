@@ -7,6 +7,7 @@ from typing import NamedTuple
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import upperfy
+from dynaconf.utils.functional import empty
 
 
 class BaseLoader:
@@ -54,7 +55,7 @@ class BaseLoader:
             )
         obj._not_installed_warnings.append(identifier)
 
-    def load(self, filename=None, key=None, silent=True):
+    def load(self, filename=None, key=None, silent=True, merge=empty):
         """
         Reads and loads in to `self.obj` a single key or all keys from source
 
@@ -112,6 +113,9 @@ class BaseLoader:
     def _envless_load(self, source_data, silent=True, key=None):
         """Load all the keys from each file without env separation"""
         for file_name, file_data in source_data.items():
+            # is there a `dynaconf_merge` on top level of file?
+            file_merge = file_data.get("dynaconf_merge", empty)
+
             # set source metadata
             source_metadata = SourceMetadata(
                 self.identifier, file_name, "default"
@@ -120,6 +124,7 @@ class BaseLoader:
             self._set_data_to_obj(
                 file_data,
                 source_metadata,
+                file_merge=file_merge,
                 key=key,
             )
 
@@ -135,12 +140,11 @@ class BaseLoader:
             }
         """
         for file_name, file_data in source_data.items():
-
             # env name is checked in lower
             file_data = {k.lower(): value for k, value in file_data.items()}
 
             # is there a `dynaconf_merge` on top level of file?
-            file_merge = file_data.get("dynaconf_merge")
+            file_merge = file_data.get("dynaconf_merge", empty)
 
             # is there a flag disabling dotted lookup on file?
             file_dotted_lookup = file_data.get("dynaconf_dotted_lookup")
@@ -151,7 +155,7 @@ class BaseLoader:
 
                 # set source metadata
                 source_metadata = SourceMetadata(
-                    self.identifier, file_name, env, bool(file_merge)
+                    self.identifier, file_name, env
                 )
 
                 try:
@@ -176,7 +180,7 @@ class BaseLoader:
         self,
         data,
         identifier: SourceMetadata,
-        file_merge=None,
+        file_merge=empty,
         key=False,
         file_dotted_lookup=None,
     ):
@@ -190,7 +194,9 @@ class BaseLoader:
             data = self.obj.filter_strategy(data)
 
         # is there a `dynaconf_merge` inside an `[env]`?
-        file_merge = file_merge or data.pop("DYNACONF_MERGE", False)
+        env_scope_merge = data.pop("DYNACONF_MERGE", None)
+        if env_scope_merge is not None:
+            file_merge = env_scope_merge
 
         # If not passed or passed as None,
         # look for inner [env] value, or default settings.

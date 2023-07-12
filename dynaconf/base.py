@@ -33,7 +33,7 @@ from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import find_file
-from dynaconf.utils.functional import empty
+from dynaconf.utils.functional import Empty, empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import apply_converter
 from dynaconf.utils.parse_conf import converters
@@ -886,7 +886,7 @@ class Settings:
         dotted_lookup=empty,
         is_secret="DeprecatedArgument",  # noqa
         validate=empty,
-        merge=False,
+        merge=empty,
     ):
         """Set a value storing references for the loader
 
@@ -934,6 +934,7 @@ class Settings:
             getattr(self, key, None) if not isinstance(value, Lazy) else None
         )
 
+
         if getattr(value, "_dynaconf_del", None):
             # just in case someone use a `@del` in a first level var.
             self.unset(key, force=True)
@@ -971,7 +972,7 @@ class Settings:
 
         if existing is not None and existing != value:
             # `dynaconf_merge` used in file root `merge=True`
-            if merge:
+            if merge and merge is not empty:
                 loader_identifier = (
                     loader_identifier._replace(merged=True)
                     if loader_identifier
@@ -989,7 +990,7 @@ class Settings:
                     # `dynaconf_merge` may be used within the key structure
                     # Or merge_enabled is set to True
                     value, updated_identifier = self._merge_before_set(
-                        existing, value, loader_identifier
+                        existing, value, loader_identifier, context_merge=merge
                     )
                     loader_identifier = updated_identifier
 
@@ -1018,7 +1019,7 @@ class Settings:
         data=None,
         loader_identifier=None,
         tomlfy=False,
-        merge=False,
+        merge=empty,
         is_secret="DeprecatedArgument",  # noqa
         dotted_lookup=empty,
         validate=empty,
@@ -1070,13 +1071,19 @@ class Settings:
             self.validators.validate_all()
 
     def _merge_before_set(
-        self, existing, value, identifier: SourceMetadata | None = None
+        self, existing, value, identifier: SourceMetadata | None = None, context_merge=empty
     ):
         """
         Merge the new value being set with the existing value before set
         Returns the merged value and the updated identifier (for inspecting).
         """
-        global_merge = getattr(self, "MERGE_ENABLED_FOR_DYNACONF", False)
+        # if identifier and identifier.loader == "toml":
+        #     breakpoint()
+
+        # context_merge may come from file_scope or env_scope
+        if context_merge is empty:
+            context_merge = self.get("MERGE_ENABLED_FOR_DYNACONF")
+
         if isinstance(value, dict):
             local_merge = value.pop(
                 "dynaconf_merge", value.pop("dynaconf_merge_unique", None)
@@ -1085,25 +1092,25 @@ class Settings:
                 # In case `dynaconf_merge:` holds value not boolean - ref #241
                 value = local_merge
 
-            if global_merge or local_merge:
+            if local_merge or (context_merge and local_merge is not False):
                 identifier = (
                     identifier._replace(merged=True) if identifier else None
                 )
                 value = object_merge(existing, value)
 
         if isinstance(value, (list, tuple)):
-            local_merge = (
-                "dynaconf_merge" in value or "dynaconf_merge_unique" in value
-            )
-            if global_merge or local_merge:
-                value = list(value)
-                unique = False
-                if local_merge:
-                    try:
-                        value.remove("dynaconf_merge")
-                    except ValueError:  # EAFP
-                        value.remove("dynaconf_merge_unique")
-                        unique = True
+            value = list(value)
+            local_merge = None
+            unique = False
+            if "dynaconf_merge" in value:
+                value.remove("dynaconf_merge")
+                local_merge = True
+            elif "dynaconf_merge_unique" in value:
+                value.remove("dynaconf_merge_unique")
+                local_merge = True
+                unique = True
+
+            if local_merge or (context_merge and local_merge is not False):
                 identifier = (
                     identifier._replace(merged=True) if identifier else None
                 )
