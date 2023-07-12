@@ -94,7 +94,7 @@ def write(obj, data=None, **kwargs):
     redis_data = {
         upperfy(key): unparse_conf_data(value) for key, value in data.items()
     }
-    client.hmset(holder.upper(), redis_data)
+    client.hset(holder.upper(), mapping=redis_data)
     load(obj)
 
 
