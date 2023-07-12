@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from textwrap import dedent
 
 import pytest
@@ -160,14 +162,15 @@ def test_case_926_file_scope_merge_mark(tmp_path):
 
 
 def test_local_scope_merge_false():
-    """ """
     settings = Dynaconf(
         environments=True,
         merge_enabled=True,
     )
     settings.set("dicty.name", "foo")
     settings.set("listy", [1, 2, 3])
-    settings.update({"dicty": {"database_url": "sqlite://", "dynaconf_merge": False}})
+    settings.update(
+        {"dicty": {"database_url": "sqlite://", "dynaconf_merge": False}}
+    )
     settings.update({"listy": [9999]})
 
     assert settings.dicty == {"database_url": "sqlite://"}
@@ -255,8 +258,12 @@ def test_regression_expected_merge_on_toplevel_structure(tmp_path):
 def test_regression_global_set_merge():
     settings = Dynaconf()
     settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
-    settings.set("MERGE_KEY", {"items": [{"name": "item 1"}, {"name": "item 2"}]})
-    settings.set("MERGE_KEY", {"items": [{"name": "item 3"}, {"name": "item 4"}]})
+    settings.set(
+        "MERGE_KEY", {"items": [{"name": "item 1"}, {"name": "item 2"}]}
+    )
+    settings.set(
+        "MERGE_KEY", {"items": [{"name": "item 3"}, {"name": "item 4"}]}
+    )
     assert settings.MERGE_KEY == {
         "items": [
             {"name": "item 1"},
@@ -273,7 +280,9 @@ def test_regression_local_set_merge():
     settings.set("DATABASE", {"host": "localhost", "port": 666})
     assert settings.DATABASE == {"host": "localhost", "port": 666}
 
-    settings.set("DATABASE", {"host": "new", "user": "admin", "dynaconf_merge": True})
+    settings.set(
+        "DATABASE", {"host": "new", "user": "admin", "dynaconf_merge": True}
+    )
     assert settings.DATABASE == {"host": "new", "port": 666, "user": "admin"}
     assert settings.DATABASE.HOST == "new"
     assert settings.DATABASE.user == "admin"
@@ -319,26 +328,81 @@ def test_regression_dotted_merge_should_be_false_2(tmp_path):
 def test_regression_include(tmp_path):
     include_file = create_file(
         tmp_path / "foo.toml",
-        f"""\
+        """\
         [default]
         key_b="bar"
-        dicty={{spam_b="eggs_b"}}
+        dicty={spam_b="eggs_b"}
         listy=[999]
         """,
     )
     file_a = create_file(
         tmp_path / "t.toml",
-        f"""\
+        """\
         [default]
         key_a="foo"
-        dicty={{spam_a="eggs_a"}}
+        dicty={spam_a="eggs_a"}
         listy=[1,2,3]
         dynaconf_include="{include_file}"
         """,
     )
-    settings = Dynaconf(settings_file=file_a, environments=True, merge_enabled=True)
+    settings = Dynaconf(
+        settings_file=file_a, environments=True, merge_enabled=True
+    )
     assert settings.dicty.spam_a == "eggs_a"
     assert settings.dicty.spam_b == "eggs_b"
-    assert settings.listy == [1,2,3,999]
+    assert settings.listy == [1, 2, 3, 999]
     assert settings.key_a == "foo"
     assert settings.key_b == "bar"
+
+
+def test_regression_python_loader(tmp_path):
+    file_a = create_file(
+        tmp_path / "t.toml",
+        """\
+        [default]
+        key_a="foo"
+        dicty={spam_a="eggs_a"}
+        listy=[1,2,3]
+        """,
+    )
+    py_data_a = """\
+        DEFAULT= {{
+            "key_b":"bar",
+            "dicty":{"spam_b": "eggs_b"},
+            "listy":[999]
+        }}
+        """
+    py_data_b = """\
+        KEY_B="bar"
+        DICTY={"spam_b": "eggs_b"}
+        LISTY=[999]
+        """
+    file_py = create_file(tmp_path / "t.py", py_data_b)
+
+    settings = Dynaconf(
+        settings_file=[file_a, file_py], environments=True, merge_enabled=True
+    )
+    assert settings.dicty.spam_a == "eggs_a"
+    assert settings.dicty.spam_b == "eggs_b"
+    assert settings.listy == [1, 2, 3, 999]
+    assert settings.key_a == "foo"
+    assert settings.key_b == "bar"
+
+
+def test_regression_python_loader__new_merge(tmp_path):
+    file_a = create_file(
+        tmp_path / "t.py",
+        """\
+        LISTY=[1,2,3]
+        """,
+    )
+    file_b = create_file(
+        tmp_path / "t.local.py",
+        """\
+        DYNACONF_MERGE=True
+        LISTY=[999]
+        """,
+    )
+
+    settings = Dynaconf(settings_file=file_a, environments=True)
+    assert settings.listy == [1, 2, 3, 999]

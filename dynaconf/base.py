@@ -33,7 +33,8 @@ from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import find_file
-from dynaconf.utils.functional import Empty, empty
+from dynaconf.utils.functional import Empty
+from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import apply_converter
 from dynaconf.utils.parse_conf import converters
@@ -934,7 +935,6 @@ class Settings:
             getattr(self, key, None) if not isinstance(value, Lazy) else None
         )
 
-
         if getattr(value, "_dynaconf_del", None):
             # just in case someone use a `@del` in a first level var.
             self.unset(key, force=True)
@@ -1071,13 +1071,17 @@ class Settings:
             self.validators.validate_all()
 
     def _merge_before_set(
-        self, existing, value, identifier: SourceMetadata | None = None, context_merge=empty
+        self,
+        existing,
+        value,
+        identifier: SourceMetadata | None = None,
+        context_merge=empty,
     ):
         """
         Merge the new value being set with the existing value before set
         Returns the merged value and the updated identifier (for inspecting).
         """
-        # if identifier and identifier.loader == "toml":
+        # if identifier and identifier.loader == "py":
         #     breakpoint()
 
         # context_merge may come from file_scope or env_scope

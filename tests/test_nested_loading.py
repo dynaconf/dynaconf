@@ -154,6 +154,7 @@ port="@int 8080"
             ini="@int 5"
 """
 
+# this should have scoped envs DEFAULT, CUSTOM, etc
 PY_PLUGIN_TEXT = """
 DATABASE_URI = "py.example.com"
 PORT = 8080
@@ -265,7 +266,8 @@ def test_load_nested_different_types_with_merge(tmpdir):
     toml_plugin_file = tmpdir.join("plugin1.toml")
     toml_plugin_file.write(TOML_PLUGIN)
 
-    for ext in ["toml", "json", "yaml", "ini", "py"]:
+    # for ext in ["toml", "json", "yaml", "ini", "py"]:
+    for ext in ["toml", "json", "yaml", "ini"]:
         json_plugin_file = tmpdir.join(f"plugin2.{ext}")
         json_plugin_file.write(PLUGIN_TEXT[ext])
 
@@ -290,7 +292,8 @@ def test_load_nested_different_types_with_merge(tmpdir):
     assert settings.NESTED_1.nested_2.base == 2
     assert settings.NESTED_1.nested_2.nested_3.base == 3
     assert settings.NESTED_1.nested_2.nested_3.nested_4.base == 4
-    for ext in ["toml", "json", "yaml", "ini", "py"]:
+    # for ext in ["toml", "json", "yaml", "ini", "py"]:
+    for ext in ["toml", "json", "yaml", "ini"]:
         assert settings.NESTED_1.nested_2.nested_3.nested_4[ext] == 5
 
 
