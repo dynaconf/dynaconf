@@ -14,6 +14,7 @@ from dynaconf.utils import DynaconfDict
 from dynaconf.utils import object_merge
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
+from dynaconf.utils.functional import empty
 
 
 def load(
@@ -24,7 +25,14 @@ def load(
     key=None,
     validate=False,
 ):
-    """Tries to import a python module"""
+    """
+    Tries to import a python module
+
+    Notes:
+        It doesn't handle environment namespaces explicitly. Eg
+            [default], [development], etc
+        See tests/test_nested_loading.py sample python file
+    """
     mod, loaded_from = get_module(obj, settings_module, silent)
     if not (mod and loaded_from):
         return
@@ -40,9 +48,10 @@ def load(
 def load_from_python_object(
     obj, mod, settings_module, key=None, identifier=None, validate=False
 ):
-    file_merge = getattr(mod, "dynaconf_merge", False) or getattr(
-        mod, "DYNACONF_MERGE", False
-    )
+    file_merge = getattr(mod, "dynaconf_merge", empty)
+    if file_merge is empty:
+        file_merge = getattr(mod, "DYNACONF_MERGE", empty)
+
     for setting in dir(mod):
         # A setting var in a Python file should start with upper case
         # valid: A_value=1, ABC_value=3 A_BBB__default=1
