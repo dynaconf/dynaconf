@@ -33,7 +33,6 @@ from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import find_file
-from dynaconf.utils.functional import Empty
 from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import apply_converter
@@ -1081,9 +1080,6 @@ class Settings:
         Merge the new value being set with the existing value before set
         Returns the merged value and the updated identifier (for inspecting).
         """
-        # if identifier and identifier.loader == "py":
-        #     breakpoint()
-
         # context_merge may come from file_scope or env_scope
         if context_merge is empty:
             context_merge = self.get("MERGE_ENABLED_FOR_DYNACONF")
