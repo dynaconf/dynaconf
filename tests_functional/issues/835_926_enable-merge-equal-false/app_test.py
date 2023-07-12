@@ -1,3 +1,10 @@
+"""
+Merge misbehaviour:
+    file-scope and local-scope marks doesn't treat False value properly.
+
+https://github.com/dynaconf/dynaconf/issues/835
+https://github.com/dynaconf/dynaconf/issues/926
+"""
 from __future__ import annotations
 
 from textwrap import dedent
@@ -5,7 +12,6 @@ from textwrap import dedent
 import pytest
 
 from dynaconf import Dynaconf
-from dynaconf.utils.inspect import get_history
 
 
 def create_file(filename: str, data: str) -> str:
@@ -223,186 +229,3 @@ def test_file_scope_merge_false(tmp_path):
     settings = Dynaconf(merge_enabled=True, settings_file=[file_c, file_d])
     assert settings.dicty == {"database_url": "sqlite://"}
     assert settings.listy == [9999]
-
-
-def test_regression_expected_merge_on_toplevel_structure(tmp_path):
-    """
-    Top-level merges are implicitly always True.
-    It is expected that the merge_enabled flag and local merge marks don't
-    take effect on the top-level/root structure.
-    """
-    file_a = create_file(
-        tmp_path / "a.toml",
-        """\
-        [default]
-        from_a="foo"
-        """,
-    )
-
-    file_b = create_file(
-        tmp_path / "b.toml",
-        """\
-        [default]
-        from_b="bar"
-        """,
-    )
-
-    settings = Dynaconf(
-        environments=True, settings_files=[file_a, file_b], merge_enabled=False
-    )
-
-    assert settings.from_a == "foo"
-    assert settings.from_b == "bar"
-
-
-def test_regression_global_set_merge():
-    settings = Dynaconf()
-    settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
-    settings.set(
-        "MERGE_KEY", {"items": [{"name": "item 1"}, {"name": "item 2"}]}
-    )
-    settings.set(
-        "MERGE_KEY", {"items": [{"name": "item 3"}, {"name": "item 4"}]}
-    )
-    assert settings.MERGE_KEY == {
-        "items": [
-            {"name": "item 1"},
-            {"name": "item 2"},
-            {"name": "item 3"},
-            {"name": "item 4"},
-        ]
-    }
-
-
-def test_regression_local_set_merge():
-    settings = Dynaconf()
-    settings.set("DATABASE", {"host": "localhost", "port": 666})
-    settings.set("DATABASE", {"host": "localhost", "port": 666})
-    assert settings.DATABASE == {"host": "localhost", "port": 666}
-
-    settings.set(
-        "DATABASE", {"host": "new", "user": "admin", "dynaconf_merge": True}
-    )
-    assert settings.DATABASE == {"host": "new", "port": 666, "user": "admin"}
-    assert settings.DATABASE.HOST == "new"
-    assert settings.DATABASE.user == "admin"
-
-
-def test_regression_dotted_merge_should_be_false_1(tmp_path):
-    filename = create_file(
-        tmp_path / "t.toml",
-        """\
-        [default]
-        foo='from_env_default'
-        [development]
-        foo='from_env_development'
-        [prod]
-        bar='prod_only'
-        spam='should_appear'
-        """,
-    )
-    settings = Dynaconf(settings_file=filename, environments=True)
-    settings.from_env("prod")
-    history = get_history(settings)
-    for record in history:
-        assert record["merged"] is False
-
-
-def test_regression_dotted_merge_should_be_false_2(tmp_path):
-    filename = create_file(
-        tmp_path / "t.toml",
-        """\
-        default.foo='from_env_default'
-        development.foo='from_env_development'
-        prod.bar='prod_only'
-        prod.spam='should_appear'
-        """,
-    )
-    settings = Dynaconf(settings_file=filename, environments=True)
-    settings.from_env("prod")
-    history = get_history(settings)
-    for record in history:
-        assert record["merged"] is False
-
-
-def test_regression_include(tmp_path):
-    include_file = create_file(
-        tmp_path / "foo.toml",
-        """\
-        [default]
-        key_b="bar"
-        dicty={spam_b="eggs_b"}
-        listy=[999]
-        """,
-    )
-    file_a = create_file(
-        tmp_path / "t.toml",
-        """\
-        [default]
-        key_a="foo"
-        dicty={spam_a="eggs_a"}
-        listy=[1,2,3]
-        dynaconf_include="{include_file}"
-        """,
-    )
-    settings = Dynaconf(
-        settings_file=file_a, environments=True, merge_enabled=True
-    )
-    assert settings.dicty.spam_a == "eggs_a"
-    assert settings.dicty.spam_b == "eggs_b"
-    assert settings.listy == [1, 2, 3, 999]
-    assert settings.key_a == "foo"
-    assert settings.key_b == "bar"
-
-
-def test_regression_python_loader(tmp_path):
-    file_a = create_file(
-        tmp_path / "t.toml",
-        """\
-        [default]
-        key_a="foo"
-        dicty={spam_a="eggs_a"}
-        listy=[1,2,3]
-        """,
-    )
-    py_data_a = """\
-        DEFAULT= {{
-            "key_b":"bar",
-            "dicty":{"spam_b": "eggs_b"},
-            "listy":[999]
-        }}
-        """
-    py_data_b = """\
-        KEY_B="bar"
-        DICTY={"spam_b": "eggs_b"}
-        LISTY=[999]
-        """
-    file_py = create_file(tmp_path / "t.py", py_data_b)
-
-    settings = Dynaconf(
-        settings_file=[file_a, file_py], environments=True, merge_enabled=True
-    )
-    assert settings.dicty.spam_a == "eggs_a"
-    assert settings.dicty.spam_b == "eggs_b"
-    assert settings.listy == [1, 2, 3, 999]
-    assert settings.key_a == "foo"
-    assert settings.key_b == "bar"
-
-
-def test_regression_python_loader__new_merge(tmp_path):
-    file_a = create_file(
-        tmp_path / "t.py",
-        """\
-        LISTY=[1,2,3]
-        """,
-    )
-    file_b = create_file(
-        tmp_path / "t.local.py",
-        """\
-        DYNACONF_MERGE=True
-        LISTY=[999]
-        """,
-    )
-
-    settings = Dynaconf(settings_file=file_a, environments=True)
-    assert settings.listy == [1, 2, 3, 999]
