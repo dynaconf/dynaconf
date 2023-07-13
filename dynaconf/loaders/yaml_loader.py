@@ -52,7 +52,6 @@ class AllLoader(BaseLoader):
         return data
 
 
-def load(obj, env=None, silent=True, key=None, filename=None):
 def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
     """
     Reads and loads in to "obj" a single key or all keys from source file.
