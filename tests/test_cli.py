@@ -126,6 +126,17 @@ def test_get(testdir):
     assert result == "test_value"
 
 
+def test_negative_get(testdir):
+    """Tests get command erroring when key does not exist"""
+    cmd = ["get", "DONTEXIST"]
+    env = {
+        "ROOT_PATH_FOR_DYNACONF": testdir,
+        "INSTANCE_FOR_DYNACONF": "tests.config.settings",
+    }
+    assert run(cmd, env=env, attr="stdout") == "Key not found"
+    assert run(cmd, env=env, attr="exit_code") == 1
+
+
 def test_get_json_dict(testdir):
     """Tests get command printing json"""
     env = env = {
