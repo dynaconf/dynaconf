@@ -184,6 +184,7 @@ Example:
 export FOO=$(dynaconf get DATABASE_NAME -d 'default')
 ```
 
+If the key doesn't exist and no default is provided it will exit with code 1.
 
 ### dynaconf list
 

@@ -473,7 +473,11 @@ def get(key, default, env, unparse):
     if default is not empty:
         result = settings.get(key, default)
     else:
-        result = settings[key]  # let the keyerror raises
+        try:
+            result = settings[key]
+        except KeyError:
+            click.echo("Key not found", nl=False, err=True)
+            sys.exit(1)
 
     if unparse:
         result = unparse_conf_data(result)
@@ -596,7 +600,7 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
             value = empty
 
         if value is empty:
-            click.echo(click.style("Key not found", bg="red", fg="white"))
+            click.secho("Key not found", bg="red", fg="white", err=True)
             return
 
         click.echo(format_setting(key, value))
