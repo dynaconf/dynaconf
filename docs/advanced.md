@@ -37,11 +37,20 @@ before the `app.py` is fully loaded.
 
 ### Hooks for the solution
 
-In the same path of any settings file, you can create a `dynaconf_hooks.py` file
-this file will be loaded after all the settings files are loaded.
+A hook is basically a function that takes an optional read-only `settings`
+positional argument and return data to be merged on the Settings object.
 
-`dynaconf_hooks.py`
+There are two ways to add hooks: from special modules or directly in a Dynaconf
+instantiation.
+
+#### Module approach
+
+With the module approach, you can create a `dynaconf_hooks.py` file in the same
+path as any settings file. Then, the hooks from this module will be loaded
+after the regular loading process.
+
 ```py
+# dynaconf_hooks.py
 
 def post(settings):
     data = {"dynaconf_merge": True}
@@ -54,20 +63,111 @@ def post(settings):
 Dynaconf will execute the `post` function and will merge the returned data with
 the existing settings.
 
-To disable the merging of the data, you can set the `dynaconf_merge` to False.
+#### Instance approach
+
+With the instance approach, just add your hook function to Dynaconf `post_hook`
+initialization argument. It accepts a single `Callable` or a list of `Callable`
+
+```python
+def hook_function(settings):
+    data = {"dynaconf_merge": True}
+    if settings.DEBUG:
+        data["DATABASE_URL"] = "sqlite://"
+    return data
+
+settings = Dynaconf(post_hooks=hook_function)
+```
 
 You can also set the merging individually for each settings variable as seen on
 [merging](/merging/) documentation.
 
-## Programmatically loading a settings file
+## `inspect_settings`
+
+> **NEW** in version 3.2.0
+
+Inspect the loading history of all ingested data by its source identities.
+
+This function relates all ingested data to its source by establishing a set of
+source metadata on loading-time:
+
+- **loader**: which kind of loader *(yaml, envvar, validation_default)*
+- **identifier**: specific identifier *(eg: filename for files)*
+- **env**: which env this data belongs to *(global, main, development, etc)*
+- **merged**: if this data has been merged *(True or False)*
+
+It also provides key and environment filters to narrow down the results,
+descending/ascending sorting flag and some built-in output formats.
+
+Sample usage:
 
 ```python
-from dynaconf import settings
-settings.load_file(path="/path/to/file.toml")  # list or `;/,` separated allowed
+$ export DYNACONF_FOO=from_environ
+$ export DYNACONF_BAR=environ_only
+$ cat file_a.yaml
+foo: from_yaml
+
+$ python
+>>> from dynaconf import Dynaconf, inspect_settings
+>>> settings = Dynaconf()
+>>> inspect_settings(settings, key_dotted_path="foo", output_format="yaml")
+header:
+  filters:
+    env: None
+    key: foo
+    history_ordering: ascending
+  active_value: from_environ
+history:
+- loader: yaml
+  identifier: file_a.yaml
+  env: default
+  merged: false
+  value:
+    FOO: from_yaml
+- loader: env_global
+  identifier: unique
+  env: global
+  merged: false
+  value:
+    FOO: from_environ
+    BAR: environ_only
 ```
 
-> **NOTE**: programmatically loaded file is not persisted, once `env` is changed via `setenv|ugin_env`, or a `reload` or `configure` is invoked it will be cleaned, to persist it needs to go to `INCLUDES_FOR_DYNACONF` variable or you need to load it programmatically again.
+To save to a file use:
 
+```python
+inspect_setting(setting, to_file="filename.json", output_format="json")
+```
+
+Dynaconf supports some builtin formats, but you can use a custom dumper too that
+can dump nested dict/list structure into a `TextIO` stream.
+
+## Programmatically loading a settings file
+
+You can load files from within a python script.
+
+When using relative paths, it will use `root_path` as its basepath.
+Learn more about how `root_path` fallback works [here](/configuration#root_path).
+
+```python
+from dynaconf import Dynaconf
+
+settings = Dynaconf()
+
+# single file
+settings.load_file(path="/path/to/file.toml")
+
+# list
+settings.load_file(path=["/path/to/file.toml", "/path/to/another-file.toml"])
+
+# separated by ; or ,
+settings.load_file(path="/path/to/file.toml;/path/to/another-file.toml")
+```
+
+Notice that data loaded by this method is not persisted.
+
+Once `env` is changed via `setenv|using_env`, `reload` or `configure` invocation, its loaded data
+will be cleaned. To persist consider using `INCLUDES_FOR_DYNACONF` variable or assuring it will
+be loaded programmatically again.
 
 ## Prefix filtering
 
@@ -158,11 +258,14 @@ def load(
         logger.warning(f"SOPS error: {_output.stderr}")
     decrypted_config = yaml.load(_output.stdout, Loader=yaml.CLoader)
 
+    # support for inspecting
+    source_metadata = SourceMetadata('sops', sops_file, env)
+
     if key:
         value = decrypted_config.get(key.lower())
-        obj.set(key, value)
+        obj.set(key, value, loader_identifier=source_metadata)
     else:
-        obj.update(decrypted_config)
+        obj.update(decrypted_config, loader_identifier=source_metadata)
 
     obj._loaded_files.append(sops_file)
 ```

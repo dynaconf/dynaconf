@@ -1,12 +1,15 @@
 from __future__ import annotations
 
-import io
 import json
 import os
+import sys
 from collections import namedtuple
+from pathlib import Path
+from textwrap import dedent
 
 import pytest
 
+from dynaconf import add_converter
 from dynaconf import default_settings
 from dynaconf import Dynaconf
 from dynaconf.loaders.json_loader import DynaconfEncoder
@@ -482,3 +485,26 @@ def test_env_list():
         "other",
         "global",
     ]
+
+
+def create_file(filename: str, data: str) -> str:
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(dedent(data))
+    return filename
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_add_converter_path_example(tmp_path):
+    """Assert add_converter Path example works"""
+    add_converter("path", Path)
+    fn = create_file(
+        tmp_path / "settings.yaml",
+        f"""\
+        my_path: "@path {Path.home()}"
+        """,
+    )
+    settings = Dynaconf(settings_file=fn)
+    assert isinstance(settings.my_path, Path)

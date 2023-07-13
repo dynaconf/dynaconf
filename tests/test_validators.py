@@ -530,7 +530,7 @@ def test_envless_and_combined_validators(tmpdir):
         settings.validators.validate()
 
 
-def test_cast_before_validate(tmpdir):
+def test_cast_on_validate_transforms_value(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     TOML = """
     name = 'Bruno'
@@ -542,16 +542,20 @@ def test_cast_before_validate(tmpdir):
         silent=True,
         lowercase_read=True,
         validators=[
+            # Order matters here
             Validator("name", len_eq=5),
             Validator("name", len_min=1),
             Validator("name", len_max=5),
+            # This will cast the str to list
+            Validator("name", cast=list),
             Validator("colors", len_eq=3),
             Validator("colors", len_eq=3),
+            # this will cast the list to str
             Validator("colors", len_eq=24, cast=str),
         ],
     )
-    assert settings.name == "Bruno"
-    assert settings.colors == ["red", "green", "blue"]
+    assert settings.name == list("Bruno")
+    assert settings.colors == str(["red", "green", "blue"])
 
 
 def test_validator_can_provide_default(tmpdir):
@@ -847,3 +851,40 @@ def test_use_default_value_when_yaml_is_empty_and_explicitly_marked(tmpdir):
     assert settings.hasemptyvalues.key2 is None
     assert settings.hasemptyvalues.key3 is None
     assert settings.hasemptyvalues.key4 == "value4"
+
+
+def test_ensure_cast_happens_after_must_exist(tmpdir):
+    """#823"""
+    from pathlib import Path
+
+    settings = Dynaconf(
+        validators=[Validator("java_bin", must_exist=True, cast=Path)]
+    )
+    # must raise ValidationError instead of Path error
+    with pytest.raises(ValidationError):
+        settings.validators.validate()
+
+
+def test_ensure_cast_works_for_non_default_values(tmpdir):
+    """#834"""
+
+    settings = Dynaconf(validators=[Validator("offset", default=1, cast=int)])
+
+    settings.offset = "24"
+
+    settings.validators.validate()
+
+    assert isinstance(settings.offset, int), type(settings.offset)
+
+
+def test_is_type_of__raises__with_type_error():
+    """
+    When invalid type is given to is_type_of,
+    should raise ValidationError
+    """
+    settings = Dynaconf(
+        validators=[Validator("ENV_FOR_DYNACONF", is_type_of="invalid")]
+    )
+
+    with pytest.raises(ValidationError):
+        settings.validators.validate()

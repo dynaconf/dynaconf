@@ -6,12 +6,26 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ master ]
+    branches: [master]
+    # will run when at least one file matches something else than those
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
   pull_request:
-    branches: [ master ]
+    branches: [master]
+    paths-ignore:
+      - "docs/**"
+      - "mkdocs.yml"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+# When a Push is made on an existing branch/PR
+# it cancells any pre running job and
+# let only the latest executing
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   linter:
@@ -186,7 +200,7 @@ jobs:
       redis:
         image: redis
         ports:
-           - 6379:6379
+          - 6379:6379
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -209,9 +223,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     services:
       vault:
-        image: vault
+        image: hashicorp/vault:latest
         ports:
-           - 8200:8200
+          - 8200:8200
         env:
           VAULT_DEV_ROOT_TOKEN_ID: myroot
 

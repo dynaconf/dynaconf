@@ -12,7 +12,6 @@ gitchangelog
 boto3
 
 # testing
-codecov
 pytest
 pytest-cov
 pytest-mock
@@ -32,7 +31,7 @@ pre-commit
 mypy
 
 # tools
-ipython
+ipython<=8.12.1
 ipdb
 python-minifier
 pdbr[ipython]
@@ -41,6 +40,7 @@ pdbr[ipython]
 mkdocs>=1.1.2
 mkdocs-material>=5.3.2
 mkdocs-material-extensions>=1.0
+mkdocs-git-revision-date-plugin
 pymdown-extensions
 Jinja2>3.0.0
 

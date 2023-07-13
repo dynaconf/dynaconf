@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import importlib
 import os
+from typing import Callable
+from typing import TYPE_CHECKING
 
 from dynaconf import constants as ct
 from dynaconf import default_settings
@@ -15,6 +17,9 @@ from dynaconf.utils import ensure_a_list
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import get_local_filename
 from dynaconf.utils.parse_conf import false_values
+
+if TYPE_CHECKING:
+    from dynaconf.base import Settings
 
 
 def default_loader(obj, defaults=None):
@@ -60,35 +65,16 @@ def default_loader(obj, defaults=None):
             obj.set(key, env_value, tomlfy=True)
 
 
-def _run_hook_module(hook, hook_module, obj, key=None):
-    """Run the hook function from the settings obj.
-
-    given a hook name, a hook_module and a settings object
-    load the function and execute if found.
-    """
-    if hook in obj._loaded_hooks.get(hook_module.__file__, {}):
-        # already loaded
-        return
-
-    if hook_module and getattr(hook_module, "_error", False):
-        if not isinstance(hook_module._error, FileNotFoundError):
-            raise hook_module._error
-
-    hook_func = getattr(hook_module, hook, None)
-    if hook_func:
-        hook_dict = hook_func(obj.dynaconf.clone())
-        if hook_dict:
-            merge = hook_dict.pop(
-                "dynaconf_merge", hook_dict.pop("DYNACONF_MERGE", False)
-            )
-            if key and key in hook_dict:
-                obj.set(key, hook_dict[key], tomlfy=False, merge=merge)
-            elif not key:
-                obj.update(hook_dict, tomlfy=False, merge=merge)
-        obj._loaded_hooks[hook_module.__file__][hook] = hook_dict
+def execute_instance_hooks(
+    obj: Settings, hook_type: str, hook_functions: list[Callable]
+):
+    """Execute hooks provided by Setting instance"""
+    hook_source = "instance"
+    for hook_func in hook_functions:
+        _run_hook_function(obj, hook_type, hook_func, hook_source)
 
 
-def execute_hooks(
+def execute_module_hooks(
     hook, obj, env=None, silent=True, key=None, modules=None, files=None
 ):
     """Execute dynaconf_hooks from module or filepath."""
@@ -108,7 +94,7 @@ def execute_hooks(
             continue
         else:
             _run_hook_module(
-                hook=hook,
+                hook_type=hook,
                 hook_module=hook_module,
                 obj=obj,
                 key=key,
@@ -127,15 +113,82 @@ def execute_hooks(
             # There was no hook on the same path as a python file
             continue
         _run_hook_module(
-            hook=hook,
+            hook_type=hook,
             hook_module=hook_module,
             obj=obj,
             key=key,
         )
 
 
+# alias
+execute_hooks = execute_module_hooks
+
+
+def _run_hook_module(hook_type, hook_module, obj, key=""):
+    """
+    Run a hook function from hook_module.
+
+    Given a @hook_type, a @hook_module and a settings @obj, load the function
+    and execute it if found.
+    """
+    hook_source = hook_module.__file__
+
+    # check if already loaded
+    if hook_type in obj._loaded_hooks.get(hook_source, {}):
+        return
+
+    # check errors
+    if hook_module and getattr(hook_module, "_error", False):
+        if not isinstance(hook_module._error, FileNotFoundError):
+            raise hook_module._error
+
+    # execute hook
+    hook_func = getattr(hook_module, hook_type, None)
+    if hook_func:
+        _run_hook_function(obj, hook_type, hook_func, hook_source, key)
+
+
+def _run_hook_function(
+    obj: Settings,
+    hook_type: str,
+    hook_func: Callable,
+    hook_source: str = "default",
+    key: str = "",
+):
+    """
+    Run a hook function:
+
+    It execute @hook_func, update the results into settings @obj and
+    add it to _loaded_hook registry ([@hook_source][@hook_type])
+    """
+    # optional settings argument
+    try:
+        hook_dict = hook_func(obj.dynaconf.clone())
+    except TypeError:
+        hook_dict = hook_func()
+
+    # update obj settings
+    if hook_dict:
+        merge = hook_dict.pop(
+            "dynaconf_merge", hook_dict.pop("DYNACONF_MERGE", False)
+        )
+        if key and key in hook_dict:
+            obj.set(key, hook_dict[key], tomlfy=False, merge=merge)
+        elif not key:
+            obj.update(hook_dict, tomlfy=False, merge=merge)
+
+    # add to registry
+    obj._loaded_hooks[hook_source][hook_type] = hook_dict
+
+
 def settings_loader(
-    obj, settings_module=None, env=None, silent=True, key=None, filename=None
+    obj,
+    settings_module=None,
+    env=None,
+    silent=True,
+    key=None,
+    filename=None,
+    validate=False,
 ):
     """Loads from defined settings module
 
@@ -201,7 +254,12 @@ def settings_loader(
 
             if mod_file.endswith(loader["ext"]):
                 loader["loader"].load(
-                    obj, filename=mod_file, env=env, silent=silent, key=key
+                    obj,
+                    filename=mod_file,
+                    env=env,
+                    silent=silent,
+                    key=key,
+                    validate=validate,
                 )
                 continue
 
@@ -214,7 +272,7 @@ def settings_loader(
 
         # must be Python file or module
         # load from default defined module settings.py or .secrets.py if exists
-        py_loader.load(obj, mod_file, key=key)
+        py_loader.load(obj, mod_file, key=key, validate=validate)
 
         # load from the current env e.g: development_settings.py
         env = env or obj.current_env
@@ -241,11 +299,17 @@ def settings_loader(
             identifier=f"py_{env.upper()}",
             silent=True,
             key=key,
+            validate=validate,
         )
 
         # load from global_settings.py
         py_loader.load(
-            obj, global_mod_file, identifier="py_global", silent=True, key=key
+            obj,
+            global_mod_file,
+            identifier="py_global",
+            silent=True,
+            key=key,
+            validate=validate,
         )
 
 
@@ -263,7 +327,7 @@ def enable_external_loaders(obj):
             obj.LOADERS_FOR_DYNACONF.insert(0, loader)
 
 
-def write(filename, data, env=None):
+def write(filename, data, env=None, merge=False):
     """Writes `data` to `filename` infers format by file extension."""
     loader_name = f"{filename.rpartition('.')[-1]}_loader"
     loader = globals().get(loader_name)
@@ -274,4 +338,4 @@ def write(filename, data, env=None):
     if loader is not py_loader and env and env not in data:
         data = {env: data}
 
-    loader.write(filename, data, merge=False)
+    loader.write(filename, data, merge=merge)

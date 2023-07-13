@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-import io
+import sys
 from pathlib import Path
+from typing import TextIO
 from warnings import warn
 
 from dynaconf import default_settings
@@ -52,6 +53,7 @@ class AllLoader(BaseLoader):
 
 
 def load(obj, env=None, silent=True, key=None, filename=None):
+def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
     """
     Reads and loads in to "obj" a single key or all keys from source file.
 
@@ -85,6 +87,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         extensions=YAML_EXTENSIONS,
         file_reader=yaml_reader,
         string_reader=yaml_reader,
+        validate=validate,
     )
     loader.load(
         filename=filename,
@@ -99,6 +102,7 @@ def write(settings_path, settings_data, merge=True):
     :param settings_path: the filepath
     :param settings_data: a dictionary with data
     :param merge: boolean if existing file should be merged with new data
+    :param stdout: boolean if should output to stdout instead of file
     """
     settings_path = Path(settings_path)
     if settings_path.exists() and merge:  # pragma: no cover

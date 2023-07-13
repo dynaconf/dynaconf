@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 
@@ -16,11 +17,11 @@ from dynaconf.utils.files import read_file
 from dynaconf.vendor.click.testing import CliRunner
 
 
-runner = CliRunner()
 settings = LazySettings(OPTION_FOR_TESTS=True, environments=True)
 
 
 def run(cmd, env=None, attr="output"):
+    runner = CliRunner()
     result = runner.invoke(main, cmd, env=env, catch_exceptions=False)
     return getattr(result, attr)
 
@@ -123,6 +124,17 @@ def test_get(testdir):
         },
     )
     assert result == "test_value"
+
+
+def test_negative_get(testdir):
+    """Tests get command erroring when key does not exist"""
+    cmd = ["get", "DONTEXIST"]
+    env = {
+        "ROOT_PATH_FOR_DYNACONF": testdir,
+        "INSTANCE_FOR_DYNACONF": "tests.config.settings",
+    }
+    assert run(cmd, env=env, attr="stdout") == "Key not found"
+    assert run(cmd, env=env, attr="exit_code") == 1
 
 
 def test_get_json_dict(testdir):
@@ -464,3 +476,319 @@ def test_validate(tmpdir):
         "production" in result
     )
     assert "Validation success!" not in result
+
+
+def create_file(filename: str | Path, data: str):
+    """Utility to write data to filename."""
+    encoding = str(default_settings.ENCODING_FOR_DYNACONF)
+    with open(filename, "w", encoding=encoding) as f:
+        f.write(dedent(f"{data}"))
+    return filename
+
+
+def clear_dotenv(tmp_path):
+    Path(tmp_path / ".env").unlink()
+
+
+def test_inspect_no_args(tmp_path):
+    """Inspect command with no arguments"""
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_no_args"
+    setting_file = tmp_path / "a.toml"
+    environ = {"DYNACONF_FOO": "from_environ_no_args"}
+    cmd = ["-i", f"{instance_name}.settings", "inspect"]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        f"""\
+        settings = __import__('dynaconf').Dynaconf(
+            settings_file="{setting_file.as_posix()}"
+        )
+        """,
+    )
+
+    create_file(setting_file, "foo='from_file_no_args'")
+
+    result = run(cmd, env=environ)
+    expected_header = """\
+        {
+          "header": {
+            "filters": {
+              "env": "None",
+              "key": "None",
+              "history_ordering": "ascending"
+            },
+            "active_value": {
+              "FOO": "from_environ_no_args"
+            }
+          },
+        """
+    assert result
+    assert result.startswith(dedent(expected_header))
+
+
+def test_inspect_yaml_format(tmp_path):
+    """Inspect command with format argument"""
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_yaml_format"
+    setting_file = tmp_path / "a.toml"
+    environ = {
+        "DYNACONF_FOO": "from_environ_yaml_format",
+    }
+    cmd = ["-i", f"{instance_name}.settings", "inspect", "-f", "yaml"]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        f"""\
+        settings = __import__('dynaconf').Dynaconf(
+            settings_file="{setting_file.as_posix()}"
+        )
+        """,
+    )
+
+    create_file(setting_file, "bar='from_file_yaml_format'")
+
+    result = run(cmd, env=environ)
+    expected_header = """\
+        header:
+          filters:
+            env: None
+            key: None
+            history_ordering: ascending
+          active_value:
+            BAR: from_file_yaml_format
+            FOO: from_environ_yaml_format
+        """
+    assert result
+    assert result.startswith(dedent(expected_header))
+
+
+def test_inspect_key_filter(tmp_path):
+    """Inspect command with key filter argument"""
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_key_filter"
+    setting_file = tmp_path / "a.toml"
+    environ = {"DYNACONF_FOO": "from_environ_key_filter"}
+    cmd = ["-i", f"{instance_name}.settings", "inspect", "-k", "bar"]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        f"""\
+        settings = __import__('dynaconf').Dynaconf(
+            settings_file="{setting_file.as_posix()}"
+        )
+        """,
+    )
+
+    create_file(
+        setting_file,
+        """\
+        foo='from_file_key_filter'
+        bar='file_only'
+        """,
+    )
+
+    result = run(cmd, env=environ)
+    expected_header = """\
+        {
+          "header": {
+            "filters": {
+              "env": "None",
+              "key": "bar",
+              "history_ordering": "ascending"
+            },
+            "active_value": "file_only"
+          },
+        """
+    assert result
+    assert result.startswith(dedent(expected_header))
+
+
+def test_inspect_env_filter(tmp_path):
+    """Inspect command with env filter argument"""
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_env_filter"
+    setting_file = tmp_path / "a.toml"
+    environ = {}
+    cmd = ["-i", f"{instance_name}.settings", "inspect", "-e", "prod"]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        f"""\
+        from dynaconf import Dynaconf
+        settings = Dynaconf(
+            settings_file="{setting_file.as_posix()}",
+            environments=True
+        )
+        """,
+    )
+
+    create_file(
+        setting_file,
+        """\
+        default.foo='from_env_default'
+        development.foo='from_env_development'
+        prod.bar='prod_only_and_foo_default'
+        """,
+    )
+
+    result = run(cmd, env=environ)
+    expected_header = """\
+        {
+          "header": {
+            "filters": {
+              "env": "prod",
+              "key": "None",
+              "history_ordering": "ascending"
+            },
+            "active_value": {
+              "FOO": "from_env_default",
+              "BAR": "prod_only_and_foo_default"
+            }
+          },
+        """
+    assert result
+    assert result.startswith(dedent(expected_header))
+
+
+def test_inspect_all_args(tmp_path):
+    """Inspect command with all arguments"""
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_all_args"  # should be unique for isolation
+    setting_file = tmp_path / "a.toml"
+    environ = {"DYNACONF_BAR": "actual value but not in history"}
+    cmd = [
+        "-i",
+        f"{instance_name}.settings",
+        "inspect",
+        "--key",
+        "bar",
+        "--env",
+        "prod",
+        "--format",
+        "yaml",
+    ]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        f"""\
+        from dynaconf import Dynaconf
+        settings = Dynaconf(
+            settings_file="{setting_file.as_posix()}",
+            environments=True
+        )
+        """,
+    )
+
+    create_file(
+        setting_file,
+        """\
+        default.foo='from_env_default'
+        development.foo='from_env_development'
+        prod.bar='prod_only'
+        prod.spam='should_appear'
+        """,
+    )
+
+    result = run(cmd, env=environ)
+    expected_result = f"""\
+        header:
+          filters:
+            env: prod
+            key: bar
+            history_ordering: ascending
+          active_value: actual value but not in history
+        history:
+        - loader: toml
+          identifier: {setting_file.as_posix()}
+          env: prod
+          merged: false
+          value: prod_only\n
+        """
+    assert result
+    assert result == dedent(expected_result)
+
+
+def test_inspect_invalid_key(tmp_path):
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_invalid_key"
+    environ = {}
+    cmd = [
+        "-i",
+        f"{instance_name}.settings",
+        "inspect",
+        "--key",
+        "dont_exist",
+    ]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        """\
+        from dynaconf import Dynaconf
+        settings = Dynaconf(environments=True)
+        """,
+    )
+
+    result = run(cmd, env=environ)
+    assert result == "The requested key was not found: 'dont_exist'\n"
+
+
+def test_inspect_invalid_env(tmp_path):
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_invalid_env"
+    environ = {}
+    cmd = [
+        "-i",
+        f"{instance_name}.settings",
+        "inspect",
+        "--env",
+        "dont_exist",
+    ]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        """\
+        from dynaconf import Dynaconf
+        settings = Dynaconf(environments=True)
+        """,
+    )
+
+    result = run(cmd, env=environ)
+    assert result == "The requested env is not valid: 'dont_exist'\n"
+
+
+def test_inspect_invalid_format(tmp_path):
+    clear_dotenv(tmp_path)
+
+    instance_name = "inspect_invalid_format"
+    environ = {}
+    cmd = [
+        "-i",
+        f"{instance_name}.settings",
+        "inspect",
+        "--format",
+        "dont_exist",
+    ]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        """\
+        from dynaconf import Dynaconf
+        settings = Dynaconf()
+        """,
+    )
+
+    result = run(cmd, env=environ)
+    expected = (
+        "Error: Invalid value for '--format' / '-f': "
+        "invalid choice: dont_exist."
+    )
+
+    assert expected in result
