@@ -102,10 +102,14 @@ Options:
 
 Note that `-i`/`--instance` cannot be used with `init` as `-i` must point to an existing instance of the settings.
 
-  
-### Dynaconf inspect
+
+### Dynaconf inspect (tech preview)
 
 > **NEW in 3.2.0**
+
+!!! warning
+    This feature is in **tech preview** the usage interface and output format is
+    subject to change.
 
 Inspect and dump data's loading history about a specific key or environment.
 
