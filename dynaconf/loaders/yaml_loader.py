@@ -44,7 +44,10 @@ class AllLoader(BaseLoader):
                         self._assign_data(data, source_file, content)
                 except OSError as e:
                     if ".local." not in source_file:
-                        warn(f"{self.identifier}_loader: {source_file} " f":{str(e)}")
+                        warn(
+                            f"{self.identifier}_loader: {source_file} "
+                            f":{str(e)}"
+                        )
             else:
                 # for tests it is possible to pass string
                 content = self.string_reader(source_file)
@@ -67,7 +70,9 @@ def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
     # https://github.com/yaml/pyyaml/wiki/PyYAML-yaml.load(input)-Deprecation
     # Possible values are:
     #   `safe_load, full_load, unsafe_load, load, safe_load_all`
-    yaml_reader = getattr(yaml, obj.get("YAML_LOADER_FOR_DYNACONF"), yaml.safe_load)
+    yaml_reader = getattr(
+        yaml, obj.get("YAML_LOADER_FOR_DYNACONF"), yaml.safe_load
+    )
     if yaml_reader.__name__ == "unsafe_load":  # pragma: no cover
         warn(
             "yaml.unsafe_load is deprecated."
