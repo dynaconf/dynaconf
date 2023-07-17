@@ -1,6 +1,6 @@
 # advanced usage
 
-## Hooks 
+## Hooks
 
 > **NEW** in version 3.1.6
 
@@ -26,7 +26,7 @@ if DEBUG:
 ```py
 from dynaconf import Dynaconf
 settings = Dynaconf(
-    preload=['plugin_settings.py'], 
+    preload=['plugin_settings.py'],
     settings_file="settings.py"
 )
 ```
@@ -84,6 +84,10 @@ You can also set the merging individually for each settings variable as seen on
 ## `inspect_settings`
 
 > **NEW** in version 3.2.0
+
+!!! warning
+    This feature is in **tech preview** the usage interface and output format is
+    subject to change.
 
 Inspect the loading history of all ingested data by its source identities.
 
@@ -533,7 +537,7 @@ current_directory = os.path.dirname(os.path.realpath(__file__))
 
 settings = Dynaconf(
     root_path=current_directory, # defining root_path
-    envvar_prefix="DYNACONF", 
+    envvar_prefix="DYNACONF",
     settings_files=["settings.toml", ".secrets.toml"],
 )
 ```

@@ -1,6 +1,6 @@
 [build]
 # if commit is not tagged don't build
-ignore = "git describe --exact-match && exit 1 || exit 0"
+# ignore = "git describe --exact-match && exit 1 || exit 0"
 publish = "site"
 command = "pip install -r requirements.txt && mkdocs build --clean"
 
