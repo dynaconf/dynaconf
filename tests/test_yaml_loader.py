@@ -18,6 +18,15 @@ def settings():
     )
 
 
+@pytest.fixture(scope="module")
+def multidoc_settings():
+    return LazySettings(
+        environments=True,
+        ENV_FOR_DYNACONF="PRODUCTION",
+        YAML_LOADER_FOR_DYNACONF="safe_load_all",
+    )
+
+
 YAML = """
 # the below is just to ensure `,` will not break string YAML
 a: 'a,b'
@@ -59,6 +68,8 @@ global:
 
 YAMLS = [YAML, YAML2]
 
+MULTIDOC = "\n---\n".join(YAMLS)
+
 
 def test_load_from_yaml(settings):
     """Assert loads from YAML string"""
@@ -85,6 +96,33 @@ def test_load_from_yaml(settings):
 def test_load_from_multiple_yaml(settings):
     """Assert loads from YAML string"""
     load(settings, filename=YAMLS)
+    assert settings.HOST == "otheryaml.com"
+    assert settings.PASSWORD == 123456
+    assert settings.SECRET == 42.0
+    assert settings.PORT == 8080
+    assert settings.SERVICE["url"] == "service.com"
+    assert settings.SERVICE.url == "service.com"
+    assert settings.SERVICE.port == 80
+    assert settings.SERVICE.auth.password == "qwerty"
+    assert settings.SERVICE.auth.test == 1234
+    load(settings, filename=YAMLS, env="DEVELOPMENT")
+    assert settings.PORT == 8080
+    assert settings.HOST == "otheryaml.com"
+    load(settings, filename=YAMLS)
+    assert settings.HOST == "otheryaml.com"
+    assert settings.PASSWORD == 123456
+    load(settings, filename=YAML, env="DEVELOPMENT")
+    assert settings.PORT == 8080
+    assert settings.HOST == "devserver.com"
+    load(settings, filename=YAML)
+    assert settings.HOST == "prodserver.com"
+    assert settings.PASSWORD == 11111
+
+
+def test_load_from_multidoc_yaml(multidoc_settings):
+    """Assert loads from YAML string"""
+    settings = multidoc_settings
+    load(settings, filename=MULTIDOC)
     assert settings.HOST == "otheryaml.com"
     assert settings.PASSWORD == 123456
     assert settings.SECRET == 42.0
