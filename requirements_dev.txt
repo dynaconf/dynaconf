@@ -16,7 +16,6 @@ pytest
 pytest-cov
 pytest-mock
 commentjson
-docker-compose
 lovely-pytest-docker
 tox
 
