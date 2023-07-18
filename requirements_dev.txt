@@ -16,8 +16,6 @@ pytest
 pytest-cov
 pytest-mock
 commentjson
-pyyaml==6.0.1
-docker-compose
 lovely-pytest-docker
 tox
 

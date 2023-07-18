@@ -47,6 +47,7 @@ citest:
 	make coverage-report
 
 ciinstall:
+	curl -SL https://github.com/docker/compose/releases/download/v2.20.0/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose
 	python -m pip install --upgrade pip
 	python -m pip install -r requirements_dev.txt
 
