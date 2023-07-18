@@ -46,7 +46,7 @@ from dynaconf.vendor.box.box_list import BoxList
 
 
 class LazySettings(LazyObject):
-    """Loads settings lazily from multiple sources::
+    """Loads settings lazily from multiple sources:
 
         settings = Dynaconf(
             settings_files=["settings.toml"],  # path/glob
