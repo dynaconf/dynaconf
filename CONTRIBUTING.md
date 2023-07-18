@@ -65,7 +65,8 @@ git push -u origin HEAD
 ### Run integration tests
 
 * "make all" do not run integration tests for Redis and Vault.
-* If you want to run integration tests, make sure you have docker installed
+* If you want to run integration tests, make sure you have docker and docker-compose
+installed.
 
 ```bash
 
