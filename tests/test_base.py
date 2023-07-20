@@ -1423,3 +1423,10 @@ def test_get_with_sysenv_fallback_local_overrides():
     assert settings.sysenv_fallback_for_dynaconf is True
     assert settings.get("another_test") == "ANOTHER_VALUE"
     assert not settings.get("another_test", sysenv_fallback=False)
+
+
+# issue #965
+def test_no_extra_values_in_nested_structure():
+    settings = Dynaconf()
+    settings.set("key", [{"d": "v"}])
+    assert settings.key == [{"d": "v"}]
