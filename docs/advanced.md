@@ -218,6 +218,34 @@ if __name__ == "__main__":
     app()
 ```
 
+Alternatively you can use a more generic approach using `**options` and passing `options` to dynaconf
+
+`app.py`
+```py
+from __future__ import annotations
+
+from dynaconf import settings
+
+import click
+
+
+@click.command()
+@click.option("--host", default=settings.HOST, help="Host")
+@click.option("--port", default=settings.PORT, help="Port")
+@click.option("--env", default=settings.current_env, help="Env")
+def app(**options):
+    """Simple click example for overwrite dynaconf settings"""
+
+    # change the environment to update proper settings
+    settings.setenv(options['env'])
+
+    # update the dynaconfig settings
+    settings.update(options)
+
+if __name__ == "__main__":
+    app()
+```
+
 ## Programmatically loading a settings file
 
 You can load files from within a python script.
