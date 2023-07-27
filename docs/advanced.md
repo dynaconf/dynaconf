@@ -145,6 +145,79 @@ inspect_setting(setting, to_file="filename.json", output_format="json")
 Dynaconf supports some builtin formats, but you can use a custom dumper too that
 can dump nested dict/list structure into a `TextIO` stream.
 
+## Update dynaconf settings using command-line arguments (cli)
+
+Dynaconf is designed to load the settings file and, when applicable, prioritize overrides from envvar.
+
+The following examples demonstrate the process of incorporating command-line arguments to update the Dynaconf settings, ensuring that the CLI input takes precedence over both the settings.toml file and environment variables.
+
+### Command-line arguments using argparse
+
+This illustration showcases the utilization of Python's `argparse` module to exemplify the creation of a command-line interface (CLI) capable of overriding the settings.toml file and environment variables.
+
+`app.py`
+```py
+from __future__ import annotations
+
+from dynaconf import settings
+
+import argparse
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Simple argparse example for overwrite dynaconf settings"
+    )
+
+    parser.add_argument("--env", default=settings.current_env)
+    parser.add_argument("--host", default=settings.HOST)
+    parser.add_argument("--port", default=settings.PORT)
+
+    options, args = parser.parse_known_args(argv)
+
+    # change the environment to update proper settings
+    settings.setenv(options.env)
+
+    # update the dynaconfig settings
+    settings.update(vars(options))
+
+    #
+
+if __name__ == "__main__":
+    main(argv=None)
+```
+
+
+### Command-line arguments using click
+
+This illustration showcases the utilization of Python's `click` module to exemplify the creation of a command-line interface (CLI) capable of overriding the settings.toml file and environment variables.
+
+`app.py`
+```py
+from __future__ import annotations
+
+from dynaconf import settings
+
+import click
+
+
+@click.command()
+@click.option("--host", default=settings.HOST, help="Host")
+@click.option("--port", default=settings.PORT, help="Port")
+@click.option("--env", default=settings.current_env, help="Env")
+def app(host, port, env):
+    """Simple click example for overwrite dynaconf settings"""
+
+    # change the environment to update proper settings
+    settings.setenv(env)
+
+    # update the dynaconfig settings
+    settings.update({"host": host, "port": port})
+
+if __name__ == "__main__":
+    app()
+```
+
 ## Programmatically loading a settings file
 
 You can load files from within a python script.
