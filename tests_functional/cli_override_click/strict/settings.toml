@@ -1,0 +1,25 @@
+# This is the BASE env
+# the values from [values] will be always loaded and used as default values
+# by default it was called [default] but in the .env file we changed the DEFAULT_ENV_FOR_DYNACONF to VALUES
+[values]
+host = "server.com from TOML"
+port = 5000.0
+
+# If other env is set by ENV_FOR_DYNACONF env var
+# or switch using settings.env or settings.using_env
+# then the [prod] values will be overwritten with:
+
+# When ENV_FOR_DYNACONF=TESTING
+[testing]
+host = "test_server.com from toml"
+works = 'only_in_test'
+
+# When ENV_FOR_DYNACONF=DEVELOPMENT
+[development]
+host = "dev_server.com from toml"
+works = 'only_in_dev'
+
+# When ENV_FOR_DYNACONF=STAGING
+[staging]
+host = "staging_server.com from toml"
+works = 'only_in_staging'
