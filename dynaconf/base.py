@@ -66,7 +66,7 @@ class LazySettings(LazyObject):
         :param wrapped: a deepcopy of this object will be wrapped (issue #596)
         :param kwargs: values that overrides default_settings
         """
-
+        self._wrapper_class = kwargs.pop("_wrapper_class", Settings)
         self._warn_dynaconf_global_settings = kwargs.pop(
             "warn_dynaconf_global_settings", None
         )  # in 3.0.0 global settings is deprecated
@@ -171,13 +171,14 @@ class LazySettings(LazyObject):
                 "your own instance e.g: `settings = Dynaconf(*options)`",
                 DeprecationWarning,
             )
+            self._wrapper_class = Settings  # Force unhooked for this
 
         default_settings.reload(self._should_load_dotenv)
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
         settings_module = os.environ.get(environment_variable)
-        self._wrapped = Settings(
+        self._wrapped = self._wrapper_class(
             settings_module=settings_module, **self._kwargs
         )
 
@@ -196,7 +197,9 @@ class LazySettings(LazyObject):
         settings_module = settings_module or os.environ.get(environment_var)
         compat_kwargs(kwargs)
         kwargs.update(self._kwargs)
-        self._wrapped = Settings(settings_module=settings_module, **kwargs)
+        self._wrapped = self._wrapper_class(
+            settings_module=settings_module, **kwargs
+        )
 
     @property
     def configured(self):
@@ -293,20 +296,30 @@ class Settings:
         return item.upper() in self.store or item.lower() in self.store
 
     def __getattribute__(self, name):
-        if name not in RESERVED_ATTRS and name not in UPPER_DEFAULT_SETTINGS:
-            with suppress(KeyError):
-                # self._store has Lazy values already evaluated
-                if (
-                    name.islower()
-                    and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty)
-                    is False
-                ):
-                    # only matches exact casing, first levels always upper
-                    return self._store.__getattribute__(name)
-                # perform lookups for upper, and casefold
-                return self._store[name]
-        # in case of RESERVED_ATTRS or KeyError above, keep default behaviour
-        return super().__getattribute__(name)
+        if (
+            name.startswith("__")
+            or name in RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS
+        ):
+            return super().__getattribute__(name)
+
+        # This is to keep the only upper case mode working
+        # self._store has Lazy values already evaluated
+        if (
+            name.islower()
+            and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty) is False
+        ):
+            try:
+                # only matches exact casing, first levels always upper
+                return self._store.__getattribute__(name)
+            except KeyError:
+                return super().__getattribute__(name)
+
+        # then go to the regular .get which triggers hooks among other things
+        value = self.get(name, default=empty)
+        if value is empty:
+            return super().__getattribute__(name)
+
+        return value
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
@@ -930,8 +943,11 @@ class Settings:
         key = upperfy(key.strip())
 
         # Fix for #869 - The call to getattr trigger early evaluation
+        # existing = (
+        #    getattr(self, key, None) if not isinstance(value, Lazy) else None
+        # )
         existing = (
-            getattr(self, key, None) if not isinstance(value, Lazy) else None
+            self.store.get(key, None) if not isinstance(value, Lazy) else None
         )
 
         if getattr(value, "_dynaconf_del", None):
@@ -1359,13 +1375,15 @@ class Settings:
         """Clone the current settings object."""
         try:
             return copy.deepcopy(self)
-        except TypeError:
+        except (TypeError, copy.Error):
             # can't deepcopy settings object because of module object
             # being set as value in the settings dict
             new_data = self.to_dict(internal=True)
             new_data["dynaconf_skip_loaders"] = True
             new_data["dynaconf_skip_validators"] = True
-            return Settings(**new_data)
+            new_data["_registered_hooks"] = {}
+            new_data["_REGISTERED_HOOKS"] = {}
+            return self.__class__(**new_data)
 
     @property
     def dynaconf(self):
@@ -1441,5 +1459,7 @@ RESERVED_ATTRS = (
         "_validate_exclude",
         "_validate_only_current_env",
         "_post_hooks",
+        "_registered_hooks",
+        "_REGISTERED_HOOKS",
     ]
 )

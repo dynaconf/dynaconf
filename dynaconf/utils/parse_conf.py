@@ -32,6 +32,10 @@ KV_PATTERN = re.compile(r"([a-zA-Z0-9 ]*=[a-zA-Z0-9\- :]*)")
 """matches `a=b, c=d, e=f` used on `VALUE='@merge foo=bar'` variables."""
 
 
+class DynaconfFormatError(Exception):
+    """Error to raise when formatting a lazy variable fails"""
+
+
 class DynaconfParseError(Exception):
     """Error to raise when parsing @casts"""
 
@@ -143,7 +147,14 @@ class BaseFormatter:
         self.token = token
 
     def __call__(self, value, **context):
-        return self.function(value, **context)
+        try:
+            return self.function(value, **context)
+        except (KeyError, AttributeError) as exc:
+            # A template like `{this.KEY}` failed with AttributeError
+            # Or KeyError in the case of `{env[KEY]}`
+            raise DynaconfFormatError(
+                f"Dynaconf can't interpolate variable because {exc}"
+            ) from exc
 
     def __str__(self):
         return str(self.token)
@@ -396,7 +407,7 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
         # recursively parse inner dict items
         _parsed = DynaBox({}, box_settings=box_settings)
         for k, v in data._safe_items():
-            _parsed[str(k)] = parse_conf_data(
+            _parsed[k] = parse_conf_data(
                 v, tomlfy=tomlfy, box_settings=box_settings
             )
         return _parsed
@@ -405,7 +416,7 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
         # recursively parse inner dict items
         _parsed = {}
         for k, v in data.items():
-            _parsed[str(k)] = parse_conf_data(
+            _parsed[k] = parse_conf_data(
                 v, tomlfy=tomlfy, box_settings=box_settings
             )
         return _parsed
