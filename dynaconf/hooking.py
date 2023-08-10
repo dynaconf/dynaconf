@@ -8,7 +8,6 @@ from typing import Callable
 
 from dynaconf.base import RESERVED_ATTRS
 from dynaconf.base import Settings
-from dynaconf.base import UPPER_DEFAULT_SETTINGS
 
 
 __all__ = [
@@ -37,7 +36,28 @@ def hookable(function=None, name=None):
     :param name: name of the method to be decorated (default to method name)
     :return: decorated function
 
-    Usage: see tests/test_hooking.py for more examples.
+    Usage:
+
+        class MyHookableClass(Settings):
+            @hookable
+            def execute_loaders(....):
+                # do whatever you want here
+                return super().execute_loaders(....)
+
+        settings = Dynaconf(_wrapper_class=MyHookableClass)
+
+        def hook_function(temp_settings, value, ...):
+            # do whatever you want here
+            return value
+
+        settings.add_hook("after_execute_loaders", Hook(function))
+
+        settings.FOO
+        # will trigger execute_loaders
+        # -> will trigger the hookable method
+        # -> will execute registered hooks
+
+    see tests/test_hooking.py for more examples.
     """
 
     if function and not callable(function):
@@ -58,13 +78,23 @@ def hookable(function=None, name=None):
         ):
             return fun(self, *args, **kwargs)
 
-        settings_dict = self.__dict__
+        # Create an unhookable (to avoid recursion)
+        # temporary settings to pass to the hooked function
+        temp_settings = Settings(
+            dynaconf_skip_loaders=True,
+            dynaconf_skip_validators=True,
+        )
+        allowed_keys = self.__dict__.keys() - set(RESERVED_ATTRS)
+        temp_data = {
+            k: v for k, v in self.__dict__.items() if k in allowed_keys
+        }
+        temp_settings._store.update(temp_data)
 
         def _hook(action: str, value: HookValue) -> HookValue:
             """executes the hooks for the given action"""
             hooks = _registered_hooks.get(f"{action}_{function_name}", [])
             for hook in hooks:
-                value = hook.function(settings_dict, value, *args, **kwargs)
+                value = hook.function(temp_settings, value, *args, **kwargs)
                 value = HookValue.new(value)
             return value
 
@@ -104,7 +134,10 @@ def hookable(function=None, name=None):
 
 
 def get_hooks(obj):
-    """get registered hooks from object"""
+    """get registered hooks from object
+    must try different casing and accessors because of
+    tests and casing mode set on dynaconf.
+    """
     attr = "_registered_hooks"
     for key in [attr, attr.upper()]:
         if hasattr(obj, key):
@@ -116,37 +149,6 @@ def get_hooks(obj):
     return {}
 
 
-# class SettingsWrapper:
-#     """Allow hooks to access the original object without recursion"""
-
-#     def __init__(self, settings, function_name):
-#         self.settings = settings
-#         # self.settings = settings.dynaconf_clone()
-#         # self.settings._store["_REGISTERED_HOOKS"] = {}
-#         # self.settings._store["_registered_hooks"] = {}
-#         # check if possoble to remove only the function named hooks
-#         self.function_name = function_name
-#         original_function = getattr(settings, function_name
-#            ).original_function
-#         setattr(
-#             self,
-#             function_name,
-#             lambda *args, **kwargs: original_function(self, *args, **kwargs),
-#         )
-
-#     def __getattr__(self, item):
-#         if item.lower() == "_registered_hooks":
-#             return None
-#         settings = object.__getattribute__(self, "settings")
-#         return getattr(settings, item)
-#         # return getattr(self.settings, item)
-
-#     def __getitem__(self, item):
-#         if item.lower() == "_registered_hooks":
-#             return None
-#         return self.settings[item]
-
-
 @dataclass
 class Hook:
     """Hook to wrap a callable on _registered_hooks list.
@@ -155,13 +157,13 @@ class Hook:
 
     The callable must accept the following arguments:
 
-    - self: The instance of the class, e.g `settings`
+    - temp_settings: Settings or a Dict
     - value: The value to be processed wrapper in a HookValue
       (accumulated from previous hooks, last hook will receive the final value)
     - *args: The args passed to the original method
     - **kwargs: The kwargs passed to the original method
 
-    The callable must return a tuple with the following values:
+    The callable must return the value:
 
     - value: The processed value to be passed to the next hook
     """
@@ -268,20 +270,12 @@ class EagerValue(HookValue):
 class Action(str, Enum):
     """All the hookable functions"""
 
-    AFTER_AS_DICT = "after_as_dict"
-    BEFORE_AS_DICT = "before_as_dict"
     AFTER_GET = "after_get"
     BEFORE_GET = "before_get"
 
 
 class HookableSettings(Settings):
-    """Wrapper for dynaconf.base.Settings that adds hooks to read methods."""
-
-    @hookable
-    def as_dict(self, *args, **kwargs):
-        return Settings.as_dict(self, *args, **kwargs)
-
-    to_dict = as_dict
+    """Wrapper for dynaconf.base.Settings that adds hooks to get method."""
 
     @hookable
     def get(self, *args, **kwargs):
