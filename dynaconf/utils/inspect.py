@@ -12,13 +12,14 @@ from typing import TextIO
 from typing import TYPE_CHECKING
 from typing import Union
 
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils.functional import empty
 from dynaconf.vendor.box.box_list import BoxList
 from dynaconf.vendor.ruamel.yaml import YAML
 
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings, Settings
-    from dynaconf.loaders.base import SourceMetadata
 
 
 # Dumpers config
@@ -177,6 +178,9 @@ def get_history(
             }
         ]
     """
+    # trigger key based hooks
+    obj.get(key_dotted_path)  # noqa
+
     result = []
     for source_metadata, data in obj._loaded_by_loaders.items():
         # filter by source_metadata
@@ -196,6 +200,16 @@ def get_history(
         # Format output
         data = _ensure_serializable(data)
         result.append({**source_metadata._asdict(), "value": data})
+
+    if not result:
+        # Key may be set in obj but history not tracked
+        if (data := obj.get(key_dotted_path, empty)) is not empty:
+            generic_source_metadata = SourceMetadata(
+                loader="undefined",
+                identifier="undefined",
+            )
+            result.append({**generic_source_metadata._asdict(), "value": data})
+
     return result
 
 

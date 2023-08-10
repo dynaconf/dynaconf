@@ -3,7 +3,6 @@ from __future__ import annotations
 import pytest
 
 from dynaconf import Dynaconf
-from dynaconf.base import Settings
 from dynaconf.hooking import Action
 from dynaconf.hooking import EagerValue
 from dynaconf.hooking import get_hooks
@@ -34,13 +33,18 @@ def test_hook_dynaconf_class_get_templated():
         TEMPLATED1="@int @format {this[INTERNAL_VALUE]}",
         TEMPLATED2="@jinja {{this.INTERNAL_VALUE}}abcd",
         TEMPLATED3="@int @jinja {{this.INTERNAL_VALUE}}",
+        PERSON={"NAME": "Joe"},
         _wrapper_class=HookableSettings,
     )
 
     def just_assert_values_after_get(s, v, key, *_, **__):
-        assert s["INTERNAL_VALUE"] == 42
         if key == "INTERNAL_VALUE":
             assert v == 99
+        elif key == "PERSON":
+            assert s["PERSON"] == {"NAME": "Joe", "city": "Valhala", "AGE": 18}
+        else:
+            assert s["PERSON"] == {"NAME": "Joe"}
+            assert s["INTERNAL_VALUE"] == 42
         return v
 
     def set_internal_value_to_99_before_get(s, v, key, *_, **__):
@@ -48,9 +52,26 @@ def test_hook_dynaconf_class_get_templated():
             return EagerValue(99)
         return v
 
+    def contribute_to_person_after_get(s, v, key, *_, **__):
+        if key == "PERSON":
+            data = {"PERSON__AGE": 18, "PERSON": "@merge city=Valhala"}
+            s.update(data)
+            return s.get(key)
+        return v
+
+    def assert_unchanged_person_value_before_get(s, v, key, *_, **__):
+        assert s["PERSON"] == {"NAME": "Joe"}
+        return v
+
     settings["_registered_hooks"] = {
-        Action.BEFORE_GET: [Hook(set_internal_value_to_99_before_get)],
-        Action.AFTER_GET: [Hook(just_assert_values_after_get)],
+        Action.BEFORE_GET: [
+            Hook(set_internal_value_to_99_before_get),
+            Hook(assert_unchanged_person_value_before_get),
+        ],
+        Action.AFTER_GET: [
+            Hook(contribute_to_person_after_get),
+            Hook(just_assert_values_after_get),
+        ],
     }
 
     assert settings.TEMPLATED == "99abc"
@@ -62,6 +83,9 @@ def test_hook_dynaconf_class_get_templated():
     assert settings.TEMPLATED3 == 99
     assert settings.INTERNAL_VALUE == 99
     assert settings.get("INTERNAL_VALUE") == 99
+    assert settings.PERSON.NAME == "Joe"
+    assert settings.PERSON.AGE == 18
+    assert settings.PERSON.CITY == "Valhala"
 
 
 def test_hook_dynaconf_class_after_get():

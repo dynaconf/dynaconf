@@ -8,6 +8,7 @@ from typing import Callable
 
 from dynaconf.base import RESERVED_ATTRS
 from dynaconf.base import Settings
+from dynaconf.loaders.base import SourceMetadata
 
 
 __all__ = [
@@ -103,10 +104,32 @@ def hookable(function=None, name=None):
 
         # If the value is EagerValue, it means main function should not be
         # executed and the value should go straight to the after hooks if any
+        original_value = EMPTY_VALUE
         if not isinstance(value, EagerValue):
             value = MethodValue(fun(self, *args, **kwargs))
+            original_value = value.value
 
         value = _hook("after", value)
+
+        # track the loading history
+        # adding inspect history like:
+        # "identifier": "get_hook_(read_settings_from_cache_or_db)"
+        if value.value != original_value and function_name == "get":
+            hook_names = "_".join(
+                [
+                    hook.function.__name__
+                    for list_of_hooks in _registered_hooks.values()
+                    for hook in list_of_hooks
+                ]
+            )
+            metadata = SourceMetadata(
+                loader="hooking",
+                identifier=f"{function_name}_hook_({hook_names})",
+                merged=True,
+            )
+            history = self._loaded_by_loaders.setdefault(metadata, {})
+            key = args[0] if args else kwargs.get("key")
+            history[key] = value.value
 
         # unwrap the value from the HookValue so it can be returned
         # normally to the caller
