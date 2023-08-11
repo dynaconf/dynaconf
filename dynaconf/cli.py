@@ -834,7 +834,15 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
     default=False,
     is_flag=True,
 )
-def inspect(key, env, format, descending):  # pragma: no cover
+@click.option(
+    "--all",
+    "_all",
+    "-a",
+    default=False,
+    is_flag=True,
+    help="show dynaconf internal settings?",
+)
+def inspect(key, env, format, descending, _all):  # pragma: no cover
     """
     Inspect the loading history of the given settings instance.
 
@@ -847,6 +855,7 @@ def inspect(key, env, format, descending):  # pragma: no cover
             env=env,
             output_format=format,
             ascending_order=(not descending),
+            include_internal=_all,
         )
         click.echo()
     except (KeyNotFoundError, EnvNotFoundError, OutputFormatError) as err:

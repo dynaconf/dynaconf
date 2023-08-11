@@ -60,6 +60,7 @@ def inspect_settings(
     to_file: str = "",
     output_format: OutputFormat = "yaml",
     custom_dumper: DumperType | None = None,
+    include_internal: bool = False,
 ):
     """
     Prints loading history about a specific key (as dotted path string)
@@ -72,6 +73,8 @@ def inspect_settings(
         fo_file: if specified, write to this filename
         output_format: available output format options
         custom_dumper: if provided, it is used instead of builtins
+        include_internal: if True, include internal loaders (e.g. defaults)
+                          This has effect only if key is not provided.
     """
     # get filtered history
     original_settings = settings
@@ -88,6 +91,7 @@ def inspect_settings(
         original_settings,
         key_dotted_path=key_dotted_path,
         filter_src_metadata=env_filter,
+        include_internal=include_internal,
     )
     if key_dotted_path and not history:
         raise KeyNotFoundError(
@@ -147,6 +151,7 @@ def get_history(
     obj: Settings | LazySettings,
     key_dotted_path: str = "",
     filter_src_metadata: Callable[[SourceMetadata], bool] = lambda x: True,
+    include_internal: bool = False,
 ) -> list[dict]:
     """
     Gets data from `settings.loaded_by_loaders` in order of loading with
@@ -159,6 +164,8 @@ def get_history(
         obj: Setting object which contain the data
         key_dotted_path: dot-path to desired key. Use all if not provided
         filter_src_metadata: takes SourceMetadata and returns a boolean
+        include_internal: if True, include internal loaders (e.g. defaults)
+                          This has effect only if key is not provided.
 
     Example:
         >>> settings = Dynaconf(...)
@@ -179,13 +186,22 @@ def get_history(
         ]
     """
     # trigger key based hooks
-    obj.get(key_dotted_path)  # noqa
+    if key_dotted_path:
+        obj.get(key_dotted_path)  # noqa
 
+    internal_identifiers = ["default_settings", "_root_path"]
     result = []
     for source_metadata, data in obj._loaded_by_loaders.items():
         # filter by source_metadata
         if filter_src_metadata(source_metadata) is False:
             continue
+
+        if (
+            not key_dotted_path
+            and include_internal is False
+            and source_metadata.identifier in internal_identifiers
+        ):
+            continue  # skip: internal loaders
 
         # filter by key path
         try:
@@ -201,13 +217,14 @@ def get_history(
         data = _ensure_serializable(data)
         result.append({**source_metadata._asdict(), "value": data})
 
-    if not result:
+    if key_dotted_path and not result:
         # Key may be set in obj but history not tracked
         if (data := obj.get(key_dotted_path, empty)) is not empty:
             generic_source_metadata = SourceMetadata(
                 loader="undefined",
                 identifier="undefined",
             )
+            data = _ensure_serializable(data)
             result.append({**generic_source_metadata._asdict(), "value": data})
 
     return result

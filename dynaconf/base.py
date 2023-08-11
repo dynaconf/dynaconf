@@ -229,7 +229,7 @@ class Settings:
         self._deleted = set()
         self._store = DynaBox(box_settings=self)
         self._env_cache = {}
-        self._loaded_by_loaders: dict[SourceMetadata, Any] = {}
+        self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []
         self._defaults = DynaBox(box_settings=self)
         self.environ = os.environ
@@ -251,9 +251,13 @@ class Settings:
 
         compat_kwargs(kwargs)
         if settings_module:
-            self.set("SETTINGS_FILE_FOR_DYNACONF", settings_module)
+            self.set(
+                "SETTINGS_FILE_FOR_DYNACONF",
+                settings_module,
+                loader_identifier="init_settings_module",
+            )
         for key, value in kwargs.items():
-            self.set(key, value)
+            self.set(key, value, loader_identifier="init_kwargs")
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
 
@@ -385,9 +389,7 @@ class Settings:
                 )
             )
         )
-        loader_identifier = SourceMetadata(
-            "validation_default", "unique", env.lower()
-        )
+        loader_identifier = SourceMetadata("setdefault", "unique", env.lower())
 
         if apply_default:
             self.set(
@@ -894,7 +896,7 @@ class Settings:
         self,
         key,
         value,
-        loader_identifier: SourceMetadata | None = None,
+        loader_identifier: SourceMetadata | str | None = None,
         tomlfy=False,
         dotted_lookup=empty,
         is_secret="DeprecatedArgument",  # noqa
@@ -910,6 +912,13 @@ class Settings:
         :param merge: Bool define if existing nested data will be merged.
         :param validate: Bool define if validation will be triggered
         """
+        if isinstance(loader_identifier, str):
+            loader_identifier = SourceMetadata(
+                loader="undefined",
+                identifier=loader_identifier,
+                merged=merge is True,
+            )
+
         if validate is empty:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
 
@@ -1292,7 +1301,11 @@ class Settings:
 
         if self._loaded_files:  # called once
             root_path = os.path.dirname(self._loaded_files[0])
-            self.set("ROOT_PATH_FOR_DYNACONF", root_path)
+            self.set(
+                "ROOT_PATH_FOR_DYNACONF",
+                root_path,
+                loader_identifier="_root_path",
+            )
             return root_path
 
     def load_extra_yaml(self, env, silent, key):

@@ -39,7 +39,7 @@ def default_loader(obj, defaults=None):
     for key in all_keys:
         if not obj.exists(key):
             value = defaults.get(key, default_settings_values.get(key))
-            obj.set(key, value)
+            obj.set(key, value, loader_identifier="default_settings")
 
     # start dotenv to get default env vars from there
     # check overrides in env vars
@@ -62,7 +62,12 @@ def default_loader(obj, defaults=None):
         )
 
         if env_value != "_not_found":
-            obj.set(key, env_value, tomlfy=True)
+            obj.set(
+                key,
+                env_value,
+                tomlfy=True,
+                loader_identifier="envvars_first_load",
+            )
 
 
 def execute_instance_hooks(
@@ -169,13 +174,25 @@ def _run_hook_function(
 
     # update obj settings
     if hook_dict:
+        identifier = f"{hook_func.__name__}@{hook_source}"
         merge = hook_dict.pop(
             "dynaconf_merge", hook_dict.pop("DYNACONF_MERGE", False)
         )
         if key and key in hook_dict:
-            obj.set(key, hook_dict[key], tomlfy=False, merge=merge)
+            obj.set(
+                key,
+                hook_dict[key],
+                tomlfy=False,
+                merge=merge,
+                loader_identifier=identifier,
+            )
         elif not key:
-            obj.update(hook_dict, tomlfy=False, merge=merge)
+            obj.update(
+                hook_dict,
+                tomlfy=False,
+                merge=merge,
+                loader_identifier=identifier,
+            )
 
     # add to registry
     obj._loaded_hooks[hook_source][hook_type] = hook_dict

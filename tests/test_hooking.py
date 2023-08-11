@@ -16,6 +16,7 @@ from dynaconf.utils.boxing import DynaBox
 class BaseHookedSettings:
     def __init__(self, **kwargs):
         self._store = DynaBox(kwargs)
+        self._loaded_by_loaders = {}
 
     @property
     def __dict__(self):
