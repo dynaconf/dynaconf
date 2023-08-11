@@ -2,16 +2,73 @@ Changelog
 =========
 
 
-3.2.0 (2023-07-13)
+3.2.1 (2023-08-11)
 ------------------
 
 Fix
 ~~~
-- Envvars.md get `HOME` environment variable (#831) [MicLon]
-- Typo (#766) [Bruno Rocha, Nicholas Nadeau, Ph.D., P.Eng]
+- Unexpected _bypass_evaluation in BoxList (#966) [Pedro Pessoa]
+
+  * fix _bypass_evaluation showing in BoxList
 
 Other
 ~~~~~
+- Release version 3.2.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (5):
+            Ignore docs build without a tag
+            Cancel any running CI job when a Push is made to an existing PR or branch (#952)
+            Fix #959 cli get will exit code 1 in case of KeyError. (#960)
+            add tech preview note to inspect docs (#961)
+            Build docs
+
+      Hugo Prudente (1):
+            Doc advanced usage for cli overrides dynaconf settings fix #967 (#970)
+
+      Marian Ganisin (1):
+            Feat: Support for multidoc yaml files (#825)
+
+      Pedro Pessoa (11):
+            Docs - Update envvar.md custom token e.g. to use add_converter (#941)
+            Feature - Inspect and CLI (#939)
+            Fix - Template substitution with variable update (#944)
+            Assert #658 works (#945)
+            fix infinite recursions in special case of django app #867 (#947)
+            Fix - Django functions with `add_converter` (#951)
+            Fix hooks not re-running on reload #850 (#953)
+            update vault and redis warning recommendations. fix #950 (#954)
+            Fix - Enable merge equal False (#957)
+            CI - Test docker-compose pyyaml issue (#964)
+            Fix: unexpected _bypass_evaluation in BoxList (#966)
+
+      pedro-psb (1):
+            Release version 3.2.0
+- Doc advanced usage for cli overrides dynaconf settings fix #967 (#970)
+  [Hugo Prudente]
+- Feat: Support for multidoc yaml files (#825) [Bruno Rocha, Marian
+  Ganisin, Pedro Pessoa]
+
+  This adds `safe_load_all` to possible yaml loaders and enables
+  processing multidoc yaml files.
+
+  This can be handy in case more configs are need but it's difficult or
+  impossible to pass multiple files.
+
+  fixes #824
+
+  ---------
+- CI - Test docker-compose pyyaml issue (#964) [Pedro Pessoa]
+
+  * test ciinstall
+
+  * try bumping pyyaml before docker-compose
+
+  * try using latest docker-compose binary
+
+  * add note about docker-compose on contributing.md
+- Build docs. [Bruno Rocha]
 - Release version 3.2.0. [pedro-psb]
 
   Shortlog of commits since last release:
@@ -401,6 +458,61 @@ Other
 
       jmeichle (1):
             Add support for VAULT_NAMESPACE_FOR_DYNACONF (#854)
+
+
+3.1.12 (2023-03-02)
+-------------------
+
+Fix
+~~~
+- Envvars.md get `HOME` environment variable (#831) [MicLon]
+
+Other
+~~~~~
+- Release version 3.1.12. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      André "decko" de Brito (2):
+            Removes Codacy Coverage Reporter (#871)
+            Add a namespace property for VAULT_FOR_DYNACONF dict (#870)
+
+      Bruno Rocha (8):
+            Release version 3.1.11
+            bump dev version to 3.1.12
+            Ensure `dynaconf get` returns a valid json string. (#813)
+            [bugfix] Fix access of keys with spaces (#815)
+            hotfix func tests (#816)
+            Add Python 3.11 to CI (#830)
+            fix lint error
+            Fix casting on Validator and improve docs (#873)
+
+      Bryan Weber (1):
+            Fix typos in envvars docs (#840)
+
+      Florian Apolloner (1):
+            Small typo fix. (#822)
+
+      Maxwell G (1):
+            Include license files for vendored deps (#841)
+
+      MicLon (1):
+            fix: envvars.md get `HOME` environment variable (#831)
+
+      Otávio Dantas (1):
+            doc(pt-br): translate flask extension to pt-br (#852)
+
+      Sergio Kef (1):
+            Fix code snippet in docs (#843)
+
+      Tetiana (1):
+            #817 Add note about defining root_path when testing (#818)
+
+      jctanner (1):
+            Handle all failures when pwd does not exist. (#857)
+
+      jmeichle (1):
+            Add support for VAULT_NAMESPACE_FOR_DYNACONF (#854)
 - Fix casting on Validator and improve docs (#873) [Bruno Rocha]
 
   fix: #823
@@ -454,8 +566,95 @@ Other
       Bruno Rocha (2):
             Release version 3.1.10
             Release hotfix (no need to run coverage or include tests_functional)
+
+
+3.1.11 (2022-09-22)
+-------------------
+- Release version 3.1.11. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.10
+            Release hotfix (no need to run coverage or include tests_functional)
 - Release hotfix (no need to run coverage or include tests_functional)
   [Bruno Rocha]
+- Release version 3.1.10. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Amadou Crookes (1):
+            envars.md typo fix (#786)
+
+      Bruno Rocha (19):
+            Release version 3.1.9
+            Bump dev version to 3.1.10
+            Update badges
+            demo repo will be replaced by a video tutorial soon
+            Fix CI
+            New data key casing must adapt to existing key casing (#795)
+            Add test and docs about includes (#796)
+            Removed vendor_src folder (#798)
+            Replacing rochacbruno/ with dynaconf/ (#800)
+            Fix codecov (#801)
+            Parse negative numbers from envvar Fix #799 and Fix #585 (#802)
+            Fix get command with Django (#804)
+            Add a functional test runner (#805)
+            Test runner docs and styling (#806)
+            Allow merge_unique on lists when merge_enabled=True (#810)
+            Rebind current env when forced for Pytest Fix #728 (#809)
+            AUTO_CAST can be enabled on instance (#811)
+            Ensure pyminify is on release script
+            Add missing tomllib to monify script
+
+      Gaurav Talreja (1):
+            Fix #807 Use client.auth.approle.login instead of client.auth_approle (#808)
+
+      Jitendra Yejare (1):
+            Fix #768 of kv property depreciation from client object (#769)
+
+      Joren Retel (2):
+            Feature/detect casting comb token from converters (#784)
+            Adding documentation and example to makefile. (#791)
+
+      João Gustavo A. Amorim (1):
+            Add pyupgrade hook (#759)
+
+      Kian-Meng Ang (1):
+            Fix typos (#788)
+
+      Lucas Limeira (1):
+            Using filter_strategy in env_loader to fix #760 (#767)
+
+      Nicholas Nadeau, Ph.D., P.Eng (1):
+            fix: typo (#766)
+
+      Oleksii Baranov (2):
+            Bump codecov action version (#775)
+            Fix cli init command for flask (#705) (#774)
+
+      Pedro de Medeiros (1):
+            documentation fixes (#771)
+
+      The Gitter Badger (1):
+            Add a Gitter chat badge to README.md (#776)
+
+      Théo Melo (1):
+            Fixing a typo on the readme file (#763)
+
+      Vicente Marçal (1):
+            docs(pt-br): Docs Translation to brazilian portugues. (#787)
+
+
+3.1.10 (2022-09-22)
+-------------------
+
+Fix
+~~~
+- Typo (#766) [Bruno Rocha, Nicholas Nadeau, Ph.D., P.Eng]
+
+Other
+~~~~~
 - Release version 3.1.10. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -635,12 +834,103 @@ Other
 
       dependabot[bot] (1):
             Bump django from 2.2.27 to 2.2.28 in /example/django_pytest_pure (#743)
+
+
+3.1.9 (2022-06-06)
+------------------
+- Release version 3.1.9. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 3.1.8
+            Bye py 3.7
+            Multiple fixes for 3.19 (#756)
+            update docs site (#758)
+
+      João Gustavo A. Amorim (1):
+            Organize pre-commit setup (#757)
+
+      dependabot[bot] (1):
+            Bump django from 2.2.27 to 2.2.28 in /example/django_pytest_pure (#743)
 - Update docs site (#758) [Bruno Rocha]
 - Organize pre-commit setup (#757) [João Gustavo A. Amorim]
 - Multiple fixes for 3.19 (#756) [Bruno Rocha]
 - Bump django from 2.2.27 to 2.2.28 in /example/django_pytest_pure
   (#743) [dependabot[bot], dependabot[bot]]
 - Bye py 3.7. [Bruno Rocha]
+- Release version 3.1.8. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Anderson Sousa (1):
+            Document the usage with python -m (#710)
+
+      Andressa Cabistani (2):
+            Add unique label when merging lists to fix issue #653 (#661)
+            Add new validation to fix issue #585 (#667)
+
+      Armin Berres (1):
+            Fix typo in error message
+
+      Bruno Rocha (7):
+            Release version 3.1.7
+            Found this bug that was duplicating the generated envlist (#663)
+            Add support for Python 3.10 (#665)
+            Attempt to fix #555 (#669)
+            Create update_contributors.yml
+            Fixing pre-coomit and docs CI
+            Added `dynaconf get` command to cli (#730)
+
+      Caneco (2):
+            improvement: add brand new logo to the project (#686)
+            improvement: update socialcard to match the python way (#687)
+
+      EdwardCuiPeacock (2):
+            Feature: add @jinja and @format casting (#704)
+            Combo converter doc (#735)
+
+      Eitan Mosenkis (1):
+            Fix FlaskConfig.setdefault (#706)
+
+      Enderson Menezes (Mr. Enderson) (2):
+            Force PYTHONIOENCODING to utf-8 to fix #664 (#672)
+            edit: move discussions to github tab (#682)
+
+      Eugene Triguba (1):
+            Fix custom prefix link in envvar documentation (#680)
+
+      Gibran Herrera (1):
+            Fix Issue 662 Lazy validation (#675)
+
+      Jitendra Yejare (2):
+            Load vault secrets from environment less stores or which are not written by dynaconf (#725)
+            Use default value when settings is blank (#729)
+
+      Pavel Alimpiev (1):
+            Update docs link (#678)
+
+      Ugo Benassayag (1):
+            Added validate_only_current_env to validator (issue #734) (#736)
+
+      Waylon Walker (1):
+            Docs Fix Spelling (#696)
+
+      dependabot[bot] (3):
+            Bump django from 2.1.5 to 2.2.26 in /example/django_pytest_pure (#711)
+            Bump mkdocs from 1.1.2 to 1.2.3 (#715)
+            Bump django from 2.2.26 to 2.2.27 in /example/django_pytest_pure (#717)
+
+      github-actions[bot] (2):
+            [automated] Update Contributors File (#691)
+            [automated] Update Contributors File (#732)
+
+      lowercase00 (1):
+            Makes Django/Flask kwargs case insensitive (#721)
+
+
+3.1.8 (2022-04-15)
+------------------
 - Release version 3.1.8. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -769,7 +1059,87 @@ Other
       Bruno Rocha (2):
             Release version 3.1.6
             Add missing docs and missing python_requires (#659)
+
+
+3.1.7 (2021-09-09)
+------------------
+- Release version 3.1.7. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.6
+            Add missing docs and missing python_requires (#659)
 - Add missing docs and missing python_requires (#659) [Bruno Rocha]
+- Release version 3.1.6. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Ambient Lighter (1):
+            Fix typo (#647)
+
+      Bruno Rocha (19):
+            Release version 3.1.4
+            demo link (#546)
+            removed release_notes from the docs. (#550)
+            HOTFIX: Add coverage for 2 lines on validators.
+            Fix #595 namedtuples are no more converted to BoxList (#623)
+            Fix black issues (#631)
+            Update FUNDING.yml
+            description and type annotation for validator (#634)
+            Add myoy and pre-commit to CI (#635)
+            Update codaci badge (#636)
+            Remove dependabot (this project has no dependencies)
+            fix #596 django override (#645)
+            fix #491 pytest django Fix #491 pytest and django (#646)
+            Delete requirements.txt
+            Update FUNDING.yml
+            Add support for dynaconf_hooks(post) issue #654 (#655)
+            Move to Github Actions (#656)
+            Bye Azure (#657)
+            Bump dev version
+
+      FrankBattaglia (1):
+            fix dict iterator methods for flask DynaconfConfig (#581)
+
+      Jacob Callahan (1):
+            Add the ability for selective validation (#549)
+
+      Kamil Gałuszka (1):
+            Add support for Python 3.9 and remove Ubuntu 16.04 that is deprecated in Azure Pipelines (#618)
+
+      Konstantin (2):
+            Update configuration.md (#553)
+            Update configuration.md (#554)
+
+      Linus Torvalds (1):
+            Fix a typo in the docs
+
+      Martin Thoma (1):
+            Add type annotations for dynaconf.utils (#450)
+
+      Nicholas Dentandt (1):
+            feat: add filter strategy with PrefixFilter (#625)
+
+      Robert Rosca (1):
+            Add a warning if `--env` is passed to `init` (#629)
+
+      Tanya Tereshchenko (1):
+            Do not search anywhere if the absolute path to a file provided (#570)
+
+      Yusuf Kaka (1):
+            Added an example using FastAPI (#571)
+
+      dependabot-preview[bot] (2):
+            Bump mkdocs-material from 7.0.5 to 7.0.6 (#552)
+            Upgrade to GitHub-native Dependabot (#574)
+
+      puntonim (1):
+            Fix typo (#588)
+
+
+3.1.6 (2021-09-09)
+------------------
 - Release version 3.1.6. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -971,16 +1341,63 @@ Other
             Bump mkdocs-material from 7.0.4 to 7.0.5 (#539)
 
 
+3.1.5 (2021-08-20)
+------------------
+- Release version 3.1.5. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Fix #595 namedtuples are no more converted to BoxList (#623)
+            fix #596 django override (#645)
+            fix #491 pytest django Fix #491 pytest and django (#646)
+            Delete requirements.txt
+
+      FrankBattaglia (1):
+            fix dict iterator methods for flask DynaconfConfig (#581)
+
+      Robert Rosca (1):
+            Add a warning if `--env` is passed to `init` (#629)
+
+      Tanya Tereshchenko (1):
+            Do not search anywhere if the absolute path to a file provided (#570)
+- Delete requirements.txt. [Bruno Rocha]
+- Fix #491 pytest django Fix #491 pytest and django (#646) [Bruno Rocha]
+- Fix #596 django override (#645) [Bruno Rocha]
+
+  * Fix #596 django.test.override issue
+
+  * Fix CI side effects
+- Add a warning if `--env` is passed to `init` (#629) [Bruno Rocha,
+  Bruno Rocha, Robert Rosca]
+
+  * Add a warning if `--env` is passed to `init`
+
+  * Fix typo, `file` was doubled in init help
+
+  * Update docstrings for CLI
+
+  * Raise error if using `-i` with `init` subcommand
+
+  * Update docs to match current behaviour
+
+  * add test coverage
+- Fix dict iterator methods for flask DynaconfConfig (#581) [Bruno
+  Rocha, Frank Battaglia, FrankBattaglia]
+- Fix #595 namedtuples are no more converted to BoxList (#623) [Bruno
+  Rocha]
+- Do not search anywhere if the absolute path to a file provided (#570)
+  [Bruno Rocha, Tanya Tereshchenko]
+
+  * Do not search anywhere if the absolute path to a file provided
+
+  fixes #569
+
+  * Fix test coverage and added some comments.
+
+
 3.1.4 (2021-03-08)
 ------------------
-
-Fix
-~~~
-- Environment variables filtering #470 (#474) [Michal Odnous]
-- Env_loader.write: quote_mode for non-string values. [Oliver Lehmann]
-
-Other
-~~~~~
 - Release version 3.1.4. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -1019,6 +1436,26 @@ Other
   - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
   - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
   - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.1.6...7.0.4)
+- Release version 3.1.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 3.1.3rc1
+            Fix #462 make DynaBox nested List to use DynaBox as default class (#533)
+            Fix #478 Make alias for environment -> environments (#534)
+            Test to ensure #467 is not an issue (#535)
+
+
+3.1.3 (2021-03-04)
+------------------
+
+Fix
+~~~
+- Environment variables filtering #470 (#474) [Michal Odnous]
+
+Other
+~~~~~
 - Release version 3.1.3. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -1241,6 +1678,36 @@ Other
             Bump pymdown-extensions from 8.0 to 8.0.1 (#435)
             Bump mkdocs-material from 5.5.13 to 6.0.1 (#436)
             Bump mkdocs-material from 6.0.1 to 6.0.2 (#442)
+
+
+3.1.2 (2020-10-08)
+------------------
+- Release version 3.1.2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (13):
+            Release version 3.1.1
+            Update diagram images
+            Update docs/release_notes
+            Fixing prospector warnings. (#425)
+            Fix mkdocs config problem found in #423
+            Signed in for https://xscode.com/rochacbruno/dynaconf (#426)
+            Remove links to outdated issues from guidelines
+            Fix colors and KEyError handling on cli.py (#429)
+            Fix #434 setenv failing to unset LazyValues (#437)
+            Fix #432 no need for warning when env is missing on a file (#438)
+            Add test to ensure fix #430 (#439)
+            Close #284 not a bug (#440)
+            Fix #443 object merge with same value on same level keys (#444)
+
+      dependabot-preview[bot] (6):
+            Bump mkdocs-material from 5.3.2 to 5.5.13 (#423)
+            Bump pymdown-extensions from 7.1 to 8.0 (#422)
+            Bump mkdocs-material-extensions from 1.0 to 1.0.1 (#427)
+            Bump pymdown-extensions from 8.0 to 8.0.1 (#435)
+            Bump mkdocs-material from 5.5.13 to 6.0.1 (#436)
+            Bump mkdocs-material from 6.0.1 to 6.0.2 (#442)
 - Fix #443 object merge with same value on same level keys (#444) [Bruno
   Rocha]
 
@@ -1325,6 +1792,17 @@ Other
   * Used vulture to detect and remove dead code
 - Update docs/release_notes. [Bruno Rocha]
 - Update diagram images. [Bruno Rocha]
+- Release version 3.1.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 3.1.1rc6
+            HOTFIX: Cli now accepts dotter keys
+
+
+3.1.1 (2020-09-21)
+------------------
 - Release version 3.1.1. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -1541,6 +2019,34 @@ Other
 
       Piotr Baniukiewicz (1):
             Fix validation of optional fields (#370)
+
+
+3.1.0 (2020-08-14)
+------------------
+- Release version 3.1.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Andreas Poehlmann (1):
+            Allow importing SEARCHTREE before settings are configured (#383)
+
+      Bruno Rocha (10):
+            Release version 3.0.0
+            Hot fix removing unused imports
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Removing invalid links, adding allert on old docs  fix #369 and fix #371 (#372)
+            Fix #359 lazy template substitution on nested keys (#375)
+            Flask fizes and other issues included. (#376)
+            Fix #379 dict like iteration (#385)
+            Fix #377 allow computed values (#386)
+            Fix #388 URL reference for custom loaders (#389)
+            Fix #382 add is_overriden method (#390)
+
+      John Vandenberg (1):
+            Allow testing against local redis server (#387)
+
+      Piotr Baniukiewicz (1):
+            Fix validation of optional fields (#370)
 - Allow importing SEARCHTREE before settings are configured (#383)
   [Andreas Poehlmann]
 - Allow testing against local redis server (#387) [John Vandenberg]
@@ -1585,6 +2091,20 @@ Other
 
   * More concise code
 - Hot fix removing unused imports. [Bruno Rocha]
+- Release version 3.0.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (5):
+            Release version 3.0.0rc2
+            Improvements on CLI and init command (#363)
+            Writing new docs page 1 (#364)
+            Add netlify (#366)
+            Add netlify runtime file...
+
+
+3.0.0 (2020-06-29)
+------------------
 - Release version 3.0.0. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -1818,6 +2338,33 @@ Other
       dependabot-preview[bot] (2):
             Update python-dotenv requirement from <=0.10.3 to <0.10.6
             Update python-dotenv requirement from <0.10.6 to <0.11.1
+
+
+2.2.3 (2020-02-28)
+------------------
+- Release version 2.2.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (7):
+            Release version 2.2.2
+            Fix #273 add Flask load extensions method.
+            add t.me badge fix #262
+            Fix #145 allow lazy format using os.environ and settings values.
+            Overriding strategy test
+            Fix #203 document the usage with pytest (with examples)
+            unpin dependencies
+
+      Hildeberto (2):
+            Fix pre-commit to run python3 rather than python3.7
+            Merge pull request #281 from hilam/fix_pre_commit
+
+      JSP (1):
+            fix object_merge issue #285 with  meta value
+
+      dependabot-preview[bot] (2):
+            Update python-dotenv requirement from <=0.10.3 to <0.10.6
+            Update python-dotenv requirement from <0.10.6 to <0.11.1
 - Unpin dependencies. [Bruno Rocha]
 - Update python-dotenv requirement from <0.10.6 to <0.11.1. [dependabot-
   preview[bot]]
@@ -1858,6 +2405,21 @@ Other
 
       Hildeberto (1):
             Close #178. Included integration tests redis/vault
+
+
+2.2.2 (2019-12-26)
+------------------
+- Release version 2.2.2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (3):
+            Release version 2.2.1
+            Fix #258 custom message for validators
+            Pin python-box version because of a breaking release
+
+      Hildeberto (1):
+            Close #178. Included integration tests redis/vault
 - Pin python-box version because of a breaking release. [Bruno Rocha]
 
   The release of python-box https://github.com/cdgriffith/Box/pull/116
@@ -1868,6 +2430,45 @@ Other
   Also pinning other direct deps.
 - Fix #258 custom message for validators. [Bruno Rocha]
 - Close #178. Included integration tests redis/vault. [Hildeberto]
+- Release version 2.2.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Release version 2.2.0
+            Fix #251 recursive call was using mutable memoized data (#254)
+            Fix #266 created new variable FORCE_ENV to override ENV_FOR_DYNACONF
+            Fix coverage for validators
+
+      David Moreau Simard (1):
+            Add ara as a user of dynaconf (#252)
+
+      Emmanuel Nosa Evbuomwan (1):
+            Update sensitive_secrets.md
+
+      Hildeberto (1):
+            Adjust remote upstream URL
+
+      Jan Willhaus (1):
+            Add support for detecting duplicate validators being added (and ignore them) (#256)
+
+      Oliver Lehmann (5):
+            fix: env_loader.write: quote_mode for non-string values
+            : added line break
+            fix str comparison
+            changing quote logic
+            fix open error @py3.5
+
+
+2.2.1 (2019-12-06)
+------------------
+
+Fix
+~~~
+- Env_loader.write: quote_mode for non-string values. [Oliver Lehmann]
+
+Other
+~~~~~
 - Release version 2.2.1. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -1933,6 +2534,26 @@ Other
 
       paskozdilar (1):
             fix crash on empty settings (#242)
+
+
+2.2.0 (2019-10-09)
+------------------
+- Release version 2.2.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (5):
+            Release version 2.1.1
+            Fix #236 added .local. files loading and module impersonation docs (#239)
+            Replace key.upper with `upperfy` function that keeps `__` attributes (#240)
+            Fix #241 new merge standards (#243)
+            Add support for PRELOAD_ setting. (#244)
+
+      Kedar Kulkarni (1):
+            Fixing how filename.local.* files are loaded (#238)
+
+      paskozdilar (1):
+            fix crash on empty settings (#242)
 - Add support for PRELOAD_ setting. (#244) [Bruno Rocha]
 - Fix #241 new merge standards (#243) [Bruno Rocha]
 
@@ -1969,6 +2590,28 @@ Other
 
       Kedar Kulkarni (1):
             Fixing self._root_path to fall back to os.getcwd() only when `settings.load_file` is called directly or from includes (#232)
+
+
+2.1.1 (2019-09-16)
+------------------
+- Release version 2.1.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (7):
+            Release version 2.1.0
+            Improve validators to use `from_env` method (#225)
+            Add info about dunder envvars on django.md docs guide (#226)
+            Fix #228 add `ignore` argument to Django explicit mode. (#229)
+            Improvement to close #230 - do not throw error for base envs. (#231)
+            dynaconf init will not write all possible envs, only [default] (#233)
+            When both enabled, Vault has the priority over Redis for overriding (#234)
+
+      Dave Barnow (1):
+            Fix typo in CLI init (#227)
+
+      Kedar Kulkarni (1):
+            Fixing self._root_path to fall back to os.getcwd() only when `settings.load_file` is called directly or from includes (#232)
 - When both enabled, Vault has the priority over Redis for overriding
   (#234) [Bruno Rocha]
 - Dynaconf init will not write all possible envs, only [default] (#233)
@@ -1984,6 +2627,34 @@ Other
 - Add info about dunder envvars on django.md docs guide (#226) [Bruno
   Rocha]
 - Improve validators to use `from_env` method (#225) [Bruno Rocha]
+- Release version 2.1.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (8):
+            Release version 2.0.4
+            Merge branch 'dgarcia360-master'
+            Fix #197 add support for DOTTED__ENV__VARS (#215)
+            Add support to export merged env to filesystem via cli. (#217)
+            Adds `from_env` method and change `_store` to be a `DynaBox` (#219)
+            hotfix: next release will be 2.1.0 because new features added. (#220)
+            Fix `make test_examples` to use better assertions, redis and vault loader now respects `envs` (#222)
+            fix #221 removed JSON,YAML,INI,TOML cosntants from default_settings (#223)
+
+      Kedar Kulkarni (1):
+            Add `list_envs` function to vault loader and now envs can have `_` on its name.
+
+      Pavel Alimpiev (1):
+            Fix typo in documentation for a Validator class (#213)
+
+      dgarcia360 (3):
+            Updated configuration options table to csv table
+            Added responsive table fix
+            Fix format
+
+
+2.1.0 (2019-09-05)
+------------------
 - Release version 2.1.0. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -2060,6 +2731,28 @@ Other
       Tanveer Alam (2):
             Update usage.md (#196)
             Update usage.md (#195)
+
+
+2.0.4 (2019-08-22)
+------------------
+- Release version 2.0.4. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 2.0.3
+            Fix #207 allow python module path name for includes (#209)
+
+      Michał Bartoszkiewicz (1):
+            Update usage.md (#208)
+
+      Pavel Alimpiev (2):
+            Refactor Vault integration (#202)
+            Update configuration.md (#205)
+
+      Tanveer Alam (2):
+            Update usage.md (#196)
+            Update usage.md (#195)
 - Fix #207 allow python module path name for includes (#209) [Bruno
   Rocha]
 - Update usage.md (#208) [Michał Bartoszkiewicz]
@@ -2104,6 +2797,23 @@ Other
 
       Raoul Snyman (1):
             Use the Key Value API rather than the old 'read' and 'write' methods (#198)
+
+
+2.0.3 (2019-06-27)
+------------------
+- Release version 2.0.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (2):
+            Release version 2.0.2
+            Fix #194 flask.app.config __setitem__ (#199)
+
+      Jan Willhaus (1):
+            Catch BoxKeyError when contents are TOML parsable but not keyable (#192)
+
+      Raoul Snyman (1):
+            Use the Key Value API rather than the old 'read' and 'write' methods (#198)
 - Fix #194 flask.app.config __setitem__ (#199) [Bruno Rocha]
 
   Flask.config was not proxying __setitem__ atribute so this
@@ -2112,6 +2822,29 @@ Other
   (#198) [Raoul Snyman]
 - Catch BoxKeyError when contents are TOML parsable but not keyable
   (#192) [Jan Willhaus]
+- Release version 2.0.2. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (8):
+            Release version 2.0.1
+            Add note to release script
+            Adhering to Github Community Standards (#175)
+            removed pytest-xdist (#181)
+            Add example and test for issue #182 (#183)
+            Fix #179 dynaconf cli shows only user defined vars unless -a used (#188)
+            Fix #184 - workdir should walk to root in ipython REPL (#190)
+            Fix #189 added `settings.as_dict()` and `dynaconf list -o file.json` (#191)
+
+      Jan Willhaus (4):
+            Fix `False` not being an acceptable env (#176)
+            Fix  base loader when having no ENVVAR_PREFIX_ (Addresses #177) (#185)
+            Hide DeprecationWarning from Pytest when testing for them (#186)
+            Replace logging.basicConfig with handler on logger (#187)
+
+
+2.0.2 (2019-04-29)
+------------------
 - Release version 2.0.2. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -2177,6 +2910,39 @@ Other
   * unset envvar_prefix after test
 - Adhering to Github Community Standards (#175) [Bruno Rocha]
 - Add note to release script. [Bruno Rocha]
+- Release version 2.0.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (17):
+            Release version 2.0.0
+            Added Django explicit mode to docs (#149)
+            HOTIX: Django doc
+            Logger is now cached (removed logging import time overhead)
+            Update issue templates
+            Adjusts issue templates
+            Fix Typo in issue template
+            fix #160 - invoking directory should not be search breaking point.
+            Add explicit call to main() on cli.py (#165)
+            Generate coverage.xml file (#167)
+            Fix #166 renamed GLOBAL_ENV_ to ENVVAR_PREFIX_ (#168)
+            Fix #169 renamed SETTINGS_MODULE_ to SETTINGS_FILE_ (#170)
+            HOTFIX config.md on docs [skip ci] (#171)
+            Fix some open file descriptors on exampls and tests (#172)
+            Fix #151 setup pre-commit and black (#173)
+            Add CONTRIBUTING.md, conrtib isntructions and Black badge (#174)
+            Fix release script
+
+      David Moreau Simard (1):
+            Fix typos in bash export examples
+
+      Jan Willhaus (2):
+            Skip reloading envs for validators that only apply to current_env (#162)
+            Fix #163 Allow disabling env prefix (#164)
+
+
+2.0.1 (2019-04-22)
+------------------
 - Release version 2.0.1. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -2279,6 +3045,68 @@ Other
 - Fix typos in bash export examples. [David Moreau Simard]
 - HOTIX: Django doc. [Bruno Rocha]
 - Added Django explicit mode to docs (#149) [Bruno Rocha]
+- Release version 2.0.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Aaron DeVore (1):
+            GH-111: Fix MERGE_ENABLED merging settings with themselves
+
+      Bruno Rocha (21):
+            Merge branch 'jperras-merge-multiple-settings-files'
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
+            Update dynaconf/utils/boxing.py
+            Update dynaconf/utils/boxing.py
+            Add release script and CHANGELOG in place of history.
+            Release version 1.2.0
+            Tox is now part of pre-publish command
+            Drop Python 3.4
+            Release version 1.2.1
+            add top contributors
+            Fix #129 on settings file, single keys should be case insensitive.
+            Fix #125 settings_module not being set on .configure()
+            Fix #127 add configurable yaml loader method, default to full_load
+            Fix #122 allow disable of core loaders, added examples.
+            Fix #117 add support for extra secrets file (like for jenkins CI)
+            Fix #110 add docs for dynaconf_include
+            Add dynaconf_include examples
+            Set up CI with Azure Pipelines (#142)
+            Add dynaconf_merge fucntionality for dict and list settings. (#139)
+            Preparing for 2.0.0
+
+      Byungjin Park (1):
+            Fix typo
+
+      Jaepil Koh (1):
+            Update django.md
+
+      Joel Perras (3):
+            Allow dotted-path based setting of configuration key/value pairs.
+            Handle nested includes in settings files.
+            Remove extraneous lines.
+
+      Mantas (3):
+            Add INSTANCE_FOR_DYNACONF and --instance
+            Remove mocker fixture
+            Python 3.4 has different error message
+
+      Matthias (1):
+            Fix small typo in README.md
+
+      Pete Savage (1):
+            Fix exponential slow down when loader is run multiple times
+
+      Raoul Snyman (1):
+            Add environments into the path in Vault so that the same Vault server can be used for multiple environments
+
+      mspinelli (2):
+            fixed infinite recursion caused by copy()
+            add tests for dynabox fix
+
+
+2.0.0 (2019-04-09)
+------------------
 - Release version 2.0.0. [Bruno Rocha]
 
   Shortlog of commits since last release:
@@ -2538,6 +3366,53 @@ Other
       mspinelli (2):
             fixed infinite recursion caused by copy()
             add tests for dynabox fix
+
+
+1.2.1 (2019-03-11)
+------------------
+- Release version 1.2.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (9):
+            Merge branch 'jperras-merge-multiple-settings-files'
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
+            Update dynaconf/utils/boxing.py
+            Update dynaconf/utils/boxing.py
+            Add release script and CHANGELOG in place of history.
+            Release version 1.2.0
+            Tox is now part of pre-publish command
+            Drop Python 3.4
+
+      Byungjin Park (1):
+            Fix typo
+
+      Jaepil Koh (1):
+            Update django.md
+
+      Joel Perras (3):
+            Allow dotted-path based setting of configuration key/value pairs.
+            Handle nested includes in settings files.
+            Remove extraneous lines.
+
+      Mantas (3):
+            Add INSTANCE_FOR_DYNACONF and --instance
+            Remove mocker fixture
+            Python 3.4 has different error message
+
+      Matthias (1):
+            Fix small typo in README.md
+
+      Pete Savage (1):
+            Fix exponential slow down when loader is run multiple times
+
+      Raoul Snyman (1):
+            Add environments into the path in Vault so that the same Vault server can be used for multiple environments
+
+      mspinelli (2):
+            fixed infinite recursion caused by copy()
+            add tests for dynabox fix
 - Fix exponential slow down when loader is run multiple times. [Pete
   Savage]
 
@@ -2557,6 +3432,41 @@ Other
 - Fix typo. [Byungjin Park]
 - Drop Python 3.4. [Bruno Rocha]
 - Tox is now part of pre-publish command. [Bruno Rocha]
+- Release version 1.2.0. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (6):
+            Merge branch 'jperras-merge-multiple-settings-files'
+            Merge branch 'master' of github.com:rochacbruno/dynaconf
+            Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths
+            Update dynaconf/utils/boxing.py
+            Update dynaconf/utils/boxing.py
+            Add release script and CHANGELOG in place of history.
+
+      Jaepil Koh (1):
+            Update django.md
+
+      Joel Perras (3):
+            Allow dotted-path based setting of configuration key/value pairs.
+            Handle nested includes in settings files.
+            Remove extraneous lines.
+
+      Mantas (3):
+            Add INSTANCE_FOR_DYNACONF and --instance
+            Remove mocker fixture
+            Python 3.4 has different error message
+
+      Matthias (1):
+            Fix small typo in README.md
+
+      mspinelli (2):
+            fixed infinite recursion caused by copy()
+            add tests for dynabox fix
+
+
+1.2.0 (2018-11-30)
+------------------
 - Release version 1.2.0. [Bruno Rocha]
 
   Shortlog of commits since last release:
