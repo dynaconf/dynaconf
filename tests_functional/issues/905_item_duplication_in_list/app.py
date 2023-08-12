@@ -18,6 +18,6 @@ settings.validators.register(
 
 settings.validators.validate()
 
-assert settings.group.test_list == ["'1'", "'2'"]
+assert settings.group.test_list == ["1", "2"], settings.group
 assert settings.group.something_new == 5
 assert settings.group.another_setting == "ciao"
