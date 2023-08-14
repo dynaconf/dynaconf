@@ -910,134 +910,120 @@ class Settings:
         """Set a value storing references for the loader
 
         :param key: The key to store
-        :param value: The value to store
+        :param value: The raw value to parse and store
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
+                                  Or isntance of SourceMetadata
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
         :param validate: Bool define if validation will be triggered
         """
+
+        # Ensure source_metadata always is set even if set is called
+        # without a loader_identifier
         if isinstance(loader_identifier, str) or loader_identifier is None:
-            loader_identifier = SourceMetadata(
-                loader="undefined",
+            source_metadata = SourceMetadata(
+                loader="set_method",
                 identifier=loader_identifier or "undefined",
                 merged=merge is True,
             )
+        else:  # loader identifier must be a SourceMetadata instance
+            source_metadata = loader_identifier
 
         if validate is empty:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
-
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
-
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
         if nested_sep and nested_sep in key:
-            # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
-            key = key.replace(nested_sep, ".")
+            key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
 
         if "." in key and dotted_lookup is True:
             return self._dotted_set(
                 key,
                 value,
-                loader_identifier=loader_identifier,
+                loader_identifier=source_metadata,
                 tomlfy=tomlfy,
                 validate=validate,
             )
 
         # Fix for #905
         # parsed_conf default value was causing duplication
-        value_not_parsed = (
-            value
-            if loader_identifier
-            and loader_identifier.loader == "validation_default"
-            else None
-        )
-
-        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
+        # value_not_parsed = (
+        #     value
+        #     if loader_identifier
+        #     and loader_identifier.loader == "validation_default"
+        #     else None
+        # )
+        parsed = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
 
         # Fix for #869 - The call to getattr trigger early evaluation
-        # existing = (
-        #    getattr(self, key, None) if not isinstance(value, Lazy) else None
-        # )
         existing = (
-            self.store.get(key, None) if not isinstance(value, Lazy) else None
+            self.store.get(key, None) if not isinstance(parsed, Lazy) else None
         )
 
-        if getattr(value, "_dynaconf_del", None):
-            # just in case someone use a `@del` in a first level var.
-            self.unset(key, force=True)
+        if getattr(parsed, "_dynaconf_del", None):
+            self.unset(key, force=True)  # `@del` in a first level var.
             return
 
-        if getattr(value, "_dynaconf_reset", False):  # pragma: no cover
-            # just in case someone use a `@reset` in a first level var.
-            value = value.unwrap()
+        if getattr(parsed, "_dynaconf_reset", False):  # pragma: no cover
+            parsed = parsed.unwrap()  # `@reset` in a first level var.
 
-        if getattr(value, "_dynaconf_merge_unique", False):
-            # just in case someone use a `@merge_unique` in a first level var
+        if getattr(parsed, "_dynaconf_merge_unique", False):
+            # `@merge_unique` in a first level var
             if existing:
                 # update SourceMetadata (for inspecting purposes)
-                loader_identifier = (
-                    loader_identifier._replace(merged=True)
-                    if loader_identifier
-                    else None
-                )
-                value = object_merge(existing, value.unwrap(), unique=True)
+                source_metadata = source_metadata._replace(merged=True)
+                parsed = object_merge(existing, parsed.unwrap(), unique=True)
             else:
-                value = value.unwrap()
+                parsed = parsed.unwrap()
 
-        if getattr(value, "_dynaconf_merge", False):
-            # just in case someone use a `@merge` in a first level var
+        if getattr(parsed, "_dynaconf_merge", False):
+            # `@merge` in a first level var
             if existing:
                 # update SourceMetadata (for inspecting purposes)
-                loader_identifier = (
-                    loader_identifier._replace(merged=True)
-                    if loader_identifier
-                    else None
-                )
-                value = object_merge(existing, value.unwrap())
+                source_metadata = source_metadata._replace(merged=True)
+                parsed = object_merge(existing, parsed.unwrap())
             else:
-                value = value.unwrap()
+                parsed = parsed.unwrap()
 
-        if existing is not None and existing != value:
+        if existing is not None and existing != parsed:
             # `dynaconf_merge` used in file root `merge=True`
             if merge and merge is not empty:
-                loader_identifier = (
-                    loader_identifier._replace(merged=True)
-                    if loader_identifier
-                    else None
-                )
-                value = object_merge(existing, value)
+                source_metadata = source_metadata._replace(merged=True)
+                parsed = object_merge(existing, parsed)
             else:
-                # Fix for #905
-                if (
-                    loader_identifier
-                    and loader_identifier.loader == "validation_default"
-                ):
-                    value = value_not_parsed
-                else:
-                    # `dynaconf_merge` may be used within the key structure
-                    # Or merge_enabled is set to True
-                    value, updated_identifier = self._merge_before_set(
-                        existing, value, loader_identifier, context_merge=merge
-                    )
-                    loader_identifier = updated_identifier
+                # # Fix for #905
+                # if (
+                #     loader_identifier
+                #     and loader_identifier.loader == "validation_default"
+                # ):
+                #     value = value_not_parsed
+                # else:
+                # `dynaconf_merge` may be used within the key structure
+                # Or merge_enabled is set to True
+                parsed, source_metadata = self._merge_before_set(
+                    existing, parsed, source_metadata, context_merge=merge
+                )
 
-        if isinstance(value, dict) and not isinstance(value, DynaBox):
-            value = DynaBox(value, box_settings=self)
+        if isinstance(parsed, dict) and not isinstance(parsed, DynaBox):
+            parsed = DynaBox(parsed, box_settings=self)
 
-        self.store[key] = value
+        # Set the parsed value
+        self.store[key] = parsed
         self._deleted.discard(key)
-        super().__setattr__(key, value)
+        super().__setattr__(key, parsed)
 
-        # set loader identifiers so cleaners know which keys to clean
-        if loader_identifier and loader_identifier in self._loaded_by_loaders:
-            self._loaded_by_loaders[loader_identifier][key] = value
-        elif loader_identifier:
-            self._loaded_by_loaders[loader_identifier] = {key: value}
-        elif loader_identifier is None:
+        # Track history for inspect, store the raw_value
+        if source_metadata in self._loaded_by_loaders:
+            self._loaded_by_loaders[source_metadata][key] = value
+        else:
+            self._loaded_by_loaders[source_metadata] = {key: value}
+
+        if loader_identifier is None:
             # if .set is called without loader identifier it becomes
             # a default value and goes away only when explicitly unset
-            self._defaults[key] = value
+            self._defaults[key] = parsed
 
         if validate is True:
             self.validators.validate()

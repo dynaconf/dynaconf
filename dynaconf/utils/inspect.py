@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import sys
-from contextlib import suppress
 from functools import partial
 from typing import Any
 from typing import Callable

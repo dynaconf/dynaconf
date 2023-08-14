@@ -122,7 +122,7 @@ def test_get_history_general(tmp_path):
     assert is_dict_subset(
         history[0],
         {
-            "loader": "undefined",
+            "loader": "set_method",
             "identifier": "init_kwargs",
             "env": "global",
             "merged": False,
@@ -131,7 +131,7 @@ def test_get_history_general(tmp_path):
     assert is_dict_subset(
         history[1],
         {
-            "loader": "undefined",
+            "loader": "set_method",
             "identifier": "settings_module_method",
             "env": "global",
             "merged": False,
