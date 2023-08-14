@@ -253,7 +253,6 @@ def _get_data_by_key(
     data: dict,
     key_dotted_path: str,
     default: Any = None,
-    upperfy_key=True,
     sep="__",
 ):
     """

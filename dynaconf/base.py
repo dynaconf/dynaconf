@@ -946,14 +946,6 @@ class Settings:
                 validate=validate,
             )
 
-        # Fix for #905
-        # parsed_conf default value was causing duplication
-        # value_not_parsed = (
-        #     value
-        #     if loader_identifier
-        #     and loader_identifier.loader == "validation_default"
-        #     else None
-        # )
         parsed = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
 
@@ -993,13 +985,6 @@ class Settings:
                 source_metadata = source_metadata._replace(merged=True)
                 parsed = object_merge(existing, parsed)
             else:
-                # # Fix for #905
-                # if (
-                #     loader_identifier
-                #     and loader_identifier.loader == "validation_default"
-                # ):
-                #     value = value_not_parsed
-                # else:
                 # `dynaconf_merge` may be used within the key structure
                 # Or merge_enabled is set to True
                 parsed, source_metadata = self._merge_before_set(

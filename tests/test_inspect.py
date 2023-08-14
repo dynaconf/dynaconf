@@ -73,11 +73,11 @@ def test_ensure_serializable():
 
 def test_get_data_by_key():
     data = {"a": "A", "b": [1, 2, 3, {"a": "A", "b": "B"}], "c": {"d": "D"}}
-    assert _get_data_by_key(data, "a", upperfy_key=False) == "A"
+    assert _get_data_by_key(data, "a") == "A"
     # 2 cases below are not supported dynaconf idiom yet
-    # assert _get_data_by_key(data, "b._1_", upperfy_key=False) == 2
-    # assert _get_data_by_key(data, "b._3_.b", upperfy_key=False) == "B"
-    assert _get_data_by_key(data, "c.d", upperfy_key=False) == "D"
+    # assert _get_data_by_key(data, "b._1_") == 2
+    # assert _get_data_by_key(data, "b._3_.b") == "B"
+    assert _get_data_by_key(data, "c.d") == "D"
     assert _get_data_by_key(data, "this.doesnt.exist", default="foo") == "foo"
 
 
