@@ -228,6 +228,17 @@ def evaluate_lazy_format(f):
     return evaluate
 
 
+def _parse_json_strings(x):
+    x = x.replace("'", '"')  # replace single with double quotes
+    # replace unquoted True / False with lower case true / false
+    if "True" in x:
+        x = re.sub(r'(?<!")\bTrue\b', "true", x)
+    if "False" in x:
+        x = re.sub(r'(?<!")\bFalse\b', "false", x)
+
+    return json.loads(x)
+
+
 converters = {
     "@str": lambda value: value.set_casting(str)
     if isinstance(value, Lazy)
@@ -244,10 +255,10 @@ converters = {
     if isinstance(value, Lazy)
     else str(value).lower() in true_values,
     "@json": lambda value: value.set_casting(
-        lambda x: json.loads(x.replace("'", '"'))
+        _parse_json_strings,
     )
     if isinstance(value, Lazy)
-    else json.loads(value),
+    else _parse_json_strings(value),
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
