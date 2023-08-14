@@ -765,7 +765,11 @@ class Settings:
             box_settings=self,
         )
         if settings_module != getattr(self, "SETTINGS_MODULE", None):
-            self.set("SETTINGS_MODULE", settings_module)
+            self.set(
+                "SETTINGS_MODULE",
+                settings_module,
+                loader_identifier="settings_module_method",
+            )
 
         # This is for backewards compatibility, to be removed on 4.x.x
         if not self.SETTINGS_MODULE and self.get("default_settings_paths"):
@@ -912,10 +916,10 @@ class Settings:
         :param merge: Bool define if existing nested data will be merged.
         :param validate: Bool define if validation will be triggered
         """
-        if isinstance(loader_identifier, str):
+        if isinstance(loader_identifier, str) or loader_identifier is None:
             loader_identifier = SourceMetadata(
                 loader="undefined",
-                identifier=loader_identifier,
+                identifier=loader_identifier or "undefined",
                 merged=merge is True,
             )
 

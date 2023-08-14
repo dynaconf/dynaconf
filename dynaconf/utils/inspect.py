@@ -185,6 +185,7 @@ def get_history(
             }
         ]
     """
+    sep = obj.get("NESTED_SEPARATOR_FOR_DYNACONF", "__")
     # trigger key based hooks
     if key_dotted_path:
         obj.get(key_dotted_path)  # noqa
@@ -206,7 +207,7 @@ def get_history(
         # filter by key path
         try:
             data = (
-                _get_data_by_key(data, key_dotted_path)
+                _get_data_by_key(data, key_dotted_path, sep=sep)
                 if key_dotted_path
                 else data
             )
@@ -250,25 +251,33 @@ def _ensure_serializable(data: BoxList | DynaBox) -> dict | list:
 
 
 def _get_data_by_key(
-    data: dict, key_dotted_path: str, default: Any = None, upperfy_key=True
+    data: dict,
+    key_dotted_path: str,
+    default: Any = None,
+    upperfy_key=True,
+    sep="__",
 ):
     """
     Returns value found in data[key] using dot-path str (e.g, "path.to.key").
-    Accepts integers as list index:
-        data = {'a': ['b', 'c', 'd']}
-        path = 'a.1'
-        _get_data_by_key(data, path) == 'c'
     Raises KeyError if not found
     """
-    path = key_dotted_path.split(".")
+    if not isinstance(data, DynaBox):
+        data = DynaBox(data)  # DynaBox can handle insensitive keys
+    if sep in key_dotted_path:
+        key_dotted_path = key_dotted_path.replace(sep, ".")
+
+    def traverse_data(data, path):
+        # transform `a.b.c` in successive calls to `data['a']['b']['c']`
+        path = path.split(".")
+        root_key, nested_keys = path[0], path[1:]
+        result = data[root_key]
+        for key in nested_keys:
+            result = result[key]
+        return result
+
     try:
-        for node in path:
-            node_key = node.upper() if upperfy_key else node
-            with suppress(ValueError):
-                node_key = int(node_key)
-            data = data[node_key]
-    except (ValueError, IndexError, KeyError):
+        return traverse_data(data, key_dotted_path)
+    except KeyError:
         if not default:
             raise KeyError(f"Path not found in data: {key_dotted_path!r}")
         return default
-    return data
