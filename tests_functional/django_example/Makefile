@@ -9,3 +9,4 @@ test:
 	PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings dynaconf list
 	PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings dynaconf get DEBUG
 	PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings dynaconf inspect
+	PYTHONPATH=. DJANGO_SETTINGS_MODULE=foo.settings dynaconf inspect -k BEST_BOSS
