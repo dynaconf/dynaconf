@@ -239,5 +239,5 @@ class SourceMetadata(NamedTuple):
 
     loader: str
     identifier: str
-    env: str
+    env: str = "global"
     merged: bool = False

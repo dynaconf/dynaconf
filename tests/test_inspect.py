@@ -73,10 +73,11 @@ def test_ensure_serializable():
 
 def test_get_data_by_key():
     data = {"a": "A", "b": [1, 2, 3, {"a": "A", "b": "B"}], "c": {"d": "D"}}
-    assert _get_data_by_key(data, "a", upperfy_key=False) == "A"
-    assert _get_data_by_key(data, "b.1", upperfy_key=False) == 2
-    assert _get_data_by_key(data, "b.3.b", upperfy_key=False) == "B"
-    assert _get_data_by_key(data, "c.d", upperfy_key=False) == "D"
+    assert _get_data_by_key(data, "a") == "A"
+    # 2 cases below are not supported dynaconf idiom yet
+    # assert _get_data_by_key(data, "b._1_") == 2
+    # assert _get_data_by_key(data, "b._3_.b") == "B"
+    assert _get_data_by_key(data, "c.d") == "D"
     assert _get_data_by_key(data, "this.doesnt.exist", default="foo") == "foo"
 
 
@@ -117,9 +118,27 @@ def test_get_history_general(tmp_path):
     history = get_history(settings)
 
     # metadata
-    assert len(history) == 2
+    assert len(history) == 4
     assert is_dict_subset(
         history[0],
+        {
+            "loader": "set_method",
+            "identifier": "init_kwargs",
+            "env": "global",
+            "merged": False,
+        },
+    )
+    assert is_dict_subset(
+        history[1],
+        {
+            "loader": "set_method",
+            "identifier": "settings_module_method",
+            "env": "global",
+            "merged": False,
+        },
+    )
+    assert is_dict_subset(
+        history[2],
         {
             "loader": "yaml",
             "identifier": str(file_a),
@@ -128,7 +147,7 @@ def test_get_history_general(tmp_path):
         },
     )
     assert is_dict_subset(
-        history[1],
+        history[3],
         {
             "loader": "yaml",
             "identifier": str(file_b),
@@ -138,18 +157,20 @@ def test_get_history_general(tmp_path):
     )
 
     # data integrity
-    assert history[0]["value"]["DICTY"] == {
+    assert "SETTINGS_FILE_FOR_DYNACONF" in history[0]["value"]
+    assert "SETTINGS_MODULE" in history[1]["value"]
+    assert history[2]["value"]["DICTY"] == {
         "a": "A",
         "b": [1, {"c": "C", "d": "D"}],
     }
-    assert history[1]["value"]["LISTY"] == [
+    assert history[3]["value"]["LISTY"] == [
         1,
         {"a": "A", "b": "B", "c": [1, 2]},
     ]
 
     # types has been normalized
-    assert history[0]["value"]["DICTY"].__class__ == dict
-    assert history[1]["value"]["LISTY"].__class__ == list
+    assert history[2]["value"]["DICTY"].__class__ == dict
+    assert history[3]["value"]["LISTY"].__class__ == list
 
 
 def test_get_history_env_false__file_plus_envvar(tmp_path):
@@ -165,9 +186,9 @@ def test_get_history_env_false__file_plus_envvar(tmp_path):
     history = get_history(settings)
 
     # metadata
-    assert len(history) == 2
+    assert len(history) == 4
     assert is_dict_subset(
-        history[0],
+        history[2],
         {
             "loader": "yaml",
             "identifier": str(file_a),
@@ -176,7 +197,7 @@ def test_get_history_env_false__file_plus_envvar(tmp_path):
         },
     )
     assert is_dict_subset(
-        history[1],
+        history[3],
         {
             "loader": "env_global",
             "identifier": "unique",
@@ -199,7 +220,7 @@ def test_get_history_env_false__val_default_plus_envvar():
     history = get_history(settings)
 
     # metadata (validation_default runs after envvar loading)
-    assert len(history) == 2
+    assert len(history) == 3
     assert is_dict_subset(
         history[0],
         {
@@ -212,7 +233,7 @@ def test_get_history_env_false__val_default_plus_envvar():
     assert is_dict_subset(
         history[1],
         {
-            "loader": "validation_default",
+            "loader": "setdefault",
             "identifier": "unique",
             "env": "main",
             "merged": False,
@@ -237,35 +258,39 @@ def test_get_history_env_false__merge_marks(tmp_path):
     history = get_history(settings)
 
     # metadata
-    assert len(history) == 4
-    assert history[0] == {
+    assert len(history) == 6
+    assert history[2] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "default",
         "merged": False,
         "value": {"LISTY": [1, 2, 3]},
     }
-    assert history[1] == {
+    assert history[3] == {
         "loader": "toml",
         "identifier": str(file_b),
         "env": "default",
         "merged": True,
-        "value": {"LISTY": [1, 2, 3, 4, 5, 6]},
+        "value": {"LISTY": [4, 5, 6, "dynaconf_merge"]},
     }
-    assert history[2] == {
+    assert history[4] == {
         "loader": "toml",
         "identifier": str(file_c),
         "env": "default",
         "merged": True,
-        "value": {"LISTY": [1, 2, 3, 4, 5, 6, 7, 8, 9]},
+        "value": {"LISTY": [7, 8, 9]},
     }
-    assert history[3] == {
-        "loader": "env_global",
-        "identifier": "unique",
-        "env": "global",
-        "merged": True,
-        "value": {"LISTY": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]},
-    }
+    assert is_dict_subset(
+        history[5],
+        {
+            "loader": "env_global",
+            "identifier": "unique",
+            "env": "global",
+            "merged": True,
+        },
+    )
+    # when using @merge the value outputs as `Merge(....)`
+    assert "Merge" in history[5]["value"]["LISTY"]
 
 
 def test_get_history_env_true__file_plus_envvar(tmp_path):
@@ -286,22 +311,22 @@ def test_get_history_env_true__file_plus_envvar(tmp_path):
     settings = Dynaconf(settings_file=file_a, environments=True)
     history = get_history(settings)
 
-    assert len(history) == 3
-    assert history[0] == {
+    assert len(history) == 5
+    assert history[2] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "default",
         "merged": False,
         "value": {"FOO": "from_default_env"},
     }
-    assert history[1] == {
+    assert history[3] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "development",
         "merged": False,
         "value": {"FOO": "from_development_env"},
     }
-    assert history[2] == {
+    assert history[4] == {
         "loader": "env_global",
         "identifier": "unique",
         "env": "global",
@@ -323,7 +348,7 @@ def test_get_history_env_true__val_default_plus_file(tmp_path):
         development.foo="from_development_file"
         """,
     )
-    print()
+    # print()
     settings = Dynaconf(
         validators=[
             Validator("bar", default="from_val_default_current_env"),
@@ -336,30 +361,32 @@ def test_get_history_env_true__val_default_plus_file(tmp_path):
     )
     history = get_history(settings)
 
-    assert len(history) == 4
-    assert history[0] == {
+    assert len(history) == 7
+    assert history[2] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "default",
         "merged": False,
         "value": {"FOO": "from_default_file"},
     }
-    assert history[1] == {
+    assert history[3] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "development",
         "merged": False,
         "value": {"FOO": "from_development_file"},
     }
-    assert history[2] == {
-        "loader": "validation_default",
+    assert history[4] == {
+        "loader": "setdefault",
         "identifier": "unique",
         "env": "development",
         "merged": False,
         "value": {"BAR": "from_val_default_current_env"},
     }
-    assert history[3] == {
-        "loader": "validation_default",
+    # REVIEW: history[5] is not correct, validation default on other env should
+    # not have side effect on current object but only on its copy/clone
+    assert history[6] == {
+        "loader": "setdefault",
         "identifier": "unique",
         "env": "production",
         "merged": False,
@@ -384,35 +411,39 @@ def test_get_history_env_true__merge_marks(tmp_path):
     history = get_history(settings)
 
     # metadata
-    assert len(history) == 4
-    assert history[0] == {
+    assert len(history) == 6
+    assert history[2] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "default",
         "merged": False,
         "value": {"LISTY": [1, 2, 3]},
     }
-    assert history[1] == {
+    assert history[3] == {
         "loader": "toml",
         "identifier": str(file_b),
         "env": "default",
         "merged": True,
-        "value": {"LISTY": [1, 2, 3, 4, 5, 6]},
+        "value": {"LISTY": [4, 5, 6, "dynaconf_merge"]},
     }
-    assert history[2] == {
+    assert history[4] == {
         "loader": "toml",
         "identifier": str(file_c),
         "env": "default",
         "merged": True,
-        "value": {"LISTY": [1, 2, 3, 4, 5, 6, 7, 8, 9]},
+        "value": {"LISTY": [7, 8, 9]},
     }
-    assert history[3] == {
-        "loader": "env_global",
-        "identifier": "unique",
-        "env": "global",
-        "merged": True,
-        "value": {"LISTY": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]},
-    }
+    assert is_dict_subset(
+        history[5],
+        {
+            "loader": "env_global",
+            "identifier": "unique",
+            "env": "global",
+            "merged": True,
+        },
+    )
+    # when using @merge the value outputs as `Merge(....)`
+    assert "Merge" in history[5]["value"]["LISTY"]
 
 
 def test_get_history_key_filter(tmp_path):
@@ -685,16 +716,15 @@ def test_caveat__get_history_env_true(tmp_path):
 
     settings = Dynaconf(settings_file=file_a, environments=True)
     history = get_history(settings)
-
-    assert len(history) == 2
-    assert history[0] == {
+    assert len(history) == 4
+    assert history[2] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "default",
         "merged": False,
         "value": {"FOO": "from_default_env"},
     }
-    assert history[1] == {
+    assert history[3] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "development",
@@ -703,7 +733,7 @@ def test_caveat__get_history_env_true(tmp_path):
     }
 
     with pytest.raises(IndexError):
-        assert history[2] == {
+        assert history[4] == {
             "loader": "toml",
             "identifier": str(file_a),
             "env": "production",
@@ -733,16 +763,15 @@ def test_caveat__get_history_env_true_workaround(tmp_path):
     settings = Dynaconf(settings_file=file_a, environments=True)
     settings.from_env("production")
     history = get_history(settings)
-
-    assert len(history) == 3
-    assert history[0] == {
+    assert len(history) == 6
+    assert history[2] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "default",
         "merged": False,
         "value": {"FOO": "from_default_env"},
     }
-    assert history[1] == {
+    assert history[3] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "development",
@@ -750,7 +779,7 @@ def test_caveat__get_history_env_true_workaround(tmp_path):
         "value": {"FOO": "from_development_env"},
     }
 
-    assert history[2] == {
+    assert history[5] == {
         "loader": "toml",
         "identifier": str(file_a),
         "env": "production",

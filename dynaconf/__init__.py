@@ -6,6 +6,8 @@ from dynaconf.contrib import DjangoDynaconf  # noqa
 from dynaconf.contrib import FlaskDynaconf  # noqa
 from dynaconf.utils.inspect import inspect_settings
 from dynaconf.utils.parse_conf import add_converter  # noqa
+from dynaconf.utils.parse_conf import DynaconfFormatError  # noqa
+from dynaconf.utils.parse_conf import DynaconfParseError  # noqa
 from dynaconf.validator import ValidationError  # noqa
 from dynaconf.validator import Validator  # noqa
 
@@ -33,4 +35,6 @@ __all__ = [
     "DjangoDynaconf",
     "add_converter",
     "inspect_settings",
+    "DynaconfFormatError",
+    "DynaconfParseError",
 ]

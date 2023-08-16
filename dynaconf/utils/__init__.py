@@ -470,7 +470,7 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
     Returns:
         str -- The proper casing of the key in data
     """
-    if key in data:
+    if not isinstance(key, str) or key in data:
         return key
     for k in data.keys():
         if k.lower() == key.lower():
