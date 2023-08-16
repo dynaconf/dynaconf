@@ -11,7 +11,6 @@ settings = Dynaconf(
     merge_enabled=True,
 )
 
-
 settings.validators.register(
     Validator("group.something_new", default=5),
 )

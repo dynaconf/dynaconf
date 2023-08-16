@@ -262,7 +262,8 @@ class Validator:
                 and self.is_type_of is str
             ):
                 # avoid TOML from parsing "+-1" as integer
-                default_value = f"'{default_value}'"
+                # by forcing casting to str
+                default_value = f"@str {default_value}"
 
             value = settings.setdefault(
                 name,

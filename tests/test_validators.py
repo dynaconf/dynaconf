@@ -745,13 +745,13 @@ def test_toml_should_not_change_validator_type_with_is_type_set():
 
 def test_toml_should_not_change_validator_type_with_is_type_not_set_int():
     settings = Dynaconf(
-        validators=[Validator("TEST", default="+172800")]
+        validators=[Validator("TEST", default=-172800)]
         # The ways to force a string is
         # passing is_type_of=str
-        # or default="@str +172800" or default="'+172800'"
+        # or default="@str +172800" or default="+172800"
     )
 
-    assert settings.test == +172800
+    assert settings.test == -172800
 
 
 def test_toml_should_not_change_validator_type_using_at_sign():

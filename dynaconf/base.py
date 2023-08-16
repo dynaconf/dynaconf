@@ -396,7 +396,7 @@ class Settings:
                 item,
                 default,
                 loader_identifier=loader_identifier,
-                tomlfy=True,
+                tomlfy=False,
             )
             return default
 
