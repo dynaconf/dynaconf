@@ -5,9 +5,7 @@ from __future__ import annotations
 
 import copy
 import os
-from pprint import pprint
 from textwrap import dedent
-from unittest import mock
 
 import pytest
 
@@ -348,7 +346,6 @@ def test_get_history_env_true__val_default_plus_file(tmp_path):
         development.foo="from_development_file"
         """,
     )
-    # print()
     settings = Dynaconf(
         validators=[
             Validator("bar", default="from_val_default_current_env"),
@@ -456,7 +453,7 @@ def test_get_history_key_filter(tmp_path):
     create_file(file_c, "a='cA'\nb='cB'\nc='cC'")
 
     settings = Dynaconf(settings_file=[file_a, file_b, file_c])
-    history = get_history(settings, key_dotted_path="a")
+    history = get_history(settings, key="a")
     assert history[0]["value"] == "aA"
     assert history[1]["value"] == "bA"
     assert history[2]["value"] == "cA"
@@ -472,7 +469,7 @@ def test_get_history_key_filter_nested(tmp_path):
     create_file(file_c, "a.b='cB'\na.c='cC'")
 
     settings = Dynaconf(settings_file=[file_a, file_b, file_c])
-    history = get_history(settings, key_dotted_path="a.c")
+    history = get_history(settings, key="a.c")
     assert len(history) == 3
     assert history[0]["value"] == "aC"
     assert history[1]["value"] == "bC"
@@ -554,138 +551,12 @@ def test_get_history_env_and_key_filter(tmp_path):
     settings.from_env("prod")  # CAVEAT: activate loading of prod
     history = get_history(
         settings,
-        key_dotted_path="bar",
+        key="bar",
         filter_src_metadata=lambda x: x.env.lower() == "prod",
     )
     assert len(history) == 2
     assert history[0]["value"] == "from_prod_a"
     assert history[1]["value"] == "from_prod_b"
-
-
-def test_inspect_print_key(tmp_path, capsys):
-    os.environ["DYNACONF_FOO"] = "from_environ"
-    os.environ["DYNACONF_BAR"] = "environ_only"
-    filename = create_file(tmp_path / "a.yaml", "foo: from_yaml")
-    settings = Dynaconf(settings_file=filename)
-
-    inspect_settings(settings, "foo", output_format="yaml")
-    stdout, stderr = capsys.readouterr()
-    expected = f"""\
-    header:
-      filters:
-        env: None
-        key: foo
-        history_ordering: ascending
-      active_value: from_environ
-    history:
-    - loader: env_global
-      identifier: unique
-      env: global
-      merged: false
-      value: from_environ
-    - loader: yaml
-      identifier: {filename}
-      env: default
-      merged: false
-      value: from_yaml
-    """
-    assert stdout == dedent(expected)
-
-
-def test_inspect_print_all(tmp_path, capsys):
-    os.environ["DYNACONF_FOO"] = "from_environ"
-    os.environ["DYNACONF_BAR"] = "environ_only"
-    filename = create_file(tmp_path / "a.yaml", "foo: from_yaml")
-    settings = Dynaconf(settings_file=filename)
-    inspect_settings(settings, output_format="yaml")
-
-    stdout, stderr = capsys.readouterr()
-    expected = """\
-    header:
-      filters:
-        env: None
-        key: None
-        history_ordering: ascending
-      active_value:
-        FOO: from_environ
-        BAR: environ_only
-    """
-    assert stdout.startswith(dedent(expected))
-
-
-def test_inspect_to_file_key(tmp_path):
-    os.environ["DYNACONF_FOO"] = "from_environ"
-    os.environ["DYNACONF_BAR"] = "environ_only"
-    filename = create_file(tmp_path / "a.yaml", "foo: from_yaml")
-    settings = Dynaconf(settings_file=filename)
-
-    file_out = tmp_path / "output.yml"
-    inspect_settings(settings, "foo", output_format="yaml", to_file=file_out)
-
-    # open created file
-    with open(file_out) as f:
-        file_content = yaml.YAML().load(f)
-
-    assert file_content["header"]["filters"]["key"] == "foo"
-    assert file_content["header"]["active_value"] == "from_environ"
-
-
-def test_inspect_to_file_all(tmp_path):
-    os.environ["DYNACONF_FOO"] = "from_environ"
-    os.environ["DYNACONF_BAR"] = "environ_only"
-    filename = create_file(tmp_path / "a.yaml", "foo: from_yaml")
-    settings = Dynaconf(settings_file=filename)
-
-    file_out = tmp_path / "output.yml"
-    inspect_settings(settings, output_format="yaml", to_file=file_out)
-
-    # open created file
-    with open(file_out) as f:
-        file_content = yaml.YAML().load(f)
-
-    assert file_content["header"]["filters"]["key"] == "None"
-    assert file_content["header"]["active_value"] == {
-        "FOO": "from_environ",
-        "BAR": "environ_only",
-    }
-
-
-def test_inspect_env_filter(tmp_path, capsys):
-    """
-    Caveat: env filter will show current default env values too.
-            History will be filtered properly.
-    """
-    filename = create_file(
-        tmp_path / "a.toml",
-        """\
-        default.foo="from_env_default"
-        development.foo="from_env_dev"
-        prod.bar="prod_only"
-        """,
-    )
-
-    settings = Dynaconf(settings_file=filename, environments=True)
-    inspect_settings(settings, output_format="yaml", env="prod")
-
-    stdout, stderr = capsys.readouterr()
-    expected = f"""\
-    header:
-      filters:
-        env: prod
-        key: None
-        history_ordering: ascending
-      active_value:
-        FOO: from_env_default
-        BAR: prod_only
-    history:
-    - loader: toml
-      identifier: {filename}
-      env: prod
-      merged: false
-      value:
-        BAR: prod_only
-    """
-    assert stdout == dedent(expected)
 
 
 def test_caveat__get_history_env_true(tmp_path):
@@ -788,26 +659,156 @@ def test_caveat__get_history_env_true_workaround(tmp_path):
     }
 
 
+def test_inspect_key_filter(tmp_path):
+    os.environ["DYNACONF_FOO"] = "from_environ"
+    os.environ["DYNACONF_BAR"] = "environ_only"
+    filename = create_file(tmp_path / "a.yaml", "foo: from_yaml")
+    settings = Dynaconf(settings_file=filename)
+
+    result = inspect_settings(settings, "foo", output_format="yaml")
+
+    assert result["header"]["key_filter"] == "foo"
+    assert result["current"] == "from_environ"
+    assert result["history"] == [
+        {
+            "loader": "env_global",
+            "identifier": "unique",
+            "env": "global",
+            "merged": False,
+            "value": "from_environ",
+        },
+        {
+            "loader": "yaml",
+            "identifier": str(filename),
+            "env": "default",
+            "merged": False,
+            "value": "from_yaml",
+        },
+    ]
+
+
+def test_inspect_no_filter(tmp_path):
+    os.environ["DYNACONF_FOO"] = "from_environ"
+    os.environ["DYNACONF_BAR"] = "environ_only"
+    filename = create_file(tmp_path / "a.yaml", "foo: from_yaml")
+    settings = Dynaconf(settings_file=filename)
+    result = inspect_settings(settings, output_format="yaml")
+
+    assert result["header"]["key_filter"] == "None"
+    assert result["header"]["env_filter"] == "None"
+    assert result["current"] == {"FOO": "from_environ", "BAR": "environ_only"}
+
+    # first two entries
+    assert result["history"][:2] == [
+        {
+            "env": "global",
+            "identifier": "unique",
+            "loader": "env_global",
+            "merged": False,
+            "value": {"BAR": "environ_only", "FOO": "from_environ"},
+        },
+        {
+            "env": "default",
+            "identifier": str(filename),
+            "loader": "yaml",
+            "merged": False,
+            "value": {"FOO": "from_yaml"},
+        },
+    ]
+
+
+def test_inspect_env_filter(tmp_path):
+    """
+    Caveat: env filter will show current default env values too.
+            History will be filtered properly.
+    """
+    filename = create_file(
+        tmp_path / "a.toml",
+        """\
+        default.foo="from_env_default"
+        development.foo="from_env_dev"
+        prod.bar="prod_only"
+        """,
+    )
+
+    settings = Dynaconf(settings_file=filename, environments=True)
+    result = inspect_settings(settings, output_format="yaml", env="prod")
+    assert result["header"]["env_filter"] == "prod"
+    assert result["header"]["key_filter"] == "None"
+    assert result["current"] == {"FOO": "from_env_default", "BAR": "prod_only"}
+    assert result["history"] == [
+        {
+            "loader": "toml",
+            "identifier": str(filename),
+            "env": "prod",
+            "merged": False,
+            "value": {"BAR": "prod_only"},
+        }
+    ]
+
+
+def test_inspect_to_file(tmp_path):
+    """Assert file is written correctly with 'to_file' option"""
+    os.environ["DYNACONF_FOO"] = "from_environ"
+    os.environ["DYNACONF_BAR"] = "environ_only"
+    filename = create_file(tmp_path / "a.yaml", "foo: from_yaml")
+    settings = Dynaconf(settings_file=filename)
+
+    file_out = tmp_path / "output.yml"
+    inspect_settings(settings, output_format="yaml", to_file=file_out)
+
+    # open created file
+    assert file_out.read_text() == dedent(
+        f"""\
+        header:
+          env_filter: None
+          key_filter: None
+          new_first: 'True'
+          history_limit: None
+          include_internal: 'False'
+        current:
+          FOO: from_environ
+          BAR: environ_only
+        history:
+        - loader: env_global
+          identifier: unique
+          env: global
+          merged: false
+          value:
+            FOO: from_environ
+            BAR: environ_only
+        - loader: yaml
+          identifier: {filename}
+          env: default
+          merged: false
+          value:
+            FOO: from_yaml
+        - loader: set_method
+          identifier: settings_module_method
+          env: global
+          merged: false
+          value:
+            SETTINGS_MODULE: {filename}
+        - loader: set_method
+          identifier: init_kwargs
+          env: global
+          merged: false
+          value:
+            SETTINGS_FILE_FOR_DYNACONF: {filename}
+          """
+    )
+
+
 def test_inspect_exception_key_not_found():
     settings = Dynaconf()
     with pytest.raises(KeyNotFoundError):
-        inspect_settings(settings, key_dotted_path="non_existant")
+        inspect_settings(settings, key="non_existant")
 
 
-def test_inspect_empty_settings(capsys):
+def test_inspect_empty_settings():
     settings = Dynaconf()
-    inspect_settings(settings)
-    stdout, stderr = capsys.readouterr()
-    expected = """\
-        header:
-          filters:
-            env: None
-            key: None
-            history_ordering: ascending
-          active_value: {}
-        history: []
-        """
-    assert stdout == dedent(expected)
+    result = inspect_settings(settings)
+    assert result["history"] == []
 
 
 def test_inspect_exception_env_not_found():
@@ -819,6 +820,4 @@ def test_inspect_exception_env_not_found():
 def test_inspect_exception_invalid_format():
     settings = Dynaconf()
     with pytest.raises(OutputFormatError):
-        inspect_settings(
-            settings, output_format="invalid_format"  # type: ignore
-        )
+        inspect_settings(settings, output_format="invalid_format")

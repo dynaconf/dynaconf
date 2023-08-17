@@ -514,16 +514,26 @@ def test_inspect_no_args(tmp_path):
     expected_header = """\
         {
           "header": {
-            "filters": {
-              "env": "None",
-              "key": "None",
-              "history_ordering": "ascending"
-            },
-            "active_value": {
-              "FOO": "from_environ_no_args"
-            }
+            "env_filter": "None",
+            "key_filter": "None",
+            "new_first": "True",
+            "history_limit": "None",
+            "include_internal": "False"
           },
-        """
+          "current": {
+            "FOO": "from_environ_no_args"
+          },
+          "history": [
+            {
+              "loader": "env_global",
+              "identifier": "unique",
+              "env": "global",
+              "merged": false,
+              "value": {
+                "FOO": "from_environ_no_args"
+              }
+            },
+            """
     assert result
     assert result.startswith(dedent(expected_header))
 
@@ -553,12 +563,20 @@ def test_inspect_yaml_format(tmp_path):
     result = run(cmd, env=environ)
     expected_header = """\
         header:
-          filters:
-            env: None
-            key: None
-            history_ordering: ascending
-          active_value:
-            BAR: from_file_yaml_format
+          env_filter: None
+          key_filter: None
+          new_first: 'True'
+          history_limit: None
+          include_internal: 'False'
+        current:
+          BAR: from_file_yaml_format
+          FOO: from_environ_yaml_format
+        history:
+        - loader: env_global
+          identifier: unique
+          env: global
+          merged: false
+          value:
             FOO: from_environ_yaml_format
         """
     assert result
@@ -595,13 +613,13 @@ def test_inspect_key_filter(tmp_path):
     expected_header = """\
         {
           "header": {
-            "filters": {
-              "env": "None",
-              "key": "bar",
-              "history_ordering": "ascending"
-            },
-            "active_value": "file_only"
+            "env_filter": "None",
+            "key_filter": "bar",
+            "new_first": "True",
+            "history_limit": "None",
+            "include_internal": "False"
           },
+          "current": "file_only",
         """
     assert result
     assert result.startswith(dedent(expected_header))
@@ -640,15 +658,15 @@ def test_inspect_env_filter(tmp_path):
     expected_header = """\
         {
           "header": {
-            "filters": {
-              "env": "prod",
-              "key": "None",
-              "history_ordering": "ascending"
-            },
-            "active_value": {
-              "FOO": "from_env_default",
-              "BAR": "prod_only_and_foo_default"
-            }
+            "env_filter": "prod",
+            "key_filter": "None",
+            "new_first": "True",
+            "history_limit": "None",
+            "include_internal": "False"
+          },
+          "current": {
+            "FOO": "from_env_default",
+            "BAR": "prod_only_and_foo_default"
           },
         """
     assert result
@@ -698,11 +716,12 @@ def test_inspect_all_args(tmp_path):
     result = run(cmd, env=environ)
     expected_result = f"""\
         header:
-          filters:
-            env: prod
-            key: bar
-            history_ordering: ascending
-          active_value: actual value but not in history
+          env_filter: prod
+          key_filter: bar
+          new_first: 'True'
+          history_limit: None
+          include_internal: 'False'
+        current: actual value but not in history
         history:
         - loader: toml
           identifier: {setting_file.as_posix()}

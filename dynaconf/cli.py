@@ -851,10 +851,10 @@ def inspect(key, env, format, descending, _all):  # pragma: no cover
     try:
         inspect_settings(
             settings,
-            key_dotted_path=key,
-            env=env,
+            key=key,
+            env=env or None,
             output_format=format,
-            ascending_order=(not descending),
+            new_first=(not descending),
             include_internal=_all,
         )
         click.echo()
