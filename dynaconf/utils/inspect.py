@@ -167,6 +167,7 @@ def get_history(
         filter_src_metadata: takes SourceMetadata and returns a boolean
         include_internal: if True, include internal loaders (e.g. defaults)
                           This has effect only if key is not provided.
+        history_limit: limits how many entries are shown
 
     Example:
         >>> settings = Dynaconf(...)
@@ -265,6 +266,7 @@ def _get_data_by_key(
     """
     if not isinstance(data, DynaBox):
         data = DynaBox(data)  # DynaBox can handle insensitive keys
+
     if sep in key_dotted_path:
         key_dotted_path = key_dotted_path.replace(sep, ".")
 
