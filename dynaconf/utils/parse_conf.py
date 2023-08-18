@@ -228,15 +228,15 @@ def evaluate_lazy_format(f):
     return evaluate
 
 
-def _parse_json_strings(x):
-    x = x.replace("'", '"')  # replace single with double quotes
+def _parse_json_strings(value):
+    value = value.replace("'", '"')  # replace single with double quotes
     # replace unquoted True / False with lower case true / false
-    if "True" in x:
-        x = re.sub(r'(?<!")\bTrue\b', "true", x)
-    if "False" in x:
-        x = re.sub(r'(?<!")\bFalse\b', "false", x)
+    if "True" in value:
+        value = re.sub(r'"\s*:\s*True', '": true', value)
+    if "False" in value:
+        value = re.sub(r'"\s*:\s*False', '": false', value)
 
-    return json.loads(x)
+    return json.loads(value)
 
 
 converters = {

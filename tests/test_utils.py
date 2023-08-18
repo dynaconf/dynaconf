@@ -161,10 +161,16 @@ def test_casting_bool(settings):
 
 
 def test_casting_json(settings):
-    res = parse_conf_data("""@json {"FOO": "bar", "X": False}""")
+    res = parse_conf_data(
+        """@json {"FOO": "bar", "X": False, "KeyTrue" :  True,
+        "Key-True": True, "TrueKey": True}"""
+    )
     assert isinstance(res, dict)
     assert "FOO" in res and "bar" in res.values()
     assert "X" in res and False in res.values()
+    assert "TrueKey" in res  # not replaced with lower case
+    assert "Key-True" in res  # not replaced with lower case
+    assert "KeyTrue" in res  # not replaced with lower case
 
     # Test how single quotes cases are handled.
     # When jinja uses `attr` to render a json string,
@@ -175,10 +181,15 @@ def test_casting_json(settings):
     assert "FOO" in res and "bar" in res.values()
 
     # Test how True / False are handled (automatically lower casing)
-    settings.set("value2", "{'Y': True}")
+    settings.set("value2", "{'Y': True, 'Z': 'False'}")
     res = parse_conf_data("@json @jinja {{ this.value2 }}")(settings)
     assert isinstance(res, dict)
-    assert "Y" in res and True in res.values()
+    assert (
+        "Y" in res and isinstance(res["Y"], bool) and res["Y"] is True
+    )  # boolean are casted
+    assert (
+        "Z" in res and isinstance(res["Z"], str) and res["Z"] == "False"
+    )  # strings are not casted
 
     res = parse_conf_data("@json @format {this.value}")(settings)
     assert isinstance(res, dict)
