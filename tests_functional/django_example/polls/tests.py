@@ -10,6 +10,9 @@ from django.test.utils import override_settings
 @override_settings(ISSUE=596)
 class SettingsTest(TestCase):
     def test_settings(self):
+        # hooks
+        self.assertEqual(settings.BEST_BOSS, "Michael Scott")
+
         self.assertEqual(settings.ISSUE, 596)
         self.assertEqual(settings.SERVER, "prodserver.com")
         # self.assertEqual(
@@ -107,6 +110,7 @@ class TestHookExecutes(TestCase):
             ["Metallica", "Black Sabbath", "Iron Maiden", "Beatles"],
         )
         self.assertTrue(settings.HOOK_ON_DJANGO_APP)
+        self.assertEqual(settings.BEST_BOSS, "Michael Scott")
 
 
 class TestMerge(TestCase):

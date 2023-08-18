@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import json
 import sys
-from contextlib import suppress
 from functools import partial
 from typing import Any
 from typing import Callable
@@ -12,13 +11,14 @@ from typing import TextIO
 from typing import TYPE_CHECKING
 from typing import Union
 
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils.functional import empty
 from dynaconf.vendor.box.box_list import BoxList
 from dynaconf.vendor.ruamel.yaml import YAML
 
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings, Settings
-    from dynaconf.loaders.base import SourceMetadata
 
 
 # Dumpers config
@@ -59,6 +59,7 @@ def inspect_settings(
     to_file: str = "",
     output_format: OutputFormat = "yaml",
     custom_dumper: DumperType | None = None,
+    include_internal: bool = False,
 ):
     """
     Prints loading history about a specific key (as dotted path string)
@@ -71,6 +72,8 @@ def inspect_settings(
         fo_file: if specified, write to this filename
         output_format: available output format options
         custom_dumper: if provided, it is used instead of builtins
+        include_internal: if True, include internal loaders (e.g. defaults)
+                          This has effect only if key is not provided.
     """
     # get filtered history
     original_settings = settings
@@ -87,6 +90,7 @@ def inspect_settings(
         original_settings,
         key_dotted_path=key_dotted_path,
         filter_src_metadata=env_filter,
+        include_internal=include_internal,
     )
     if key_dotted_path and not history:
         raise KeyNotFoundError(
@@ -146,6 +150,7 @@ def get_history(
     obj: Settings | LazySettings,
     key_dotted_path: str = "",
     filter_src_metadata: Callable[[SourceMetadata], bool] = lambda x: True,
+    include_internal: bool = False,
 ) -> list[dict]:
     """
     Gets data from `settings.loaded_by_loaders` in order of loading with
@@ -158,6 +163,8 @@ def get_history(
         obj: Setting object which contain the data
         key_dotted_path: dot-path to desired key. Use all if not provided
         filter_src_metadata: takes SourceMetadata and returns a boolean
+        include_internal: if True, include internal loaders (e.g. defaults)
+                          This has effect only if key is not provided.
 
     Example:
         >>> settings = Dynaconf(...)
@@ -177,16 +184,29 @@ def get_history(
             }
         ]
     """
+    sep = obj.get("NESTED_SEPARATOR_FOR_DYNACONF", "__")
+    # trigger key based hooks
+    if key_dotted_path:
+        obj.get(key_dotted_path)  # noqa
+
+    internal_identifiers = ["default_settings", "_root_path"]
     result = []
     for source_metadata, data in obj._loaded_by_loaders.items():
         # filter by source_metadata
         if filter_src_metadata(source_metadata) is False:
             continue
 
+        if (
+            not key_dotted_path
+            and include_internal is False
+            and source_metadata.identifier in internal_identifiers
+        ):
+            continue  # skip: internal loaders
+
         # filter by key path
         try:
             data = (
-                _get_data_by_key(data, key_dotted_path)
+                _get_data_by_key(data, key_dotted_path, sep=sep)
                 if key_dotted_path
                 else data
             )
@@ -196,6 +216,17 @@ def get_history(
         # Format output
         data = _ensure_serializable(data)
         result.append({**source_metadata._asdict(), "value": data})
+
+    if key_dotted_path and not result:
+        # Key may be set in obj but history not tracked
+        if (data := obj.get(key_dotted_path, empty)) is not empty:
+            generic_source_metadata = SourceMetadata(
+                loader="undefined",
+                identifier="undefined",
+            )
+            data = _ensure_serializable(data)
+            result.append({**generic_source_metadata._asdict(), "value": data})
+
     return result
 
 
@@ -219,25 +250,32 @@ def _ensure_serializable(data: BoxList | DynaBox) -> dict | list:
 
 
 def _get_data_by_key(
-    data: dict, key_dotted_path: str, default: Any = None, upperfy_key=True
+    data: dict,
+    key_dotted_path: str,
+    default: Any = None,
+    sep="__",
 ):
     """
     Returns value found in data[key] using dot-path str (e.g, "path.to.key").
-    Accepts integers as list index:
-        data = {'a': ['b', 'c', 'd']}
-        path = 'a.1'
-        _get_data_by_key(data, path) == 'c'
     Raises KeyError if not found
     """
-    path = key_dotted_path.split(".")
+    if not isinstance(data, DynaBox):
+        data = DynaBox(data)  # DynaBox can handle insensitive keys
+    if sep in key_dotted_path:
+        key_dotted_path = key_dotted_path.replace(sep, ".")
+
+    def traverse_data(data, path):
+        # transform `a.b.c` in successive calls to `data['a']['b']['c']`
+        path = path.split(".")
+        root_key, nested_keys = path[0], path[1:]
+        result = data[root_key]
+        for key in nested_keys:
+            result = result[key]
+        return result
+
     try:
-        for node in path:
-            node_key = node.upper() if upperfy_key else node
-            with suppress(ValueError):
-                node_key = int(node_key)
-            data = data[node_key]
-    except (ValueError, IndexError, KeyError):
+        return traverse_data(data, key_dotted_path)
+    except KeyError:
         if not default:
             raise KeyError(f"Path not found in data: {key_dotted_path!r}")
         return default
-    return data

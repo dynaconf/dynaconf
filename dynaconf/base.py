@@ -66,7 +66,7 @@ class LazySettings(LazyObject):
         :param wrapped: a deepcopy of this object will be wrapped (issue #596)
         :param kwargs: values that overrides default_settings
         """
-
+        self._wrapper_class = kwargs.pop("_wrapper_class", Settings)
         self._warn_dynaconf_global_settings = kwargs.pop(
             "warn_dynaconf_global_settings", None
         )  # in 3.0.0 global settings is deprecated
@@ -171,13 +171,14 @@ class LazySettings(LazyObject):
                 "your own instance e.g: `settings = Dynaconf(*options)`",
                 DeprecationWarning,
             )
+            self._wrapper_class = Settings  # Force unhooked for this
 
         default_settings.reload(self._should_load_dotenv)
         environment_variable = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
         settings_module = os.environ.get(environment_variable)
-        self._wrapped = Settings(
+        self._wrapped = self._wrapper_class(
             settings_module=settings_module, **self._kwargs
         )
 
@@ -196,7 +197,9 @@ class LazySettings(LazyObject):
         settings_module = settings_module or os.environ.get(environment_var)
         compat_kwargs(kwargs)
         kwargs.update(self._kwargs)
-        self._wrapped = Settings(settings_module=settings_module, **kwargs)
+        self._wrapped = self._wrapper_class(
+            settings_module=settings_module, **kwargs
+        )
 
     @property
     def configured(self):
@@ -226,7 +229,7 @@ class Settings:
         self._deleted = set()
         self._store = DynaBox(box_settings=self)
         self._env_cache = {}
-        self._loaded_by_loaders: dict[SourceMetadata, Any] = {}
+        self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []
         self._defaults = DynaBox(box_settings=self)
         self.environ = os.environ
@@ -248,9 +251,13 @@ class Settings:
 
         compat_kwargs(kwargs)
         if settings_module:
-            self.set("SETTINGS_FILE_FOR_DYNACONF", settings_module)
+            self.set(
+                "SETTINGS_FILE_FOR_DYNACONF",
+                settings_module,
+                loader_identifier="init_settings_module",
+            )
         for key, value in kwargs.items():
-            self.set(key, value)
+            self.set(key, value, loader_identifier="init_kwargs")
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
 
@@ -293,20 +300,30 @@ class Settings:
         return item.upper() in self.store or item.lower() in self.store
 
     def __getattribute__(self, name):
-        if name not in RESERVED_ATTRS and name not in UPPER_DEFAULT_SETTINGS:
-            with suppress(KeyError):
-                # self._store has Lazy values already evaluated
-                if (
-                    name.islower()
-                    and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty)
-                    is False
-                ):
-                    # only matches exact casing, first levels always upper
-                    return self._store.__getattribute__(name)
-                # perform lookups for upper, and casefold
-                return self._store[name]
-        # in case of RESERVED_ATTRS or KeyError above, keep default behaviour
-        return super().__getattribute__(name)
+        if (
+            name.startswith("__")
+            or name in RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS
+        ):
+            return super().__getattribute__(name)
+
+        # This is to keep the only upper case mode working
+        # self._store has Lazy values already evaluated
+        if (
+            name.islower()
+            and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty) is False
+        ):
+            try:
+                # only matches exact casing, first levels always upper
+                return self._store.__getattribute__(name)
+            except KeyError:
+                return super().__getattribute__(name)
+
+        # then go to the regular .get which triggers hooks among other things
+        value = self.get(name, default=empty)
+        if value is empty:
+            return super().__getattribute__(name)
+
+        return value
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
@@ -372,9 +389,7 @@ class Settings:
                 )
             )
         )
-        loader_identifier = SourceMetadata(
-            "validation_default", "unique", env.lower()
-        )
+        loader_identifier = SourceMetadata("setdefault", "unique", env.lower())
 
         if apply_default:
             self.set(
@@ -750,7 +765,11 @@ class Settings:
             box_settings=self,
         )
         if settings_module != getattr(self, "SETTINGS_MODULE", None):
-            self.set("SETTINGS_MODULE", settings_module)
+            self.set(
+                "SETTINGS_MODULE",
+                settings_module,
+                loader_identifier="settings_module_method",
+            )
 
         # This is for backewards compatibility, to be removed on 4.x.x
         if not self.SETTINGS_MODULE and self.get("default_settings_paths"):
@@ -881,7 +900,7 @@ class Settings:
         self,
         key,
         value,
-        loader_identifier: SourceMetadata | None = None,
+        loader_identifier: SourceMetadata | str | None = None,
         tomlfy=False,
         dotted_lookup=empty,
         is_secret="DeprecatedArgument",  # noqa
@@ -891,124 +910,105 @@ class Settings:
         """Set a value storing references for the loader
 
         :param key: The key to store
-        :param value: The value to store
+        :param value: The raw value to parse and store
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
+                                  Or isntance of SourceMetadata
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
         :param validate: Bool define if validation will be triggered
         """
+
+        # Ensure source_metadata always is set even if set is called
+        # without a loader_identifier
+        if isinstance(loader_identifier, str) or loader_identifier is None:
+            source_metadata = SourceMetadata(
+                loader="set_method",
+                identifier=loader_identifier or "undefined",
+                merged=merge is True,
+            )
+        else:  # loader identifier must be a SourceMetadata instance
+            source_metadata = loader_identifier
+
         if validate is empty:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
-
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
-
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
         if nested_sep and nested_sep in key:
-            # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
-            key = key.replace(nested_sep, ".")
+            key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
 
         if "." in key and dotted_lookup is True:
             return self._dotted_set(
                 key,
                 value,
-                loader_identifier=loader_identifier,
+                loader_identifier=source_metadata,
                 tomlfy=tomlfy,
                 validate=validate,
             )
 
-        # Fix for #905
-        # parsed_conf default value was causing duplication
-        value_not_parsed = (
-            value
-            if loader_identifier
-            and loader_identifier.loader == "validation_default"
-            else None
-        )
-
-        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
+        parsed = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
 
         # Fix for #869 - The call to getattr trigger early evaluation
         existing = (
-            getattr(self, key, None) if not isinstance(value, Lazy) else None
+            self.store.get(key, None) if not isinstance(parsed, Lazy) else None
         )
 
-        if getattr(value, "_dynaconf_del", None):
-            # just in case someone use a `@del` in a first level var.
-            self.unset(key, force=True)
+        if getattr(parsed, "_dynaconf_del", None):
+            self.unset(key, force=True)  # `@del` in a first level var.
             return
 
-        if getattr(value, "_dynaconf_reset", False):  # pragma: no cover
-            # just in case someone use a `@reset` in a first level var.
-            value = value.unwrap()
+        if getattr(parsed, "_dynaconf_reset", False):  # pragma: no cover
+            parsed = parsed.unwrap()  # `@reset` in a first level var.
 
-        if getattr(value, "_dynaconf_merge_unique", False):
-            # just in case someone use a `@merge_unique` in a first level var
+        if getattr(parsed, "_dynaconf_merge_unique", False):
+            # `@merge_unique` in a first level var
             if existing:
                 # update SourceMetadata (for inspecting purposes)
-                loader_identifier = (
-                    loader_identifier._replace(merged=True)
-                    if loader_identifier
-                    else None
-                )
-                value = object_merge(existing, value.unwrap(), unique=True)
+                source_metadata = source_metadata._replace(merged=True)
+                parsed = object_merge(existing, parsed.unwrap(), unique=True)
             else:
-                value = value.unwrap()
+                parsed = parsed.unwrap()
 
-        if getattr(value, "_dynaconf_merge", False):
-            # just in case someone use a `@merge` in a first level var
+        if getattr(parsed, "_dynaconf_merge", False):
+            # `@merge` in a first level var
             if existing:
                 # update SourceMetadata (for inspecting purposes)
-                loader_identifier = (
-                    loader_identifier._replace(merged=True)
-                    if loader_identifier
-                    else None
-                )
-                value = object_merge(existing, value.unwrap())
+                source_metadata = source_metadata._replace(merged=True)
+                parsed = object_merge(existing, parsed.unwrap())
             else:
-                value = value.unwrap()
+                parsed = parsed.unwrap()
 
-        if existing is not None and existing != value:
+        if existing is not None and existing != parsed:
             # `dynaconf_merge` used in file root `merge=True`
             if merge and merge is not empty:
-                loader_identifier = (
-                    loader_identifier._replace(merged=True)
-                    if loader_identifier
-                    else None
-                )
-                value = object_merge(existing, value)
+                source_metadata = source_metadata._replace(merged=True)
+                parsed = object_merge(existing, parsed)
             else:
-                # Fix for #905
-                if (
-                    loader_identifier
-                    and loader_identifier.loader == "validation_default"
-                ):
-                    value = value_not_parsed
-                else:
-                    # `dynaconf_merge` may be used within the key structure
-                    # Or merge_enabled is set to True
-                    value, updated_identifier = self._merge_before_set(
-                        existing, value, loader_identifier, context_merge=merge
-                    )
-                    loader_identifier = updated_identifier
+                # `dynaconf_merge` may be used within the key structure
+                # Or merge_enabled is set to True
+                parsed, source_metadata = self._merge_before_set(
+                    existing, parsed, source_metadata, context_merge=merge
+                )
 
-        if isinstance(value, dict) and not isinstance(value, DynaBox):
-            value = DynaBox(value, box_settings=self)
+        if isinstance(parsed, dict) and not isinstance(parsed, DynaBox):
+            parsed = DynaBox(parsed, box_settings=self)
 
-        self.store[key] = value
+        # Set the parsed value
+        self.store[key] = parsed
         self._deleted.discard(key)
-        super().__setattr__(key, value)
+        super().__setattr__(key, parsed)
 
-        # set loader identifiers so cleaners know which keys to clean
-        if loader_identifier and loader_identifier in self._loaded_by_loaders:
-            self._loaded_by_loaders[loader_identifier][key] = value
-        elif loader_identifier:
-            self._loaded_by_loaders[loader_identifier] = {key: value}
-        elif loader_identifier is None:
+        # Track history for inspect, store the raw_value
+        if source_metadata in self._loaded_by_loaders:
+            self._loaded_by_loaders[source_metadata][key] = value
+        else:
+            self._loaded_by_loaders[source_metadata] = {key: value}
+
+        if loader_identifier is None:
             # if .set is called without loader identifier it becomes
             # a default value and goes away only when explicitly unset
-            self._defaults[key] = value
+            self._defaults[key] = parsed
 
         if validate is True:
             self.validators.validate()
@@ -1276,7 +1276,11 @@ class Settings:
 
         if self._loaded_files:  # called once
             root_path = os.path.dirname(self._loaded_files[0])
-            self.set("ROOT_PATH_FOR_DYNACONF", root_path)
+            self.set(
+                "ROOT_PATH_FOR_DYNACONF",
+                root_path,
+                loader_identifier="_root_path",
+            )
             return root_path
 
     def load_extra_yaml(self, env, silent, key):
@@ -1359,13 +1363,15 @@ class Settings:
         """Clone the current settings object."""
         try:
             return copy.deepcopy(self)
-        except TypeError:
+        except (TypeError, copy.Error):
             # can't deepcopy settings object because of module object
             # being set as value in the settings dict
             new_data = self.to_dict(internal=True)
             new_data["dynaconf_skip_loaders"] = True
             new_data["dynaconf_skip_validators"] = True
-            return Settings(**new_data)
+            new_data["_registered_hooks"] = {}
+            new_data["_REGISTERED_HOOKS"] = {}
+            return self.__class__(**new_data)
 
     @property
     def dynaconf(self):
@@ -1441,5 +1447,7 @@ RESERVED_ATTRS = (
         "_validate_exclude",
         "_validate_only_current_env",
         "_post_hooks",
+        "_registered_hooks",
+        "_REGISTERED_HOOKS",
     ]
 )
