@@ -163,10 +163,10 @@ def test_casting_bool(settings):
 def test_casting_json(settings):
     res = parse_conf_data(
         """@json {
-            "FOO": "bar", 
-            "X": False, 
+            "FOO": "bar",
+            "X": False,
             "KeyTrue" :  True,
-            "Key-True": True, 
+            "Key-True": True,
             "TrueKey": True
         }"""
     )
