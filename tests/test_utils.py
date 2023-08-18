@@ -162,8 +162,13 @@ def test_casting_bool(settings):
 
 def test_casting_json(settings):
     res = parse_conf_data(
-        """@json {"FOO": "bar", "X": False, "KeyTrue" :  True,
-        "Key-True": True, "TrueKey": True}"""
+        """@json {
+            "FOO": "bar", 
+            "X": False, 
+            "KeyTrue" :  True,
+            "Key-True": True, 
+            "TrueKey": True
+        }"""
     )
     assert isinstance(res, dict)
     assert "FOO" in res and "bar" in res.values()
