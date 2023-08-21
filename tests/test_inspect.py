@@ -12,8 +12,8 @@ import pytest
 from dynaconf import Dynaconf
 from dynaconf.utils.inspect import _ensure_serializable
 from dynaconf.utils.inspect import _get_data_by_key
-from dynaconf.utils.inspect import EnvNotFoundError
 from dynaconf.utils.inspect import _get_history
+from dynaconf.utils.inspect import EnvNotFoundError
 from dynaconf.utils.inspect import inspect_settings
 from dynaconf.utils.inspect import KeyNotFoundError
 from dynaconf.utils.inspect import OutputFormatError
