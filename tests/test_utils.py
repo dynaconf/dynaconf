@@ -161,47 +161,61 @@ def test_casting_bool(settings):
 
 
 def test_casting_json(settings):
+    # Testing cases where input is strictly json
     res = parse_conf_data(
         """@json {
             "FOO": "bar",
-            "X": False,
-            "KeyTrue" :  True,
-            "Key-True": True,
-            "TrueKey": True,
-            "somekey1": "This is a 'value' containing single' quotes",
-            'somekey2': "This is a 'value' containing single' quotes",
-            'somekey3': 'This is a value not containing single quotes'
+            "key": false,
+            "somekey": "this is a 'value' with single quote"
         }"""
     )
     assert isinstance(res, dict)
     assert "FOO" in res and "bar" in res.values()
-    assert "X" in res and False in res.values()
-    assert "TrueKey" in res  # not replaced with lower case
-    assert "Key-True" in res  # not replaced with lower case
-    assert "KeyTrue" in res  # not replaced with lower case
+    # parsing true and false okay
+    assert "key" in res and False in res.values()
+    # parsing single quote okay
+    assert "somekey" in res and "'value'" in res["somekey"]
 
-    # Test how single quotes cases are handled.
-    # When jinja uses `attr` to render a json string,
-    # it may convert double quotes to single quotes.
-    settings.set("value", "{'FOO': 'bar'}")
-    res = parse_conf_data("@json @jinja {{ this.value }}")(settings)
-    assert isinstance(res, dict)
-    assert "FOO" in res and "bar" in res.values()
+    # Testing invalid json: single quotes
+    json_err = json.decoder.JSONDecodeError
+    err_str = "Expecting property name enclosed in double quotes"
+    with pytest.raises(
+        json_err,
+        match=err_str,
+    ):
+        res = parse_conf_data("""@json {'FOO': 'bar'}""")
 
-    # Test how True / False are handled (automatically lower casing)
-    settings.set("value2", "{'Y': True, 'Z': 'False'}")
-    res = parse_conf_data("@json @jinja {{ this.value2 }}")(settings)
-    assert isinstance(res, dict)
-    assert (
-        "Y" in res and isinstance(res["Y"], bool) and res["Y"] is True
-    )  # boolean are casted
-    assert (
-        "Z" in res and isinstance(res["Z"], str) and res["Z"] == "False"
-    )  # strings are not casted
+    # Testing invalid json: upper case True
+    with pytest.raises(json_err, match="Expecting value"):
+        res = parse_conf_data("""@json {"FOO": True}""")
 
-    res = parse_conf_data("@json @format {this.value}")(settings)
+    # Testing jinja parsed dictionary
+    settings.set("value", {"FOO": "bar", "Y": True, "Z": "False"})
+    # This will fail since jinja will convert the
+    # dict to string using single quotes
+    with pytest.raises(
+        json_err,
+        match=err_str,
+    ):
+        res = parse_conf_data("@json @jinja {{ this.value }}")(settings)
+    # However, casting to json first before parsing will pass
+    res = parse_conf_data("@json @jinja {{ this.value | tojson }}")(settings)
     assert isinstance(res, dict)
-    assert "FOO" in res and "bar" in res.values()
+    assert "FOO" in res and "bar" == res["FOO"]
+    assert "Y" in res and res["Y"] is True
+    assert "Z" in res and res["Z"] == "False"
+
+    # Testing format parsed dictionary
+    # This will fail if 'value' is a dict
+    with pytest.raises(json_err, match=err_str):
+        res = parse_conf_data("@json @format {this.value}")(settings)
+    # This will work if 'value' is a proper json string
+    settings.set("value", '{"FOO": "bar", "Y": true, "Z": "False"}')
+    parse_conf_data("@json @format {this.value}")(settings)
+    assert isinstance(res, dict)
+    assert "FOO" in res and "bar" == res["FOO"]
+    assert "Y" in res and res["Y"] is True
+    assert "Z" in res and res["Z"] == "False"
 
     # Test jinja rendering a dict
     settings.set("value", "OPTION1")
@@ -209,7 +223,13 @@ def test_casting_json(settings):
     settings.set("OPTION2", {"bar": 2})
     res = parse_conf_data("@jinja {{ this|attr(this.value) }}")(settings)
     assert isinstance(res, str)
-    res = parse_conf_data("@json @jinja {{ this|attr(this.value) }}")(settings)
+    with pytest.raises(json_err, match=err_str):
+        res = parse_conf_data("@json @jinja {{ this|attr(this.value) }}")(
+            settings
+        )
+    res = parse_conf_data("@json @jinja {{ this|attr(this.value)|tojson }}")(
+        settings
+    )
     assert isinstance(res, dict)
     assert "bar" in res and res["bar"] == 1
 

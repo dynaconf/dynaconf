@@ -255,7 +255,14 @@ converters = {
     )
     if isinstance(value, Lazy)
     else str(value).lower() in true_values,
-    "@json": lambda value: value.set_casting(ast.literal_eval)
+    "@json": lambda value: value.set_casting(
+        json.loads,
+    )
+    if isinstance(value, Lazy)
+    else json.loads(value),
+    "@py_literal": lambda value: value.set_casting(
+        ast.literal_eval,
+    )
     if isinstance(value, Lazy)
     else ast.literal_eval(value),
     "@format": lambda value: Lazy(value),
