@@ -24,6 +24,7 @@ from dynaconf.utils import trimmed_split
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import get_local_filename
+from dynaconf.utils.parse_conf import boolean_fix
 from dynaconf.utils.parse_conf import evaluate_lazy_format
 from dynaconf.utils.parse_conf import Formatters
 from dynaconf.utils.parse_conf import Lazy
@@ -508,3 +509,13 @@ def test_add_converter_path_example(tmp_path):
     )
     settings = Dynaconf(settings_file=fn)
     assert isinstance(settings.my_path, Path)
+
+
+def test_boolean_fix():
+    """Assert boolean fix works"""
+    assert boolean_fix("True") == "true"
+    assert boolean_fix("False") == "false"
+    assert boolean_fix("NotOnlyTrue") == "NotOnlyTrue"
+    assert boolean_fix("TrueNotOnly") == "TrueNotOnly"
+    assert boolean_fix("FalseNotOnly") == "FalseNotOnly"
+    assert boolean_fix("NotOnlyFalse") == "NotOnlyFalse"

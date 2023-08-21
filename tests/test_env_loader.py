@@ -505,3 +505,19 @@ def test_filtering_unknown_variables_with_prefix():
     assert not settings.get("IGNOREME")
     # Smoke test.
     assert settings.get("MYCONFIG") == "ham"
+
+
+def test_boolean_fix():
+    environ["BOOLFIX_CAPITALTRUE"] = "True"
+    environ["BOOLFIX_CAPITALFALSE"] = "False"
+    settings.IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF = False
+    load_from_env(
+        obj=settings,
+        prefix="BOOLFIX",
+        key=None,
+        silent=True,
+        identifier="env_global",
+        env=False,
+    )
+    assert settings.CAPITALTRUE is True
+    assert settings.CAPITALFALSE is False
