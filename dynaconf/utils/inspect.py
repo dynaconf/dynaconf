@@ -7,6 +7,8 @@ from functools import partial
 from typing import Any
 from typing import Callable
 from typing import Literal
+from typing import Optional
+from typing import Protocol
 from typing import TextIO
 from typing import TYPE_CHECKING
 from typing import Union
@@ -32,8 +34,27 @@ builtin_dumpers = {
     "json-compact": json_compact,
 }
 
-OutputFormat = Union[Literal["yaml"], Literal["json"], Literal["json-compact"]]
-DumperType = Callable[[dict, TextIO], None]
+DumperPreset = Union[Literal["yaml"], Literal["json"], Literal["json-compact"]]
+
+
+class DumperType(Protocol):
+    def __call__(self, data: dict, text_stream: TextIO) -> None:
+        ...
+
+
+class ReportBuilderType(Protocol):
+    def __call__(
+        self,
+        *,
+        key: str | None,
+        env: str | None,
+        new_first: bool | None,
+        include_internal: bool | None,
+        history_limit: int | None,
+        current: Any,
+        history: list[dict] | None,
+    ) -> dict:
+        ...
 
 
 class KeyNotFoundError(Exception):
@@ -49,50 +70,68 @@ class OutputFormatError(Exception):
 
 
 # Public
-
-
 def inspect_settings(
     settings: Settings | LazySettings,
     key: str | None = None,
     env: str | None = None,
+    *,
     new_first: bool = True,
-    to_file: str = "",
-    output_format: OutputFormat = "yaml",
-    custom_dumper: DumperType | None = None,
     include_internal: bool = False,
     history_limit: int | None = None,
+    to_file: str | None = None,
+    dumper: DumperPreset | DumperType | None = None,
+    report_builder: ReportBuilderType | None = None,
 ):
     """
-    Print and return the loading history about a specific key path.
-    Optionally, writes data to file in desired format instead.
+    Print and return the loading history of a settings object.
 
-    Args:
-        settings: a Dynaconf instance
-        key: string dotted path. E.g "path.to.key"
-        ascending_order: if True, newest to oldest loading order
-        fo_file: if specified, write to this filename
-        output_format: available output format options
-        custom_dumper: if provided, it is used instead of builtins
-        include_internal: if True, include internal loaders (e.g. defaults)
-                          This has effect only if key is not provided.
-        history_limit: limits how many entries are shown
+    Optional arguments must be provided as kwargs.
+
+    :param settings: A Dynaconf instance
+
+    :param key: String dotted path. E.g "path.to.key"
+    :param ascending_order: If True, newest to oldest loading order
+    :param include_internal: If True, include internal loaders (e.g. defaults).
+        This has effect only if key is not provided.
+    :param history_limit: Limits how many entries are shown
+    :param fo_file: If specified, write to this filename
+    :param dumper: Accepts preset strings (e.g. "yaml", "json") or custom
+        dumper callable ``(dict, TextIO) -> None``. Defaults to "yaml"
+    :param report_builder: if provided, it is used to generate the report
+
+    :return: Dict with a dict containing report data
+    :rtype: dict
     """
-    # get and process history
+    # choose dumper and report builder
+    if dumper is None:
+        _dumper = builtin_dumpers["yaml"]
+    elif isinstance(dumper, str):
+        _dumper = builtin_dumpers.get(dumper)
+        if _dumper is None:
+            raise OutputFormatError(
+                f"The desired format is not available: {dumper!r}"
+            )
+    else:
+        _dumper = dumper
+
+    _report_builder = report_builder or _default_report_builder
+
+    # get history and apply optional arguments
     original_settings = settings
 
     env_filter = None  # type: ignore
     if env:
         settings = settings.from_env(env)
-        setting_envs = {
-            _env.env for _env in settings._loaded_by_loaders.keys()
+        registered_envs = {
+            src_meta.env for src_meta in settings._loaded_by_loaders.keys()
         }
-        if env.lower() not in setting_envs:
+        if env.lower() not in registered_envs:
             raise EnvNotFoundError(f"The requested env is not valid: {env!r}")
 
         def env_filter(src: SourceMetadata) -> bool:
             return src.env.lower() == env.lower()
 
-    history = get_history(
+    history = _get_history(
         original_settings,
         key=key,
         filter_src_metadata=env_filter,
@@ -111,43 +150,49 @@ def inspect_settings(
         current_value = settings.as_dict()
 
     # format output
-    output_dict = {
-        "header": {
-            "env_filter": str(env),
-            "key_filter": str(key),
-            "new_first": str(new_first),
-            "history_limit": str(history_limit),
-            "include_internal": str(include_internal),
-        },
-        "current": current_value,
-        "history": history,
-    }
+    dict_report = _report_builder(
+        history=history,
+        current=current_value,
+        key=key,
+        env=env,
+        new_first=new_first,
+        history_limit=history_limit,
+        include_internal=include_internal,
+    )
 
-    output_dict["current"] = _ensure_serializable(output_dict["current"])
-
-    # choose dumper
-    try:
-        dumper = builtin_dumpers[output_format.lower()]
-    except KeyError:
-        raise OutputFormatError(
-            f"The desired format is not available: {output_format!r}"
-        )
-
-    dumper = dumper if not custom_dumper else custom_dumper
+    dict_report["current"] = _ensure_serializable(dict_report["current"])
 
     # write to stdout or to file
-    if not to_file:
-        dumper(output_dict, sys.stdout)
+    if to_file is None:
+        _dumper(dict_report, sys.stdout)
     else:
-        with open(
-            to_file, "w", encoding=settings.get("ENCODER_FOR_DYNACONF")
-        ) as f:
-            dumper(output_dict, f)
+        _encoding = settings.get("ENCODER_FOR_DYNACONF")
+        with open(to_file, "w", encoding=_encoding) as file:
+            _dumper(dict_report, file)
 
-    return output_dict
+    return dict_report
 
 
-def get_history(
+def _default_report_builder(**kwargs) -> dict:
+    """
+    Default inspect report builder.
+    Accept the kwargs passed inside `inspect_settings` and returns a dict with
+    {header, current, history} as top-level keys.
+    """
+    return {
+        "header": {
+            "env_filter": str(kwargs.get("env")),
+            "key_filter": str(kwargs.get("key")),
+            "new_first": str(kwargs.get("new_first")),
+            "history_limit": str(kwargs.get("history_limit")),
+            "include_internal": str(kwargs.get("include_internal")),
+        },
+        "current": kwargs.get("current"),
+        "history": kwargs.get("history"),
+    }
+
+
+def _get_history(
     obj: Settings | LazySettings,
     key: str | None = None,
     filter_src_metadata: Callable[[SourceMetadata], bool] | None = None,
@@ -161,17 +206,16 @@ def get_history(
     Returns a list of dict in new-first order, where the dict contains the
     data and it's source metadata.
 
-    Args:
-        obj: Setting object which contain the data
-        key: dot-path to desired key. Use all if not provided
-        filter_src_metadata: takes SourceMetadata and returns a boolean
-        include_internal: if True, include internal loaders (e.g. defaults)
-                          This has effect only if key is not provided.
-        history_limit: limits how many entries are shown
+    :param obj: Setting object which contain the data
+    :param key: Key path to desired key. Use all if not provided
+    :param filter_src_metadata: Takes SourceMetadata and returns a boolean
+    :param include_internal: If True, include internal loaders (e.g. defaults).
+        This has effect only if key is not provided.
+    history_limit: limits how many entries are shown
 
     Example:
         >>> settings = Dynaconf(...)
-        >>> get_history_data(settings)
+        >>> _get_history(settings)
         [
             {
                 "loader": "yaml"
@@ -183,9 +227,7 @@ def get_history(
         ]
     """
     if filter_src_metadata is None:
-
-        def filter_src_metadata(src):
-            return True
+        filter_src_metadata = lambda x: True  # noqa
 
     sep = obj.get("NESTED_SEPARATOR_FOR_DYNACONF", "__")
 

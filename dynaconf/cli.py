@@ -866,7 +866,7 @@ def inspect(
             settings,
             key=key,
             env=env or None,
-            output_format=format,
+            dumper=format,
             new_first=new_first,
             include_internal=_all,
             history_limit=history_limit,

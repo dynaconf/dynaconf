@@ -113,7 +113,7 @@ foo: from_yaml
 $ python
 >>> from dynaconf import Dynaconf, inspect_settings
 >>> settings = Dynaconf()
->>> inspect_settings(settings, key_dotted_path="foo", output_format="yaml")
+>>> inspect_settings(settings, key_dotted_path="foo", dumper="yaml")
 header:
   filters:
     env: None
@@ -139,7 +139,7 @@ history:
 To save to a file use:
 
 ```python
-inspect_setting(setting, to_file="filename.json", output_format="json")
+inspect_setting(setting, to_file="filename.json", dumper="json")
 ```
 
 Dynaconf supports some builtin formats, but you can use a custom dumper too that
