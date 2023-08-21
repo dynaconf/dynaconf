@@ -179,10 +179,7 @@ def test_casting_json(settings):
     # Testing invalid json: single quotes
     json_err = json.decoder.JSONDecodeError
     err_str = "Expecting property name enclosed in double quotes"
-    with pytest.raises(
-        json_err,
-        match=err_str,
-    ):
+    with pytest.raises(json_err, match=err_str):
         res = parse_conf_data("""@json {'FOO': 'bar'}""")
 
     # Testing invalid json: upper case True
@@ -193,10 +190,7 @@ def test_casting_json(settings):
     settings.set("value", {"FOO": "bar", "Y": True, "Z": "False"})
     # This will fail since jinja will convert the
     # dict to string using single quotes
-    with pytest.raises(
-        json_err,
-        match=err_str,
-    ):
+    with pytest.raises(json_err, match=err_str):
         res = parse_conf_data("@json @jinja {{ this.value }}")(settings)
     # However, casting to json first before parsing will pass
     res = parse_conf_data("@json @jinja {{ this.value | tojson }}")(settings)
@@ -232,6 +226,37 @@ def test_casting_json(settings):
     )
     assert isinstance(res, dict)
     assert "bar" in res and res["bar"] == 1
+
+
+def test_casting_pyliteral(settings):
+    # Testing cases where the input is strictly json
+    # This will fail at the boolean
+    with pytest.raises(ValueError, match="malformed node or string on line 3"):
+        res = parse_conf_data(
+            """@py_literal {
+                "FOO": "bar",
+                "key": false,
+                "somekey": "this is a 'value' with single quote"
+            }"""
+        )
+
+    # Testing cases where input is a dict but not
+    # strictly json
+    res = parse_conf_data(
+        """@py_literal {
+            "FOO": "bar",
+            "key": False,
+            'somekey': "this is a 'value' with single quote"
+        }"""
+    )
+    assert isinstance(res, dict)
+    assert "FOO" in res and res["FOO"] == "bar"
+    assert "key" in res and res["key"] is False
+    assert "somekey" in res and "'value'" in res["somekey"]
+
+    # Testing list
+    res = parse_conf_data("""@py_literal ["a", "b", 'c', 1]""")
+    assert isinstance(res, list)
 
 
 def test_disable_cast(monkeypatch):
