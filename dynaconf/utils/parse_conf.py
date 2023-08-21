@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
@@ -239,17 +240,6 @@ def evaluate_lazy_format(f):
     return evaluate
 
 
-def _parse_json_strings(value):
-    value = value.replace("'", '"')  # replace single with double quotes
-    # replace unquoted True / False with lower case true / false
-    if "True" in value:
-        value = re.sub(r'"\s*:\s*True', '": true', value)
-    if "False" in value:
-        value = re.sub(r'"\s*:\s*False', '": false', value)
-
-    return json.loads(value)
-
-
 converters = {
     "@str": lambda value: value.set_casting(str)
     if isinstance(value, Lazy)
@@ -265,11 +255,9 @@ converters = {
     )
     if isinstance(value, Lazy)
     else str(value).lower() in true_values,
-    "@json": lambda value: value.set_casting(
-        _parse_json_strings,
-    )
+    "@json": lambda value: value.set_casting(ast.literal_eval)
     if isinstance(value, Lazy)
-    else _parse_json_strings(value),
+    else ast.literal_eval(value),
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions

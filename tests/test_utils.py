@@ -167,7 +167,10 @@ def test_casting_json(settings):
             "X": False,
             "KeyTrue" :  True,
             "Key-True": True,
-            "TrueKey": True
+            "TrueKey": True,
+            "somekey1": "This is a 'value' containing single' quotes",
+            'somekey2': "This is a 'value' containing single' quotes",
+            'somekey3': 'This is a value not containing single quotes'
         }"""
     )
     assert isinstance(res, dict)
