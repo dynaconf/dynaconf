@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import importlib
 import os
+from glob import glob
+from glob import has_magic
 from typing import Callable
 from typing import TYPE_CHECKING
 
@@ -230,10 +232,19 @@ def settings_loader(
     modules_names = []
     for item in files:
         item = str(item)  # Ensure str in case of LocalPath/Path is passed.
-        if item.endswith(ct.ALL_EXTENSIONS + (".py",)):
-            p_root = obj._root_path or (
-                os.path.dirname(found_files[0]) if found_files else None
-            )
+        p_root = obj._root_path or (
+            os.path.dirname(found_files[0]) if found_files else None
+        )
+        if has_magic(item):
+            # handle possible globs inside files list
+            # like ["path/*.yaml", "path/ABC?.yaml"]
+            globedfiles = glob(item, root_dir=p_root)
+            for globedfile in globedfiles:
+                # use object.find_file logic to handle skip files
+                found = obj.find_file(globedfile, project_root=p_root)
+                if found:
+                    found_files.append(found)
+        elif item.endswith(ct.ALL_EXTENSIONS + (".py",)):
             found = obj.find_file(item, project_root=p_root)
             if found:
                 found_files.append(found)

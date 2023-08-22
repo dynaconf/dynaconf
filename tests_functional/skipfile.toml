@@ -20,4 +20,5 @@ nt = [
     "741_envvars_ignored",
     "missing_pwd",
     "876_deleted_cwd",
+    "982_wildcard",
 ]
