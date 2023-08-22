@@ -9,6 +9,7 @@ from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
 from dynaconf.utils import warn_deprecations
 from dynaconf.utils.files import find_file
+from dynaconf.utils.parse_conf import boolean_fix
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.vendor.dotenv import load_dotenv
 
@@ -33,7 +34,7 @@ def get(key, default=None):
         value = try_renamed(key, value, old, new)
 
     return (
-        parse_conf_data(value, tomlfy=True, box_settings={})
+        parse_conf_data(boolean_fix(value), tomlfy=True, box_settings={})
         if value is not None
         else default
     )

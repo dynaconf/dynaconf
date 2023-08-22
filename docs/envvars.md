@@ -33,6 +33,12 @@ export DYNACONF_STRING_NUM="'76'"                            # str: "76"
 export DYNACONF_PERSON__IS_ADMIN=true                        # bool: True (nested)
 ```
 
+!!! info 
+    For envvars Dynaconf will automatically transform `True` and `False` to `true` and `false` respectively,
+    this transformation allows TOML to parse the value as a boolean.  
+    If you want to keep the original value in this case use `@str` or wrap it in quotes twice like `FOO='"True"'`
+    Note that this applies only for strictly string equal to `True|False` doesn't apply to same string found
+    inside toml data structures.
 
 With the above it is now possible to read the settings in your `program.py` using:
 

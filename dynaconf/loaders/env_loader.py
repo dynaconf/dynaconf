@@ -6,6 +6,7 @@ from os import environ
 from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import missing
 from dynaconf.utils import upperfy
+from dynaconf.utils.parse_conf import boolean_fix
 from dynaconf.utils.parse_conf import parse_conf_data
 
 DOTENV_IMPORTED = False
@@ -75,14 +76,14 @@ def load_from_env(
             try:  # obj is a Settings
                 obj.set(
                     key,
-                    value,
+                    boolean_fix(value),
                     loader_identifier=source_metadata,
                     tomlfy=True,
                     validate=validate,
                 )
             except AttributeError:  # obj is a dict
                 obj[key] = parse_conf_data(
-                    value, tomlfy=True, box_settings=obj
+                    boolean_fix(value), tomlfy=True, box_settings=obj
                 )
 
     # Load environment variables in bulk (when matching).
@@ -94,9 +95,9 @@ def load_from_env(
         trim_len = len(env_)
         data = {
             key[trim_len:]: parse_conf_data(
-                data, tomlfy=True, box_settings=obj
+                boolean_fix(value), tomlfy=True, box_settings=obj
             )
-            for key, data in environ.items()
+            for key, value in environ.items()
             if key.startswith(env_)
             and not (
                 # Ignore environment variables that haven't been
