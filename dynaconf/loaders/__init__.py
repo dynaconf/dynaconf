@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import importlib
 import os
-from glob import glob
-from glob import has_magic
 from typing import Callable
 from typing import TYPE_CHECKING
 
@@ -18,6 +16,8 @@ from dynaconf.utils import deduplicate
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import get_local_filename
+from dynaconf.utils.files import glob
+from dynaconf.utils.files import has_magic
 from dynaconf.utils.parse_conf import false_values
 
 if TYPE_CHECKING:

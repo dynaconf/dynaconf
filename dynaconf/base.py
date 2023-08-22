@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import glob
 import importlib
 import inspect
 import os
@@ -33,6 +32,7 @@ from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import find_file
+from dynaconf.utils.files import glob
 from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import apply_converter
@@ -1241,11 +1241,13 @@ class Settings:
 
                 paths = [
                     p
-                    for p in sorted(glob.glob(filepath))
+                    for p in sorted(glob(filepath, root_dir=self._root_path))
                     if ".local." not in p
                 ]
                 local_paths = [
-                    p for p in sorted(glob.glob(filepath)) if ".local." in p
+                    p
+                    for p in sorted(glob(filepath, root_dir=self._root_path))
+                    if ".local." in p
                 ]
 
                 # Handle possible *.globs sorted alphanumeric

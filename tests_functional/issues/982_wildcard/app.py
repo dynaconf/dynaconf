@@ -1,6 +1,13 @@
 from __future__ import annotations
 
 import os
+import sys
+
+# If python version is <  3.10 skip test
+# glob on that version of Python doesnt have root_dir param
+if sys.version_info < (3, 10):
+    print("Skip test")
+    sys.exit(0)
 
 from dynaconf import Dynaconf
 
