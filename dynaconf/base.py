@@ -36,6 +36,7 @@ from dynaconf.utils.files import find_file
 from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import apply_converter
+from dynaconf.utils.parse_conf import boolean_fix
 from dynaconf.utils.parse_conf import converters
 from dynaconf.utils.parse_conf import Lazy
 from dynaconf.utils.parse_conf import parse_conf_data
@@ -157,7 +158,8 @@ class LazySettings(LazyObject):
         """Chicken and egg problem, we must manually check envvar
         before deciding if we are loading envvars :)"""
         _environ_load_dotenv = parse_conf_data(
-            os.environ.get("LOAD_DOTENV_FOR_DYNACONF"), tomlfy=True
+            boolean_fix(os.environ.get("LOAD_DOTENV_FOR_DYNACONF")),
+            tomlfy=True,
         )
         return self._kwargs.get("load_dotenv", _environ_load_dotenv)
 
@@ -498,7 +500,7 @@ class Settings:
                 sysenv_fallback, list
             ) and key in [upperfy(k) for k in sysenv_fallback]
             if sysenv_fallback is True or key_in_sysenv_fallback_list:
-                default = self.environ.get(key)
+                default = self.get_environ(key, cast=True)
 
         # default values should behave exactly Dynaconf parsed values
         if default is not None:
@@ -561,7 +563,9 @@ class Settings:
             if cast in converters:
                 data = apply_converter(cast, data, box_settings=self)
             elif cast is True:
-                data = parse_conf_data(data, tomlfy=True, box_settings=self)
+                data = parse_conf_data(
+                    boolean_fix(data), tomlfy=True, box_settings=self
+                )
         return data
 
     def exists_in_environ(self, key):
