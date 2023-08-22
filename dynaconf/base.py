@@ -1171,7 +1171,7 @@ class Settings:
         execute_module_hooks("post", self, env, silent=silent, key=key)
         execute_instance_hooks(self, "post", self._post_hooks)
 
-        self._store._box_config.pop("_bypass_evaluation")
+        self._store._box_config.pop("_bypass_evaluation", None)
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
