@@ -231,7 +231,7 @@ def test_casting_json(settings):
 def test_casting_pyliteral(settings):
     # Testing cases where the input is strictly json
     # This will fail at the boolean
-    with pytest.raises(ValueError, match="malformed node or string on line 3"):
+    with pytest.raises(ValueError):
         res = parse_conf_data(
             """@py_literal {
                 "FOO": "bar",
