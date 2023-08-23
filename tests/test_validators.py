@@ -548,8 +548,8 @@ def test_cast_on_validate_transforms_value(tmpdir):
             Validator("name", len_max=5),
             # This will cast the str to list
             Validator("name", cast=list),
-            Validator("colors", len_eq=3),
-            Validator("colors", len_eq=3),
+            Validator("colors", len_eq=3, raw=True),
+            Validator("colors", len_eq=24, raw=False),
             # this will cast the list to str
             Validator("colors", len_eq=24, cast=str),
         ],
@@ -702,7 +702,6 @@ def test_validator_descriptions(tmpdir):
             Validator("a", description="a") & Validator("b"),
         ],
     )
-
     assert validators.descriptions() == {
         "bar": ["bar"],
         "baz": ["baz zaz"],
@@ -744,22 +743,20 @@ def test_toml_should_not_change_validator_type_with_is_type_set():
 
 
 def test_toml_should_not_change_validator_type_with_is_type_not_set_int():
-    settings = Dynaconf(
-        validators=[Validator("TEST", default="+172800")]
-        # The ways to force a string is
-        # passing is_type_of=str
-        # or default="@str +172800" or default="'+172800'"
-    )
+    settings = Dynaconf(validators=[Validator("TEST", default=+172800)])
 
     assert settings.test == +172800
 
 
-def test_toml_should_not_change_validator_type_using_at_sign():
-    settings = Dynaconf(
-        validators=[Validator("TEST", is_type_of=str, default="@str +172800")]
-    )
-
-    assert settings.test == "+172800"
+# def test_toml_should_not_change_validator_type_using_at_sign():
+#     # NOTE: THIS IS NO MORE SUPPORTED, default values must rely on
+#     # Python types
+#     # There is no merge for defaults
+#     # to merge from default pass a callable and use `settings`
+#     settings = Dynaconf(
+#       validators=[Validator("TEST", is_type_of=str, default="@str +172800")]
+#     )
+#     assert settings.test == "+172800"
 
 
 def test_default_eq_env_lvl_1():

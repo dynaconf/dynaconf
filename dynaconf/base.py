@@ -244,9 +244,7 @@ class Settings:
             "validate_only_current_env", False
         )
 
-        self.validators = ValidatorList(
-            self, validators=kwargs.pop("validators", None)
-        )
+        _validators = kwargs.pop("validators", None)
         self._post_hooks: list[Callable] = ensure_a_list(
             kwargs.get("post_hooks", [])
         )
@@ -270,6 +268,9 @@ class Settings:
         if not skip_loaders:
             self.execute_loaders()
 
+        self._validators_defaults = defaultdict(dict)
+        self._validators_casts = defaultdict(dict)
+        self.validators = ValidatorList(self, validators=_validators)
         if not skip_validators:
             self.validators.validate(
                 only=self._validate_only,
@@ -398,7 +399,7 @@ class Settings:
                 item,
                 default,
                 loader_identifier=loader_identifier,
-                tomlfy=True,
+                tomlfy=False,
             )
             return default
 
@@ -494,6 +495,33 @@ class Settings:
 
         key = upperfy(key)
 
+        # handle default and cast from validators
+        apply_default_on_none = False
+        if key not in UPPER_DEFAULT_SETTINGS + RESERVED_ATTRS:
+            with suppress(AttributeError):
+                # Handle default from v;alidators
+                validators_defaults = self._validators_defaults[
+                    self.current_env.lower()
+                ]
+                validator_with_default = validators_defaults.get(key, empty)
+                if validator_with_default is not empty:
+                    default = (
+                        validator_with_default.default(
+                            self, validator_with_default
+                        )
+                        if callable(validator_with_default.default)
+                        else validator_with_default.default
+                    )
+                    apply_default_on_none = (
+                        validator_with_default.apply_default_on_none
+                    )
+
+                # handle cast from validators
+                validators_casts = self._validators_casts[
+                    self.current_env.lower()
+                ]
+                cast = validators_casts.get(key, cast)
+
         # handles system environment fallback
         if default is None:
             key_in_sysenv_fallback_list = isinstance(
@@ -520,10 +548,14 @@ class Settings:
             self.unset(key)
             self.execute_loaders(key=key)
 
-        data = (parent or self.store).get(key, default)
+        value = (parent or self.store).get(key, default)
+        if value is None and apply_default_on_none:
+            value = default
+
         if cast:
-            data = apply_converter(cast, data, box_settings=self)
-        return data
+            value = apply_converter(cast, value, box_settings=self)
+
+        return value
 
     def exists(self, key, fresh=False):
         """Check if key exists
@@ -1453,5 +1485,7 @@ RESERVED_ATTRS = (
         "_post_hooks",
         "_registered_hooks",
         "_REGISTERED_HOOKS",
+        "_validators_casts",
+        "_validators_defaults",
     ]
 )

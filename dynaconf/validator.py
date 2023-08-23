@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from dynaconf import validator_conditions
 from dynaconf.utils import ensure_a_list
+from dynaconf.utils import upperfy
 from dynaconf.utils.functional import empty
 
 if TYPE_CHECKING:
@@ -22,6 +23,10 @@ EQUALITY_ATTRS = (
     "condition",
     "operations",
     "envs",
+    "raw",
+    "default",
+    "cast",
+    "description",
 )
 
 
@@ -114,6 +119,7 @@ class Validator:
         default: Any | Callable[[Any, Validator], Any] | None = empty,
         description: str | None = None,
         apply_default_on_none: bool | None = False,
+        raw: bool = False,  # validates raw value before casting/default
         **operations: Any,
     ) -> None:
         # Copy immutable MappingProxyType as a mutable dict
@@ -131,12 +137,13 @@ class Validator:
         self.must_exist = must_exist if must_exist is not None else required
         self.condition = condition
         self.when = when
-        self.cast = cast or (lambda value: value)
+        self.cast = cast
         self.operations = operations
         self.default = default
         self.description = description
         self.envs: Sequence[str] | None = None
         self.apply_default_on_none = apply_default_on_none
+        self.raw = raw
 
         # See #585
         self.is_type_of = operations.get("is_type_of")
@@ -151,6 +158,21 @@ class Validator:
 
     def __and__(self, other: Validator) -> CombinedValidator:
         return AndValidator(self, other, description=self.description)
+
+    def __str__(self):
+        """Build a string of common properties"""
+        return (
+            f"Validator({self.names}, "
+            f"must_exist={self.must_exist}, "
+            f"when={self.when}, "
+            f"condition={self.condition}, "
+            f"operations={self.operations}, "
+            f"envs={self.envs}, "
+            f"raw={self.raw}, "
+            f"default={self.default}, "
+            f"description={self.description}, "
+            f"cast={self.cast})"
+        )
 
     def __eq__(self, other: object) -> bool:
         if self is other:
@@ -241,35 +263,13 @@ class Validator:
             if exclude and any(name.startswith(sub) for sub in exclude):
                 continue
 
-            if self.default is not empty:
-                default_value = (
-                    self.default(settings, self)
-                    if callable(self.default)
-                    else self.default
-                )
+            if self.raw is True:
+                # this is the raw value from loader
+                # without defaults, casts, hooks etc...
+                value = settings._store.get(name, empty)
             else:
-                default_value = empty
-
-            # THIS IS A FIX FOR #585 in contrast with #799
-            # toml considers signed strings "+-1" as integers
-            # however existing users are passing strings
-            # to default on validator (see #585)
-            # The solution we added on #667 introduced a new problem
-            # This fix here makes it to work for both cases.
-            if (
-                isinstance(default_value, str)
-                and default_value.startswith(("+", "-"))
-                and self.is_type_of is str
-            ):
-                # avoid TOML from parsing "+-1" as integer
-                default_value = f"'{default_value}'"
-
-            value = settings.setdefault(
-                name,
-                default_value,
-                apply_default_on_none=self.apply_default_on_none,
-                env=env,
-            )
+                # default and cast is applied on .get
+                value = settings.get(name, empty)
 
             # is name required but not exists?
             if self.must_exist is True and value is empty:
@@ -287,14 +287,6 @@ class Validator:
             if self.must_exist in (False, None) and value is empty:
                 continue
 
-            # value or default value already set
-            # by settings.setdefault above
-            # however we need to cast it
-            # so we call .set again
-            value = self.cast(settings.get(name))
-            settings.set(name, value, validate=False)
-
-            # is there a callable condition?
             if self.condition is not None:
                 if not self.condition(value):
                     _message = self.messages["condition"].format(
@@ -451,8 +443,8 @@ class ValidatorList(list):
             args = list(args) + list(validators)  # type: ignore
         self._only = kwargs.pop("validate_only", None)
         self._exclude = kwargs.pop("validate_exclude", None)
-        super().__init__(args, **kwargs)  # type: ignore
         self.settings = settings
+        self.register(*args)
 
     def register(self, *args: Validator, **kwargs: Validator):
         validators: list[Validator] = list(
@@ -462,6 +454,32 @@ class ValidatorList(list):
         for validator in validators:
             if validator and validator not in self:
                 self.append(validator)
+                self.register_defaults(validator)
+                self.register_casts(validator)
+
+    def register_defaults(self, validator):
+        if validator.default is empty:
+            return
+        envs = validator.envs or [self.settings.current_env]
+        for env in envs:
+            if not env:
+                continue
+            defaults = self.settings._validators_defaults[env.lower()]
+            for name in validator.names:
+                # store the validator object so if default is
+                # callable function can get the context
+                defaults[upperfy(name)] = validator
+
+    def register_casts(self, validator):
+        if not validator.cast:
+            return
+        envs = validator.envs or [self.settings.current_env]
+        for env in envs:
+            if not env:
+                continue
+            casts = self.settings._validators_casts[env.lower()]
+            for name in validator.names:
+                casts[upperfy(name)] = validator.cast
 
     def descriptions(self, flat: bool = False) -> dict[str, str | list[str]]:
 
