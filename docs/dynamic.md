@@ -163,6 +163,9 @@ MODEL_1:
     learning_rate: 0.002
     amsgrad: True
 
+# Flag to choose which model to use
+MODEL_TYPE: "MODEL_1"
+
 # Instead parsing with json, evaluate with @pyliteral
 MODEL_SETTINGS_DICT: "@pyliteral @jinja {{ this|attr(this.MODEL_TYPE) }}"
 ```
