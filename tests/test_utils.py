@@ -259,6 +259,25 @@ def test_casting_pyliteral(settings):
     res = parse_conf_data("""@pyliteral ["a", "b", 'c', 1]""")
     assert isinstance(res, list)
 
+    # Testing jinja parsed dictionary
+    settings.set("value", {"FOO": "bar", "X": [1, 2], "Y": True, "Z": "False"})
+
+    # This test case would fail since a json string is not Python literal
+    with pytest.raises(ValueError):
+        res = parse_conf_data("@pyliteral @jinja {{ this.value | tojson }}")(
+            settings
+        )
+
+    # This test should succeed with @pyliteral
+    res = parse_conf_data("@pyliteral @jinja {{ this.value }}")(settings)
+    assert isinstance(res, dict)
+    assert "FOO" in res and "bar" == res["FOO"]
+    assert "Y" in res and res["Y"] is True
+    assert "Z" in res and res["Z"] == "False"
+
+    # @pyliteral can be used with @format
+    assert res == parse_conf_data("@pyliteral @format {this.value}")(settings)
+
 
 def test_disable_cast(monkeypatch):
     # this casts for int
