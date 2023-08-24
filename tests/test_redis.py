@@ -8,7 +8,7 @@ from dynaconf import LazySettings
 from dynaconf.loaders.redis_loader import delete
 from dynaconf.loaders.redis_loader import load
 from dynaconf.loaders.redis_loader import write
-from dynaconf.utils.inspect import _get_history
+from dynaconf.utils.inspect import get_history
 
 
 def custom_checker(ip_address, port):
@@ -117,7 +117,7 @@ def test_redis_has_proper_source_metadata(docker_redis):
     settings = LazySettings(environments=True)
     write(settings, {"SECRET": "redis_works_perfectly"})
     load(settings)
-    history = _get_history(
+    history = get_history(
         settings, filter_src_metadata=lambda s: s.loader == "redis"
     )
     assert history[0]["env"] == "development"  # default when environments=True

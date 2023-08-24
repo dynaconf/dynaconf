@@ -9,7 +9,7 @@ from dynaconf import LazySettings
 from dynaconf.loaders.vault_loader import list_envs
 from dynaconf.loaders.vault_loader import load
 from dynaconf.loaders.vault_loader import write
-from dynaconf.utils.inspect import _get_history
+from dynaconf.utils.inspect import get_history
 
 
 def custom_checker(ip_address, port):
@@ -120,7 +120,7 @@ def test_vault_has_proper_source_metadata(docker_vault):
         with settings.using_env(env):
             write(settings, {"SECRET": f"vault_works_in_{env}"})
     load(settings)
-    history = _get_history(
+    history = get_history(
         settings, filter_src_metadata=lambda s: s.loader == "vault"
     )
     assert history[0]["env"] == "default"

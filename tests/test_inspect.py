@@ -12,7 +12,7 @@ import pytest
 from dynaconf import Dynaconf
 from dynaconf.utils.inspect import _ensure_serializable
 from dynaconf.utils.inspect import _get_data_by_key
-from dynaconf.utils.inspect import _get_history
+from dynaconf.utils.inspect import get_history
 from dynaconf.utils.inspect import EnvNotFoundError
 from dynaconf.utils.inspect import inspect_settings
 from dynaconf.utils.inspect import KeyNotFoundError
@@ -113,7 +113,7 @@ def test_get_history_general(tmp_path):
         """,
     )
     settings = Dynaconf(settings_file=[file_a, file_b])
-    history = _get_history(settings)
+    history = get_history(settings)
 
     # metadata
     assert len(history) == 4
@@ -181,7 +181,7 @@ def test_get_history_env_false__file_plus_envvar(tmp_path):
     create_file(file_a, "foo: from_file")
 
     settings = Dynaconf(settings_file=file_a)
-    history = _get_history(settings)
+    history = get_history(settings)
 
     # metadata
     assert len(history) == 4
@@ -215,7 +215,7 @@ def test_get_history_env_false__val_default_plus_envvar():
     settings = Dynaconf(
         validators=[Validator("bar", default="from_val_default")]
     )
-    history = _get_history(settings)
+    history = get_history(settings)
 
     # metadata (validation_default runs after envvar loading)
     assert len(history) == 3
@@ -253,7 +253,7 @@ def test_get_history_env_false__merge_marks(tmp_path):
     create_file(file_c, "dynaconf_merge=true\nlisty=[7,8,9]")
 
     settings = Dynaconf(settings_file=[file_a, file_b, file_c])
-    history = _get_history(settings)
+    history = get_history(settings)
 
     # metadata
     assert len(history) == 6
@@ -307,7 +307,7 @@ def test_get_history_env_true__file_plus_envvar(tmp_path):
     )
 
     settings = Dynaconf(settings_file=file_a, environments=True)
-    history = _get_history(settings)
+    history = get_history(settings)
 
     assert len(history) == 5
     assert history[2] == {
@@ -356,7 +356,7 @@ def test_get_history_env_true__val_default_plus_file(tmp_path):
         settings_file=file_a,
         environments=True,
     )
-    history = _get_history(settings)
+    history = get_history(settings)
 
     assert len(history) == 7
     assert history[2] == {
@@ -405,7 +405,7 @@ def test_get_history_env_true__merge_marks(tmp_path):
     create_file(file_c, "dynaconf_merge=true\nlisty=[7,8,9]")
 
     settings = Dynaconf(settings_file=[file_a, file_b, file_c])
-    history = _get_history(settings)
+    history = get_history(settings)
 
     # metadata
     assert len(history) == 6
@@ -453,7 +453,7 @@ def test_get_history_key_filter(tmp_path):
     create_file(file_c, "a='cA'\nb='cB'\nc='cC'")
 
     settings = Dynaconf(settings_file=[file_a, file_b, file_c])
-    history = _get_history(settings, key="a")
+    history = get_history(settings, key="a")
     assert history[0]["value"] == "aA"
     assert history[1]["value"] == "bA"
     assert history[2]["value"] == "cA"
@@ -469,7 +469,7 @@ def test_get_history_key_filter_nested(tmp_path):
     create_file(file_c, "a.b='cB'\na.c='cC'")
 
     settings = Dynaconf(settings_file=[file_a, file_b, file_c])
-    history = _get_history(settings, key="a.c")
+    history = get_history(settings, key="a.c")
     assert len(history) == 3
     assert history[0]["value"] == "aC"
     assert history[1]["value"] == "bC"
@@ -505,7 +505,7 @@ def test_get_history_env_filter(tmp_path):
 
     settings = Dynaconf(settings_file=[file_a, file_b], environments=True)
     settings.from_env("prod")  # CAVEAT: activate loading of prod
-    history = _get_history(
+    history = get_history(
         settings, filter_src_metadata=lambda x: x.env.lower() == "prod"
     )
 
@@ -549,7 +549,7 @@ def test_get_history_env_and_key_filter(tmp_path):
 
     settings = Dynaconf(settings_file=[file_a, file_b], environments=True)
     settings.from_env("prod")  # CAVEAT: activate loading of prod
-    history = _get_history(
+    history = get_history(
         settings,
         key="bar",
         filter_src_metadata=lambda x: x.env.lower() == "prod",
@@ -586,7 +586,7 @@ def test_caveat__get_history_env_true(tmp_path):
     )
 
     settings = Dynaconf(settings_file=file_a, environments=True)
-    history = _get_history(settings)
+    history = get_history(settings)
     assert len(history) == 4
     assert history[2] == {
         "loader": "toml",
@@ -633,7 +633,7 @@ def test_caveat__get_history_env_true_workaround(tmp_path):
 
     settings = Dynaconf(settings_file=file_a, environments=True)
     settings.from_env("production")
-    history = _get_history(settings)
+    history = get_history(settings)
     assert len(history) == 6
     assert history[2] == {
         "loader": "toml",

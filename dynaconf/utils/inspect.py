@@ -131,7 +131,7 @@ def inspect_settings(
         def env_filter(src: SourceMetadata) -> bool:
             return src.env.lower() == env.lower()
 
-    history = _get_history(
+    history = get_history(
         original_settings,
         key=key,
         filter_src_metadata=env_filter,
@@ -192,7 +192,7 @@ def _default_report_builder(**kwargs) -> dict:
     }
 
 
-def _get_history(
+def get_history(
     obj: Settings | LazySettings,
     key: str | None = None,
     filter_src_metadata: Callable[[SourceMetadata], bool] | None = None,
