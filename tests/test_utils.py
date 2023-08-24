@@ -234,7 +234,7 @@ def test_casting_pyliteral(settings):
     # This will fail at the boolean
     with pytest.raises(ValueError):
         res = parse_conf_data(
-            """@py_literal {
+            """@pyliteral {
                 "FOO": "bar",
                 "key": false,
                 "somekey": "this is a 'value' with single quote"
@@ -244,7 +244,7 @@ def test_casting_pyliteral(settings):
     # Testing cases where input is a dict but not
     # strictly json
     res = parse_conf_data(
-        """@py_literal {
+        """@pyliteral {
             "FOO": "bar",
             "key": False,
             'somekey': "this is a 'value' with single quote"
@@ -256,7 +256,7 @@ def test_casting_pyliteral(settings):
     assert "somekey" in res and "'value'" in res["somekey"]
 
     # Testing list
-    res = parse_conf_data("""@py_literal ["a", "b", 'c', 1]""")
+    res = parse_conf_data("""@pyliteral ["a", "b", 'c', 1]""")
     assert isinstance(res, list)
 
 
