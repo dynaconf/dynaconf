@@ -506,7 +506,7 @@ def test_get_history_env_filter(tmp_path):
     settings = Dynaconf(settings_file=[file_a, file_b], environments=True)
     settings.from_env("prod")  # CAVEAT: activate loading of prod
     history = get_history(
-        settings, filter_src_metadata=lambda x: x.env.lower() == "prod"
+        settings, filter_callable=lambda x: x.env.lower() == "prod"
     )
 
     assert len(history) == 2
@@ -552,7 +552,7 @@ def test_get_history_env_and_key_filter(tmp_path):
     history = get_history(
         settings,
         key="bar",
-        filter_src_metadata=lambda x: x.env.lower() == "prod",
+        filter_callable=lambda x: x.env.lower() == "prod",
     )
     assert len(history) == 2
     assert history[0]["value"] == "from_prod_a"

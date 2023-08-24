@@ -136,7 +136,7 @@ def inspect_settings(
     history = get_history(
         original_settings,
         key=key,
-        filter_src_metadata=env_filter,
+        filter_callable=env_filter,
         include_internal=include_internal,
     )
 
@@ -199,7 +199,8 @@ def _default_report_builder(**kwargs) -> dict:
 def get_history(
     obj: Settings | LazySettings,
     key: str | None = None,
-    filter_src_metadata: Callable[[SourceMetadata], bool] | None = None,
+    *,
+    filter_callable: Callable[[SourceMetadata], bool] | None = None,
     include_internal: bool = False,
     history_limit: int | None = None,
 ) -> list[dict]:
@@ -212,7 +213,7 @@ def get_history(
 
     :param obj: Setting object which contain the data
     :param key: Key path to desired key. Use all if not provided
-    :param filter_src_metadata: Takes SourceMetadata and returns a boolean
+    :param filter_callable: Takes SourceMetadata and returns a boolean
     :param include_internal: If True, include internal loaders (e.g. defaults).
         This has effect only if key is not provided.
     history_limit: limits how many entries are shown
@@ -230,8 +231,8 @@ def get_history(
             ...
         ]
     """
-    if filter_src_metadata is None:
-        filter_src_metadata = lambda x: True  # noqa
+    if filter_callable is None:
+        filter_callable = lambda x: True  # noqa
 
     sep = obj.get("NESTED_SEPARATOR_FOR_DYNACONF", "__")
 
@@ -243,7 +244,7 @@ def get_history(
     result = []
     for source_metadata, data in obj._loaded_by_loaders.items():
         # filter by source_metadata
-        if filter_src_metadata(source_metadata) is False:
+        if filter_callable(source_metadata) is False:
             continue
 
         # filter by internal identifiers
