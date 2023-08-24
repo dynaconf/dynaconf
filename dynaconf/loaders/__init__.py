@@ -16,6 +16,8 @@ from dynaconf.utils import deduplicate
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import get_local_filename
+from dynaconf.utils.files import glob
+from dynaconf.utils.files import has_magic
 from dynaconf.utils.parse_conf import false_values
 
 if TYPE_CHECKING:
@@ -230,10 +232,19 @@ def settings_loader(
     modules_names = []
     for item in files:
         item = str(item)  # Ensure str in case of LocalPath/Path is passed.
-        if item.endswith(ct.ALL_EXTENSIONS + (".py",)):
-            p_root = obj._root_path or (
-                os.path.dirname(found_files[0]) if found_files else None
-            )
+        p_root = obj._root_path or (
+            os.path.dirname(found_files[0]) if found_files else None
+        )
+        if has_magic(item):
+            # handle possible globs inside files list
+            # like ["path/*.yaml", "path/ABC?.yaml"]
+            globedfiles = glob(item, root_dir=p_root)
+            for globedfile in globedfiles:
+                # use object.find_file logic to handle skip files
+                found = obj.find_file(globedfile, project_root=p_root)
+                if found:
+                    found_files.append(found)
+        elif item.endswith(ct.ALL_EXTENSIONS + (".py",)):
             found = obj.find_file(item, project_root=p_root)
             if found:
                 found_files.append(found)

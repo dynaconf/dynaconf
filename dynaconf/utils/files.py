@@ -2,6 +2,9 @@ from __future__ import annotations
 
 import inspect
 import os
+import re
+import sys
+from glob import glob as python_glob
 
 from dynaconf.utils import deduplicate
 
@@ -109,3 +112,35 @@ def get_local_filename(filename):
     return os.path.join(
         os.path.dirname(str(filename)), f"{name}.local.{extension}"
     )
+
+
+magic_check = re.compile("([*?[])")
+magic_check_bytes = re.compile(b"([*?[])")
+
+
+def has_magic(s):
+    """Taken from python glob module"""
+    if isinstance(s, bytes):
+        match = magic_check_bytes.search(s)
+    else:
+        match = magic_check.search(s)
+    return match is not None
+
+
+def glob(
+    pathname,
+    *,
+    root_dir=None,
+    dir_fd=None,
+    recursive=True,
+    include_hidden=True,
+):
+    """Redefined std glob assuming some defaults.
+    and fallback for diffente python versions."""
+    glob_args = {"recursive": recursive}
+    if sys.version_info >= (3, 10):
+        glob_args["root_dir"] = root_dir
+        glob_args["dir_fd"] = dir_fd
+    if sys.version_info >= (3, 11):
+        glob_args["include_hidden"] = include_hidden
+    return python_glob(pathname, **glob_args)
