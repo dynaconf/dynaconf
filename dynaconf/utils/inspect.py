@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import sys
 from functools import partial
+from pathlib import PosixPath
 from typing import Any
 from typing import Callable
 from typing import Literal
@@ -69,7 +70,6 @@ class OutputFormatError(Exception):
     pass
 
 
-# Public
 def inspect_settings(
     settings: Settings | LazySettings,
     key: str | None = None,
@@ -78,7 +78,8 @@ def inspect_settings(
     new_first: bool = True,
     include_internal: bool = False,
     history_limit: int | None = None,
-    to_file: str | None = None,
+    to_file: str | PosixPath | None = None,
+    print_report: bool = False,
     dumper: DumperPreset | DumperType | None = None,
     report_builder: ReportBuilderType | None = None,
 ):
@@ -94,7 +95,8 @@ def inspect_settings(
     :param include_internal: If True, include internal loaders (e.g. defaults).
         This has effect only if key is not provided.
     :param history_limit: Limits how many entries are shown
-    :param fo_file: If specified, write to this filename
+    :param to_file: If specified, write to this filename
+    :param print_report: If true, prints the dumped report to stdout
     :param dumper: Accepts preset strings (e.g. "yaml", "json") or custom
         dumper callable ``(dict, TextIO) -> None``. Defaults to "yaml"
     :param report_builder: if provided, it is used to generate the report
@@ -162,13 +164,14 @@ def inspect_settings(
 
     dict_report["current"] = _ensure_serializable(dict_report["current"])
 
-    # write to stdout or to file
-    if to_file is None:
-        _dumper(dict_report, sys.stdout)
-    else:
+    # write to stdout AND/OR to file AND return
+    if to_file is not None:
         _encoding = settings.get("ENCODER_FOR_DYNACONF")
         with open(to_file, "w", encoding=_encoding) as file:
             _dumper(dict_report, file)
+
+    if print_report is True:
+        _dumper(dict_report, sys.stdout)
 
     return dict_report
 
@@ -176,6 +179,7 @@ def inspect_settings(
 def _default_report_builder(**kwargs) -> dict:
     """
     Default inspect report builder.
+
     Accept the kwargs passed inside `inspect_settings` and returns a dict with
     {header, current, history} as top-level keys.
     """

@@ -870,6 +870,7 @@ def inspect(
             new_first=new_first,
             include_internal=_all,
             history_limit=history_limit,
+            print_report=True,
         )
         click.echo()
     except (KeyNotFoundError, EnvNotFoundError, OutputFormatError) as err:
