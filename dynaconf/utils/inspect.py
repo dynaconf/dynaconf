@@ -56,7 +56,7 @@ class ReportBuilderType(Protocol):
         history_limit: int | None,
         current: Any,
         history: list[dict] | None,
-    ) -> dict: # pragma: no cover
+    ) -> dict:  # pragma: no cover
         ...
 
 
