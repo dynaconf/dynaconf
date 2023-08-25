@@ -81,7 +81,7 @@ settings = Dynaconf(post_hooks=hook_function)
 You can also set the merging individually for each settings variable as seen on
 [merging](/merging/) documentation.
 
-## `inspect_settings`
+## Inspecting History
 
 > **NEW** in version 3.2.0
 
@@ -89,61 +89,97 @@ You can also set the merging individually for each settings variable as seen on
     This feature is in **tech preview** the usage interface and output format is
     subject to change.
 
-Inspect the loading history of all ingested data by its source identities.
+This feature purpose is to allow tracking any config-data loading history, that is, the loading steps that lead to a given final value. It can return a dict data report, print to `stdout` or write to a file, and is also available as a [CLI command](/cli#dynaconf-inspect-tech-preview).
 
-This function relates all ingested data to its source by establishing a set of
-source metadata on loading-time:
+It works by setting a *SourceMetadata* object to every ingested data, so it can be recovered and filtered to generate meaningful reports. The properties of this object are:
 
-- **loader**: which kind of loader *(yaml, envvar, validation_default)*
-- **identifier**: specific identifier *(eg: filename for files)*
-- **env**: which env this data belongs to *(global, main, development, etc)*
+- **loader**: the loader type *(e.g, yaml, envvar, validation_default)*
+- **identifier**: specific identifier *(e.g, filename for files)*
+- **env**: which environ this data belongs to *(global, main, development, etc)*
 - **merged**: if this data has been merged *(True or False)*
 
-It also provides key and environment filters to narrow down the results,
-descending/ascending sorting flag and some built-in output formats.
+Dynaconf offers two very similar utility functions to get data from it: `inspect_settings` and `get_history`. The difference is that `get_history` returns a simple list of dict-records with source metadata, while `inspect_settings` focus on generating a printable report (and thus it offers some convenience options for that).
 
-Sample usage:
+They are available at `dynaconf.inspect_settings` and `dynaconf.get_history`
+
+### `inspect_settings`
+
+By default, it only returns a dict-report. You can optionally print the report in a specific format, such as "yaml" or "json", or write it to a file:
 
 ```python
-$ export DYNACONF_FOO=from_environ
-$ export DYNACONF_BAR=environ_only
-$ cat file_a.yaml
-foo: from_yaml
+# default: returns python object
+>>> inspect_settings(settings_obj)
+{
+	"header": ... # filtering options used
+	"current": ... # currently active data/value
+	"history": ... # list of history records
+}
 
-$ python
->>> from dynaconf import Dynaconf, inspect_settings
->>> settings = Dynaconf()
->>> inspect_settings(settings, key_dotted_path="foo", dumper="yaml")
+# print report
+>>> inspect_settings(setting_obj, print_report=True, dumper="yaml")
 header:
-  filters:
-    env: None
-    key: foo
-    history_ordering: ascending
-  active_value: from_environ
+  - ...
+current:
+  - ...
 history:
-- loader: yaml
-  identifier: file_a.yaml
-  env: default
-  merged: false
-  value:
-    FOO: from_yaml
+  - ...
+
+# write to file
+>>> inspect_settings(settings_obj, to_file="report.yaml", dumper="json")
+```
+
+The history looks like this:
+
+```python
+>>> inspect_settings(
+>>> 	settings_obj,
+>>> 	key="foo",
+>>> 	print_report=True,
+>>> 	dumper="yaml"
+>>> )
+>>>
+
+header:
+- ...
+current:
+- ...
+history:
 - loader: env_global
   identifier: unique
   env: global
   merged: false
-  value:
-    FOO: from_environ
-    BAR: environ_only
+  value: FOO
+- loader: toml
+  identifier: path/to/file.yaml
+  env: development
+  merged: false
+  value: FOO
 ```
 
-To save to a file use:
+<h4>Options Overview</h4>
 
-```python
-inspect_setting(setting, to_file="filename.json", dumper="json")
-```
+There are some pre-defined ways that you can filter and customize the report.
+Here is a summary of the available argument options:
 
-Dynaconf supports some builtin formats, but you can use a custom dumper too that
-can dump nested dict/list structure into a `TextIO` stream.
+Positional:
+
+- `settings` (required): A Dynaconf instance
+- `key`: Filter by this key. E.g "path.to.key"
+- `env`: Filter by this env. E.g "production"
+
+Kwargs-only:
+
+- `new_first`: If True, uses newest to oldest loading order.
+- `history_limit`: Limits how many entries are shown. By default, show all.
+- `include_internal`: If True, include internal loaders (e.g. defaults). This has effect only if key is not provided.
+- `to_file`: If specified, write dumped report to this filename.
+- `print_report`: If true, prints the dumped report to stdout.
+- `dumper`: Accepts preset strings (e.g. "yaml", "json") or custom dumper callable ``(dict, TextIO) -> None``. If not provided, does nothing.
+- `report_builder`: If provided, it is used to generate the report dict.
+
+### `get_history`
+
+Returns a list of history-records (the same as in the `history` key of `inspect_settings` records. In fact, `inspect_settings` uses `get_history`, so this is just available if your main goal is to use the data directly. It offer some basic filtering capabilities, but it is assumed that if you choose to use this you'll probably want to process and filter the data by your own.
 
 ## Update dynaconf settings using command-line arguments (cli)
 

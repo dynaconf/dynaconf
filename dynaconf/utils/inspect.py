@@ -76,8 +76,8 @@ def inspect_settings(
     env: str | None = None,
     *,
     new_first: bool = True,
-    include_internal: bool = False,
     history_limit: int | None = None,
+    include_internal: bool = False,
     to_file: str | PosixPath | None = None,
     print_report: bool = False,
     dumper: DumperPreset | DumperType | None = None,
@@ -89,12 +89,13 @@ def inspect_settings(
     Optional arguments must be provided as kwargs.
 
     :param settings: A Dynaconf instance
-
     :param key: String dotted path. E.g "path.to.key"
-    :param ascending_order: If True, newest to oldest loading order
+    :param env: Filter by this env
+
+    :param new_first: If True, uses newest to oldest loading order
+    :param history_limit: Limits how many entries are shown
     :param include_internal: If True, include internal loaders (e.g. defaults).
         This has effect only if key is not provided.
-    :param history_limit: Limits how many entries are shown
     :param to_file: If specified, write to this filename
     :param print_report: If true, prints the dumped report to stdout
     :param dumper: Accepts preset strings (e.g. "yaml", "json") or custom
@@ -226,7 +227,7 @@ def get_history(
                 "loader": "yaml"
                 "identifier": "path/to/file.yml"
                 "env": "default"
-                "data": {"foo": 123, "spam": "eggs"
+                "data": {"foo": 123, "spam": "eggs"}
             },
             ...
         ]
