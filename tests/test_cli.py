@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 from textwrap import dedent
+from unittest import mock
 
 import pytest
 
@@ -16,14 +17,14 @@ from dynaconf.cli import WRITERS
 from dynaconf.utils.files import read_file
 from dynaconf.vendor.click.testing import CliRunner
 
-
 settings = LazySettings(OPTION_FOR_TESTS=True, environments=True)
 
 
 def run(cmd, env=None, attr="output"):
-    runner = CliRunner()
-    result = runner.invoke(main, cmd, env=env, catch_exceptions=False)
-    return getattr(result, attr)
+    with mock.patch.dict(os.environ, {}):
+        runner = CliRunner()
+        result = runner.invoke(main, cmd, env=env, catch_exceptions=False)
+        return getattr(result, attr)
 
 
 def test_version():
@@ -486,15 +487,26 @@ def create_file(filename: str | Path, data: str):
     return filename
 
 
-def clear_dotenv(tmp_path):
-    Path(tmp_path / ".env").unlink()
+def get_current_test_name():
+    """
+    Utility to get the current test name.
+
+    Instance names should be unique for proper test isolation.
+    """
+    name = os.environ["PYTEST_CURRENT_TEST"]
+
+    # clean name to avoid issues with file creation:
+    # "this/test.py::"{testname}" (call)"
+    start = name.find("::") + 2
+    end = name.find(" (call")
+    name = name[start:end]
+    return name
 
 
 def test_inspect_no_args(tmp_path):
     """Inspect command with no arguments"""
-    clear_dotenv(tmp_path)
+    instance_name = get_current_test_name()
 
-    instance_name = "inspect_no_args"
     setting_file = tmp_path / "a.toml"
     environ = {"DYNACONF_FOO": "from_environ_no_args"}
     cmd = ["-i", f"{instance_name}.settings", "inspect"]
@@ -514,25 +526,34 @@ def test_inspect_no_args(tmp_path):
     expected_header = """\
         {
           "header": {
-            "filters": {
-              "env": "None",
-              "key": "None",
-              "history_ordering": "ascending"
-            },
-            "active_value": {
-              "FOO": "from_environ_no_args"
-            }
+            "env_filter": "None",
+            "key_filter": "None",
+            "new_first": "True",
+            "history_limit": "None",
+            "include_internal": "False"
           },
-        """
+          "current": {
+            "FOO": "from_environ_no_args"
+          },
+          "history": [
+            {
+              "loader": "env_global",
+              "identifier": "unique",
+              "env": "global",
+              "merged": false,
+              "value": {
+                "FOO": "from_environ_no_args"
+              }
+            },
+            """
     assert result
     assert result.startswith(dedent(expected_header))
 
 
 def test_inspect_yaml_format(tmp_path):
     """Inspect command with format argument"""
-    clear_dotenv(tmp_path)
+    instance_name = get_current_test_name()
 
-    instance_name = "inspect_yaml_format"
     setting_file = tmp_path / "a.toml"
     environ = {
         "DYNACONF_FOO": "from_environ_yaml_format",
@@ -553,12 +574,20 @@ def test_inspect_yaml_format(tmp_path):
     result = run(cmd, env=environ)
     expected_header = """\
         header:
-          filters:
-            env: None
-            key: None
-            history_ordering: ascending
-          active_value:
-            BAR: from_file_yaml_format
+          env_filter: None
+          key_filter: None
+          new_first: 'True'
+          history_limit: None
+          include_internal: 'False'
+        current:
+          BAR: from_file_yaml_format
+          FOO: from_environ_yaml_format
+        history:
+        - loader: env_global
+          identifier: unique
+          env: global
+          merged: false
+          value:
             FOO: from_environ_yaml_format
         """
     assert result
@@ -567,9 +596,8 @@ def test_inspect_yaml_format(tmp_path):
 
 def test_inspect_key_filter(tmp_path):
     """Inspect command with key filter argument"""
-    clear_dotenv(tmp_path)
+    instance_name = get_current_test_name()
 
-    instance_name = "inspect_key_filter"
     setting_file = tmp_path / "a.toml"
     environ = {"DYNACONF_FOO": "from_environ_key_filter"}
     cmd = ["-i", f"{instance_name}.settings", "inspect", "-k", "bar"]
@@ -595,13 +623,13 @@ def test_inspect_key_filter(tmp_path):
     expected_header = """\
         {
           "header": {
-            "filters": {
-              "env": "None",
-              "key": "bar",
-              "history_ordering": "ascending"
-            },
-            "active_value": "file_only"
+            "env_filter": "None",
+            "key_filter": "bar",
+            "new_first": "True",
+            "history_limit": "None",
+            "include_internal": "False"
           },
+          "current": "file_only",
         """
     assert result
     assert result.startswith(dedent(expected_header))
@@ -609,9 +637,8 @@ def test_inspect_key_filter(tmp_path):
 
 def test_inspect_env_filter(tmp_path):
     """Inspect command with env filter argument"""
-    clear_dotenv(tmp_path)
+    instance_name = get_current_test_name()
 
-    instance_name = "inspect_env_filter"
     setting_file = tmp_path / "a.toml"
     environ = {}
     cmd = ["-i", f"{instance_name}.settings", "inspect", "-e", "prod"]
@@ -640,26 +667,88 @@ def test_inspect_env_filter(tmp_path):
     expected_header = """\
         {
           "header": {
-            "filters": {
-              "env": "prod",
-              "key": "None",
-              "history_ordering": "ascending"
-            },
-            "active_value": {
-              "FOO": "from_env_default",
-              "BAR": "prod_only_and_foo_default"
-            }
+            "env_filter": "prod",
+            "key_filter": "None",
+            "new_first": "True",
+            "history_limit": "None",
+            "include_internal": "False"
+          },
+          "current": {
+            "FOO": "from_env_default",
+            "BAR": "prod_only_and_foo_default"
           },
         """
     assert result
     assert result.startswith(dedent(expected_header))
 
 
+def test_inspect_limit(tmp_path):
+    """
+    Inspect command with --limit.
+
+    Should include only the last history entry.
+    """
+    instance_name = get_current_test_name()
+
+    setting_file = tmp_path / "a.toml"
+    environ = {"DYNACONF_FOO": "from_environ"}
+    cmd = [
+        "-i",
+        f"{instance_name}.settings",
+        "inspect",
+        "--limit",
+        "1",
+    ]
+
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        f"""\
+        from dynaconf import Dynaconf
+        settings = Dynaconf(
+            settings_file="{setting_file.as_posix()}",
+        )
+        """,
+    )
+
+    create_file(
+        setting_file,
+        "foo='from_file'",
+    )
+
+    result = run(cmd, env=environ)
+    expected_result = """\
+        {
+          "header": {
+            "env_filter": "None",
+            "key_filter": "None",
+            "new_first": "True",
+            "history_limit": "1",
+            "include_internal": "False"
+          },
+          "current": {
+            "FOO": "from_environ"
+          },
+          "history": [
+            {
+              "loader": "env_global",
+              "identifier": "unique",
+              "env": "global",
+              "merged": false,
+              "value": {
+                "FOO": "from_environ"
+              }
+            }
+          ]
+        }
+        """
+    assert result
+    assert result == dedent(expected_result)
+
+
 def test_inspect_all_args(tmp_path):
     """Inspect command with all arguments"""
-    clear_dotenv(tmp_path)
+    instance_name = get_current_test_name()  # should be unique for isolation
 
-    instance_name = "inspect_all_args"  # should be unique for isolation
     setting_file = tmp_path / "a.toml"
     environ = {"DYNACONF_BAR": "actual value but not in history"}
     cmd = [
@@ -698,11 +787,12 @@ def test_inspect_all_args(tmp_path):
     result = run(cmd, env=environ)
     expected_result = f"""\
         header:
-          filters:
-            env: prod
-            key: bar
-            history_ordering: ascending
-          active_value: actual value but not in history
+          env_filter: prod
+          key_filter: bar
+          new_first: 'True'
+          history_limit: None
+          include_internal: 'False'
+        current: actual value but not in history
         history:
         - loader: toml
           identifier: {setting_file.as_posix()}
@@ -715,9 +805,8 @@ def test_inspect_all_args(tmp_path):
 
 
 def test_inspect_invalid_key(tmp_path):
-    clear_dotenv(tmp_path)
+    instance_name = get_current_test_name()
 
-    instance_name = "inspect_invalid_key"
     environ = {}
     cmd = [
         "-i",
@@ -740,9 +829,8 @@ def test_inspect_invalid_key(tmp_path):
 
 
 def test_inspect_invalid_env(tmp_path):
-    clear_dotenv(tmp_path)
+    instance_name = get_current_test_name()
 
-    instance_name = "inspect_invalid_env"
     environ = {}
     cmd = [
         "-i",
@@ -765,9 +853,8 @@ def test_inspect_invalid_env(tmp_path):
 
 
 def test_inspect_invalid_format(tmp_path):
-    clear_dotenv(tmp_path)
+    instance_name = get_current_test_name()
 
-    instance_name = "inspect_invalid_format"
     environ = {}
     cmd = [
         "-i",

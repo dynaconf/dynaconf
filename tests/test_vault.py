@@ -121,7 +121,7 @@ def test_vault_has_proper_source_metadata(docker_vault):
             write(settings, {"SECRET": f"vault_works_in_{env}"})
     load(settings)
     history = get_history(
-        settings, filter_src_metadata=lambda s: s.loader == "vault"
+        settings, filter_callable=lambda s: s.loader == "vault"
     )
     assert history[0]["env"] == "default"
     assert history[0]["value"]["SECRET"] == "vault_works_in_default"
