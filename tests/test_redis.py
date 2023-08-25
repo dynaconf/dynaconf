@@ -118,7 +118,7 @@ def test_redis_has_proper_source_metadata(docker_redis):
     write(settings, {"SECRET": "redis_works_perfectly"})
     load(settings)
     history = get_history(
-        settings, filter_src_metadata=lambda s: s.loader == "redis"
+        settings, filter_callable=lambda s: s.loader == "redis"
     )
     assert history[0]["env"] == "development"  # default when environments=True
     assert history[0]["value"]["SECRET"] == "redis_works_perfectly"

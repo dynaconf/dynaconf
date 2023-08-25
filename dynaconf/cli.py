@@ -819,7 +819,9 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
 
 @main.command()
 @click.option("--key", "-k", help="Filters result by key.")
-@click.option("--env", "-e", help="Filters result by environment.", default="")
+@click.option(
+    "--env", "-e", help="Filters result by environment.", default=None
+)
 @click.option(
     "--format",
     "-f",
@@ -828,11 +830,20 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
     type=click.Choice(INSPECT_FORMATS),
 )
 @click.option(
-    "--descending",
-    "-d",
-    help="Set history loading order to 'last-first'",
-    default=False,
+    "--old-first",
+    "new_first",
+    "-s",
+    help="Invert history sorting to 'old-first'",
+    default=True,
     is_flag=True,
+)
+@click.option(
+    "--limit",
+    "history_limit",
+    "-n",
+    default=None,
+    type=int,
+    help="Limits how many history entries are shown.",
 )
 @click.option(
     "--all",
@@ -840,9 +851,11 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
     "-a",
     default=False,
     is_flag=True,
-    help="show dynaconf internal settings?",
+    help="Show dynaconf internal settings?",
 )
-def inspect(key, env, format, descending, _all):  # pragma: no cover
+def inspect(
+    key, env, format, new_first, history_limit, _all
+):  # pragma: no cover
     """
     Inspect the loading history of the given settings instance.
 
@@ -851,11 +864,13 @@ def inspect(key, env, format, descending, _all):  # pragma: no cover
     try:
         inspect_settings(
             settings,
-            key_dotted_path=key,
-            env=env,
-            output_format=format,
-            ascending_order=(not descending),
+            key=key,
+            env=env or None,
+            dumper=format,
+            new_first=new_first,
             include_internal=_all,
+            history_limit=history_limit,
+            print_report=True,
         )
         click.echo()
     except (KeyNotFoundError, EnvNotFoundError, OutputFormatError) as err:

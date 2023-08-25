@@ -113,7 +113,7 @@ Note that `-i`/`--instance` cannot be used with `init` as `-i` must point to an 
 
 Inspect and dump data's loading history about a specific key or environment.
 
-This command is also available as a utility function at `dynaconf.inspect_settings` ([learn more](/advanced#inspect_settings)).
+It is also available as a [utility function](/advanced#inspecting-history).
 
 ```
 Usage: dynaconf inspect [OPTIONS]
@@ -127,7 +127,9 @@ Options:
   -e, --env TEXT                  Filters result by environment.
   -f, --format [yaml|json|json-compact]
                                   The output format.
-  -d, --descending                Set history loading order to 'last-first'
+  -s, --old-first                 Invert history sorting to 'old-first'
+  -n, --limit INTEGER             Limits how many history entries are shown.
+  -a, --all                       Show dynaconf internal settings?
   --help                          Show this message and exit.
 ```
 
@@ -135,13 +137,14 @@ Options:
 Sample usage:
 
 ```yaml
-# dynaconf -i app.settings inspect -k foo -f yaml
+>>> dynaconf -i app.settings inspect -k foo -f yaml -n 2
 header:
-  filters:
-    env: None
-    key: foo
-    history_ordering: ascending
-  active_value: from_environ
+  env_filter: 'foo'
+  key_filter: None
+  new_first: 'True'
+  history_limit: None
+  include_internal: 'False'
+current: from_environ
 history:
 - loader: yaml
   identifier: file_a.yaml
