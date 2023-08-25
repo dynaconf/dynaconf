@@ -39,7 +39,9 @@ DumperPreset = Union[Literal["yaml"], Literal["json"], Literal["json-compact"]]
 
 
 class DumperType(Protocol):
-    def __call__(self, data: dict, text_stream: TextIO) -> None:
+    def __call__(
+        self, data: dict, text_stream: TextIO
+    ) -> None:  # pragma: no cover
         ...
 
 
@@ -54,7 +56,7 @@ class ReportBuilderType(Protocol):
         history_limit: int | None,
         current: Any,
         history: list[dict] | None,
-    ) -> dict:
+    ) -> dict: # pragma: no cover
         ...
 
 
