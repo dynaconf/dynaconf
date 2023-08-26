@@ -2,6 +2,102 @@ Changelog
 =========
 
 
+3.2.2 (2023-08-26)
+------------------
+- Release version 3.2.2. [pedro-psb]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (6):
+            Release version 3.2.1
+            Hooking: Add support for changing the wrapped class (#975)
+            Hotfix bypass evaluation #984 (#985)
+            Fix #976 from envvars parse True/False as booleans (#983)
+            Fix #982 glob on settings_files (#987)
+            docker compose is available on CI no need to install
+
+      Pedro Pessoa (1):
+            Inspect Feature Review (#958)
+- Inspect Feature Review (#958) [Pedro Pessoa]
+
+  inspect_settings:
+  * change inspect_settings report-output format names and structure
+  * implement 'history_limit' on 'utils.inspect:inspect_settings'
+  * rename key_dotted_path to key
+  * rename history_sort to new_first
+  * enforce usage of kwargs, except for "settings", "key" and "env"
+  * merge "output_format" and "custom" into "dumper"
+  * add "report_builder" to allow output customization
+  * add explicit 'print_report' param
+
+  cli:
+  * implement cli --limit|-n
+  * update cli to match 'inspect_settings' changes
+
+  non-breaking-change
+  * minor "utils.inspect" internal renames
+  * re-write docstrings in sphinx-style (:param foo)
+  * expose 'get_history'
+  * refactor 'test_cli.py': use more robust test isolation strategy
+  * add data return to 'inspect_settings' for cleaner testing
+- Docker compose is available on CI no need to install. [Bruno Rocha]
+- Fix #982 glob on settings_files (#987) [Bruno Rocha]
+- Fix #976 from envvars parse True/False as booleans (#983) [Bruno
+  Rocha]
+
+  Only when reading from envvars True and False will be transformed to lowercase to allow toml parser.
+- Hotfix bypass evaluation #984 (#985) [Bruno Rocha]
+- Hooking: Add support for changing the wrapped class (#975) [Bruno
+  Rocha]
+
+  - add support for _wrapper_class replacement
+  - add hooking with a Hookable implementation to be used by Django integration only (this is transparent now, must not affect any current user)
+  - fix integer key access
+  - Changes on inspect
+      - History now saves the raw value instead of parsed, as parsed will be showed on the current_value anyway
+      - Set will always create a source_metadata even if not passed or if a str is passed as laoder_identifier
+      - Internal uses of set are now tracked
+      - dynaconf_hooks.py is now tracked
+      - set method now keeps `value` as the raw unparsed value and `parsed` as the evaluated value
+      - `inspect` command no more prints `django app detected`
+      - get_history now accepts `include_internal` to output internal identifiers
+      - `_get_data_by_key` refactored for dotted path traversal
+      - access to integer indexes on dotted path removed, we gonna implement later as `key._1_`
+      - Fixed the acceptance of keys with other types
+- Release version 3.2.1. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (5):
+            Ignore docs build without a tag
+            Cancel any running CI job when a Push is made to an existing PR or branch (#952)
+            Fix #959 cli get will exit code 1 in case of KeyError. (#960)
+            add tech preview note to inspect docs (#961)
+            Build docs
+
+      Hugo Prudente (1):
+            Doc advanced usage for cli overrides dynaconf settings fix #967 (#970)
+
+      Marian Ganisin (1):
+            Feat: Support for multidoc yaml files (#825)
+
+      Pedro Pessoa (11):
+            Docs - Update envvar.md custom token e.g. to use add_converter (#941)
+            Feature - Inspect and CLI (#939)
+            Fix - Template substitution with variable update (#944)
+            Assert #658 works (#945)
+            fix infinite recursions in special case of django app #867 (#947)
+            Fix - Django functions with `add_converter` (#951)
+            Fix hooks not re-running on reload #850 (#953)
+            update vault and redis warning recommendations. fix #950 (#954)
+            Fix - Enable merge equal False (#957)
+            CI - Test docker-compose pyyaml issue (#964)
+            Fix: unexpected _bypass_evaluation in BoxList (#966)
+
+      pedro-psb (1):
+            Release version 3.2.0
+
+
 3.2.1 (2023-08-11)
 ------------------
 
@@ -69,6 +165,30 @@ Other
 
   * add note about docker-compose on contributing.md
 - Build docs. [Bruno Rocha]
+- Release version 3.2.0. [pedro-psb]
+
+  Shortlog of commits since last release:
+
+      Bruno Rocha (4):
+            Ignore docs build without a tag
+            Cancel any running CI job when a Push is made to an existing PR or branch (#952)
+            Fix #959 cli get will exit code 1 in case of KeyError. (#960)
+            add tech preview note to inspect docs (#961)
+
+      Pedro Pessoa (9):
+            Docs - Update envvar.md custom token e.g. to use add_converter (#941)
+            Feature - Inspect and CLI (#939)
+            Fix - Template substitution with variable update (#944)
+            Assert #658 works (#945)
+            fix infinite recursions in special case of django app #867 (#947)
+            Fix - Django functions with `add_converter` (#951)
+            Fix hooks not re-running on reload #850 (#953)
+            update vault and redis warning recommendations. fix #950 (#954)
+            Fix - Enable merge equal False (#957)
+
+
+3.2.0 (2023-07-13)
+------------------
 - Release version 3.2.0. [pedro-psb]
 
   Shortlog of commits since last release:
