@@ -133,7 +133,7 @@ def inspect_settings(
         if env.lower() not in registered_envs:
             raise EnvNotFoundError(f"The requested env is not valid: {env!r}")
 
-        def env_filter(src: SourceMetadata) -> bool:
+        def env_filter(src: SourceMetadata) -> bool:  # noqa: F811
             return src.env.lower() == env.lower()
 
     history = get_history(
