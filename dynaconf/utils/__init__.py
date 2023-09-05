@@ -457,7 +457,7 @@ def isnamedtupleinstance(value):
     f = getattr(t, "_fields", None)
     if not isinstance(f, tuple):
         return False
-    return all(type(n) == str for n in f)
+    return all(isinstance(n, str) for n in f)
 
 
 def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
