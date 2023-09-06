@@ -363,16 +363,25 @@ def upperfy(key: str) -> str:
       input: foo__bar__ZAZ
       output: FOO__bar__ZAZ
 
+      input: foo.bar.ZAZ
+      output: FOO.bar.ZAZ
+
     Arguments:
         key {str} -- A string key that may contain dunders `__`
 
     Returns:
         The key as upper case but keeping the nested elements.
     """
+
+    def _upperfy(k, sep="__"):
+        parts = k.split(sep)
+        return sep.join([parts[0].upper()] + parts[1:])
+
     key = str(key)
     if "__" in key:
-        parts = key.split("__")
-        return "__".join([parts[0].upper()] + parts[1:])
+        return _upperfy(key)
+    if "." in key:
+        return _upperfy(key, sep=".")
     return key.upper()
 
 

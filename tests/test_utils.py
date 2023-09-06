@@ -380,6 +380,10 @@ def test_upperfy():
     assert upperfy("foo_bar") == "FOO_BAR"
     assert upperfy("foo_BAR") == "FOO_BAR"
 
+    assert upperfy("foo.bar") == "FOO.bar"
+    assert upperfy("foo.bar.ZAZ") == "FOO.bar.ZAZ"
+    assert upperfy("foo.bar.ZAZ.naz.TAZ_ZAZ") == "FOO.bar.ZAZ.naz.TAZ_ZAZ"
+
 
 def test_lazy_format_class():
     value = Lazy("{this[FOO]}/bar")
