@@ -584,10 +584,16 @@ def test_dotted_traversal_access(settings):
     assert settings.get("ME__NUMBER") == "42"
 
 
-def test_dotted_set(settings):
+def test_dotted_set_asdfasdf(settings):
+    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "old_conf")
+    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "new_conf1")
+    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[2]", "new_conf2")
+    from pdb import set_trace; set_trace()
+
     settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
 
     settings.set("nested_1.nested_2.nested_3.nested_4", "secret")
+
 
     assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "secret"
     assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {

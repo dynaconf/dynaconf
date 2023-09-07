@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import copy
 import importlib
 import inspect
@@ -882,12 +883,29 @@ class Settings:
         split_keys = dotted_key.split(".")
         existing_data = self.get(split_keys[0], {})
         new_data = tree = DynaBox(box_settings=self)
-
-        for k in split_keys[:-1]:
-            tree = tree.setdefault(k, {})
-
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
-        tree[split_keys[-1]] = value
+        
+        for n, k in enumerate(split_keys):
+            is_not_end = n < (len(split_keys) - 1)
+            if is_not_end:
+                next_default = [] if "[" in split_keys[n+1] else {}
+            if "[" not in k: # accessing field of a dict
+                if is_not_end:
+                    tree = tree.setdefault(k, next_default) # get next
+                else:
+                    tree[k] = value # assign value
+            else: # accessing index of a list
+                index_val = int(k.replace("[", "").replace("]", ""))
+                # This makes sure we can assign any arbitrary index
+                tree.extend([next_default] * (index_val+1))
+                if is_not_end:
+                    tree = tree[index_val] # get at index
+                else:
+                    tree[index_val] = value # assign value
+        
+        if "nested_a" in split_keys:
+            from pdb import set_trace; set_trace()
+       
 
         if existing_data:
             old_data = DynaBox(
@@ -937,11 +955,21 @@ class Settings:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
+        
+        # Do index replacement first to avoid accidentally replacing
+        # triple underlines like 'DYNACONF_DATA.a_0___key__subkey'
+        nested_ind = self.get("NESTED_INDEX_FOR_DYNACONF")
+        # DYNACONF_DATA__a_0___key_2___subkey -> 
+        # DYNACONF_DATA__a[0]__key[2]__subkey
+        if nested_ind:
+            nested_ind = r'{}'.format(nested_ind)
+            key = re.sub(nested_ind, r'.[\1]', key)
+       
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
         if nested_sep and nested_sep in key:
             key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
 
-        if "." in key and dotted_lookup is True:
+        if ("." in key or "[" in key) and dotted_lookup is True:
             return self._dotted_set(
                 key,
                 value,
