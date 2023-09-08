@@ -894,7 +894,7 @@ class Settings:
                     tree = tree.setdefault(k, next_default) # get next
                 else:
                     tree[k] = value # assign value
-            else: # accessing index of a list
+            elif k.startswith("[") and k.endswith("]"): # accessing index of a list
                 index_val = int(k.replace("[", "").replace("]", ""))
                 # This makes sure we can assign any arbitrary index
                 tree.extend([next_default] * (index_val+1))
@@ -902,6 +902,8 @@ class Settings:
                     tree = tree[index_val] # get at index
                 else:
                     tree[index_val] = value # assign value
+            else: # odd cases like [2]0
+                raise(ValueError("Invalid field:", k))
         
         if "nested_a" in split_keys:
             from pdb import set_trace; set_trace()
