@@ -585,15 +585,9 @@ def test_dotted_traversal_access(settings):
 
 
 def test_dotted_set_asdfasdf(settings):
-    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "old_conf")
-    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "new_conf1")
-    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[2]", "new_conf2")
-    from pdb import set_trace; set_trace()
-
     settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
 
     settings.set("nested_1.nested_2.nested_3.nested_4", "secret")
-
 
     assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "secret"
     assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {
@@ -607,9 +601,22 @@ def test_dotted_set_asdfasdf(settings):
         "nested_2": {"nested_3": {"nested_4": "secret"}}
     }
 
+    # Dotted set with index
+    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "old_conf")
+    settings.set(
+        "nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "new_conf1"
+    )  # overwrite
+    settings.set(
+        "nested_a.nested_b.[2].[1].nested_c.nested_d.[2]", "new_conf2"
+    )  # insert
+    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[3] == "new_conf1"
+    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[2] == "new_conf2"
+
     with pytest.raises(KeyError):
         settings.NESTED_1.NESTED_2_0
 
+    # This test case is the reason why choosing
+    # __(\d+) pattern instead of _(\d+)_
     settings.set("nested_1.nested_2_0", "Hello")
     assert settings.NESTED_1.NESTED_2_0 == "Hello"
 
