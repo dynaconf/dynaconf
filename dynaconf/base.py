@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import re
 import copy
 import importlib
 import inspect
 import os
+import re
 import warnings
 from collections import defaultdict
 from contextlib import contextmanager
@@ -881,25 +881,40 @@ class Settings:
             )  # pragma: nocover
 
         split_keys = dotted_key.split(".")
-        existing_data = self.get(split_keys[0], {})
-        new_data = tree = DynaBox(box_settings=self)
+        key_exists = split_keys[0] in self
+        # Not using DynaBox here since for some reason use
+        # tree.get returns a copy, which prevents us from
+        # inplace assignments
+        # new_data = tree = DynaBox(init, box_settings=self)
+        new_data = tree = (
+            {split_keys[0]: self.get(split_keys[0], {}).to_dict()}
+            if key_exists
+            else {}
+        )
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
-        
+
         for n, k in enumerate(split_keys):
             is_not_end = n < (len(split_keys) - 1)
             if is_not_end:
-                next_default = [] if "[" in split_keys[n+1] else {}
-            if "[" not in k: # accessing field of a dict
+                next_default = [] if "[" in split_keys[n + 1] else {}
+
+            if "[" not in k:  # accessing field of a dict
                 if is_not_end:
-                    tree = tree.setdefault(k, next_default) # get next
+                    next_value = tree.get(k, next_default)
+                    tree = tree.setdefault(k, next_value)  # get next
                 else:
                     tree[k] = value # assign value
             elif k.startswith("[") and k.endswith("]"): # accessing index of a list
                 index_val = int(k.replace("[", "").replace("]", ""))
                 # This makes sure we can assign any arbitrary index
-                tree.extend([next_default] * (index_val+1))
+                tree.extend(
+                    [
+                        next_default.copy()
+                        for _ in range(max(index + 1 - len(tree), 0))
+                    ]
+                )
                 if is_not_end:
-                    tree = tree[index_val] # get at index
+                    tree = tree[index]  # get at index
                 else:
                     tree[index_val] = value # assign value
             else: # odd cases like [2]0
@@ -957,16 +972,16 @@ class Settings:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
-        
+
         # Do index replacement first to avoid accidentally replacing
-        # triple underlines like 'DYNACONF_DATA.a_0___key__subkey'
+        # triple underlines like 'DYNACONF_DATA.a__0__key__subkey'
         nested_ind = self.get("NESTED_INDEX_FOR_DYNACONF")
-        # DYNACONF_DATA__a_0___key_2___subkey -> 
+        # DYNACONF_DATA__a__0__key__2__subkey ->
         # DYNACONF_DATA__a[0]__key[2]__subkey
         if nested_ind:
-            nested_ind = r'{}'.format(nested_ind)
-            key = re.sub(nested_ind, r'.[\1]', key)
-       
+            nested_ind = rf"{nested_ind}"
+            key = re.sub(nested_ind, r".[\1]", key)
+
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
         if nested_sep and nested_sep in key:
             key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
