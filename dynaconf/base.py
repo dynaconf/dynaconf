@@ -10,7 +10,6 @@ from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
 from pathlib import Path
-from pdb import set_trace
 from typing import Any
 from typing import Callable
 

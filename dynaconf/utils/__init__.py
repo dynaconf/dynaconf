@@ -28,8 +28,6 @@ if os.name == "nt":  # pragma: no cover
     # windows can't handle the above charmap
     BANNER = "DYNACONF"
 
-from pdb import set_trace
-
 
 def object_merge(
     old: Any,
