@@ -528,7 +528,7 @@ class Box(dict):
             default = self.__class__(default, **self.__box_config())
         if isinstance(default, list):
             default = box.BoxList(default, box_class=self.__class__, **self.__box_config())
-        self[item] = default # TODO what if out of index?
+        self[item] = default
         return default
 
     def _safe_attr(self, attr):
