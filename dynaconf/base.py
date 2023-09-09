@@ -958,8 +958,7 @@ class Settings:
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
 
-        # Do index replacement first to avoid accidentally replacing
-        # triple underlines like 'DYNACONF_DATA.a__0__key__subkey'
+        # Do index replacement first
         nested_ind = self.get("NESTED_INDEX_FOR_DYNACONF")
         # DYNACONF_DATA__a__0__key__2__subkey ->
         # DYNACONF_DATA__a[0]__key[2]__subkey
