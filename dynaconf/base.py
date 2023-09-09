@@ -10,6 +10,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
 from pathlib import Path
+from pdb import set_trace
 from typing import Any
 from typing import Callable
 
@@ -46,7 +47,7 @@ from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
 from dynaconf.vendor.box.box_list import BoxList
 
-from pdb import set_trace
+
 class LazySettings(LazyObject):
     """Loads settings lazily from multiple sources:
 
@@ -894,17 +895,19 @@ class Settings:
                 if is_not_end:
                     tree = tree.setdefault(k, next_default)  # get next
                 else:
-                    tree[k] = value # assign value
-            elif k.startswith("[") and k.endswith("]"): # accessing index of a list
+                    tree[k] = value  # assign value
+            elif k.startswith("[") and k.endswith(
+                "]"
+            ):  # accessing index of a list
                 index = int(k.replace("[", "").replace("]", ""))
                 # This makes sure we can assign any arbitrary index
                 tree.extend([next_default] * (index + 1))
                 if is_not_end:
                     tree = tree[index]  # get at index
                 else:
-                    tree[index] = value # assign value
-            else: # odd cases like [2]0
-                raise(ValueError("Invalid field:", k))
+                    tree[index] = value  # assign value
+            else:  # odd cases like [2]0
+                raise (ValueError("Invalid field:", k))
 
         if existing_data:
             old_data = DynaBox(
@@ -914,7 +917,7 @@ class Settings:
                 old=old_data,
                 new=new_data,
                 full_path=split_keys,
-                list_merge="deep", # when to use deep / shallow replace?
+                list_merge="deep",  # when to use deep / shallow replace?
             )
         self.update(data=new_data, tomlfy=tomlfy, validate=validate, **kwargs)
 

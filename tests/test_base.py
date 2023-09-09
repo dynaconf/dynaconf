@@ -585,18 +585,6 @@ def test_dotted_traversal_access(settings):
 
 
 def test_dotted_set_with_indexing(settings):
-    # Dotted set with index
-    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "old_conf")
-    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "new_conf1")  # overwrite
-    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[2]", "new_conf2")  # insert
-    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[3] == "new_conf1"
-    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[2] == "new_conf2"
-    assert len(settings.NESTED_A.NESTED_B[0]) < 1
-    settings.set("nested_a.nested_b.[0].[2].nested_c.nested_d.[0]", "extra_conf") # add more
-    assert len(settings.NESTED_A.NESTED_B[0]) > 0
-    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d", ["conf1", "conf2", "conf3"])  # overwrite list
-    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D == ["conf1", "conf2", "conf3"]
-
     settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
 
     settings.set("nested_1.nested_2.nested_3.nested_4", "secret")
@@ -615,6 +603,31 @@ def test_dotted_set_with_indexing(settings):
 
     with pytest.raises(KeyError):
         settings.NESTED_1.NESTED_2_0
+
+    # Dotted set with index
+    settings.set("nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "old_conf")
+    settings.set(
+        "nested_a.nested_b.[2].[1].nested_c.nested_d.[3]", "new_conf1"
+    )  # overwrite
+    settings.set(
+        "nested_a.nested_b.[2].[1].nested_c.nested_d.[2]", "new_conf2"
+    )  # insert
+    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[3] == "new_conf1"
+    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[2] == "new_conf2"
+    assert len(settings.NESTED_A.NESTED_B[0]) < 1
+    settings.set(
+        "nested_a.nested_b.[0].[2].nested_c.nested_d.[0]", "extra_conf"
+    )  # add more
+    assert len(settings.NESTED_A.NESTED_B[0]) > 0
+    settings.set(
+        "nested_a.nested_b.[2].[1].nested_c.nested_d",
+        ["conf1", "conf2", "conf3"],
+    )  # overwrite list
+    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D == [
+        "conf1",
+        "conf2",
+        "conf3",
+    ]
 
     # This test case is the reason why choosing
     # __(\d+) pattern instead of _(\d+)_

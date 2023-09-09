@@ -30,8 +30,13 @@ if os.name == "nt":  # pragma: no cover
 
 from pdb import set_trace
 
+
 def object_merge(
-    old: Any, new: Any, unique: bool = False, full_path: list[str] = None, list_merge="merge",
+    old: Any,
+    new: Any,
+    unique: bool = False,
+    full_path: list[str] = None,
+    list_merge="merge",
 ) -> Any:
     """
     Recursively merge two data structures, new is mutated in-place.
@@ -48,29 +53,34 @@ def object_merge(
         return new
 
     if isinstance(old, list) and isinstance(new, list):
-        # set_trace()
         # 726: allow local_merge to override global merge on lists
         if "dynaconf_merge_unique" in new:
             new.remove("dynaconf_merge_unique")
             unique = True
 
-        if list_merge == "merge":
+        if list_merge == "merge" or unique:
             for item in old[::-1]:
                 if unique and item in new:
                     continue
                 new.insert(0, item)
-        elif len(full_path) > 0: # element-wise merge
+        elif len(full_path) > 0:  # element-wise merge
             new.extend([[]] * max(len(old) - len(new), 0))
             for ii, item in enumerate(old):
                 # replace at corresponding positions
                 if list_merge == "shallow":
                     new[ii] = new[ii] or item
-                else: # deep replace
-                    if not new[ii]: # copy over the older values
+                else:  # deep replace
+                    if not new[ii]:  # copy over the older values
                         new[ii] = item
-                    elif item: # old[ii] is not None
-                        object_merge(old[ii], new[ii], full_path=full_path[1:], list_merge="deep")
-    elif isinstance(old, dict) and isinstance(new, dict):
+                    elif item:  # old[ii] is not None
+                        object_merge(
+                            old[ii],
+                            new[ii],
+                            full_path=full_path[1:],
+                            list_merge="deep",
+                        )
+
+    if isinstance(old, dict) and isinstance(new, dict):
         existing_value = recursive_get(old, full_path)  # doesn't handle None
         # Need to make every `None` on `_store` to be an wrapped `LazyNone`
 
@@ -113,7 +123,7 @@ def object_merge(
                     full_path=full_path[1:] if full_path else None,
                     list_merge=list_merge,
                 )
-        handle_metavalues(old, new)
+        handle_metavalues(old, new, list_merge=list_merge)
 
     return new
 
@@ -141,7 +151,9 @@ def recursive_get(
 
 
 def handle_metavalues(
-    old: DynaBox | dict[str, int] | dict[str, str | int], new: Any
+    old: DynaBox | dict[str, int] | dict[str, str | int],
+    new: Any,
+    list_merge: str = "merge",
 ) -> None:
     """Cleanup of MetaValues on new dict"""
 
@@ -158,7 +170,9 @@ def handle_metavalues(
         elif getattr(new[key], "_dynaconf_merge", False):
             # a Merge on `new` triggers merge with existing data
             new[key] = object_merge(
-                old.get(key), new[key].unwrap(), unique=new[key].unique
+                old.get(key),
+                new[key].unwrap(),
+                unique=new[key].unique,
             )
 
         # Data structures containing merge tokens
@@ -191,7 +205,9 @@ def handle_metavalues(
                 new[key] = local_merge
 
             if local_merge:
-                new[key] = object_merge(old.get(key), new[key])
+                new[key] = object_merge(
+                    old.get(key), new[key], list_merge=list_merge
+                )
 
 
 class DynaconfDict(dict):
