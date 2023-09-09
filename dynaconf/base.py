@@ -46,7 +46,7 @@ from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
 from dynaconf.vendor.box.box_list import BoxList
 
-
+from pdb import set_trace
 class LazySettings(LazyObject):
     """Loads settings lazily from multiple sources:
 
@@ -881,16 +881,8 @@ class Settings:
             )  # pragma: nocover
 
         split_keys = dotted_key.split(".")
-        key_exists = split_keys[0] in self
-        # Not using DynaBox here since for some reason use
-        # tree.get returns a copy, which prevents us from
-        # inplace assignments
-        # new_data = tree = DynaBox(init, box_settings=self)
-        new_data = tree = (
-            {split_keys[0]: self.get(split_keys[0], {}).to_dict()}
-            if key_exists
-            else {}
-        )
+        existing_data = self.get(split_keys[0], {})
+        new_data = tree = DynaBox(box_settings=self)
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
 
         for n, k in enumerate(split_keys):
@@ -900,29 +892,19 @@ class Settings:
 
             if "[" not in k:  # accessing field of a dict
                 if is_not_end:
-                    next_value = tree.get(k, next_default)
-                    tree = tree.setdefault(k, next_value)  # get next
+                    tree = tree.setdefault(k, next_default)  # get next
                 else:
                     tree[k] = value # assign value
             elif k.startswith("[") and k.endswith("]"): # accessing index of a list
-                index_val = int(k.replace("[", "").replace("]", ""))
+                index = int(k.replace("[", "").replace("]", ""))
                 # This makes sure we can assign any arbitrary index
-                tree.extend(
-                    [
-                        next_default.copy()
-                        for _ in range(max(index + 1 - len(tree), 0))
-                    ]
-                )
+                tree.extend([next_default] * (index + 1))
                 if is_not_end:
                     tree = tree[index]  # get at index
                 else:
-                    tree[index_val] = value # assign value
+                    tree[index] = value # assign value
             else: # odd cases like [2]0
                 raise(ValueError("Invalid field:", k))
-        
-        if "nested_a" in split_keys:
-            from pdb import set_trace; set_trace()
-       
 
         if existing_data:
             old_data = DynaBox(
@@ -932,6 +914,7 @@ class Settings:
                 old=old_data,
                 new=new_data,
                 full_path=split_keys,
+                list_merge="deep", # when to use deep / shallow replace?
             )
         self.update(data=new_data, tomlfy=tomlfy, validate=validate, **kwargs)
 
