@@ -1470,3 +1470,6 @@ def test_environ_dotted_set_with_index():
     assert isinstance(settings.NESTED_A.NESTED_B[2][1], dict)
     assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[3] == "old_conf"
     assert settings.NESTED_A.NESTED_1.NESTED_2 == "new_conf"
+    # remove environment variables after testing
+    del os.environ["DYNACONF_NESTED_A__nested_1__nested_2"]
+    del os.environ["DYNACONF_NESTED_A__nested_b__2__1__nested_c__nested_d__3"]
