@@ -1465,9 +1465,11 @@ def test_environ_dotted_set_with_index():
         "DYNACONF_NESTED_A__nested_b__2__1__nested_c__nested_d__3"
     ] = "old_conf"
     settings = Dynaconf(envvar_prefix="DYANCONF")
-    assert settings.NESTED_A.NESTED_B == [
-        [],
-        [],
-        [{}, {"nested_c": {"nested_d": [[], [], [], "old_conf"]}}],
-    ]
-    assert settings.NESTED_A.NESTED_1 == {"nested_2": "new_conf"}
+    assert settings.NESTED_A.NESTED_B == BoxList(
+        [
+            [],
+            [],
+            [{}, {"nested_c": {"nested_d": [[], [], [], "old_conf"]}}],
+        ]
+    )
+    assert settings.NESTED_A.NESTED_1.NESTED_2 == "new_conf"
