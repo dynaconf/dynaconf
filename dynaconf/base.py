@@ -969,7 +969,7 @@ class Settings:
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
         if nested_sep and nested_sep in key:
             key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
-        
+
         if ("." in key or "[" in key) and dotted_lookup is True:
             return self._dotted_set(
                 key,
@@ -981,7 +981,6 @@ class Settings:
 
         parsed = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
-        
 
         # Fix for #869 - The call to getattr trigger early evaluation
         existing = (
@@ -1021,7 +1020,17 @@ class Settings:
             else:
                 # `dynaconf_merge` may be used within the key structure
                 # Or merge_enabled is set to True
-                parsed, source_metadata = self._merge_before_set(existing, parsed, source_metadata, context_merge=merge)
+                parsed, source_metadata = self._merge_before_set(
+                    existing,
+                    parsed,
+                    source_metadata,
+                    context_merge=merge,
+                    list_merge="replace"
+                    if source_metadata
+                    and source_metadata.loader == "setdefault"
+                    and source_metadata.env == "development"
+                    else "merge",  # fix 905
+                )
 
         if isinstance(parsed, dict) and not isinstance(parsed, DynaBox):
             parsed = DynaBox(parsed, box_settings=self)
@@ -1082,7 +1091,7 @@ class Settings:
 
         data = data or {}
         data.update(kwargs)
-        
+
         for key, value in data.items():
             # update() will handle validation later
             with suppress(ValidationError):
@@ -1108,6 +1117,7 @@ class Settings:
         value,
         identifier: SourceMetadata | None = None,
         context_merge=empty,
+        list_merge="merge",
     ):
         """
         Merge the new value being set with the existing value before set
@@ -1118,14 +1128,18 @@ class Settings:
             context_merge = self.get("MERGE_ENABLED_FOR_DYNACONF")
 
         if isinstance(value, dict):
-            local_merge = value.pop("dynaconf_merge", value.pop("dynaconf_merge_unique", None))
+            local_merge = value.pop(
+                "dynaconf_merge", value.pop("dynaconf_merge_unique", None)
+            )
             if local_merge not in (True, False, None) and not value:
                 # In case `dynaconf_merge:` holds value not boolean - ref #241
                 value = local_merge
 
             if local_merge or (context_merge and local_merge is not False):
-                identifier = (identifier._replace(merged=True) if identifier else None)
-                value = object_merge(existing, value, list_merge="replace")
+                identifier = (
+                    identifier._replace(merged=True) if identifier else None
+                )
+                value = object_merge(existing, value, list_merge=list_merge)
 
         if isinstance(value, (list, tuple)):
             value = list(value)

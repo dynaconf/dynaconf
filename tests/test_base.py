@@ -1475,10 +1475,20 @@ def test_environ_dotted_set_with_index():
     del os.environ["DYNACONF_NESTED_A__nested_b__2__1__nested_c__nested_d__3"]
 
 
-def test_default_merge_object():
+def test_merge_object_replace():
     from dynaconf.utils.boxing import DynaBox
     from dynaconf.utils import object_merge
-    old = DynaBox({'ANOTHER': 45, 'TEST_LIST': ["'1'", "'2'"], 'another_setting': 'ciao'})
-    new = DynaBox({'something_new': 5, 'ANOTHER': 45, 'TEST_LIST': ['1', '2'], 'another_setting': 'ciao'})
+
+    old = DynaBox(
+        {"ANOTHER": 45, "TEST_LIST": ["'1'", "'2'"], "another_setting": "ciao"}
+    )
+    new = DynaBox(
+        {
+            "something_new": 5,
+            "ANOTHER": 45,
+            "TEST_LIST": ["1", "2"],
+            "another_setting": "ciao",
+        }
+    )
     new2 = object_merge(old, new, list_merge="replace")
     print(new2)

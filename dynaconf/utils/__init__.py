@@ -44,7 +44,6 @@ def object_merge(
     :param unique: When set to True existing list items are not set.
     :param full_path: Indicates the elements of a tree.
     """
-    
     if full_path is None:
         full_path = []
     if old == new or old is None or new is None:
