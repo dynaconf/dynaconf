@@ -930,7 +930,6 @@ class Settings:
         is_secret="DeprecatedArgument",  # noqa
         validate=empty,
         merge=empty,
-        print_debug=False,
     ):
         """Set a value storing references for the loader
 
@@ -971,11 +970,7 @@ class Settings:
         if nested_sep and nested_sep in key:
             key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
         
-       
-
         if ("." in key or "[" in key) and dotted_lookup is True:
-            # if tomlfy == True:
-            #     from pdb import set_trace; set_trace()
             return self._dotted_set(
                 key,
                 value,
@@ -984,8 +979,6 @@ class Settings:
                 validate=validate,
             )
 
-        # if tomlfy == True:
-        #     from pdb import set_trace; set_trace()
         parsed = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
         key = upperfy(key.strip())
         
@@ -1021,7 +1014,6 @@ class Settings:
                 parsed = parsed.unwrap()
 
         if existing is not None and existing != parsed:
-            flag = hasattr(existing, "TEST_LIST") and existing.TEST_LIST == ["'1'", "'2'"] and hasattr(parsed, "TEST_LIST") and parsed.TEST_LIST == ["1", "2"]
             # `dynaconf_merge` used in file root `merge=True`
             if merge and merge is not empty:
                 source_metadata = source_metadata._replace(merged=True)
@@ -1029,7 +1021,7 @@ class Settings:
             else:
                 # `dynaconf_merge` may be used within the key structure
                 # Or merge_enabled is set to True
-                parsed, source_metadata = self._merge_before_set(existing, parsed, source_metadata, context_merge=merge, flag=flag)
+                parsed, source_metadata = self._merge_before_set(existing, parsed, source_metadata, context_merge=merge)
 
         if isinstance(parsed, dict) and not isinstance(parsed, DynaBox):
             parsed = DynaBox(parsed, box_settings=self)
@@ -1090,11 +1082,6 @@ class Settings:
 
         data = data or {}
         data.update(kwargs)
-        flag = True # data == {'group': {'something_new': 5, 'ANOTHER': 45, 'TEST_LIST': ["'1'", "'2'"], 'another_setting': 'ciao'}}
-        if flag:
-            print("----------------------Starting updates ------------------------------------")
-            print("data before update:", data)
-            print("tomlfy:", tomlfy)
         
         for key, value in data.items():
             # update() will handle validation later
@@ -1107,11 +1094,7 @@ class Settings:
                     merge=merge,
                     dotted_lookup=dotted_lookup,
                     validate=validate,
-                    print_debug=flag,
                 )
-        if flag:
-            print("self after update:", self.to_dict())
-            print("-------------------------End updates-----------------------------------")
 
         # handle param `validate`
         if validate is True:
@@ -1125,7 +1108,6 @@ class Settings:
         value,
         identifier: SourceMetadata | None = None,
         context_merge=empty,
-        flag=False
     ):
         """
         Merge the new value being set with the existing value before set
@@ -1143,7 +1125,7 @@ class Settings:
 
             if local_merge or (context_merge and local_merge is not False):
                 identifier = (identifier._replace(merged=True) if identifier else None)
-                value = object_merge(existing, value, debug_flag=flag)
+                value = object_merge(existing, value, list_merge="replace")
 
         if isinstance(value, (list, tuple)):
             value = list(value)

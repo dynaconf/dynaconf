@@ -62,6 +62,8 @@ def object_merge(
                 if unique and item in new:
                     continue
                 new.insert(0, item)
+        # replace mode
+        # elif list_merge == "replace": pass
         elif len(full_path) > 0:  # element-wise merge
             new.extend([[]] * max(len(old) - len(new), 0))
             for ii, item in enumerate(old):

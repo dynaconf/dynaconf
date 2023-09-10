@@ -1480,5 +1480,5 @@ def test_default_merge_object():
     from dynaconf.utils import object_merge
     old = DynaBox({'ANOTHER': 45, 'TEST_LIST': ["'1'", "'2'"], 'another_setting': 'ciao'})
     new = DynaBox({'something_new': 5, 'ANOTHER': 45, 'TEST_LIST': ['1', '2'], 'another_setting': 'ciao'})
-    new2 = object_merge(old, new)
+    new2 = object_merge(old, new, list_merge="replace")
     print(new2)

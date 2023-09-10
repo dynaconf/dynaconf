@@ -14,9 +14,8 @@ settings.validators.register(
     Validator("group.something_new", default=5),
 )
 settings.validators.validate()
-settings_dict = settings.to_dict()
-print(settings.to_dict())
-# assert settings.group.test_list == ["1", "2"], settings.group
-# assert settings.group.something_new == 5
-# assert settings.group.another_setting == "ciao"
-# assert settings.group.another == 45
+
+assert settings.group.test_list == ["1", "2"], settings.group
+assert settings.group.something_new == 5
+assert settings.group.another_setting == "ciao"
+assert settings.group.another == 45
