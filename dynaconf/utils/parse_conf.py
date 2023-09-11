@@ -284,6 +284,9 @@ def apply_converter(converter_key, value, box_settings):
 
     Lazy converters will return Lazy objects for later evaluation.
     """
+    if callable(converter_key):
+        return converter_key(value)
+
     converter = converters[converter_key]
     try:
         converted_value = converter(value, box_settings=box_settings)

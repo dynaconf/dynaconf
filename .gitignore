@@ -87,3 +87,4 @@ dynaconf/vendor/source
 
 # asdf (version manager)
 .tool-versions
+.ropeproject
