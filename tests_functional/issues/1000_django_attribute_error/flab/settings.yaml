@@ -1,0 +1,32 @@
+---
+development:
+  STATIC_ROOT: static
+  DEBUG: true
+  ALLOWED_HOSTS:
+    - localhost
+    - 127.0.0.1
+    - testserver
+  # DATABASES:
+  #   default:
+  #     ENGINE: django.db.backends.postgresql_psycopg2
+  #     NAME: "redacted"
+  #     USER: "redacted"
+  #     PASSWORD: "redacted"
+  #     HOST: "redacted"
+  #     PORT: "redacted"
+  EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+
+
+production:
+  DEBUG: false
+  ALLOWED_HOSTS:
+    - localhost
+    - 127.0.0.1
+  # DATABASES:
+  #   default:
+  #     ENGINE: django.db.backends.postgresql_psycopg2
+  #     NAME: "redacted"
+  #     USER: "redacted"
+  #     PASSWORD: "redacted"
+  #     HOST: "redacted"
+  #     PORT: "redacted"
