@@ -45,6 +45,8 @@ from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
 from dynaconf.vendor.box.box_list import BoxList
 
+notfound = object()
+
 
 class LazySettings(LazyObject):
     """Loads settings lazily from multiple sources:
@@ -243,13 +245,21 @@ class Settings:
         self._validate_only_current_env = kwargs.pop(
             "validate_only_current_env", False
         )
-
-        _validators = kwargs.pop("validators", None)
+        self.validators = ValidatorList(self)
+        self._validators_defaults = defaultdict(dict)
+        self._validators_casts = defaultdict(dict)
+        _validators = kwargs.pop("validators", [])
         self._post_hooks: list[Callable] = ensure_a_list(
             kwargs.get("post_hooks", [])
         )
 
         compat_kwargs(kwargs)
+        # execute loaders only after setting defaults got from kwargs
+        self._defaults = kwargs
+
+        # Set init kwargs and SETTINGS_MODULE
+        # below this line Settings must have all its internal
+        # attributes set, otherwise set will fail.
         if settings_module:
             self.set(
                 "SETTINGS_FILE_FOR_DYNACONF",
@@ -258,8 +268,6 @@ class Settings:
             )
         for key, value in kwargs.items():
             self.set(key, value, loader_identifier="init_kwargs")
-        # execute loaders only after setting defaults got from kwargs
-        self._defaults = kwargs
 
         # The following flags are used for when copying of settings is done
         skip_loaders = kwargs.get("dynaconf_skip_loaders", False)
@@ -268,9 +276,7 @@ class Settings:
         if not skip_loaders:
             self.execute_loaders()
 
-        self._validators_defaults = defaultdict(dict)
-        self._validators_casts = defaultdict(dict)
-        self.validators = ValidatorList(self, validators=_validators)
+        self.validators.register(*_validators)
         if not skip_validators:
             self.validators.validate(
                 only=self._validate_only,
@@ -423,7 +429,13 @@ class Settings:
     to_dict = as_dict  # backwards compatibility
 
     def _dotted_get(
-        self, dotted_key, default=None, parent=None, cast=None, **kwargs
+        self,
+        dotted_key,
+        default=None,
+        parent=None,
+        cast=None,
+        apply_default_on_none=False,
+        **kwargs,
     ):
         """
         Perform dotted key lookups and keep track of where we are.
@@ -433,7 +445,14 @@ class Settings:
         """
         split_key = dotted_key.split(".")
         name, keys = split_key[0], split_key[1:]
-        result = self.get(name, default=default, parent=parent, **kwargs)
+        result = self.get(
+            name,
+            default=default,
+            parent=parent,
+            lookup_validator_metadata=False,
+            apply_default_on_none=apply_default_on_none,
+            **kwargs,
+        )
 
         # If we've reached the end, or parent key not found, then return result
         if not keys or result == default:
@@ -441,11 +460,18 @@ class Settings:
                 return apply_converter(cast, result, box_settings=self)
             elif cast is True:
                 return parse_conf_data(result, tomlfy=True, box_settings=self)
+            if name.lower() == "key1":
+                print("BBBBBB", result, keys, cast)
             return result
 
         # If we've still got key elements to traverse, let's do that.
         return self._dotted_get(
-            ".".join(keys), default=default, parent=result, cast=cast, **kwargs
+            ".".join(keys),
+            default=default,
+            parent=result,
+            cast=cast,
+            apply_default_on_none=apply_default_on_none,
+            **kwargs,
         )
 
     def get(
@@ -457,6 +483,8 @@ class Settings:
         dotted_lookup=empty,
         parent=None,
         sysenv_fallback=None,
+        lookup_validator_metadata=True,
+        apply_default_on_none=False,
     ):
         """
         Get a value from settings store, this is the preferred way to access::
@@ -484,51 +512,32 @@ class Settings:
         if dotted_lookup is empty:
             dotted_lookup = self._store.get("DOTTED_LOOKUP_FOR_DYNACONF")
 
-        if "." in key and dotted_lookup:
-            return self._dotted_get(
-                dotted_key=key,
-                default=default,
-                cast=cast,
-                fresh=fresh,
-                parent=parent,
-            )
-
         key = upperfy(key)
+        # internal attributes are returned as is on store
+        if key in UPPER_DEFAULT_SETTINGS + RESERVED_ATTRS:
+            return self._store.get(key, default)
 
-        # handle default and cast from validators
-        apply_default_on_none = False
-        if key not in UPPER_DEFAULT_SETTINGS + RESERVED_ATTRS:
-            with suppress(AttributeError):
-                # Handle default from v;alidators
-                validators_defaults = self._validators_defaults[
-                    self.current_env.lower()
-                ]
-                validator_with_default = validators_defaults.get(key, empty)
-                if validator_with_default is not empty:
-                    default = (
-                        validator_with_default.default(
-                            self, validator_with_default
-                        )
-                        if callable(validator_with_default.default)
-                        else validator_with_default.default
-                    )
-                    apply_default_on_none = (
-                        validator_with_default.apply_default_on_none
-                    )
+        if lookup_validator_metadata:
+            # get default and cast registered from validator
+            validator_metadata = self._get_validator_metadata_for_key(key)
+            v_default, v_cast, v_adn = validator_metadata
 
-                # handle cast from validators
-                validators_casts = self._validators_casts[
-                    self.current_env.lower()
-                ]
-                cast = validators_casts.get(key, cast)
+            if cast is None and v_cast is not empty:
+                cast = v_cast
 
-        # handles system environment fallback
-        if default is None:
-            key_in_sysenv_fallback_list = isinstance(
-                sysenv_fallback, list
-            ) and key in [upperfy(k) for k in sysenv_fallback]
-            if sysenv_fallback is True or key_in_sysenv_fallback_list:
-                default = self.get_environ(key, cast=True)
+            if v_default is not empty:
+                default = v_default
+
+            if v_adn is not empty:
+                apply_default_on_none = v_adn
+
+            # handles system environment fallback
+            if v_default is empty and default is None:
+                key_in_sysenv_fallback_list = isinstance(
+                    sysenv_fallback, list
+                ) and key in [upperfy(k) for k in sysenv_fallback]
+                if sysenv_fallback is True or key_in_sysenv_fallback_list:
+                    default = self.get_environ(key, cast=True)
 
         # default values should behave exactly Dynaconf parsed values
         if default is not None:
@@ -548,6 +557,16 @@ class Settings:
             self.unset(key)
             self.execute_loaders(key=key)
 
+        if "." in key and dotted_lookup:
+            return self._dotted_get(
+                dotted_key=key,
+                default=default,
+                cast=cast,
+                fresh=fresh,
+                parent=parent,
+                apply_default_on_none=apply_default_on_none,
+            )
+
         value = (parent or self.store).get(key, default)
         if value is None and apply_default_on_none:
             value = default
@@ -555,7 +574,41 @@ class Settings:
         if cast:
             value = apply_converter(cast, value, box_settings=self)
 
+        if key.lower() == "hasemptyvalues":
+            print("AAAAAAAAA", value, default, apply_default_on_none)
+
         return value
+
+    def _get_validator_metadata_for_key(self, key):
+        # handle default and cast from validators
+        apply_default_on_none = False
+        fallback_value = empty
+        cast = empty
+        if key not in UPPER_DEFAULT_SETTINGS + RESERVED_ATTRS:
+            with suppress(AttributeError):
+                # Handle default from validators
+                validators_defaults = self._validators_defaults[
+                    self.current_env.lower()
+                ]
+                validator_with_default = validators_defaults.get(key, empty)
+                if validator_with_default is not empty:
+                    fallback_value = (
+                        validator_with_default.default(
+                            self, validator_with_default
+                        )
+                        if callable(validator_with_default.default)
+                        else validator_with_default.default
+                    )
+                    apply_default_on_none = (
+                        validator_with_default.apply_default_on_none
+                    )
+
+                # handle cast from validators
+                validators_casts = self._validators_casts[
+                    self.current_env.lower()
+                ]
+                cast = validators_casts.get(key, empty)
+        return fallback_value, cast, apply_default_on_none
 
     def exists(self, key, fresh=False):
         """Check if key exists

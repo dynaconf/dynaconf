@@ -11,7 +11,9 @@ from typing import TYPE_CHECKING
 from dynaconf import validator_conditions
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import upperfy
+from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.functional import empty
+from dynaconf.vendor.box import BoxList
 
 if TYPE_CHECKING:
     from dynaconf.base import LazySettings, Settings
@@ -139,7 +141,13 @@ class Validator:
         self.when = when
         self.cast = cast
         self.operations = operations
+
+        if isinstance(default, list):
+            default = BoxList(default)
+        elif isinstance(default, dict):
+            default = DynaBox(default)
         self.default = default
+
         self.description = description
         self.envs: Sequence[str] | None = None
         self.apply_default_on_none = apply_default_on_none
@@ -480,6 +488,7 @@ class ValidatorList(list):
             casts = self.settings._validators_casts[env.lower()]
             for name in validator.names:
                 casts[upperfy(name)] = validator.cast
+                casts[upperfy(name).split(".")[0]]
 
     def descriptions(self, flat: bool = False) -> dict[str, str | list[str]]:
 
