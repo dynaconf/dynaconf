@@ -5,6 +5,8 @@ from enum import Enum
 from functools import wraps
 from typing import Any
 from typing import Callable
+from typing import Dict
+from typing import List
 
 from dynaconf.base import RESERVED_ATTRS
 from dynaconf.base import Settings
@@ -299,6 +301,9 @@ class Action(str, Enum):
 
 class HookableSettings(Settings):
     """Wrapper for dynaconf.base.Settings that adds hooks to get method."""
+
+    _REGISTERED_HOOKS: dict[Action, list[Hook]] = {}
+    # needed because django of Django admin see #1000
 
     @hookable
     def get(self, *args, **kwargs):
