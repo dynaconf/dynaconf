@@ -1,8 +1,10 @@
 # Validation
 
-Dynaconf allows the validation of settings parameters, in some cases you may want to validate the settings before starting the program.
+## Overview
 
-Let's say you have `settings.toml`
+Dynaconf allows the validation of settings parameters, for cases where you want to validate the settings before starting the program.
+
+For this section, let's say you have this `settings.toml`:
 
 ```ini
 [default]
@@ -17,12 +19,23 @@ JAVA_BIN = "/usr/bin/java"
 PROJECT = "This is not hello_world"
 ```
 
-## Validating in Python programmatically
+## Usage
 
-### On instantiation
+To define validation rules, you must create `Validator` objects, which are constructed using keys (positional arguments) and rules (kwargs). For example:
 
-When you instantiate your settings, Dynaconf will run all the validators
-you've defined agaisnt your initial data.
+```python
+Validator("AGE", gte=20, lte=80) # multiple rules
+Validator("NAME", "VERSION", "PORT", must_exist=True) # multiple keys
+Validator("DB.PORT", eq=8080) # keys with dot-path notation
+```
+
+There are some different ways to use `Validator`s, as we'll see.
+
+### With Python
+
+#### On instantiation
+
+When you instantiate your settings, Dynaconf will run all the validators you've defined against your initial data. All `ValidationError`s are collected an displayed at the end. For example,
 
 ```python
 from pathlib import Path
@@ -31,47 +44,25 @@ from dynaconf import Dynaconf, Validator
 
 settings = Dynaconf(
     validators=[
-        # Ensure some parameters exist (are required)
-        Validator('VERSION', 'AGE', 'NAME', must_exist=True),
-
-        # Ensure some password cannot exist
-        Validator('PASSWORD', must_exist=False),
-
         # Ensure some parameter meets a condition
-        # conditions: (eq, ne, lt, gt, lte, gte, identity, is_type_of, is_in, is_not_in)
         Validator('AGE', lte=30, gte=10),
 
         # validate a value is eq in specific env
         Validator('PROJECT', eq='hello_world', env='production'),
-
-        # Ensure some parameter (string) meets a condition
-        # conditions: (len_eq, len_ne, len_min, len_max, cont)
-        # Determines the minimum and maximum length for the value
-        Validator("NAME", len_min=3, len_max=125),
-
-        # Signifies the presence of the value in a set, text or word
-        Validator("DEV_SERVERS", cont='localhost'),
-
-        # Checks whether the length is the same as defined.
-        Validator("PORT", len_eq=4),
-
-        # Ensure java_bin is returned as a Path instance
-        Validator("JAVA_BIN", must_exist=True, cast=Path),
-
-        # Ensure a value meets a condition specified by a callable 
-        Validator("VERSION", must_exist=True, condition=lambda v: v.startswith("1.")),
     ]
 )
 ```
 
-The above will raise `dynaconf.validator.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")` and `dynaconf.validator.ValidationError("PROJECT must be eq='hello_world' but it is 'This is not hello_world' in env PRODUCTION")`
+will raise `dynaconf.validator.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")` and `dynaconf.validator.ValidationError("PROJECT must be eq='hello_world' but it is 'This is not hello_world' in env PRODUCTION")`.
 
-### Lazy validation
+Please see the [Reference](#reference) section to find out what kinds of validations can be performed.
+
+#### Lazy validation
 
 Instead of passing `validators=` argument to `Dynaconf` class you can register validators
-after the instance is created and trigger it manually.
+after the instance is created and trigger validation manually.
 
-<h4>Register</h4>
+<h5>Register</h5>
 
 First, register some validators. This won't trigger the validation yet.
 
@@ -84,12 +75,12 @@ settings.validators.register(
 )
 ```
 
-<h4>Trigger manually</h4>
+<h5>Trigger manually</h5>
 
 You may choose two strategies for the validation:
 
-- `validate`: raises `ValidationError` on the first error found
-- `validate_all`: raises `ValidationError` at the end. Accumulative error data is stored at `details`
+- `validate`: raises `ValidationError` on the first error found.
+- `validate_all`: raises `ValidationError` at the end. Accumulative error data is stored at `details`.
 
 ```python
 # raises on first error found
@@ -103,7 +94,7 @@ except dynaconf.ValidationError as e:
     print(accumulative_errors)
 ```
 
-<h4>Trigger on data update</h4>
+<h5>Trigger on data update</h5>
 
 By default, if the data of an instance is updated with `update`, `set` or `load_file` methods,
 no validation will be triggered.
@@ -120,9 +111,435 @@ settings.update({"NEW_VALUE": 123}, validate="all") # triggers validators.valida
 settings.update({"NEW_VALUE": 123}) # will trigger with the global strategy
 ```
 
-## Validator parameters 
+### With CLI
 
-Validators can be created by passing the following arguments: 
+It is possible to define validators in a `TOML` file called `dynaconf_validators.toml` placed in the same folder as your settings files. For more information, see the [CLI section](/cli#dynaconf-validate).
+
+`dynaconf_validators.toml` is equivalent to the program below:
+
+```ini
+[default]
+
+version = {must_exist=true}
+name = {must_exist=true}
+password = {must_exist=false}
+
+# dot notation is also supported
+'a_big_dict.nested_1.nested_2.nested_3.nested_4' = {must_exist=true, eq=1}
+
+  [default.age]
+  must_exist = true
+  lte = 30
+  gte = 10
+
+[production]
+project = {eq="hello_world"}
+```
+
+Then to fire the validation use:
+
+```bash
+$ dynaconf validate
+```
+
+This returns code 0 (success) if validation is ok.
+
+!!! info
+    All values in dynaconf are parsed using toml format, TOML tries to be smart
+    and infer the type of the settings variables, some variables will be automatically
+    converted to integer:
+
+    ```
+    FOO = "0x..."  # hexadecimal
+    FOO = "0o..."  # Octal
+    FOO = "0b..."  # Binary
+    ```
+
+    All cases are on toml specs https://github.com/toml-lang/toml/blob/master/toml.abnf
+
+    If you need to force a specific type casting there are 2 options.
+
+    1. Use double quoted for strings ex: `FOO = "'0x...'"  will be string.
+    2. Specify the type using `@`  ex: FOO = "@str 0x..."
+       (available converters are `@int, @float, @bool, @json`)
+
+## Features
+
+### Multiple Validators
+
+A single validator can have multiple conditions.
+
+```python
+Validator(
+  "NAME",
+  ne="john",
+  len_min=4,
+  must_exist=True, # redundant but allowed 
+  startswith="user_",
+  cast=str,
+  condition=lambda v: v not in FORBIDEN_USERS,
+  ...
+)
+```
+
+But it can also be expressed in separate validators. Notice that order matters because validators are evaluated in the given order.
+
+```python
+validators = [
+  Validator("NAME", ne="john"),
+  Validator("NAME", len_min=4),
+  Validator("NAME", must_exist=True),
+  Validator("NAME", startswith="user_"),
+]
+```
+
+### Custom messages
+
+Messages can be customized by passing a `messages` argument to the `Validator` constructor. This argument must be passed a `dict` with one of the valid keys, shown in the `dict` below which contains the default messages:
+
+```python
+{
+    "must_exist_true": "{name} is required in env {env}",
+    "must_exist_false": "{name} cannot exists in env {env}",
+    "condition": "{name} invalid for {function}({value}) in env {env}",
+    "operations": (
+        "{name} must {operation} {op_value} "
+        "but it is {value} in env {env}"
+    ),
+    "combined": "combined validators failed {errors}",
+}
+```
+
+Note that these default messages also show all the variables that can be interpolated to each message.
+
+<h4>Example</h4>
+
+```python
+Validator(
+    "VERSION",
+    must_exist=True,
+    messages={"must_exist_true": "You forgot to set {name} in your settings."}
+)
+```
+
+### Default values
+
+Validators can be used to provide default values, which can be either static or computed.
+
+<h4> Static default values </h4>
+
+If `Dynaconf` fails to load a value for the given setting, it'll give it the exact value provided in `default`.
+
+```py
+Validator("FOO", default="A default value for foo")
+```
+
+!!! warning
+    YAML reads empty keys as `None` and in that case defaults are not applied, if you want to change it
+    set `apply_default_on_none=True` either globally to `Dynaconf` class or individually on a `Validator`.
+
+<h4> Computed default values </h4>
+
+Sometimes you need some values to be computed by calling functions.
+
+<h5>Eager evaluation</h5>
+If you want the function to be run during validation time, define it with this signature:
+
+```py
+
+def my_function(settings, validator):
+    return "this is computed during validation time"
+
+```
+
+and pass it directly to the `default` kwarg:
+
+```py
+Validator("FOO", default=my_function)
+```
+
+<h5>Lazy evaluation</h5>
+If you want the default to be evaluated when the value is first accessed, define `my_function` with this signature:
+
+```py
+def my_lazy_function(value, **context):
+    """
+    value: Default value passed to the validator, defaults to `empty`
+    context: A dictionary containing
+            env: All the environment variables
+            this: The settings instance
+    """
+    return "When the first value is accessed, then the my_lazy_function will be called"
+```
+
+and pass it to the `default` kwarg like so:
+
+```py
+from dynaconf.utils.functional import empty
+from dynaconf.utils.parse_conf import Lazy
+
+Validator("FOO", default=Lazy(empty, formatter=my_lazy_function))
+
+```
+
+### Casting / Transform
+
+Validators can be used to postprocess your settings after being loaded from the files by passing a `Callable` to the `cast` argument. For example, they can be used to cast their type.
+
+This `Callable` will get called with the setting's value as its single argument (note that this could potentially be a `list` or `dict` depending on your setting path) and its return value will be assigned to the provided setting path.
+
+Note that you can pass any `Callable` such as regular function or a class/type.
+
+<h4>Example</h4>
+
+Given this `settings.toml`
+
+```toml
+name = 'Bruno'
+colors = ['red', 'green', 'blue']
+```
+
+Validators can be passed a `cast` attribute
+
+```python
+settings = Dynaconf(
+    validators=[
+        # Order matters here
+        Validator("name", len_eq=5),
+        Validator("name", len_min=1),
+        Validator("name", len_max=5),
+        # This will cast the str to list
+        Validator("name", cast=list),
+        # From this point on Validation pipeline
+        # `name` will be a list of chars
+        # and this will affect the settings.NAME
+
+        Validator("colors", len_eq=3),
+        Validator("colors", len_eq=3),
+        # this will cast the list to str
+        Validator("colors", len_eq=24, cast=str),
+        # From this point on Validation pipeline
+        # `colors` will be a str of 24 chars
+        # and this will affect the settings.COLORS
+
+    ],
+)
+
+assert settings.name == ['B', 'r', 'u', 'n', 'o']
+assert type(settings.name ) == list
+assert settings.colors == '["red", "green", "blue"]'
+assert type(settings.colors) == str
+```
+
+### Custom conditional expressions
+
+The `condition` argument expects a `Callable` that receives the setting's value as its only argument and returns a `bool`.
+
+To pass the validation, the condition function must return `True` (or a truthy type, such that `bool(x) == True`). If the returned value is `False` (or a falsy type, such that `bool(x) == False`) then the condition fails, and a `ValidationError` is risen.
+
+<h4>Example</h4>
+
+```python
+Validator("VERSION", condition=lambda v: v.startswith("1."))
+
+
+def user_must_be_chuck_norris(value):
+    return value == "Chuck Norris"
+
+Validator("USER", condition=user_must_be_chuck_norris)
+```
+
+### Conditional Validation
+
+In some cases you might want to perform a validation only when another validator passes. To do this, use the `when` parameter.
+
+<h4>Simple Example</h4>
+
+Say you want to ensure that the `DATABASE.HOST` is set only when `DATABASE.USER` is set. To do so, pass another `Validator` to `when`:
+
+```python
+Validator(
+    "DATABASE.HOST", 
+    must_exist=True, 
+    when=Validator("DATABASE.USER", must_exist=True)
+)
+```
+
+<h4>Complex Example</h4>
+
+Say you want to validate that `DATABASE.CONNECTION_ARGS` is set only when `DATABASE.URI` starts with `"sqlite://"`. This will do that for you:
+
+```python
+Validator(
+    "DATABASE.CONNECTION_ARGS", 
+    must_exist=True, 
+    when=Validator("DATABASE.URI", condition=lambda v: v.startswith("sqlite://")),
+    messages={"must_exist_true": "{name} is required when DATABASE is SQLite"}
+)
+```
+
+### Combination Operators
+
+Validators can be combined using `|` or `&`.
+
+<h4> <b>or</b> operator (<code>|</code>) </h4>
+
+```py
+Validator('DATABASE.USER', must_exist=True) | Validator('DATABASE.KEY', must_exist=True)
+```
+
+which generates a single `Validator` which succeeds if any of these pass.
+
+<h4> <b>and</b> operator (<code>&</code>) </h4>
+
+```py
+Validator('DATABASE.HOST', must_exist=True) & Validator('DATABASE.CONN', must_exist=True)
+```
+
+which generates a single `Validator` which succeeds only if both of these pass.
+
+### Selective Validation
+
+> **New in 3.1.6**
+
+You can also choose what sections of the settings you do or don't want to validate. This is achieved by using the `validate_only` and `validate_exclude` kwargs to `Dynaconf` (read more in the [Configuration](/configuration) page) or by passing `only` or `exclude` to the `validate` method of the `Dynaconf.validators` list.
+
+This is useful when:
+
+- You want to add additional validators after the settings object is created.
+- You want settings validated only when certain sections of your project are loaded.
+- You want to offer incremental configuration levels, validating only what is needed.
+
+Note that _exclusions are applied after selections_. Therefore, if you pass a settings path in `only` that also matches a path passed in `exclude`, it'll end up excluded.
+
+A settings path starts at the top level element and can be specified down to the lowest component. For example: `my_settings.server.user.password` can have the following settings paths passed in `server`, `server.user`, `server.user.password`.
+
+*Note:* Selective validation matches the passed in value(s) to settings paths that **start with that value**. This means that passing `exclude="FOO"` will exclude not only paths that start with `FOO` but also `FOOBAR`.
+
+<h4>Example</h4>
+
+In this example, the behavior is as follows:
+
+1. Dynaconf will _only_ validate any setting that starts with `server` upon instantiation.
+2. Only settings that start with `module1` will be validated when `module1.py` is first run.
+3. When `module2.py` is first run, only settings that start with `module2` (excluding those that start with `module2.bad`) will be validated.
+
+`config.py`
+
+```python
+# create a settings object, validating only settings under settings.server
+settings = Dynaconf(
+    validators=[
+        Validator(
+            "server.hostname",
+            "server.port",
+            "server.auth",
+            must_exist=True
+        ),
+        Validator(
+            "module1.value1",
+            "module1.value2",
+            "module1.value3",
+            must_exist=True
+        ),
+        Validator(
+            "module2.value1",
+            "module2.value2",
+            "module2.bad",
+            must_exist=True
+        )
+    ],
+    validate_only="server"
+)
+```
+
+`module1.py`
+
+```python
+# call validation on module1 settings
+settings.validators.validate(only=["module1"])
+```
+
+`module2.py`
+
+```python
+# call validation on module2 settings
+# ignore validation for a subsection of module2's settings
+settings.validators.validate(
+    only=["module2"],
+    exclude=["module2.bad"]
+)
+```
+
+### Validating only the `current_env`
+
+You can specify if you want to validate all environments defined for a validator (default behavior) or only the current environment. To do so, you may use the `only_current_env` argument of single `Validator`s (i.e., in `Validator.validate`), the same argument on `ValidatorList`s (such as `Dynaconf.validators.validate`) or by passing the `validate_only_current_env` kwarg to `Dynaconf` (see [Configuration](/configuration)).
+
+In the first case, the validators will run on all possible settings defined in their list of environments, while in the latter the validators with environments different from the current environment will be skipped.
+
+This is useful when your configuration for different environments (let's say `production` and `development`) comes from different files you don't necessarily have access to during development. You would want to write different validators for your `development` and `production` environments, and only run the right validator for the current environment.
+
+It's also useful if certain settings are only required in `production`.
+
+<h4>Example</h4>
+
+Using:
+
+`settings.toml`
+
+```ini
+[development]
+version = "dev"
+age = 35
+name = "Bruno"
+servers = ['127.0.0.1', 'localhost', 'development.com']
+PORT = 80
+
+[production]
+version = "1.0.0"
+age = 35
+name = "Bruno"
+servers = ['production.com']
+PORT = 443
+```
+
+`.secrets.toml`
+
+```ini
+[production]
+api_key = 'secret_api_key'
+```
+
+You could then have these validators:
+
+```python
+from dynaconf import Dynaconf, Validator
+
+settings = Dynaconf(
+    settings_files=['setting.toml', '.secrets.toml'],
+    environments=True,
+    validators=[
+        # Ensure some parameters exist for both envs
+        Validator('VERSION', 'NAME', 'SERVERS', envs=['development', 'production'], must_exist=True),
+
+        # Ensure some parameter validate certain condition in dev env
+        Validator("SERVERS", env='development', cont='localhost'),
+
+        # Ensure some parameter exists in production env
+        Validator('API_KEY', env='production', must_exist=True),
+    ]
+)
+```
+
+And suppose during development, when `settings.current_env == 'development'`, you don't have the file `.secrets.toml`.
+
+Running `settings.validators.validate()` will fail even if `settings.current_env == 'development'`, because by default all validators will run on all of their environments, whether or not it is the current env.
+
+If you instantiate your settings with the parameter `validate_only_current_env=True`, no errors will be raised if `settings.current_env == 'development'`, but a `ValidationError` will raise if `settings.current_env == 'production'`. This forces you to have the `.secrets.toml` file in `production` but not during `development`.
+
+## Reference
+
+Validators can be created by passing the following arguments:
 
 ```python
 # names: list[str]
@@ -146,7 +563,7 @@ Validator('VERSION', required=True),
 Validator('VERSION', condition=lambda v: v.startswith("1.")),
 
 # when: Validator
-# Condtionally runs the validator only when the passed validator passes
+# Conditionally runs the validator only when the passed validator passes
 Validator(
     'VERSION',
     condition=lambda v: v.endswith("-dev"),
@@ -243,429 +660,3 @@ Validator("THING", len_max=3),  # len(settings.THING) < 3
 Validator("THING", startswith="hello"),  # settings.THING.startswith("hello")
 Validator("THING", endswith="world"),  # settings.THING.endswith("world")
 ```
-
-## Complex validators 
-
-A single validator can have multiple conditions.
-
-```python
-Validator(
-  "NAME",
-  ne="john",
-  len_min=4,
-  must_exist=True, # redundant but allowed 
-  startswith="user_",
-  cast=str,
-  condition=lambda v: v not in FORBIDEN_USERS,
-  ...
-)
-```
-
-But can also be expressed in separate validators, notice that order matters
-because validators are evaluated in the given order.
-
-```python
-validators = [
-  Validator("NAME", ne="john"),
-  Validator("NAME", len_min=4),
-  Validator("NAME", must_exist=True),
-  Validator("NAME", startswith="user_"),
-]
-```
-
-## Custom validation messages
-
-Messages can be customized by passing a `messages` argument to the `Validator` constructor.
-
-The messages argument must be passed a dictionary with one of the valid keys:
-
-The default messages are:
-
-```python
-{
-    "must_exist_true": "{name} is required in env {env}",
-    "must_exist_false": "{name} cannot exists in env {env}",
-    "condition": "{name} invalid for {function}({value}) in env {env}",
-    "operations": (
-        "{name} must {operation} {op_value} "
-        "but it is {value} in env {env}"
-    ),
-    "combined": "combined validators failed {errors}",
-}
-```
-
-Example:
-
-```python
-Validator(
-    "VERSION",
-    must_exist=True,
-    messages={"must_exist_true": "You forgot to set {name} in your settings."}
-)
-```
-
-
-## Providing default or computed values
-
-
-Validators can be used to provide default or computed values.
-
-#### Default values
-
-```py
-Validator("FOO", default="A default value for foo")
-```
-
-Then if not able to load the values from files or environment this default value will be set for that key.
-
-
-!!! warning
-    YAML reads empty keys as `None` and in that case defaults are not applied, if you want to change it
-    set `apply_default_on_none=True` either globally to `Dynaconf` class or individually on a `Validator`.
-
-#### Computed values
-
-Sometimes you need some values to be computed by calling functions, just pass a callable to the `default` argument.
-
-```py
-
-Validator("FOO", default=my_function)
-
-```
-
-then
-
-```py
-
-def my_function(settings, validator):
-    return "this is computed during validation time"
-
-```
-
-If you want to be lazily evaluated, `my_function` has to be redefined as
-
-```py
-def my_lazy_function(value, **context):
-    """
-    value: Default value passed to the validator, defaults to `empty`
-    context: A dictionary containing
-            env: All the environment variables
-            this: The settings instance
-    """
-    return "When the first value is accessed, then the my_lazy_function will be called"
-```
-
-Subsequently
-
-```py
-from dynaconf.utils.functional import empty
-from dynaconf.utils.parse_conf import Lazy
-
-Validator("FOO", default=Lazy(empty, formatter=my_lazy_function))
-
-```
-
-You can also use dot-delimited paths for registering validators on nested structures:
-
-```python
-# Register validators
-settings.validators.register(
-
-    # Ensure the database.host field exists.
-    Validator('DATABASE.HOST', must_exist=True),
-
-    # Make the database.password field optional. This is a default behavior.
-    Validator('DATABASE.PASSWORD', must_exist=None),
-)
-
-# Fire the validator
-settings.validators.validate()
-```
-
-### Casting / Transform
-
-Validators can be used to cast values to a specific type,
-the `cast` argument expects a class/type or callable.
-
-given this settings.toml 
-```toml
-name = 'Bruno'
-colors = ['red', 'green', 'blue']
-``` 
-
-Validators can be passed a `cast` attribute
-
-```python
-settings = Dynaconf(
-    validators=[
-        # Order matters here
-        Validator("name", len_eq=5),
-        Validator("name", len_min=1),
-        Validator("name", len_max=5),
-        # This will cast the str to list
-        Validator("name", cast=list),
-        # From this point on Validation pipeline
-        # `name` will be a list of chars
-        # and this will affect the settings.NAME
-
-        Validator("colors", len_eq=3),
-        Validator("colors", len_eq=3),
-        # this will cast the list to str
-        Validator("colors", len_eq=24, cast=str),
-        # From this point on Validation pipeline
-        # `colors` will be a str of 24 chars
-        # and this will affect the settings.COLORS
-
-    ],
-)
-```
-
-```python
-assert settings.name == ['B', 'r', 'u', 'n', 'o']
-assert type(settings.name ) == list
-assert settings.colors == '["red", "green", "blue"]'
-assert type(settings.colors) == str
-```
-
-### Callable conditions 
-
-The `condition` argument expects a callable that receives the value and returns a 
-boolean value. If the condition is not met a `ValidationError` will be raised.
-
-To pass the validation the condition function must return `True` (or a truthy type)
-if the returned value is `False` (or a falsy type) then the condition fails.
-
-The condition callable receives only a single value as a parameter.
-
-Example:
-
-```python
-Validator("VERSION", condition=lambda v: v.startswith("1."))
-
-
-def user_must_be_chuck_norris(value):
-    return value == "Chuck Norris"
-
-Validator("USER", condition=user_must_be_chuck_norris)
-```
-
-### Conditional Validators 
-
-In some cases you might want to perform a validation only when 
-another validator passes, for example:
-
-> Ensure that the `DATABASE.HOST` is set only when `DATABASE.USER` is set.
-
-To validate that case the parameter `when` can be passed:
-
-```python
-Validator(
-    "DATABASE.HOST", 
-    must_exist=True, 
-    when=Validator("DATABASE.USER", must_exist=True)
-)
-```
-
-Another example:
-
-> validate `DATABASE.CONNECTION_ARGS` is set only when `DATABASE.URI startswith "sqlite://"`
-
-```python
-Validator(
-    "DATABASE.CONNECTION_ARGS", 
-    must_exist=True, 
-    when=Validator("DATABASE.URI", condition=lambda v: v.startswith("sqlite://")),
-    messages={"must_exist_true": "{name} is required when DATABASE is SQLite"}
-)
-```
-
-### Combining validators
-
-Validators can be combined using:
-
-
-#### `|` **or** operator.
-
-```py
-Validator('DATABASE.USER', must_exist=True) | Validator('DATABASE.KEY', must_exist=True)
-```
-
-#### `&` **and** operator.
-
-```py
-Validator('DATABASE.HOST', must_exist=True) & Validator('DATABASE.CONN', must_exist=True)
-```
-
-## CLI and dynaconf_validators.toml
-
-It is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same folder as your settings files.
-
-`dynaconf_validators.toml` is equivalent to the program below:
-
-```ini
-[default]
-
-version = {must_exist=true}
-name = {must_exist=true}
-password = {must_exist=false}
-
-# dot notation is also supported
-'a_big_dict.nested_1.nested_2.nested_3.nested_4' = {must_exist=true, eq=1}
-
-  [default.age]
-  must_exist = true
-  lte = 30
-  gte = 10
-
-[production]
-project = {eq="hello_world"}
-```
-
-Then to fire the validation use:
-
-```bash
-$ dynaconf validate
-```
-
-This returns code 0 (success) if validation is ok.
-
-
-!!! info
-    All values in dynaconf are parsed using toml format, TOML tries to be smart
-    and infer the type of the settings variables, some variables will be automatically
-    converted to integer:
-
-    ```
-    FOO = "0x..."  # hexadecimal
-    FOO = "0o..."  # Octal
-    FOO = "0b..."  # Binary
-    ```
-
-    All cases are on toml specs https://github.com/toml-lang/toml/blob/master/toml.abnf
-
-    If you need to force a specific type casting there are 2 options.
-
-    1. Use double quoted for strings ex: `FOO = "'0x...'"  will be string.
-    2. Specify the type using `@`  ex: FOO = "@str 0x..."
-       (available converters are `@int, @float, @bool, @json`)
-
-## Selective Validation
-
-> **New in 3.1.6**
-
-You can also choose what sections of the settings you do or don't want to validate.
-This is useful when:
-
- - You want to add additional validators after the settings object is created.
- - You want settings validated only when certain sections of your project are loaded.
- - You want to offer incremental configuration levels, validating only what is needed.
-
-Selective validation can be performed both when creating a settings object and when calling validate on a settings object's validators. The new arguments accept either a string representing a settings path or a list of strings representing settings paths.
-
-A settings path starts at the top level element and can be specified down to the lowest component. For example: `my_settings.server.user.password` can have the following settings paths passed in `server`, `server.user`, `server.user.password`.
-
-*Note:* Selective validation matches the passed in value(s) to settings paths that start with that value. This means that passing `exclude="FOO"` will exclude not only paths that start with `FOO` but also `FOOBAR`.
-
-Examples:
-
-**-- config.py --**
-```python
-...
-# create a settings object, validating only settings under settings.server
-settings = Dynaconf(
-    validators=[
-        Validator(
-            "server.hostname",
-            "server.port",
-            "server.auth",
-            must_exist=True
-        ),
-        Validator(
-            "module1.value1",
-            "module1.value2",
-            "module1.value3",
-            must_exist=True
-        ),
-        Validator(
-            "module2.value1",
-            "module2.value2",
-            "module2.bad",
-            must_exist=True
-        )
-    ],
-    validate_only="server"
-)
-```
-
-**-- module1.py --**
-```python
-...
-# call validation on module1 settings
-settings.validators.validate(only=["module1"])
-```
-
-**-- module2.py --**
-```python
-...
-# call validation on module2 settings
-# ignore validation for a subsection of module2's settings
-settings.validators.validate(
-    only=["module2"],
-    exclude=["module2.bad"]
-)
-```
-
-> **Validate only current env**
-
-You can specify if you want to validate all environments defined for a validator (default behavior) or only the current environment. In the first case, the validators will run on all possible settings defined in their list of environments, while in the latter the validators with environments different from the current environment will be skipped.
-
-This is useful when your configuration for different environments (let's say `production` and `development`) comes from different files you don't necessarily have access to during development. You would want to write different validators for your `development` and `production` environments, and only run the right validator for the current environment.
-
-Here is an example of the option using:
-
-- `settings.toml`
-```ini
-[development]
-version = "dev"
-age = 35
-name = "Bruno"
-servers = ['127.0.0.1', 'localhost', 'development.com']
-PORT = 80
-
-[production]
-version = "1.0.0"
-age = 35
-name = "Bruno"
-servers = ['production.com']
-PORT = 443
-```
-
-- `.secrets.toml`
-```ini
-[production]
-api_key = 'secret_api_key'
-```
-
-You could then have these validators:
-
-```python
-from dynaconf import Dynaconf, Validator
-
-settings = Dynaconf(
-    settings_files=['setting.toml', '.secrets.toml'],
-    environments=True,
-    validators=[
-        # Ensure some parameters exist for both envs
-        Validator('VERSION', 'NAME', 'SERVERS', envs=['development', 'production'], must_exist=True),
-
-        # Ensure some parameter validate certain condition in dev env
-        Validator("SERVERS", env='development', cont='localhost'),
-
-        # Ensure some parameter exists in production env
-        Validator('API_KEY', env='production', must_exist=True),
-    ]
-)
-```
-And suppose during development, when `settings.current_env == 'development'`, you don't have the file `.secrets.toml`.
-
-Running `settings.validators.validate()` will fail even if `settings.current_env == 'development'`, because by default all validators will run on all of their environments, whether or not it is the current env. However you could create your settings with the parameter `validate_only_current_env=True`, and nothing will be raised if `settings.current_env == 'development'`. Still, if `settings.current_env == 'production'`, it will fail, forcing you to have `.secrets.toml` file in the directory in `production`, but not necessarily during `development`.

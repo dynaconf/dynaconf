@@ -11,7 +11,7 @@ This Diagram can help you understand visually what happens on Dynaconf: https://
 
 1. Ensure your local environment is set.
    1. Clone your own fork of this repo
-   2. Activate a python3.6+ virtualenv
+   2. Activate a python3.8+ virtualenv
    3. Code
 2. Update the `docs/guides/` related to your changes.
 3. Update `tests_functional/` (editing or adding a new one related to your changes)

@@ -75,11 +75,9 @@ target/
 
 junit/
 
-
 # django example static files
 tests_functional/django_example/admin/
 tests_functional/django_example/debug_toolbar/
-
 
 # Vendor_src exists only during build process
 dynaconf/vendor_src/
@@ -87,3 +85,5 @@ dynaconf/vendor/source
 
 # asdf (version manager)
 .tool-versions
+
+.DS_Store
