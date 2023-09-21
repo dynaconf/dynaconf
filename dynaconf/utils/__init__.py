@@ -170,7 +170,6 @@ def handle_metavalues(
         - shallow: replace the top-most level list of the nested structure
         - deep: iteratively traverse the nested structure and replace
             the element in the list at the level specified by the full_path
-    
     """
 
     for key in list(new.keys()):
