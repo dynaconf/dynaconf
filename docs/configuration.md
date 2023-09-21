@@ -401,8 +401,8 @@ To access list by indexing
 ex:
 
 ```bash
-export DYNACONF_DATABASES__default__WORKERS[0]__Address="1.1.1.1"
-export DYNACONF_DATABASES__default__WORKERS[1]__Address="2.2.2.2"
+export DYNACONF_DATABASES__default__WORKERS__0__Address="1.1.1.1"
+export DYNACONF_DATABASES__default__WORKERS__1__Address="2.2.2.2"
 ```
 
 generates:
