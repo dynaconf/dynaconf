@@ -159,9 +159,19 @@ def recursive_get(
 def handle_metavalues(
     old: DynaBox | dict[str, int] | dict[str, str | int],
     new: Any,
-    list_merge: str = "merge",
+    list_merge: Literal["merge", "shallow", "deep"] = "merge",
 ) -> None:
-    """Cleanup of MetaValues on new dict"""
+    """
+    Cleanup of MetaValues on new dict
+    :param old: old values
+    :param new: new values
+    :param list_merge: Methods to use to merge lists
+        - merge: default merge behavior, i.e. (unique) concatenation
+        - shallow: replace the top-most level list of the nested structure
+        - deep: iteratively traverse the nested structure and replace
+            the element in the list at the level specified by the full_path
+    
+    """
 
     for key in list(new.keys()):
 
