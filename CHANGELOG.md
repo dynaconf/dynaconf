@@ -2,8 +2,33 @@ Changelog
 =========
 
 
-3.2.2 (2023-08-26)
+3.2.3 (2023-09-13)
 ------------------
+- Release version 3.2.3. [Bruno Rocha]
+
+  Shortlog of commits since last release:
+
+      Anderson Sousa (1):
+            chore(lint): pep8 errors (#995)
+
+      Bruno Rocha (7):
+            Release version 3.2.1
+            Hooking: Add support for changing the wrapped class (#975)
+            Hotfix bypass evaluation #984 (#985)
+            Fix #976 from envvars parse True/False as booleans (#983)
+            Fix #982 glob on settings_files (#987)
+            docker compose is available on CI no need to install
+            fix(django): fix #1000 AttributeError on admin (#1002)
+
+      Pedro Pessoa (1):
+            Inspect Feature Review (#958)
+
+      pedro-psb (1):
+            Release version 3.2.2
+- Fix(django): fix #1000 AttributeError on admin (#1002) [Bruno Rocha]
+
+  fix #1000
+- Chore(lint): pep8 errors (#995) [Anderson Sousa]
 - Release version 3.2.2. [pedro-psb]
 
   Shortlog of commits since last release:
@@ -165,30 +190,6 @@ Other
 
   * add note about docker-compose on contributing.md
 - Build docs. [Bruno Rocha]
-- Release version 3.2.0. [pedro-psb]
-
-  Shortlog of commits since last release:
-
-      Bruno Rocha (4):
-            Ignore docs build without a tag
-            Cancel any running CI job when a Push is made to an existing PR or branch (#952)
-            Fix #959 cli get will exit code 1 in case of KeyError. (#960)
-            add tech preview note to inspect docs (#961)
-
-      Pedro Pessoa (9):
-            Docs - Update envvar.md custom token e.g. to use add_converter (#941)
-            Feature - Inspect and CLI (#939)
-            Fix - Template substitution with variable update (#944)
-            Assert #658 works (#945)
-            fix infinite recursions in special case of django app #867 (#947)
-            Fix - Django functions with `add_converter` (#951)
-            Fix hooks not re-running on reload #850 (#953)
-            update vault and redis warning recommendations. fix #950 (#954)
-            Fix - Enable merge equal False (#957)
-
-
-3.2.0 (2023-07-13)
-------------------
 - Release version 3.2.0. [pedro-psb]
 
   Shortlog of commits since last release:

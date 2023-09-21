@@ -237,7 +237,7 @@ ex: `MYPROGRAM_ENV=production`
 > type=`class`, default=`None` </br>
 > env-var=`FILTERING_STRATEGY_FOR_DYNACONF`
 
-Callable accepting data to be filtered, inbuilts currently include [PrefixFilter](/dynaconf/strategies/filtering.py)
+Callable accepting data to be filtered, built-ins currently include [PrefixFilter](/dynaconf/strategies/filtering.py)
 
 ---
 
@@ -281,7 +281,7 @@ to the `cwd`. Eg:
 Dynaconf(root_path="src/", includes="extra.yaml")
 
 # will look for conf/extra.yaml
-Dynaconf(setings_files="conf/settings.yaml", includes="extra.yaml")
+Dynaconf(settings_files="conf/settings.yaml", includes="extra.yaml")
 
 # will look for $PWD/extra.yaml
 Dynaconf(includes="extra.yaml")
@@ -639,6 +639,38 @@ validators=[
     Validator("FOO", must_exist=True)
 ]
 ```
+
+### **validate_only_current_env**
+
+> type=`bool`, default=`False` </br>
+
+When `envs` is enabled, defines if validation will be performed only on `default` + `current_env` or if all envs will be validated (even if not activated).
+
+Setting this to `True` can be useful if you have validators that apply only to some `env`s, like requiring a setting in `production` but not in `development`. See [this section](/validation#validating-only-the-current_env) in the Validation page.
+
+### **validate_only**
+
+> type=`str | list[str] | None`, default=`None` </br>
+
+Will only validate settings that start with the given `str` or any of the `str`s in the `list[str]`. Settings that don't start with these won't be validated. If `None`, will validate all settings as usual.
+
+This setting only applies during `Dynaconf` instantiation. Further calls to `Dynaconf.validators.validate` will use the value passed to the `only` kwarg in that call.
+
+In practice, this forwards `validate_only` to the `only` kwarg during the validation step upon `Dynaconf` instantiation for all `Validator`s passed. Note that this setting has interaction with [`validate_exclude`](#validate_exclude).
+
+Read more about it in the [selective validation](/validation#selective-validation) section.
+
+### **validate_exclude**
+
+> type=`str | list[str] | None`, default=`None` </br>
+
+Will skip validation of _**any** settings_ that start with the given `str` or any of the `str`s in the `list[str]`. If `None`, won't skip any settings validate all settings as usual.
+
+This setting only applies during `Dynaconf` instantiation. Further calls to `Dynaconf.validators.validate` will use the value passed to the `exclude` kwarg in that call.
+
+In practice, this forwards `validate_exclude` to the `exclude` kwarg during the validation step upon `Dynaconf` instantiation for all `Validator`s passed. Note that this setting has interaction with [`validate_only`](#validate_only).
+
+Read more about it in the [selective validation](/validation#selective-validation) section.
 
 ---
 
