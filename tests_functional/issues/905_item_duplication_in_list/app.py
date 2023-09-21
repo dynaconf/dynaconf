@@ -1,6 +1,8 @@
 from __future__ import annotations
+
 from dynaconf import Dynaconf
 from dynaconf import Validator
+
 settings = Dynaconf(
     envvar_prefix="DYNACONF",
     settings_files=["settings.toml"],

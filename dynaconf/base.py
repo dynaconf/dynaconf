@@ -880,7 +880,8 @@ class Settings:
                 "VALIDATE_ON_UPDATE_FOR_DYNACONF"
             )  # pragma: nocover
 
-        split_keys = dotted_key.split(".")
+        # Add a "." before "[" to help splitting
+        split_keys = dotted_key.replace("[", ".[").split(".")
         existing_data = self.get(split_keys[0], {})
         new_data = tree = DynaBox(box_settings=self)
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
@@ -964,7 +965,7 @@ class Settings:
         # DYNACONF_DATA__a[0]__key[2]__subkey
         if nested_ind:
             nested_ind = rf"{nested_ind}"
-            key = re.sub(nested_ind, r".[\1]", key)
+            key = re.sub(nested_ind, r"[\1]", key)
 
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
         if nested_sep and nested_sep in key:
