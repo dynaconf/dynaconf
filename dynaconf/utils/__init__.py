@@ -6,6 +6,7 @@ from collections import defaultdict
 from json import JSONDecoder
 from typing import Any
 from typing import Iterator
+from typing import Literal
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
@@ -34,7 +35,7 @@ def object_merge(
     new: Any,
     unique: bool = False,
     full_path: list[str] = None,
-    list_merge="merge",
+    list_merge: Literal["merge", "shallow", "deep"] = "merge",
 ) -> Any:
     """
     Recursively merge two data structures, new is mutated in-place.
@@ -43,6 +44,11 @@ def object_merge(
     :param new: The new data to get old values merged in to.
     :param unique: When set to True existing list items are not set.
     :param full_path: Indicates the elements of a tree.
+    :param list_merge: Methods to use to merge lists
+        - merge: default merge behavior, i.e. (unique) concatenation
+        - shallow: replace the top-most level list of the nested structure
+        - deep: iteratively traverse the nested structure and replace
+            the element in the list at the level specified by the full_path
     """
     if full_path is None:
         full_path = []
