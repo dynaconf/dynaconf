@@ -461,7 +461,9 @@ def isnamedtupleinstance(value):
 
 
 def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
-    """Given a key, find the proper casing in data
+    """Given a key, find the proper casing in data.
+
+    Return 'None' for non-str key types.
 
     Arguments:
         key {str} -- A key to be searched in data
@@ -473,6 +475,8 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
     if not isinstance(key, str) or key in data:
         return key
     for k in data.keys():
+        if not isinstance(k, str):
+            return None
         if k.lower() == key.lower():
             return k
         if k.replace(" ", "_").lower() == key.lower():
