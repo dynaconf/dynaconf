@@ -33,7 +33,7 @@ test_requirements = [
     "python-dotenv",
     "toml",
     "redis",
-    "hvac",
+    "hvac>=1.1.0",
     "configobj",
 ]
 
