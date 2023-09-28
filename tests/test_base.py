@@ -513,6 +513,26 @@ def test_set_new_merge_issue_241_5(tmpdir):
     }
 
 
+def test_set_with_non_str_types():
+    """This replicates issue #1005 in a simplified setup."""
+    settings = Dynaconf(merge_enabled=True)
+    settings.set("a", {"b": {1: "foo"}})
+    settings.set("a", {"b": {"c": "bar"}})
+    assert settings["a"]["b"][1] == "foo"
+    assert settings["a"]["b"]["c"] == "bar"
+
+
+def test_set_with_non_str_types_on_first_level():
+    """Non-str key types on first level."""
+    settings = Dynaconf(merge_enabled=True)
+    settings.set(1, {"b": {1: "foo"}})
+    settings.set("a", {"1": {1: "foo"}})
+    assert settings[1]["b"][1] == "foo"
+    assert settings[1].b[1] == "foo"
+    assert settings.get(1).b[1] == "foo"
+    assert settings["a"]["1"][1] == "foo"
+
+
 def test_exists(settings):
     settings.set("BOOK", "TAOCP")
     assert settings.exists("BOOK") is True

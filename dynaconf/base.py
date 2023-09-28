@@ -476,23 +476,24 @@ class Settings:
             sysenv_fallback = self._store.get("SYSENV_FALLBACK_FOR_DYNACONF")
 
         nested_sep = self._store.get("NESTED_SEPARATOR_FOR_DYNACONF")
-        if nested_sep and nested_sep in key:
-            # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
-            key = key.replace(nested_sep, ".")
+        if isinstance(key, str):
+            if nested_sep and nested_sep in key:
+                # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
+                key = key.replace(nested_sep, ".")
 
-        if dotted_lookup is empty:
-            dotted_lookup = self._store.get("DOTTED_LOOKUP_FOR_DYNACONF")
+            if dotted_lookup is empty:
+                dotted_lookup = self._store.get("DOTTED_LOOKUP_FOR_DYNACONF")
 
-        if "." in key and dotted_lookup:
-            return self._dotted_get(
-                dotted_key=key,
-                default=default,
-                cast=cast,
-                fresh=fresh,
-                parent=parent,
-            )
+            if "." in key and dotted_lookup:
+                return self._dotted_get(
+                    dotted_key=key,
+                    default=default,
+                    cast=cast,
+                    fresh=fresh,
+                    parent=parent,
+                )
 
-        key = upperfy(key)
+            key = upperfy(key)
 
         # handles system environment fallback
         if default is None:
@@ -913,7 +914,7 @@ class Settings:
     ):
         """Set a value storing references for the loader
 
-        :param key: The key to store
+        :param key: The key to store. Can be of any type.
         :param value: The raw value to parse and store
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
                                   Or isntance of SourceMetadata
@@ -938,20 +939,21 @@ class Settings:
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
-        if nested_sep and nested_sep in key:
-            key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
+        if isinstance(key, str):
+            if nested_sep and nested_sep in key:
+                key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
 
-        if "." in key and dotted_lookup is True:
-            return self._dotted_set(
-                key,
-                value,
-                loader_identifier=source_metadata,
-                tomlfy=tomlfy,
-                validate=validate,
-            )
+            if "." in key and dotted_lookup is True:
+                return self._dotted_set(
+                    key,
+                    value,
+                    loader_identifier=source_metadata,
+                    tomlfy=tomlfy,
+                    validate=validate,
+                )
+            key = upperfy(key.strip())
 
         parsed = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
-        key = upperfy(key.strip())
 
         # Fix for #869 - The call to getattr trigger early evaluation
         existing = (
@@ -1001,7 +1003,12 @@ class Settings:
         # Set the parsed value
         self.store[key] = parsed
         self._deleted.discard(key)
-        super().__setattr__(key, parsed)
+
+        # check if str because we can't directly set/get non-str with obj. e.g.
+        #     setting.1
+        #     settings.(1,2)
+        if isinstance(key, str):
+            super().__setattr__(key, parsed)
 
         # Track history for inspect, store the raw_value
         if source_metadata in self._loaded_by_loaders:
