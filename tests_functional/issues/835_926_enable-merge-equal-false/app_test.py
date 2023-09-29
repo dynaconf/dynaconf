@@ -229,3 +229,63 @@ def test_file_scope_merge_false(tmp_path):
     settings = Dynaconf(merge_enabled=True, settings_file=[file_c, file_d])
     assert settings.dicty == {"database_url": "sqlite://"}
     assert settings.listy == [9999]
+
+
+def test_local_scope_merge_false_noenv_files(tmp_path):
+
+    file_a = create_file(
+        tmp_path / "a.toml",
+        """\
+            [default]
+            dicty = {name= 'foo'}
+            listy = [1,2,3]
+            """,
+    )
+
+    file_b = create_file(
+        tmp_path / "b.toml",
+        """\
+            [default]
+            dicty = {"database_url"= 'sqlite://', "dynaconf_merge"=false}
+            listy = [9999]
+            """,
+    )
+
+    settings = Dynaconf(
+        settings_files=[file_a, file_b],
+        environments=False,
+        merge_enabled=True,
+    )
+
+    assert settings.default.dicty == {"database_url": "sqlite://"}
+    assert settings.default.listy == [1, 2, 3, 9999]
+
+
+def test_local_scope_merge_false_env_nested(tmp_path):
+
+    file_a = create_file(
+        tmp_path / "a.toml",
+        """\
+        [default.test]
+        dicty = {name= 'foo'}
+        listy = [1,2,3]
+        """,
+    )
+
+    file_b = create_file(
+        tmp_path / "b.toml",
+        """\
+        [default.test]
+        dicty = {"database_url"= 'sqlite://', "dynaconf_merge"=false}
+        listy = [9999]
+        """,
+    )
+
+    settings = Dynaconf(
+        settings_files=[file_a, file_b],
+        environments=True,
+        merge_enabled=True,
+    )
+
+    assert settings.test.dicty == {"database_url": "sqlite://"}
+    assert settings.test.listy == [1, 2, 3, 9999]
