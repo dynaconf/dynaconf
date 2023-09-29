@@ -605,9 +605,8 @@ class Settings:
     loaded_namespaces = loaded_envs
 
     @property
-    def loaded_by_loaders(self):
+    def loaded_by_loaders(self):  # pragma: no cover
         """Gets the internal mapping of LOADER -> values"""
-        # return {k.loader:data for k, data in self._loaded_by_loaders}
         return self._loaded_by_loaders
 
     def from_env(self, env="", keep=False, **kwargs):
