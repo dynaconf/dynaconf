@@ -939,6 +939,7 @@ class Settings:
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
+
         if isinstance(key, str):
             if nested_sep and nested_sep in key:
                 key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
@@ -985,7 +986,8 @@ class Settings:
             else:
                 parsed = parsed.unwrap()
 
-        if existing is not None and existing != parsed:
+        should_merge = existing is not None and existing != parsed
+        if should_merge:
             # `dynaconf_merge` used in file root `merge=True`
             if merge and merge is not empty:
                 source_metadata = source_metadata._replace(merged=True)
