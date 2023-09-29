@@ -267,6 +267,37 @@ def test_global_set_merge(settings):
     }
 
 
+def test_global_set_merge_false():
+    # data
+    list_old = [1, 2, 3]
+    list_new = [4, 5, 6]
+    list_expected = [4, 5, 6]
+    dict_old = {"a": {"b": "B"}}
+    dict_new = {"a": {"c": "C"}}
+    dict_expected = {"a": {"c": "C"}}
+
+    # environment = False
+    settings_a = Dynaconf(
+        environments=False,
+        merge_enabled=False,
+    )
+    settings_a.set("default", {"dicty": dict_old, "listy": list_old})
+    settings_a.set("default", {"dicty": dict_new, "listy": list_new})
+
+    assert settings_a.default.dicty == dict_expected
+    assert settings_a.default.listy == list_expected
+
+    # environment = True
+    settings_b = Dynaconf(
+        environments=True,
+        merge_enabled=False,
+    )
+    settings_b.set("test", {"dicty": dict_old, "listy": list_old})
+    settings_b.set("test", {"dicty": dict_new, "listy": list_new})
+    assert settings_b.test.dicty == dict_expected
+    assert settings_b.test.listy == list_expected
+
+
 def test_global_merge_shortcut(settings):
     settings.set("MERGE_ENABLED_FOR_DYNACONF", True)
     settings.set("MERGE_KEY", ["item1"])
@@ -332,6 +363,33 @@ def test_local_set_merge_list_unique(settings):
         "SCRIPTS", ["dev.sh", "test.sh", "deploy.sh", "dynaconf_merge_unique"]
     )
     assert settings.SCRIPTS == ["install.sh", "dev.sh", "test.sh", "deploy.sh"]
+
+
+def test_local_set_merge_false_dict():
+    # environment = False
+    settings_a = Dynaconf(
+        environments=False,
+        merge_enabled=True,
+    )
+    dict_old = {"a": {"b": {"key_old": "from_old"}}}
+    dict_new = {"a": {"b": {"key_new": "from_new", "dynaconf_merge": False}}}
+    settings_a.set("default", {"dicty": dict_old, "listy": [1, 2, 3]})
+    settings_a.set("default", {"dicty": dict_new, "listy": [9999]})
+
+    assert settings_a.default.dicty.a.b == {"key_new": "from_new"}
+    assert settings_a.default.listy == [1, 2, 3, 9999]
+
+    # environment = True
+    settings_b = Dynaconf(
+        environments=True,
+        merge_enabled=True,
+    )
+    dict_old = {"a": {"b": {"key_old": "from_old"}}}
+    dict_new = {"a": {"b": {"key_new": "from_new", "dynaconf_merge": False}}}
+    settings_b.set("test", {"dicty": dict_old, "listy": [1, 2, 3]})
+    settings_b.set("test", {"dicty": dict_new, "listy": [9999]})
+    assert settings_b.test.dicty.a.b == {"key_new": "from_new"}
+    assert settings_b.test.listy == [1, 2, 3, 9999]
 
 
 def test_set_explicit_merge_token(tmpdir):
