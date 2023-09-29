@@ -259,7 +259,9 @@ class Settings:
                 loader_identifier="init_settings_module",
             )
         for key, value in kwargs.items():
-            self.set(key, value, loader_identifier="init_kwargs")
+            self.set(
+                key, value, loader_identifier="init_kwargs", validate=False
+            )
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
 
