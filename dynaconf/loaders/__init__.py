@@ -25,8 +25,14 @@ if TYPE_CHECKING:
 
 
 def default_loader(obj, defaults=None):
-    """Loads default settings and check if there are overridings
-    exported as environment variables"""
+    """Initial loader for the initialization process.
+
+    Steps:
+    - Load default settings (from static module) + kwargs overrides (togheter)
+    - Load envvar overrides
+    """
+    # LOAD DEFAULT STATIC + KWARGS OVERRIDES
+
     defaults = defaults or {}
     default_settings_values = {
         key: value
@@ -41,7 +47,14 @@ def default_loader(obj, defaults=None):
     for key in all_keys:
         if not obj.exists(key):
             value = defaults.get(key, default_settings_values.get(key))
-            obj.set(key, value, loader_identifier="default_settings")
+            obj.set(
+                key,
+                value,
+                loader_identifier="default_settings",
+                validate=False,
+            )
+
+    # LOAD ENVVAR OVERRIDES
 
     # start dotenv to get default env vars from there
     # check overrides in env vars

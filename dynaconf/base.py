@@ -259,7 +259,9 @@ class Settings:
                 loader_identifier="init_settings_module",
             )
         for key, value in kwargs.items():
-            self.set(key, value, loader_identifier="init_kwargs")
+            self.set(
+                key, value, loader_identifier="init_kwargs", validate=False
+            )
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs
 
@@ -605,9 +607,8 @@ class Settings:
     loaded_namespaces = loaded_envs
 
     @property
-    def loaded_by_loaders(self):
+    def loaded_by_loaders(self):  # pragma: no cover
         """Gets the internal mapping of LOADER -> values"""
-        # return {k.loader:data for k, data in self._loaded_by_loaders}
         return self._loaded_by_loaders
 
     def from_env(self, env="", keep=False, **kwargs):
@@ -939,6 +940,7 @@ class Settings:
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
+
         if isinstance(key, str):
             if nested_sep and nested_sep in key:
                 key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
@@ -985,7 +987,8 @@ class Settings:
             else:
                 parsed = parsed.unwrap()
 
-        if existing is not None and existing != parsed:
+        should_merge = existing is not None and existing != parsed
+        if should_merge:
             # `dynaconf_merge` used in file root `merge=True`
             if merge and merge is not empty:
                 source_metadata = source_metadata._replace(merged=True)

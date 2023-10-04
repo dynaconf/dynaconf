@@ -79,27 +79,30 @@ def object_merge(
             else:
                 return data.items()
 
-        for old_key, value in safe_items(old):
+        # local mark may set dynaconf_merge=False
+        should_merge = new.pop("dynaconf_merge", True)
+        if should_merge:
+            for old_key, value in safe_items(old):
 
-            # This is for when the dict exists internally
-            # but the new value on the end of full path is the same
-            if (
-                existing_value is not None
-                and old_key.lower() == full_path[-1].lower()
-                and existing_value is value
-            ):
-                # Here Be The Dragons
-                # This comparison needs to be smarter
-                continue
+                # This is for when the dict exists internally
+                # but the new value on the end of full path is the same
+                if (
+                    existing_value is not None
+                    and old_key.lower() == full_path[-1].lower()
+                    and existing_value is value
+                ):
+                    # Here Be The Dragons
+                    # This comparison needs to be smarter
+                    continue
 
-            if old_key not in new:
-                new[old_key] = value
-            else:
-                object_merge(
-                    value,
-                    new[old_key],
-                    full_path=full_path[1:] if full_path else None,
-                )
+                if old_key not in new:
+                    new[old_key] = value
+                else:
+                    object_merge(
+                        value,
+                        new[old_key],
+                        full_path=full_path[1:] if full_path else None,
+                    )
 
         handle_metavalues(old, new)
 
