@@ -1,0 +1,8 @@
+[default]
+name = "default"
+[unit_testing]
+name = "unit"
+[dev_coding]
+name = "dev"
+[prod_server]
+name = "prod"

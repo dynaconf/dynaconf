@@ -210,9 +210,9 @@ def test_env_should_be_string(settings):
         settings.setenv(123456)
 
 
-def test_env_should_not_have_underline(settings):
-    with pytest.raises(ValueError):
-        settings.setenv("COOL_env")
+def test_env_should_allow_underline(settings):
+    settings.setenv("COOL_env")
+    assert settings.current_env == "COOL_ENV"
 
 
 def test_path_for(settings):
