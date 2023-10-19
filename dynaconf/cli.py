@@ -64,7 +64,8 @@ def set_settings(ctx, instance=None):
             from flask.cli import ScriptInfo  # noqa
             from dynaconf import FlaskDynaconf
 
-            flask_app = ScriptInfo().load_app()
+            app_import_path = os.environ["FLASK_APP"]
+            flask_app = ScriptInfo(app_import_path).load_app()
             settings = FlaskDynaconf(flask_app, **flask_app.config).settings
             if _echo_enabled:
                 click.echo(
