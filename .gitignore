@@ -87,3 +87,5 @@ dynaconf/vendor/source
 .tool-versions
 
 .DS_Store
+
+.helix
