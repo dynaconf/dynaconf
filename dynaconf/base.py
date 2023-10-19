@@ -812,8 +812,8 @@ class Settings:
         """
         env = env or self.ENV_FOR_DYNACONF
 
-        if not isinstance(env, str) or "_" in env or " " in env:
-            raise ValueError("env should be a string without _ or spaces")
+        if not isinstance(env, str) or " " in env:
+            raise ValueError("env should be a string without spaces")
 
         env = env.upper()
 
