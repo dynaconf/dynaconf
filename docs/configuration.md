@@ -395,7 +395,7 @@ DATABASES = {
 
 To access list by indexing
 
-> type=`str`, default=`"___(\d+)"` (triple underescore, regex digits) </br>
+> type=`str`, default=`"___"` (triple underescore) </br>
 > env-var=`INDEX_SEPARATOR_FOR_DYNACONF`
 
 ex:

@@ -966,7 +966,7 @@ class Settings:
         # DYNACONF_DATA__a___0__key___2__subkey ->
         # DYNACONF_DATA__a[0]__key[2]__subkey
         if nested_ind and isinstance(key, str):
-            nested_ind = rf"{nested_ind}"
+            nested_ind = rf"{nested_ind}(\d+)"
             key = re.sub(nested_ind, r"[\1]", key)
 
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
