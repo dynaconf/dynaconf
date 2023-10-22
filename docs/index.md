@@ -396,6 +396,11 @@ mixed settings formats across your application.
 
 #### Supported formats
 
+Create your settings in the desired format and specify it on `settings_files`
+argument on your dynaconf instance or pass it in `-f <format>` if using `dynaconf init` command.
+
+The following are the currently supported formats:
+
 - **.toml** - Default and **recommended** file format.
 - **.yaml|.yml** - Recommended for Django applications.
 - **.json** - Useful to reuse existing or exported settings.
@@ -403,14 +408,17 @@ mixed settings formats across your application.
 - **.py** - **Not Recommended** but supported for backwards compatibility.
 - **.env** - Useful to automate the loading of environment variables.
 
-!!! info
-    Create your settings in the desired format and specify it on `settings_files`
-    argument on your dynaconf instance or pass it in `-f <format>` if using `dynaconf init` command.
-
 !!! tip
     Can't find the file format you need for your settings?
     You can create your custom loader and read any data source.
     read more on [extending dynaconf](/advanced/)
+
+#### Key types
+
+Dynaconf will try to preserve non-string integers such as `1: foo` in yaml,
+or arbitrary types defined within python, like `settings.set("a", {1: "b", (1,2): "c"})`.
+
+This is intended for special cases only, as envvars and most file loaders won't support non-string key types.
 
 #### Reading settings from files
 

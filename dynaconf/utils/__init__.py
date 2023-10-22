@@ -107,28 +107,31 @@ def object_merge(
             else:
                 return data.items()
 
-        for old_key, value in safe_items(old):
+        # local mark may set dynaconf_merge=False
+        should_merge = new.pop("dynaconf_merge", True)
+        if should_merge:
+            for old_key, value in safe_items(old):
 
-            # This is for when the dict exists internally
-            # but the new value on the end of full path is the same
-            if (
-                existing_value is not None
-                and old_key.lower() == full_path[-1].lower()
-                and existing_value is value
-            ):
-                # Here Be The Dragons
-                # This comparison needs to be smarter
-                continue
+                # This is for when the dict exists internally
+                # but the new value on the end of full path is the same
+                if (
+                    existing_value is not None
+                    and old_key.lower() == full_path[-1].lower()
+                    and existing_value is value
+                ):
+                    # Here Be The Dragons
+                    # This comparison needs to be smarter
+                    continue
 
-            if old_key not in new:
-                new[old_key] = value
-            else:
-                new[old_key] = object_merge(
-                    value,
-                    new[old_key],
-                    full_path=full_path[1:] if full_path else None,
-                    list_merge=list_merge,
-                )
+                if old_key not in new:
+                    new[old_key] = value
+                else:
+                    new[old_key] = object_merge(
+                        value,
+                        new[old_key],
+                        full_path=full_path[1:] if full_path else None,
+                        list_merge=list_merge,
+                    )
         handle_metavalues(old, new, list_merge=list_merge)
 
     return new
@@ -510,7 +513,9 @@ def isnamedtupleinstance(value):
 
 
 def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
-    """Given a key, find the proper casing in data
+    """Given a key, find the proper casing in data.
+
+    Return 'None' for non-str key types.
 
     Arguments:
         key {str} -- A key to be searched in data
@@ -522,6 +527,8 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
     if not isinstance(key, str) or key in data:
         return key
     for k in data.keys():
+        if not isinstance(k, str):
+            return None
         if k.lower() == key.lower():
             return k
         if k.replace(" ", "_").lower() == key.lower():
