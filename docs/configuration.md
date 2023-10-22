@@ -395,14 +395,14 @@ DATABASES = {
 
 To access list by indexing
 
-> type=`str`, default=`"__(\d+)"` (double underescore, regex digits) </br>
-> env-var=`NESTED_INDEX_FOR_DYNACONF`
+> type=`str`, default=`"___(\d+)"` (triple underescore, regex digits) </br>
+> env-var=`INDEX_SEPARATOR_FOR_DYNACONF`
 
 ex:
 
 ```bash
-export DYNACONF_DATABASES__default__WORKERS__0__Address="1.1.1.1"
-export DYNACONF_DATABASES__default__WORKERS__1__Address="2.2.2.2"
+export DYNACONF_DATABASES__default__WORKERS___0__Address="1.1.1.1"
+export DYNACONF_DATABASES__default__WORKERS___1__Address="2.2.2.2"
 ```
 
 generates:

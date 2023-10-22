@@ -962,10 +962,10 @@ class Settings:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
 
         # Do index replacement first
-        nested_ind = self.get("NESTED_INDEX_FOR_DYNACONF")
-        # DYNACONF_DATA__a__0__key__2__subkey ->
+        nested_ind = self.get("INDEX_SEPARATOR_FOR_DYNACONF")
+        # DYNACONF_DATA__a___0__key___2__subkey ->
         # DYNACONF_DATA__a[0]__key[2]__subkey
-        if nested_ind:
+        if nested_ind and isinstance(key, str):
             nested_ind = rf"{nested_ind}"
             key = re.sub(nested_ind, r"[\1]", key)
 
