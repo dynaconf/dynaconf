@@ -13,7 +13,7 @@ In addition to that Dynaconf offers some approaches you may want to **Optionally
 
 ## Environment variables
 
-You can override any setting key by exporting an environment variable prefixed by `DYNACONF_` (or by the [custom prefix](configuration/#custom-prefix)).
+You can override any setting key by exporting an environment variable prefixed by `DYNACONF_` (or by the [custom prefix](/configuration/#envvar_prefix)).
 
 !!! warning
     Dynaconf will only look for UPPERCASE prefixed envvars. This means envvar exported as `dynaconf_value` or `myprefix_value` won't be loaded, while `DYNACONF_VALUE` and `MYPREFIX_VALUE` (when proper set) will.
