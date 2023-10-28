@@ -7,16 +7,26 @@ on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [master]
-    # will run when at least one file matches something else than those
-    paths-ignore:
+    paths-ignore: # run if anything different from these is modified
       - "docs/**"
       - "mkdocs.yml"
+    tags-ingore: # run if no tags
+      - "**"
+
   pull_request:
     branches: [master]
     paths-ignore:
       - "docs/**"
       - "mkdocs.yml"
+    tags-ingore:
+      - "**"
 
+  # called by publish workflow to assure pipeline consistency.
+  on_workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: true
+    
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
