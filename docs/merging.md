@@ -235,6 +235,7 @@ password = 9999
 So with the above eg, the values will be:
 
 ```python
+settings = Dynaconf(settings_files=["settings.toml", ".secrets.toml", "settings.local.toml"])
 settings.COLORS == ["pink"]
 settings.PARAMETERS == {"enabled": False}
 settings.PASSWORD == 9999
