@@ -89,8 +89,8 @@ settings = Dynaconf(settings_files=["settings.toml", "*.yaml"])
 
 # using root_path
 settings = Dynaconf(
-    root_path="my/project/root"
-    settings_files=["settings.toml", "*.yaml"],
+    root_path="my/project/root",
+    settings_files=["settings.toml", "*.yaml"]
 )
 ```
 
