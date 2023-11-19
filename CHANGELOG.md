@@ -1,9 +1,27 @@
 Changelog
 =========
 
+<!-- insertion marker -->
 
-3.2.3 (2023-09-13)
-------------------
+## [3.2.4](https://github.com/dynaconf/dynaconf/releases/tag/3.2.4) - 2023-10-30
+
+### Bug Fixes
+
+- allow underscore in env name #1011 (#1015) ([f55c277](https://github.com/dynaconf/dynaconf/commit/f55c27761ec839df3e6c5806d19a52594f6a5c9b) by Bruno Rocha).
+- support for 'entrypoint-path' in FLASK_APP #946 (#1014) ([f2bb032](https://github.com/dynaconf/dynaconf/commit/f2bb032ea25a3110f3ba38891fc3307edc203a9a) by Pedro Pessoa).
+- dynaconf_merge=False on nested structures (#1012) ([b113e74](https://github.com/dynaconf/dynaconf/commit/b113e744617dd75aa6ce1d4d1d793a93abf65edc) by Pedro Pessoa).
+- non-str key raising type error #1005 (#1008) ([4ed2350](https://github.com/dynaconf/dynaconf/commit/4ed2350da4c6f4fa2b046cbef2f07a56f97ef94b) by Pedro Pessoa).
+- pin hvac minimum version ([9170beb](https://github.com/dynaconf/dynaconf/commit/9170beb2386989f7486fcc22e21918fe441aa1e8) by Jake Callahan).
+
+### Docs
+
+- Fix link to configuration page (#1020) ([df3b437](https://github.com/dynaconf/dynaconf/commit/df3b43718858786d0a2feb2d7b60c9515b01a15d) by Vladislav Sharapov).
+- Improve Configuration and Validation sections of the docs (#989) ([99741a3](https://github.com/dynaconf/dynaconf/commit/99741a3124b4c788e6a8e9e3761e90e7f9be5cc3) by Sebastian Correa).
+
+<!-- insertion marker -->
+
+## [3.2.3]() - 2023-09-13
+
 - Release version 3.2.3. [Bruno Rocha]
 
   Shortlog of commits since last release:
