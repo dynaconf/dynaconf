@@ -21,7 +21,12 @@ jobs:
     needs: main-ci
     steps:
       - uses: actions/checkout@v3
-      - run: chmod +x .github/scripts/dist-health-check.sh
+      - uses: actions/setup-python@v4
+
+      - name: Prepare build environemnt
+        run: |
+          chmod +x .github/scripts/dist-health-check.sh
+          pip install --user python-minifier wheel setuptools
 
       - name: Build distribution
         run: make dist
@@ -41,20 +46,20 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/<your-pypi-project-name>
+      url: https://pypi.org/p/dynaconf
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
-      - name: Get dist
+      - name: Get distribution
         uses: actions/download-artifact@v3
         with:
           name: dist-folder
+          path: dist
 
       - name: Publish package distributions to PyPI
-        # uses: pypa/gh-action-pypi-publish@release/v1
-        run: echo "Publishing to PyPI"
+        uses: pypa/gh-action-pypi-publish@release/v1
 
-  github_release:
+  github-release:
     name: Create GitHub Release
     needs: pypi-publish
     runs-on: ubuntu-latest
@@ -75,7 +80,6 @@ jobs:
         cat release-notes.md
 
     - name: Create GitHub release
-      # uses: softprops/action-gh-release@v1
-      # with:
-      #   body_path: release-notes.md
-      run: echo "Publishing GH release"
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: release-notes.md
