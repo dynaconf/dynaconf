@@ -10,7 +10,7 @@ on:
     paths-ignore: # run if anything different from these is modified
       - "docs/**"
       - "mkdocs.yml"
-    tags-ingore: # run if no tags
+    tags-ignore: # run if no tags
       - "**"
 
   pull_request:
@@ -18,15 +18,15 @@ on:
     paths-ignore:
       - "docs/**"
       - "mkdocs.yml"
-    tags-ingore:
+    tags-ignore:
       - "**"
 
   # called by publish workflow to assure pipeline consistency.
-  on_workflow_call:
+  workflow_call:
     secrets:
       CODECOV_TOKEN:
         required: true
-    
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
