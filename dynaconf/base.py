@@ -90,13 +90,13 @@ class LazySettings(LazyObject):
         e.g: ROOT_PATH='/' is transformed into `ROOT_PATH_FOR_DYNACONF`
         """
 
-        mispells = {
+        misspells = {
             "settings_files": "settings_file",
             "SETTINGS_FILES": "SETTINGS_FILE",
             "environment": "environments",
             "ENVIRONMENT": "ENVIRONMENTS",
         }
-        for misspell, correct in mispells.items():
+        for misspell, correct in misspells.items():
             if misspell in kwargs:
                 kwargs[correct] = kwargs.pop(misspell)
 
