@@ -116,7 +116,7 @@ and Dynaconf comes with `Python-Dotenv` support.
 You can put in the root of your application a file called **.env**
 
 ```bash
-PREFIX_USER=admin
+DYNACONF_USER=admin
 ```
 
 Then pass `load_dotenv=True` to your settings.
