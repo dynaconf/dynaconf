@@ -44,7 +44,7 @@ from dynaconf import settings
 settings.DB_PATH == '~/DEVELOPMENT/calculator/mydb.db'
 ```
 
-`@format` token can be used together with tokens like `@str`, `@int`, `@float`, `@bool`, and `@json` to cast the results parsed by `@format`.
+`@format` token can be used together with tokens like `@str`, `@int`, `@float`, `@bool`, `@json` and `@pyliteral` to cast the results parsed by `@format`.
 
 Example: 
 
@@ -56,6 +56,22 @@ NUM_GPUS: 4
 FOO_INT: "@int @format {this.NUM_GPUS}"
 # This returns the string after parsing
 FOO_STR: "@format {this.NUM_GPUS}"
+```
+
+Example: Casting a dictionary from `@format` templated values (i.e. alias a dictionary field)
+
+```yaml
+CONFIG:
+  field_str: "bar"
+  field_int: 1
+  field_list:
+    - 1
+    - 2
+    - 3
+# This returns a string version of the dictinoary
+FOO_STR: "@format {this.CONFIG}"
+# This returns the Python dictionary
+FOO_DICT: "@pyliteral @format {this.CONFIG}
 ```
 
 ### @jinja token
@@ -90,7 +106,7 @@ The main difference is that Jinja allows some Python expressions to be evaluated
 
 Jinja supports its built-in filters listed in [Builtin Filters Page](http://jinja.palletsprojects.com/en/master/templates/#builtin-filters) and Dynaconf includes additional filters for `os.path` module: `abspath`. `realpath`, `relpath`, `basename` and `dirname` and usage is like: `VALUE = "@jinja {{this.FOO | abspath}}"`
 
-`@jinja` token can be used together with tokens like `@str`, `@int`, `@float`, `@bool`, and `@json` to cast the results parsed by `@jinja`.
+`@jinja` token can be used together with tokens like `@str`, `@int`, `@float`, `@bool`, `@json` and `@pyliteral` to cast the results parsed by `@jinja`.
 
 Example:
 
@@ -114,19 +130,42 @@ MODEL_1:
   GPU_COUNT: 4
   OPTIMIZER_KWARGS:
     learning_rate: 0.002
+    amsgrad: True
 
 MODEL_2:
   MODEL_PATH: "src.main.models.VGGModel"
   GPU_COUNT: 2
   OPTIMIZER_KWARGS:
     learning_rate: 0.001
+    amsgrad: False
 
 # Flag to choose which model to use
 MODEL_TYPE: "MODEL_2"
 
 # This returns the dict loaded from the resulting json
-MODEL_SETTINGS_DICT: "@json @jinja {{ this|attr(this.MODEL_TYPE) }}"
+# Needs to use `tojson` filter such that the strings parsed by @jinja
+# is strictly json.
+MODEL_SETTINGS_DICT: "@json @jinja {{ this|attr(this.MODEL_TYPE) | tojson }}"
 
 # This returns the raw json string
-MODEL_SETTINGS_STR: "@jinja {{ this|attr(this.MODEL_TYPE) }}"
+MODEL_SETTINGS_STR: "@jinja {{ this|attr(this.MODEL_TYPE) | tojson }}"
+```
+
+Example: 
+
+Casting to a `pyliteral` Python dict from `@jinja` templated values
+
+```yaml
+MODEL_1:
+  MODEL_PATH: "src.main.models.CNNModel"
+  GPU_COUNT: 4
+  OPTIMIZER_KWARGS:
+    learning_rate: 0.002
+    amsgrad: True
+
+# Flag to choose which model to use
+MODEL_TYPE: "MODEL_1"
+
+# Instead parsing with json, evaluate with @pyliteral
+MODEL_SETTINGS_DICT: "@pyliteral @jinja {{ this|attr(this.MODEL_TYPE) }}"
 ```

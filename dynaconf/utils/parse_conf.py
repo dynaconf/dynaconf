@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import json
 import os
 import re
@@ -254,11 +255,12 @@ converters = {
     )
     if isinstance(value, Lazy)
     else str(value).lower() in true_values,
-    "@json": lambda value: value.set_casting(
-        lambda x: json.loads(x.replace("'", '"'))
-    )
+    "@json": lambda value: value.set_casting(json.loads)
     if isinstance(value, Lazy)
     else json.loads(value),
+    "@pyliteral": lambda value: value.set_casting(ast.literal_eval)
+    if isinstance(value, Lazy)
+    else ast.literal_eval(value),
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
     # Meta Values to trigger pre assignment actions
