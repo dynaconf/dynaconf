@@ -168,11 +168,46 @@ def _jinja_formatter(value, **context):
     return jinja_env.from_string(value).render(**context)
 
 
+def _get_formatter(value, **context):
+    """
+    Invokes settings.get from the annotation in value.
+
+    value can be one of the following:
+
+    @get KEY
+    @get KEY @int
+    @get KEY default_value
+    @get KEY @int default_value
+
+    @marker KEY_TO_LOOKUP @OPTIONAL_CAST OPTIONAL_DEFAULT_VALUE
+
+    key group will match the key
+    cast group will match anything provided after @
+    the default group will match anything between single or double quotes
+    """
+    pattern = re.compile(
+        r"(?P<key>\w+(?:\.\w+)?)\s*"
+        r"(?:(?P<cast>@\w+)\s*)?"
+        r'(?P<quote>["\']?)'
+        r'\s*(?P<default>[^"\']*)\s*(?P=quote)?'
+    )
+    if match := pattern.match(value.strip()):
+        data = match.groupdict()
+        return context["this"].get(
+            key=data["key"],
+            default=data["default"],
+            cast=data["cast"],
+        )
+    else:
+        raise DynaconfFormatError(f"Error parsing {value} malformed syntax.")
+
+
 class Formatters:
     """Dynaconf builtin formatters"""
 
     python_formatter = BaseFormatter(str.format, "format")
     jinja_formatter = BaseFormatter(_jinja_formatter, "jinja")
+    get_formatter = BaseFormatter(_get_formatter, "get")
 
 
 class Lazy:
@@ -268,6 +303,7 @@ converters = {
     "@merge_unique": lambda value, box_settings: Merge(
         value, box_settings, unique=True
     ),
+    "@get": lambda value: Lazy(value, formatter=Formatters.get_formatter),
     # Special markers to be used as placeholders e.g: in prefilled forms
     # will always return None when evaluated
     "@note": lambda value: None,
