@@ -130,3 +130,41 @@ MODEL_SETTINGS_DICT: "@json @jinja {{ this|attr(this.MODEL_TYPE) }}"
 # This returns the raw json string
 MODEL_SETTINGS_STR: "@jinja {{ this|attr(this.MODEL_TYPE) }}"
 ```
+
+
+## Name aliasing
+
+In certain cases you need to reuse some variable value respecting the exact 
+data type it is previously defined in another step of the settings load.
+
+Example:
+
+`config.py`
+```py
+from dynaconf import Dynaconf
+settings = Dynaconf(settings_files=["settings.toml", "other.toml"])  
+```
+
+`settings.toml`
+```toml 
+thing = "value"
+number = 42
+```
+
+`other.toml`
+```toml 
+other_thing = "@get thing"
+
+# providing default if thing is undefined
+other_thing = "@get thing 'default value'"
+
+## type casting
+# Ensure the aliased value is of type int
+other_number = "@get number @int"
+
+# Ensure type and provide default if number is undefined
+other_number = "@get number @int 12"
+```
+
+The `@get` is lazily evaluated and subject to `DynaconfFormatError` in case of
+malformed expression, it is recommended to add validators.

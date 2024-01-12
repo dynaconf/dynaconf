@@ -432,6 +432,12 @@ class Settings:
         :param default: In case of not found it will be returned
         :param parent: Is there a pre-loaded parent in a nested data?
         """
+        # if parent is not traverseable raise error
+        if parent and not hasattr(parent, "get"):
+            raise AttributeError(
+                f"cannot lookup {dotted_key!r} from {type(parent).__name__!r}"
+            )
+
         split_key = dotted_key.split(".")
         name, keys = split_key[0], split_key[1:]
         result = self.get(name, default=default, parent=parent, **kwargs)
