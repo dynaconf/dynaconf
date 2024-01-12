@@ -139,20 +139,17 @@ data type it is previously defined in another step of the settings load.
 
 Example:
 
-`config.py`
-```py
+```py title="config.py"
 from dynaconf import Dynaconf
 settings = Dynaconf(settings_files=["settings.toml", "other.toml"])  
 ```
 
-`settings.toml`
-```toml 
+```toml title="settings.toml"
 thing = "value"
 number = 42
 ```
 
-`other.toml`
-```toml 
+```toml title="other.toml"
 other_thing = "@get thing"
 
 # providing default if thing is undefined
