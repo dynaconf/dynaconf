@@ -622,7 +622,7 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
     default=None,
     help=(
         "key values to be written "
-        "e.g: `dynaconf write toml -e NAME=foo -e X=2"
+        "e.g: `dynaconf write toml -e NAME=foo -e X=2`"
     ),
 )
 @click.option(
@@ -633,7 +633,7 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
     default=None,
     help=(
         "secret key values to be written in .secrets "
-        "e.g: `dynaconf write toml -s TOKEN=kdslmflds -s X=2"
+        "e.g: `dynaconf write toml -s TOKEN=kdslmflds -s X=2`"
     ),
 )
 @click.option(
