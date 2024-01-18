@@ -18,8 +18,6 @@ Changelog
 - Fix link to configuration page (#1020) ([df3b437](https://github.com/dynaconf/dynaconf/commit/df3b43718858786d0a2feb2d7b60c9515b01a15d) by Vladislav Sharapov).
 - Improve Configuration and Validation sections of the docs (#989) ([99741a3](https://github.com/dynaconf/dynaconf/commit/99741a3124b4c788e6a8e9e3761e90e7f9be5cc3) by Sebastian Correa).
 
-<!-- insertion marker -->
-
 ## [3.2.3]() - 2023-09-13
 
 - Release version 3.2.3. [Bruno Rocha]
