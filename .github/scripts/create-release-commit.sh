@@ -24,4 +24,3 @@ git commit \
 
 # 4. Add lightweight tag
 git tag "${NEW_VERSION}"
-
