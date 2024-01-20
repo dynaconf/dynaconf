@@ -12,16 +12,12 @@ on:
     paths:  # run only if one of these is modified
       - "docs/**"
       - "mkdocs.yml"
-    tags:
-      - "**"
 
   pull_request:
     branches: [master]
     paths:
       - "docs/**"
       - "mkdocs.yml"
-    tags:
-      - "**"
 
 jobs:
   checkpoint:
