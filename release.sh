@@ -146,7 +146,7 @@ git rm -f CHANGELOG.md
 gitchangelog > CHANGELOG.md
 pre-commit run --files CHANGELOG.md || true
 git add -f CHANGELOG.md
-git commit --amend --no-edit
+git commit -m "Update CHANGELOG"
 
 fmt <<EOF
 
