@@ -12,14 +12,12 @@ jobs:
   build-and-test:
     name: "Build and Test distribution"
     runs-on: ubuntu-latest
+    if: ${{ inputs.release == inputs.release-again }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
-      - name: "Validate release version input"
-        run: |
-          [ {{ github.event.input.release }} == {{ github.event.input.release-again }} ] || exit 1
 
       - name: "Prepare build environemnt"
         run: |
