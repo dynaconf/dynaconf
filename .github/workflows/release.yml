@@ -19,7 +19,7 @@ jobs:
           python-version: "3.8"
       - name: "Validate release version input"
         run: |
-          [ {{ github.event.input.release == github.event.input.release }} ] || exit 1
+          [ {{ github.event.input.release }} == {{ github.event.input.release-again }} ] || exit 1
 
       - name: "Prepare build environemnt"
         run: |
