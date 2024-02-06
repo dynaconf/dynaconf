@@ -4,7 +4,7 @@ Dynaconf provides global and local tools to control if the value of conflicting 
 
 By default, nothing is merged. Also, only container types can be merged (`list` and `dict`). Non-container types, such as `str` and `int`, will always override the previous value (If you want to merge them, wrap them in a `list` or `dict`).
 
-You can globally turn on the merging strategy by setting [merge_enable](https://www.dynaconf.com/configuration/#merge_enabled) option to `True` (via instance settings or envvars).
+You can globally turn on the merging strategy by setting [merge_enabled](https://www.dynaconf.com/configuration/#merge_enabled) option to `True` (via instance settings or envvars).
 
 
 ## Merging existing data structures
