@@ -4,15 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       release:
+        required: true
         description: "Release tag (e.g. 3.2.1)"
       release-again:
+        required: true
         description: "Just checking."
+  pull_request: # for iteractive fixing CI errors with a PR (without having to push to master to see them)
 
 jobs:
   build-and-test:
     name: "Build and Test distribution"
     runs-on: ubuntu-latest
-    if: ${{ inputs.release == inputs.release-again }}
+    # if: ${{ inputs.release == inputs.release-again }}
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -41,6 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
@@ -48,14 +53,18 @@ jobs:
       - name: "Prepare release tools"
         run: |
           pip install --user git-changelog
+          git config user.name github-actions
+          git config user.email github-actions@github.com
 
       - name: "Bump Versions, update changelog and create release-commit"
         run: |
-          .github/scripts/create-release-commit.sh {{ github.event.input.release}}
+          # .github/scripts/create-release-commit.sh {{ github.event.input.release}}
+          .github/scripts/create-release-commit.sh 3.2.5
 
       - name: "Push commit to master"
         run: |
           echo "Pushing commit to master"
+          head mkdocs.yml dynaconf/VERSION
           git log --oneline -5
           git show HEAD
 
