@@ -1,3 +1,14 @@
+# REFERENCE
+#
+# pushing commits with GithubActions:
+# - https://openedx.atlassian.net/wiki/spaces/AC/pages/3378348233/Writing+a+GitHub+Action+that+pushes+commits
+#
+# publishing to PyPI:
+# - https://github.com/marketplace/actions/pypi-publish
+#
+# publishing a GitHubRelease:
+# - https://github.com/marketplace/actions/gh-release
+
 name: publish-and-release
 
 on:
@@ -11,73 +22,75 @@ on:
         description: "Just checking."
   pull_request: # for iteractive fixing CI errors with a PR (without having to push to master to see them)
 
+env:
+  # NEW_VERSION: {{ github.event.input.release }}
+  # NEW_VERSION2: {{ github.event.input.release-again }}
+  NEW_VERSION: 3.2.5
+  NEW_VERSION2: 3.2.5
+
 jobs:
-  build-and-test:
-    name: "Build and Test distribution"
+  build-and-commit:
+    name: "Build dist and create release commit"
     runs-on: ubuntu-latest
-    # if: ${{ inputs.release == inputs.release-again }}
     steps:
+      - name: "Check workflow input"
+        run: |
+          [[ $NEW_VERSION == $NEW_VERSION2 ]] || exit 1
+
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-python@v4
         with:
           python-version: "3.8"
 
-      - name: "Prepare build environemnt"
+      - name: "1. Prepare build/release environemnt"
         run: |
-          pip install --user python-minifier wheel setuptools
+          pip install --upgrade pip
+          pip install --user python-minifier wheel setuptools semver git-changelog
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: "Build and Check distribution"
+      - name: "2. Bump version-files and update changelog"
+        run: |
+          .github/scripts/01-bump-and-update-changelog.sh $NEW_VERSION
+          git diff # check changes
+
+      - name: "3. Build and Check distribution"
         run: |
           make dist
-          .github/scripts/dist-health-check.sh
+          .github/scripts/02-build-distribution.sh
 
-      - name: Save dist files
+      - name: "4. Save dist for publishing"
         uses: actions/upload-artifact@v3
         with:
           name: dist-folder
           path: dist
           if-no-files-found: "error"
 
-  create-release-commit:
-    name: "Create and push release commit, post-release"
-    needs: "build-and-test"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.8"
-
-      - name: "Prepare release tools"
-        run: |
-          pip install --user git-changelog
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-
-      - name: "Bump Versions, update changelog and create release-commit"
+      - name: "5. Create release-commit"
         run: |
           # .github/scripts/create-release-commit.sh {{ github.event.input.release}}
-          .github/scripts/create-release-commit.sh 3.2.5
+          .github/scripts/03-create-release-commit.sh $NEW_VERSION
 
-      - name: "Push commit to master"
+      - name: "6. Push commit to master"
         run: |
           echo "Pushing commit to master"
-          head mkdocs.yml dynaconf/VERSION
-          git log --oneline -5
           git show HEAD
+          # git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}
+          # git push
 
 
   pypi-publish:
     name: "Upload release to PyPI"
-    needs: create-release-commit
+    needs: build-and-commit
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/dynaconf
-    permissions:
-      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    # environment:
+    #   name: pypi
+    #   url: https://pypi.org/p/dynaconf
+    # permissions:
+    #   id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
       - name: Get distribution
         uses: actions/download-artifact@v3

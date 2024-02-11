@@ -1,8 +1,13 @@
 #!/bin/env bash
 
 set -euo pipefail
-echo "Checking dist build health"
 
+# Build dist
+echo "Building distribution"
+make dist
+
+# Sanity Check
+echo "Checking dist build health"
 venv="$(mktemp --directory)"
 python3 -m venv "${venv}"
 source "${venv}/bin/activate"
