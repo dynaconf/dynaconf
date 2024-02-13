@@ -520,7 +520,7 @@ settings = Dynaconf(
     environments=True,
     validators=[
         # Ensure some parameters exist for both envs
-        Validator('VERSION', 'NAME', 'SERVERS', envs=['development', 'production'], must_exist=True),
+        Validator('VERSION', 'NAME', 'SERVERS', env=['development', 'production'], must_exist=True),
 
         # Ensure some parameter validate certain condition in dev env
         Validator("SERVERS", env='development', cont='localhost'),
