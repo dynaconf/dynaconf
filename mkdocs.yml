@@ -19,6 +19,7 @@ nav:
   - Django: django.md
   - Advanced usage: advanced.md
   - FAQ: faq.md
+  - API Reference: reference/
 theme:
   features:
     - search.suggest
@@ -69,6 +70,13 @@ plugins:
   - search:
       lang: en
       prebuild_index: true
+  - gen-files:
+      scripts:
+      - scripts/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  - mkdocstrings
 extra:
   disqus: dynaconf
   social:
