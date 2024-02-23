@@ -10,4 +10,8 @@ mkdocs
 pymdown-extensions
 mkdocs-material
 mkdocs-git-revision-date-plugin
+mkdocs-gen-files
+mkdocs-literate-nav
+mkdocs-section-index
+mkdocstrings[python]
 Jinja2>3.0.0
