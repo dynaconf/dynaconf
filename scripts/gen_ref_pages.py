@@ -43,7 +43,7 @@ for path in sorted(src.rglob("*.py")):
     # Followed the advice in the note in this section of the mkdocstrings
     # recipe: https://mkdocstrings.github.io/recipes/#generate-pages-on-the-fly
     # Not doing this resulted in a 404 error.
-    mkdocs_gen_files.set_edit_path(full_doc_path, Path("../") / path)
+    mkdocs_gen_files.set_edit_path(full_doc_path, path)
 
 # Similar comment to above, needed to make sure the path was relative.
 with mkdocs_gen_files.open(
