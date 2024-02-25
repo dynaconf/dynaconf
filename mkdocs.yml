@@ -68,7 +68,6 @@ plugins:
   - git-revision-date
   - search:
       lang: en
-      prebuild_index: true
 extra:
   disqus: dynaconf
   social:
