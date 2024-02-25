@@ -19,6 +19,8 @@ nav:
   - Django: django.md
   - Advanced usage: advanced.md
   - FAQ: faq.md
+  - Reference:
+    - API: api.md
 theme:
   features:
     - search.suggest
@@ -69,6 +71,7 @@ plugins:
   - search:
       lang: en
       prebuild_index: true
+  - mkdocstrings
 extra:
   disqus: dynaconf
   social:
