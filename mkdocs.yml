@@ -90,3 +90,5 @@ extra:
       link: https://linkedin.com/in/rochacbruno
     - icon: fontawesome/brands/twitch
       link: https://twitch.tv/codeshow
+extra_css:
+  - stylesheets/mkdocstrings.css
