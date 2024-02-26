@@ -12,7 +12,7 @@ mixed settings formats across your application.
 ## Supported formats
 
 - **.toml** - Default and **recommended** file format.
-- **.yaml|.yml** - Recommended for Django applications. (see [yaml caveats](#yamlcaveats))
+- **.yaml|.yml** - Recommended for Django applications (see [YAML Caveats](#yaml-caveats)).
 - **.json** - Useful to reuse existing or exported settings.
 - **.ini** - Useful to reuse legacy settings.
 - **.py** - **Not Recommended** but supported for backwards compatibility.
