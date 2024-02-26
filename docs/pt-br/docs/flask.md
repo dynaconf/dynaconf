@@ -55,21 +55,21 @@ export PEANUT_MAIL_SERVER='host.com'  # app.config.get('MAIL_SERVER')
 
 ## Arquivos de Configuração
 
-Você também pode ter seus arquivos de configuração para a sua aplicação Flask. Coloque os arquivos `settings.toml` e `.secrets.toml`, no diretório raiz (mesmo lugar onde é executado `flask run`) e então os ambientes da aplicação `[default]`, `[development]` e `[production]`. 
+Você também pode ter seus arquivos de configuração para a sua aplicação Flask. Coloque os arquivos `settings.toml` e `.secrets.toml`, no diretório raiz (mesmo lugar onde é executado `flask run`) e então os ambientes da aplicação `[default]`, `[development]` e `[production]`.
 
 Use a variável `FLASK_ENV` para alternar entre os ambientes definidos no arquivo de configuração. Por exemplo, definir `FLASK_ENV=development` fará com que a aplicação opere com os valores definidos do ambiente de desenvolvimento, já `FLASK_ENV=production` substituirá para os
 valores definidos para o ambiente de produção.
 
 > **IMPORTANTE**: Para usar `$ dynaconf` CLI a varável `FLASK_APP` deve ser definida previamente.
 
-Se você não quer criar os seus arquivos de configuração manualmente considere dar uma olhada em [CLI](/cli/)
+Se você não quer criar os seus arquivos de configuração manualmente considere dar uma olhada em [CLI](cli.md)
 
 ## Carregando Extensões Flask Dinamicamente
 
 Você pode pedir ao Dynaconf para carregar suas extensões Flask dinamicamente, desde que elas sigam os padrões das extensões convencionada pelo Flask.
 
-O único requisito é que a extensão deva ser do tipo `callable` e deve receber o `app` como primeiro argumento (`flask_admin:Admin` ou `custom_extension.module:instance.init_app`),  e por fim a extensão deve ser 
- 
+O único requisito é que a extensão deva ser do tipo `callable` e deve receber o `app` como primeiro argumento (`flask_admin:Admin` ou `custom_extension.module:instance.init_app`),  e por fim a extensão deve ser
+
 The only requirement is that the extension must be a `callable` that accepts `app` as first argument. e.g: `flask_admin:Admin` or `custom_extension.module:instance.init_app` and of course the extension must be in Python namespace to be imported.
 
 Para que a extensão seja inicializada basta usar uma referência para o [*entry point*](https://packaging.python.org/specifications/entry-points/), por exemplo: "flask_admin:Admin" or "extension.module:instance.init_app".
@@ -134,8 +134,8 @@ EXTENSIONS = [
 
 ### Problemas Frequentes
 
-Caso você encontre um problema no momento do carregamento das variáveis do arquivo `.env` ou na importação do app, ou create_app, 
-é recomendado desativar o suporte do Flask para dotenv. 
+Caso você encontre um problema no momento do carregamento das variáveis do arquivo `.env` ou na importação do app, ou create_app,
+é recomendado desativar o suporte do Flask para dotenv.
 
 ```bash
 export FLASK_SKIP_DOTENV=1

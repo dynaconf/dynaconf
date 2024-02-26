@@ -49,7 +49,7 @@ theme:
 markdown_extensions:
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.inlinehilite
   - pymdownx.magiclink
@@ -70,7 +70,6 @@ plugins:
   - git-revision-date
   - search:
       lang: en
-      prebuild_index: true
   - mkdocstrings:
       handlers:
         python:

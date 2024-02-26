@@ -134,7 +134,7 @@ settings = Dynaconf(**options)
 
 and then in your program you do `from project.config import settings` instead of `from dynaconf import settings`.
 
-The `**options` are any of the [dynaconf config options](/configuration)
+The `**options` are any of the [dynaconf config options](configuration.md)
 
 ex:
 
