@@ -102,7 +102,7 @@ other_value = "other value from dev"
 ...     default_env="my_default",
 ...     env="development", # this is the active env, by default
 ... )
- 
+
 >>> settings.other_value
 "other value from dev"
 
@@ -237,9 +237,14 @@ ex: `MYPROGRAM_ENV=production`
 > type=`class`, default=`None` </br>
 > env-var=`FILTERING_STRATEGY_FOR_DYNACONF`
 
-Callable accepting data to be filtered, built-ins currently include [PrefixFilter](/dynaconf/strategies/filtering.py)
+Callable accepting data to be filtered, built-ins currently include:
 
----
+??? quote "dynaconf.strategies.filtering.PrefixFilter"
+    ```py linenums="6"
+    --8<-- "strategies/filtering.py:6:19"
+    ```
+
+----
 
 ### **force_env**
 

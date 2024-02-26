@@ -64,6 +64,8 @@ markdown_extensions:
       guess_lang: false
   - toc:
       permalink: true
+  - pymdownx.snippets:
+      base_path: ["docs/", "dynaconf/"]
 plugins:
   - git-revision-date
   - search:
