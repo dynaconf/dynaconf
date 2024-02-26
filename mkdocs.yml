@@ -19,6 +19,8 @@ nav:
   - Django: django.md
   - Advanced usage: advanced.md
   - FAQ: faq.md
+  - Reference:
+    - API: api.md
 theme:
   features:
     - search.suggest
@@ -68,6 +70,14 @@ plugins:
   - git-revision-date
   - search:
       lang: en
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_root_toc_entry: false
+            show_object_full_path: true
 extra:
   disqus: dynaconf
   social:
@@ -79,3 +89,5 @@ extra:
       link: https://linkedin.com/in/rochacbruno
     - icon: fontawesome/brands/twitch
       link: https://twitch.tv/codeshow
+extra_css:
+  - stylesheets/mkdocstrings.css
