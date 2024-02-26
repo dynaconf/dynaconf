@@ -71,7 +71,12 @@ plugins:
   - search:
       lang: en
       prebuild_index: true
-  - mkdocstrings
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
 extra:
   disqus: dynaconf
   social:
