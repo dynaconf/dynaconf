@@ -1,4 +1,4 @@
-# dyanconf API
+# dynaconf API
 
 ::: dynaconf
     options:
