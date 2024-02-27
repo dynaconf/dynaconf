@@ -71,7 +71,7 @@ See more about [hooks](https://www.dynaconf.com/advanced/#hooks)
 
 > I use some django utility functions in my django `settings.py`. Can I still use them if I choose to use `yaml` to manage my config?
 
-Yes, you may add a custom converter for any functions you like. Refer [here](/django/#use-django-functions-inside-custom-settings) for a full example.
+Yes, you may add a custom converter for any functions you like. Refer [here](django.md#use-django-functions-inside-custom-settings) for a full example.
 
 ## Default-override workflow
 
@@ -104,8 +104,8 @@ bucket=["a", "b", "c", "d"]
 bucket=["a", "b", "c", "d"]
 ```
 
-To control how you want to merge these structures, you may want to have a look at [merging](/merging/)
-There are several ways you can merge data: settings the global option [merge_enabled](/configuration/#merge_enabled), using dunder syntax or marking a whole file, a specific env, or just an option for merging. Choose what fits best for your case.
+To control how you want to merge these structures, you may want to have a look at [merging](merging.md)
+There are several ways you can merge data: settings the global option [merge_enabled](configuration.md/#merge_enabled), using dunder syntax or marking a whole file, a specific env, or just an option for merging. Choose what fits best for your case.
 
 ## Error with Pyinstaller executable
 

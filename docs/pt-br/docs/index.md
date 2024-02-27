@@ -1,4 +1,4 @@
-# Início Rápido com Dynaconf 
+# Início Rápido com Dynaconf
 
 <p style="align-content: center">
   <a href="https://dynaconf.com"><img src="img/logo_400.svg?sanitize=true" alt="Dynaconf"></a>
@@ -37,7 +37,7 @@ pip install dynaconf
 
     #### Usando somente Python
 
-    No diretório raiz de seu projeto execute o comando `dynaconf init`    
+    No diretório raiz de seu projeto execute o comando `dynaconf init`
 
     ```bash hl_lines="2"
     cd path/to/your/project/
@@ -93,7 +93,7 @@ pip install dynaconf
             settings_files=['settings.toml', '.secrets.toml'],
         )
         ```
-        Mais opções são descritas em [Dynaconf Configuration](/configuration/)
+        Mais opções são descritas em [Dynaconf Configuration](configuration.md)
 
     === "settings.toml"
         **Opcionalmente** armazene as configurações em um arquivo (ou em múltiplos arquivos)
@@ -108,7 +108,7 @@ pip install dynaconf
         [a_dict.nested]
         other_level = "nested value"
         ```
-        Mais detalhes em [Settings Files](/settings_files/)
+        Mais detalhes em [Settings Files](settings_files.md)
 
     === ".secrets.toml"
         **Opcionalmente** armazene dados sensíveis em um único arquivo local chamado `.secrets.toml`
@@ -118,14 +118,14 @@ pip install dynaconf
         message = "This file doesn't go to your pub repo"
         ```
 
-        > ⚠️ O comando `dynaconf init` coloca o `.secrets.*` em seu `.gitignore` evitando que o mesmo seja exposto no repositório público mas é sua responsabilidade mantê-lo em seu ambiente local, também é recomendado que os ambientes de produção utilizem o suporte nativo para o serviço da Hashicorp Vault para senhas e tokens. 
+        > ⚠️ O comando `dynaconf init` coloca o `.secrets.*` em seu `.gitignore` evitando que o mesmo seja exposto no repositório público mas é sua responsabilidade mantê-lo em seu ambiente local, também é recomendado que os ambientes de produção utilizem o suporte nativo para o serviço da Hashicorp Vault para senhas e tokens.
 
         ```ini
         # Segredos não vão para o repositório público
         .secrets.*
         ```
 
-        Leia mais em [Secrets](/secrets/)
+        Leia mais em [Secrets](secrets.md)
 
     === "env vars"
         **Opcionalmente** use variáveis de ambiente com prefixos. (arquivos `.env` também são suportados)

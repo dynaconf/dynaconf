@@ -37,6 +37,7 @@ pdbr[ipython]
 
 # MKDOCS
 mkdocs>=1.1.2
+mkdocstrings[python]
 mkdocs-material>=5.3.2
 mkdocs-material-extensions>=1.0
 mkdocs-git-revision-date-plugin

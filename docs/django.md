@@ -104,7 +104,7 @@ In the root directory (the same where `manage.py` is located) put your `settings
 To switch the working environment the `DJANGO_ENV` variable can be used, so `DJANGO_ENV=development` to work
 in development mode or `DJANGO_ENV=production` to switch to production.
 
-If you don't want to manually create your config files take a look at the [CLI](/cli/)
+If you don't want to manually create your config files take a look at the [CLI](cli.md)
 
 !!! tip
     **.yaml** is the recommended format for Django applications because it allows easily writing complex data structures. Nevertheless, feel free to choose any format you are familiar with.
@@ -155,7 +155,7 @@ Your settings are now read from `/etc/projectname/settings.toml` (dynaconf will 
 
 You can have additional settings read from `/etc/projectname/plugins/*` any supported file from this folder will be loaded.
 
-You can set more options, take a look at [configuration](/configuration/)
+You can set more options, take a look at [configuration](configuration.md)
 
 ### Use Django functions inside custom settings
 
@@ -164,7 +164,7 @@ converters with the `add_converters` utility.
 
 When defining those in `settings.py`, there are some django functions that can't
 be imported directly in the module scope. Because of that, you may add them in
-a [hook](/advanced#hooks) that executes after loading.
+a [hook](advanced.md#hooks) that executes after loading.
 
 For example, if you need to use `reverse_lazy`, you might do this:
 

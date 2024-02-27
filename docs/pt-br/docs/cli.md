@@ -8,7 +8,7 @@ Todo comando (com exceção do init) requer uma Instância que pode ser passada 
 
 O comando `$ dynaconf -i config.settings` do cli provê alguns comandos bem úteis
 
-> **IMPORTANTE** caso usem [Flask Extension](/flask/) a variável de ambiente `FLASK_APP` deve ser definda para usar o CLI, e caso usem [Django Extension](/django/) a variável `DJANGO_SETTINGS_MODULE` deve estar definida.
+> **IMPORTANTE** caso usem [Flask Extension](flask.md) a variável de ambiente `FLASK_APP` deve ser definda para usar o CLI, e caso usem [Django Extension](django.md) a variável `DJANGO_SETTINGS_MODULE` deve estar definida.
 
 ### dynaconf --help
 
@@ -64,7 +64,7 @@ Bem como incluirá no arquivo `.gitignore` para que seja ignorado o arquivo `.se
 .secrets.*
 ```
 
-> Reomenda-se que para dados sensíveis em produção use[Vault Server](/secrets/)
+> Reomenda-se que para dados sensíveis em produção use[Vault Server](secrets.md)
 
 ```
 Uso: dynaconf init [OPÇÕES]
@@ -74,10 +74,10 @@ Uso: dynaconf init [OPÇÕES]
 
   O formato dos arquivo pode ser alterado passando --format=yaml|json|ini|py.
 
-  Esse comando deve ser executado no diretório raiz do projeto o pode-se passar 
+  Esse comando deve ser executado no diretório raiz do projeto o pode-se passar
   --path=/myproject/root/folder.
 
-  O --env/-e está depreciado ( mantido por compatibilidade, mas deve evitar o uso) 
+  O --env/-e está depreciado ( mantido por compatibilidade, mas deve evitar o uso)
 
 Opções:
   -f, --format [ini|toml|yaml|json|py|env]
@@ -86,7 +86,7 @@ Opções:
   -v, --vars TEXT                 valores extras a serem gravados no arquivo de settings, ex.:
                                   `dynaconf init -v NAME=foo -v X=2
 
-  -s, --secrets TEXT              valores sensíveis a serem escritos no arquivo .secrets 
+  -s, --secrets TEXT              valores sensíveis a serem escritos no arquivo .secrets
                                   ex.: `dynaconf init -s TOKEN=kdslmflds
 
   --wg / --no-wg
@@ -128,7 +128,7 @@ Lista todos os parâmetros definidos e, opcionalmente, exporta para um arquivo J
 ```
 Uso: dynaconf list [OPÇÕES]
 
-  Lista todos os valores de configuração definidos pelo usuário e se `--all` for passado 
+  Lista todos os valores de configuração definidos pelo usuário e se `--all` for passado
   mostra, também, as variáveis internas do dynaconf.
 
 Opçẽos:
@@ -136,7 +136,7 @@ Opçẽos:
   -k, --key TEXT     Filtra por uma única chave (key)
   -m, --more         Pagina o resultado ao estilo mais|menos (more|less)
   -l, --loader TEXT  um identificador de conversor (loader) para filtar ex.: toml|yaml
-  -a, --all          Mostra as configurações internas do dynaconf? 
+  -a, --all          Mostra as configurações internas do dynaconf?
   -o, --output FILE  Filepath para gravar os valores listados num arquivo JSON
   --output-flat      O arquivo de saída é plano (flat) (i.e., não inclui o nome ambiente [env])
   --help             Mostra essa mensagem e sai.
@@ -148,7 +148,7 @@ Opçẽos:
 dynaconf list -o path/to/file.yaml
 ```
 
-O comando acima exportará todos os itens mostrados por `dynaconf list` para o format desejado o qual é inferido pela extensão do arquivo em `-o`, formatos suportados são: `yaml, toml, ini, json, py` 
+O comando acima exportará todos os itens mostrados por `dynaconf list` para o format desejado o qual é inferido pela extensão do arquivo em `-o`, formatos suportados são: `yaml, toml, ini, json, py`
 
 Quando se usa `py` pode-se querer uma saída plana (flat) (sem estar aninhada internamente pelo nome do ambiente (env))
 
@@ -164,7 +164,7 @@ Uso: dynaconf write [OPÇÕES] [ini|toml|yaml|json|py|redis|vault|env]
   Escreve os dados dem uma fonte específica
 
 Opções:
-  -v, --vars TEXT     Par chave=valor que será escrito no settings ex.: 
+  -v, --vars TEXT     Par chave=valor que será escrito no settings ex.:
                       `dynaconf write toml -e NAME=foo -e X=2
 
   -s, --secrets TEXT  Par chave=segredo que será escrito no .secrets ex:
