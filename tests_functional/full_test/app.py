@@ -61,7 +61,7 @@ for k, v in EXPECTED.items():
 
 print("store:", settings.store)
 print("loaders:", settings.loaded_by_loaders)
-print("dotenv_overrride:", settings.DOTENV_OVERRIDE_FOR_DYNACONF)
+print("dotenv_override:", settings.DOTENV_OVERRIDE_FOR_DYNACONF)
 print("redis:", settings.REDIS_FOR_DYNACONF)
 print("PYVAR", settings.PYVAR)
 print("YAMLVAR", settings.YAMLVAR)
