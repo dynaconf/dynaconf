@@ -249,4 +249,4 @@ print(settings.MYSQL_HOST)  # This data is being read from redis imediatelly!
 
 Do you want to store settings in other databases like NoSQL, Relational Databases or other services?
 
-Please see how to [extend dynaconf](/advanced/) to add your custom loaders.
+Please see how to [extend dynaconf](advanced.md) to add your custom loaders.

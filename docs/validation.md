@@ -99,7 +99,7 @@ except dynaconf.ValidationError as e:
 By default, if the data of an instance is updated with `update`, `set` or `load_file` methods,
 no validation will be triggered.
 
-You can override this globally with the option [validate_on_update](/configuration/#validate_on_update) or
+You can override this globally with the option [validate_on_update](configuration.md/#validate_on_update) or
 set this on a per-call basis.
 
 ```python
@@ -113,7 +113,7 @@ settings.update({"NEW_VALUE": 123}) # will trigger with the global strategy
 
 ### With CLI
 
-It is possible to define validators in a `TOML` file called `dynaconf_validators.toml` placed in the same folder as your settings files. For more information, see the [CLI section](/cli#dynaconf-validate).
+It is possible to define validators in a `TOML` file called `dynaconf_validators.toml` placed in the same folder as your settings files. For more information, see the [CLI section](cli.md#dynaconf-validate).
 
 `dynaconf_validators.toml` is equivalent to the program below:
 
@@ -174,7 +174,7 @@ Validator(
   "NAME",
   ne="john",
   len_min=4,
-  must_exist=True, # redundant but allowed 
+  must_exist=True, # redundant but allowed
   startswith="user_",
   cast=str,
   condition=lambda v: v not in FORBIDEN_USERS,
@@ -359,8 +359,8 @@ Say you want to ensure that the `DATABASE.HOST` is set only when `DATABASE.USER`
 
 ```python
 Validator(
-    "DATABASE.HOST", 
-    must_exist=True, 
+    "DATABASE.HOST",
+    must_exist=True,
     when=Validator("DATABASE.USER", must_exist=True)
 )
 ```
@@ -371,8 +371,8 @@ Say you want to validate that `DATABASE.CONNECTION_ARGS` is set only when `DATAB
 
 ```python
 Validator(
-    "DATABASE.CONNECTION_ARGS", 
-    must_exist=True, 
+    "DATABASE.CONNECTION_ARGS",
+    must_exist=True,
     when=Validator("DATABASE.URI", condition=lambda v: v.startswith("sqlite://")),
     messages={"must_exist_true": "{name} is required when DATABASE is SQLite"}
 )
@@ -402,7 +402,7 @@ which generates a single `Validator` which succeeds only if both of these pass.
 
 > **New in 3.1.6**
 
-You can also choose what sections of the settings you do or don't want to validate. This is achieved by using the `validate_only` and `validate_exclude` kwargs to `Dynaconf` (read more in the [Configuration](/configuration) page) or by passing `only` or `exclude` to the `validate` method of the `Dynaconf.validators` list.
+You can also choose what sections of the settings you do or don't want to validate. This is achieved by using the `validate_only` and `validate_exclude` kwargs to `Dynaconf` (read more in the [Configuration](configuration.md) page) or by passing `only` or `exclude` to the `validate` method of the `Dynaconf.validators` list.
 
 This is useful when:
 
@@ -473,7 +473,7 @@ settings.validators.validate(
 
 ### Validating only the `current_env`
 
-You can specify if you want to validate all environments defined for a validator (default behavior) or only the current environment. To do so, you may use the `only_current_env` argument of single `Validator`s (i.e., in `Validator.validate`), the same argument on `ValidatorList`s (such as `Dynaconf.validators.validate`) or by passing the `validate_only_current_env` kwarg to `Dynaconf` (see [Configuration](/configuration)).
+You can specify if you want to validate all environments defined for a validator (default behavior) or only the current environment. To do so, you may use the `only_current_env` argument of single `Validator`s (i.e., in `Validator.validate`), the same argument on `ValidatorList`s (such as `Dynaconf.validators.validate`) or by passing the `validate_only_current_env` kwarg to `Dynaconf` (see [Configuration](configuration.md)).
 
 In the first case, the validators will run on all possible settings defined in their list of environments, while in the latter the validators with environments different from the current environment will be skipped.
 
@@ -520,7 +520,7 @@ settings = Dynaconf(
     environments=True,
     validators=[
         # Ensure some parameters exist for both envs
-        Validator('VERSION', 'NAME', 'SERVERS', envs=['development', 'production'], must_exist=True),
+        Validator('VERSION', 'NAME', 'SERVERS', env=['development', 'production'], must_exist=True),
 
         # Ensure some parameter validate certain condition in dev env
         Validator("SERVERS", env='development', cont='localhost'),
@@ -543,23 +543,23 @@ Validators can be created by passing the following arguments:
 
 ```python
 # names: list[str]
-# can be a single or multiple positional strings 
+# can be a single or multiple positional strings
 Validator('VERSION', 'AGE', 'NAME'),
-# can also use dot notation 
+# can also use dot notation
 Validator('DATABASE.HOST', 'DATABASE.PORT'),
 Validator('DATABASE.HOST', 'DATABASE.PORT'),
 
 
 # must_exist: bool (alias: required)
-# Check whether variable must or not exist 
-Validator('VERSION', must_exist=True), 
+# Check whether variable must or not exist
+Validator('VERSION', must_exist=True),
 Validator('PASSWORD', must_exist=False),
 # there is an alias for must_exist called `required`
-Validator('VERSION', required=True), 
+Validator('VERSION', required=True),
 
-# condition: callable 
-# A function or any other callable that accepts `value` and 
-# must return a boolean 
+# condition: callable
+# A function or any other callable that accepts `value` and
+# must return a boolean
 Validator('VERSION', condition=lambda v: v.startswith("1.")),
 
 # when: Validator
@@ -570,15 +570,15 @@ Validator(
     when=Validator('ENV_FOR_DYNACONF', eq='development')
 ),
 
-# env: str 
-# Runs the validator against the specified env, only for 
-# settings that are loaded from files with environments=True 
+# env: str
+# Runs the validator against the specified env, only for
+# settings that are loaded from files with environments=True
 Validator('VERSION', must_exist=True, env='production'),
 
 # messages: dict[str, str]
-# A dictionary with custom messages for each validation type 
+# A dictionary with custom messages for each validation type
 Validator(
-    "VERSION", 
+    "VERSION",
     must_exist=True,
     condition=lambda v: v.startswith("1."),
     messages={
@@ -587,17 +587,17 @@ Validator(
     }
 ),
 
-# cast: callable/class 
+# cast: callable/class
 # A type or a callable to transform the type of the passed object
 # can also be used to apply transformations/normalizations
 Validator("VERSION", cast=str),
 Validator("VERSION", cast=lambda v: v.replace("1.", "2.")),
 Validator("STATIC_FOLDER", cast=Path)
-# Cast will be called for default values and also for values defined on 
+# Cast will be called for default values and also for values defined on
 # settings via files or envvars
 
-# default: any value or a callable 
-# If the value is not found it will be set to the default value 
+# default: any value or a callable
+# If the value is not found it will be set to the default value
 # if the default is a callable it will be called with the
 # settings and instance of validator as arguments.
 def default_connection_args(settings, validator):
@@ -606,24 +606,24 @@ def default_connection_args(settings, validator):
     else:
         return {}
 
-Validator("DATABASE.CONNECTION_ARGS", default=default_connection_args), 
-# default will be called only if the value is not explicitly set on settings 
+Validator("DATABASE.CONNECTION_ARGS", default=default_connection_args),
+# default will be called only if the value is not explicitly set on settings
 # via files or env vars.
 
 # description: str
-# As of 3.1.12 dynaconf doesn't use this for anything 
+# As of 3.1.12 dynaconf doesn't use this for anything
 # but there are plugins and external tools that uses it.
-# this value to generate documentation 
+# this value to generate documentation
 Validator("VERSION", description="The version of the app"),
 
-# apply_default_on_none: bool 
+# apply_default_on_none: bool
 # YAML parser parses empty values as `None` so in this case
-# you might want to force the application of default when the 
+# you might want to force the application of default when the
 # value in settings is `None`
 Validator("VERSION", default="1.0.0", apply_default_on_none=True),
 
 
-# Operations: comparison operations 
+# Operations: comparison operations
 # - eq: value == other
 # - ne: value != other
 # - gt: value > other
@@ -639,7 +639,7 @@ Validator("VERSION", default="1.0.0", apply_default_on_none=True),
 # - len_ne: len(value) != other
 # - len_min: len(value) > other
 # - len_max: len(value) < other
-# - startswith: value.startswith(other) 
+# - startswith: value.startswith(other)
 # - endswith: value.endswith(other)
 # Examples:
 Validator("VERSION", eq="1.0.0"),

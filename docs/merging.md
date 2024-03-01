@@ -9,7 +9,7 @@ You can globally turn on the merging strategy by setting [merge_enabled](https:/
 
 ## Merging existing data structures
 
-If your settings have existing variables of types `list` or `dict` and you want to `merge` instead of `override` then 
+If your settings have existing variables of types `list` or `dict` and you want to `merge` instead of `override` then
 the `dynaconf_merge` and `dynaconf_merge_unique` stanzas can mark that variable as a candidate for merging.
 
 For **dict** value:
@@ -69,7 +69,7 @@ export DYNACONF_DATABASE__ARGS__timeout=30
 export DYNACONF_DATABASE__ARGS__retries=5
 ```
 
-Each `__` is parsed as a level traversing thought dict keys. read more in [environment variables](/envvars/#nested-keys-in-dictionaries-via-environment-variables)
+Each `__` is parsed as a level traversing thought dict keys. read more in [environment variables](envvars.md#nested-keys-in-dictionaries-via-environment-variables)
 
 So the above will result in
 
@@ -323,7 +323,7 @@ The use of `__` to denote nested level will ensure the key is merged with existi
 ## Nested keys in dictionaries via environment variables.
 
 > **New in 2.1.0**
-> 
+>
 > This is useful for `Django` settings.
 
 Let's say you have a configuration like this:
@@ -344,7 +344,7 @@ And  now you want to change the values of `ENGINE` to `other.module`, via enviro
 
 Each `__` (dunder, a.k.a *double underline*) denotes access to nested elements in a dictionary.
 
-So 
+So
 
 ```py
 DATABASES['default']['ENGINE'] = 'other.module'
