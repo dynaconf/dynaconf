@@ -1,5 +1,5 @@
 [files]
-extend-exclude = ["*.svg", "pt-br", "./dynaconf/vendor/"]
+extend-exclude = ["*.svg", "pt-br", "dynaconf/vendor/*"]
 
 [default.extend-words]
 Fo = "Fo"
