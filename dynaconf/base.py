@@ -1256,14 +1256,10 @@ class Settings:
                     filepath = os.path.join(root_dir, str(_filename))
 
                 paths = [
-                    p
-                    for p in sorted(glob(filepath, root_dir=self._root_path))
-                    if ".local." not in p
+                    p for p in sorted(glob(filepath)) if ".local." not in p
                 ]
                 local_paths = [
-                    p
-                    for p in sorted(glob(filepath, root_dir=self._root_path))
-                    if ".local." in p
+                    p for p in sorted(glob(filepath)) if ".local." in p
                 ]
 
                 # Handle possible *.globs sorted alphanumeric
