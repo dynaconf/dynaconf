@@ -5,3 +5,4 @@ extend-exclude = ["*.svg", "pt-br", "dynaconf/vendor/*"]
 Fo = "Fo"
 portugues = "portugues"
 hashi = "hashi"
+ba = "ba"
