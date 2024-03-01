@@ -28,7 +28,7 @@ def default_loader(obj, defaults=None):
     """Initial loader for the initialization process.
 
     Steps:
-    - Load default settings (from static module) + kwargs overrides (togheter)
+    - Load default settings (from static module) + kwargs overrides (together)
     - Load envvar overrides
     """
     # LOAD DEFAULT STATIC + KWARGS OVERRIDES

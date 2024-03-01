@@ -924,7 +924,7 @@ class Settings:
         :param key: The key to store. Can be of any type.
         :param value: The raw value to parse and store
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
-                                  Or isntance of SourceMetadata
+                                  Or instance of SourceMetadata
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
         :param validate: Bool define if validation will be triggered
