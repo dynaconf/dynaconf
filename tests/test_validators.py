@@ -257,7 +257,7 @@ def test_no_reload_on_single_env(tmpdir, mocker):
 
     settings = LazySettings(
         environments=True,
-        ENV_FOR_DYNACONF="DEVELOPMENt",
+        ENV_FOR_DYNACONF="DEVELOPMENT",
         SETTINGS_FILE_FOR_DYNACONF=str(tmpfile),
     )
     using_env = mocker.patch.object(settings, "from_env")
@@ -834,7 +834,7 @@ def test_use_default_value_when_yaml_is_empty_and_explicitly_marked(tmpdir):
     settings = Dynaconf(
         settings_file=str(tmpfile),
         validators=[
-            # Explicitly say thar default must be applied to None
+            # Explicitly say that default must be applied to None
             Validator(
                 "hasemptyvalues.key1",
                 default="value1",

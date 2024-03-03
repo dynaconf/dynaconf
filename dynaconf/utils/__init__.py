@@ -300,7 +300,7 @@ def trimmed_split(
             continue
         data = [item.strip() for item in s.strip().split(sep)]
         return data
-    return [s]  # raw un-splitted
+    return [s]  # raw un-split
 
 
 T = TypeVar("T")

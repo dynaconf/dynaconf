@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
 
 # When a Push is made on an existing branch/PR
-# it cancells any pre running job and
+# it cancels any pre running job and
 # let only the latest executing
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

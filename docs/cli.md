@@ -120,7 +120,7 @@ Usage: dynaconf inspect [OPTIONS]
 
   Inspect the loading history of the given settings instance.
 
-  Filters by key and environement, otherwise shows all.
+  Filters by key and environment, otherwise shows all.
 
 Options:
   -k, --key TEXT                  Filters result by key.
@@ -176,7 +176,7 @@ Usage: dynaconf get [OPTIONS] KEY
 
   Returns the raw value for a settings key.
 
-  If result is a dict, list or tuple it is printes as a valid json string.
+  If result is a dict, list or tuple it is printed as a valid json string.
 
 Options:
   -d, --default TEXT  Default value if settings doesn't exist

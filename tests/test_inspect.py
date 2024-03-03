@@ -444,7 +444,7 @@ def test_get_history_env_true__merge_marks(tmp_path):
 
 
 def test_get_history_key_filter(tmp_path):
-    """Asserts key filtering throught get_history param works"""
+    """Asserts key filtering through get_history param works"""
     file_a = tmp_path / "file_a.toml"
     file_b = tmp_path / "file_b.toml"
     file_c = tmp_path / "file_c.toml"
@@ -460,7 +460,7 @@ def test_get_history_key_filter(tmp_path):
 
 
 def test_get_history_key_filter_nested(tmp_path):
-    """Asserts key filtering throught get_history param works"""
+    """Asserts key filtering through get_history param works"""
     file_a = tmp_path / "file_a.toml"
     file_b = tmp_path / "file_b.toml"
     file_c = tmp_path / "file_c.toml"
@@ -802,7 +802,7 @@ def test_inspect_to_file(tmp_path):
 def test_inspect_exception_key_not_found():
     settings = Dynaconf()
     with pytest.raises(KeyNotFoundError):
-        inspect_settings(settings, key="non_existant")
+        inspect_settings(settings, key="non_existent")
 
 
 def test_inspect_empty_settings():
@@ -814,7 +814,7 @@ def test_inspect_empty_settings():
 def test_inspect_exception_env_not_found():
     settings = Dynaconf(environments=True)
     with pytest.raises(EnvNotFoundError):
-        inspect_settings(settings, env="non_existant")
+        inspect_settings(settings, env="non_existent")
 
 
 def test_inspect_exception_invalid_format():
