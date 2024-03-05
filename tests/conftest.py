@@ -5,6 +5,7 @@ import os
 import sys
 
 import pytest
+
 from dynaconf.base import LazySettings
 
 

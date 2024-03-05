@@ -4,6 +4,7 @@ import os
 from time import sleep
 
 import pytest
+
 from dynaconf import LazySettings
 from dynaconf.loaders.vault_loader import list_envs
 from dynaconf.loaders.vault_loader import load

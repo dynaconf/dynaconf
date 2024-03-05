@@ -3,9 +3,10 @@ from __future__ import annotations
 from collections import namedtuple
 
 import pytest
-from dynaconf.contrib import FlaskDynaconf
 from flask import Flask
 from tests_functional.flask_with_dotenv.app import app as flask_app
+
+from dynaconf.contrib import FlaskDynaconf
 
 DBDATA = namedtuple("DbData", ["server", "port"])
 

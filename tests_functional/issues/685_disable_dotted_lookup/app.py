@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import yaml
+
 from dynaconf import Dynaconf
 
 settings = Dynaconf(

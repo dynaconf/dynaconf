@@ -21,6 +21,7 @@ from textwrap import dedent
 from unittest import mock
 
 import pytest
+
 from dynaconf import Dynaconf
 
 

@@ -6,6 +6,7 @@ from collections import OrderedDict
 from os import environ
 
 import pytest
+
 from dynaconf import settings  # noqa
 from dynaconf.loaders.env_loader import load
 from dynaconf.loaders.env_loader import load_from_env

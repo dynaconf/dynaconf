@@ -11,6 +11,7 @@ from __future__ import annotations
 from textwrap import dedent
 
 import pytest
+
 from dynaconf import Dynaconf
 
 

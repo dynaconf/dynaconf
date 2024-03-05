@@ -4,6 +4,7 @@ import os
 from types import MappingProxyType
 
 import pytest
+
 from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf import ValidationError

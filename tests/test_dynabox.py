@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import namedtuple
 
 import pytest
+
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.box import Box
 from dynaconf.vendor.box import BoxKeyError
