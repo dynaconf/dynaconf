@@ -28,6 +28,7 @@ flake8-todo
 radon
 pre-commit
 mypy
+ruff
 
 # tools
 ipython<=8.12.1

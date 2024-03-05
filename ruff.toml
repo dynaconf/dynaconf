@@ -1,0 +1,21 @@
+line-length = 79
+exclude = ["dynaconf/vendor*"]
+
+[lint]
+select =[
+    "T100", # https://docs.astral.sh/ruff/rules/#flake8-debugger-t10
+    "T2", # https://docs.astral.sh/ruff/rules/#flake8-print-t20
+    "TD", # https://docs.astral.sh/ruff/rules/#flake8-todos-td
+]
+ignore = [
+    "F841", # (local variable assigned but never used, useful for debugging on exception)
+    "F403", # (star import `from foo import *` often used in __init__ files)
+    "E401", # (multiple imports on one line)
+    "F401", # (not used import)
+    "E402", # (Imports not on top)
+    # These W rules don't seem to work with ruff.
+    # Requested in this closed issue - seems open for discussion:
+    # https://github.com/astral-sh/ruff/issues/4125
+    # "W504", # (line break after binary operator, I prefer to put `and|or` at the end)
+    # "W503", # (line break before binary operator, black prefer to put `and|or` at the end)
+]
