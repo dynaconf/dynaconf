@@ -9,6 +9,7 @@ extend-select =[
     "T2", # https://docs.astral.sh/ruff/rules/#flake8-print-t20
     "TD", # https://docs.astral.sh/ruff/rules/#flake8-todos-td
     "UP", # https://docs.astral.sh/ruff/rules/#pyupgrade-up
+    "I", # https://docs.astral.sh/ruff/rules/#isort-i
 ]
 ignore = [
     "F841", # (local variable assigned but never used, useful for debugging on exception)
@@ -25,5 +26,5 @@ ignore = [
 
 [lint.isort]
 force-single-line = true
-case-sensitive = false
+order-by-type = false
 required-imports = ["from __future__ import annotations"]
