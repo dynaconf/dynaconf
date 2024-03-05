@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from flask import Flask
-
 from dynaconf import FlaskDynaconf
 from dynaconf import settings
-
+from flask import Flask
 
 app = Flask(__name__)
 

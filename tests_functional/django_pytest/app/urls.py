@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from app import views
 from django.urls import include
 from django.urls import path
+
+from app import views
 
 # namespacing
 app_name = "app"

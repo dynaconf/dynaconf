@@ -4,7 +4,6 @@ import os
 
 from dynaconf import settings
 
-
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # test default loader never gets cleaned

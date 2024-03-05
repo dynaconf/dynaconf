@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from fastapi import FastAPI
-
 from dynaconf import Dynaconf
+from fastapi import FastAPI
 
 settings = Dynaconf(
     settings_file="config.toml",  # location of config file

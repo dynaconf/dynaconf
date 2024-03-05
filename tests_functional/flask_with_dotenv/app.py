@@ -1,9 +1,8 @@
 from __future__ import annotations
 
+from dynaconf.contrib import FlaskDynaconf
 from flask import Flask
 from flask import render_template
-
-from dynaconf.contrib import FlaskDynaconf
 
 # create your app
 app = Flask(__name__)

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import click
-
 from dynaconf import Dynaconf
 
 settings = Dynaconf(

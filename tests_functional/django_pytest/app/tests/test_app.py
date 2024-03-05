@@ -5,9 +5,8 @@ import django
 django.setup()  # noqa
 
 import pytest
-
-from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 
 @pytest.mark.django_db

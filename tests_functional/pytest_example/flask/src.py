@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from flask import Flask
-
 from dynaconf.contrib import FlaskDynaconf
+from flask import Flask
 
 
 def create_app(**config):
