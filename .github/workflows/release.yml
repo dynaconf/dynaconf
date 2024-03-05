@@ -19,7 +19,7 @@ jobs:
         with:
           python-version: "3.8"
 
-      - name: "Prepare build environemnt"
+      - name: "Prepare build environment"
         run: |
           pip install --user python-minifier wheel setuptools
 

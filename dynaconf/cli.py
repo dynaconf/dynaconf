@@ -461,7 +461,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
 def get(key, default, env, unparse):
     """Returns the raw value for a settings key.
 
-    If result is a dict, list or tuple it is printes as a valid json string.
+    If result is a dict, list or tuple it is printed as a valid json string.
     """
     if env:
         env = env.strip()
@@ -860,7 +860,7 @@ def inspect(
     """
     Inspect the loading history of the given settings instance.
 
-    Filters by key and environement, otherwise shows all.
+    Filters by key and environment, otherwise shows all.
     """
     try:
         inspect_settings(

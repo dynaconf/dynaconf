@@ -924,7 +924,7 @@ class Settings:
         :param key: The key to store. Can be of any type.
         :param value: The raw value to parse and store
         :param loader_identifier: Optional loader name e.g: toml, yaml etc.
-                                  Or isntance of SourceMetadata
+                                  Or instance of SourceMetadata
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
         :param validate: Bool define if validation will be triggered
@@ -1256,14 +1256,10 @@ class Settings:
                     filepath = os.path.join(root_dir, str(_filename))
 
                 paths = [
-                    p
-                    for p in sorted(glob(filepath, root_dir=self._root_path))
-                    if ".local." not in p
+                    p for p in sorted(glob(filepath)) if ".local." not in p
                 ]
                 local_paths = [
-                    p
-                    for p in sorted(glob(filepath, root_dir=self._root_path))
-                    if ".local." in p
+                    p for p in sorted(glob(filepath)) if ".local." in p
                 ]
 
                 # Handle possible *.globs sorted alphanumeric
