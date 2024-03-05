@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from dynaconf import LazySettings
 from dynaconf.loaders.ini_loader import load
 from dynaconf.strategies.filtering import PrefixFilter

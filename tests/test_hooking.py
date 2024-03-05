@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from dynaconf import Dynaconf
 from dynaconf.hooking import Action
 from dynaconf.hooking import EagerValue

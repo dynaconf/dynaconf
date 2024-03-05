@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from dynaconf import LazySettings
 from dynaconf.loaders.toml_loader import encode_nulls
 from dynaconf.loaders.toml_loader import load

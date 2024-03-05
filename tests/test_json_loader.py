@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 
 import pytest
-
 from dynaconf import LazySettings
 from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.loaders.json_loader import load

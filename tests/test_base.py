@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 
 import pytest
-
 from dynaconf import Dynaconf
 from dynaconf import LazySettings
 from dynaconf import ValidationError

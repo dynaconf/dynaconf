@@ -7,7 +7,6 @@ from textwrap import dedent
 from unittest import mock
 
 import pytest
-
 from dynaconf import default_settings
 from dynaconf import LazySettings
 from dynaconf.cli import EXTS

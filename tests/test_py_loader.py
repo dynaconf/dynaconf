@@ -4,7 +4,6 @@ import io
 import os
 
 import pytest
-
 from dynaconf import default_settings
 from dynaconf import LazySettings
 from dynaconf.loaders.py_loader import load

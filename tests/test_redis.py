@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 
 import pytest
-
 from dynaconf import LazySettings
 from dynaconf.loaders.redis_loader import delete
 from dynaconf.loaders.redis_loader import load
