@@ -12,7 +12,7 @@ repos:
     # Ruff version.
     rev: v0.3.0
     hooks:
-      # Run the linter.
+      # Sort imports.
       - id: ruff
         args: [--select, I, --fix]
       # Run the linter.
