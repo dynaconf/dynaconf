@@ -13,10 +13,10 @@ from dynaconf.utils.parse_conf import try_to_encode
 from dynaconf.vendor.ruamel import yaml
 
 # Add support for Dynaconf Lazy values to YAML dumper
-yaml.SafeDumper.yaml_representers[
-    None
-] = lambda self, data: yaml.representer.SafeRepresenter.represent_str(
-    self, try_to_encode(data)
+yaml.SafeDumper.yaml_representers[None] = (
+    lambda self, data: yaml.representer.SafeRepresenter.represent_str(
+        self, try_to_encode(data)
+    )
 )
 
 
