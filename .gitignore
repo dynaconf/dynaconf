@@ -89,3 +89,6 @@ dynaconf/vendor/source
 .DS_Store
 
 .helix
+
+# pyenv
+.python-version
