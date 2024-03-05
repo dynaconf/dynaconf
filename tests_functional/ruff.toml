@@ -1,10 +1,5 @@
+# Extend the `ruff.toml` file in the parent directory...
+extend = "../ruff.toml"
+
 [lint]
-select =[
-    "T100", # Covers flake-debugger
-    # https://docs.astral.sh/ruff/rules/#flake8-todos-td
-    "TD001", # Covers flake8-todos
-    "TD004", # Covers flake8-todos
-    "TD005", # Covers flake8-todos
-    "TD006", # Covers flake8-todos
-    "TD007", # Covers flake8-todos
-]
+ignore = ["T2"] # flake8-print
