@@ -12,7 +12,6 @@ from dynaconf.base import RESERVED_ATTRS
 from dynaconf.base import Settings
 from dynaconf.loaders.base import SourceMetadata
 
-
 __all__ = [
     "hookable",
     "EMPTY_VALUE",
@@ -25,8 +24,7 @@ __all__ = [
 ]
 
 
-class Empty:
-    ...
+class Empty: ...
 
 
 EMPTY_VALUE = Empty()

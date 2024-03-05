@@ -28,7 +28,6 @@ from dynaconf.vendor import click
 from dynaconf.vendor import toml
 from dynaconf.vendor import tomllib
 
-
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import Settings
 
@@ -97,7 +96,6 @@ def set_settings(ctx, instance=None):
             )
 
     if settings is None:
-
         if instance is None and "--help" not in click.get_os_args():
             if ctx.invoked_subcommand and ctx.invoked_subcommand not in [
                 "init",
@@ -394,9 +392,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
 
     if settings_path:
         loader.write(settings_path, settings_data, merge=True)
-        click.echo(
-            f"🎛️  {settings_path.name} created to hold your settings.\n"
-        )
+        click.echo(f"🎛️  {settings_path.name} created to hold your settings.\n")
 
     if secrets_path:
         loader.write(secrets_path, secrets_data, merge=True)
@@ -661,7 +657,6 @@ def write(to, _vars, _secrets, path, env, y):
     loader = importlib.import_module(f"dynaconf.loaders.{to}_loader")
 
     if to in EXTS:
-
         # Lets write to a file
         path = Path(path)
 
@@ -807,13 +802,11 @@ def validate(path):  # pragma: no cover
         sys.exit(1)
 
 
-from dynaconf.utils.inspect import (
-    KeyNotFoundError,
-    builtin_dumpers,
-    inspect_settings,
-    EnvNotFoundError,
-    OutputFormatError,
-)
+from dynaconf.utils.inspect import builtin_dumpers
+from dynaconf.utils.inspect import EnvNotFoundError
+from dynaconf.utils.inspect import inspect_settings
+from dynaconf.utils.inspect import KeyNotFoundError
+from dynaconf.utils.inspect import OutputFormatError
 
 INSPECT_FORMATS = list(builtin_dumpers.keys())
 
