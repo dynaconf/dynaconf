@@ -20,7 +20,6 @@ lovely-pytest-docker
 tox
 
 # style check
-pep8-naming
 radon
 pre-commit
 mypy

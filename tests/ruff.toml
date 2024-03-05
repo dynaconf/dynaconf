@@ -3,7 +3,6 @@ extend = "../ruff.toml"
 
 [lint]
 ignore = [
-    "T2", # flake8-print
-    "TD", # flake8-todos
-    "N806", # flake8-todos
+    "N806", # Lowercase variables
+    "N802", # Lowercase function names
 ]
