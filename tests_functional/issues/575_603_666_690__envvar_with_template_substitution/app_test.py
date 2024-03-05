@@ -13,6 +13,7 @@ https://github.com/dynaconf/dynaconf/issues/575
 https://github.com/dynaconf/dynaconf/issues/603
 https://github.com/dynaconf/dynaconf/issues/690
 """
+
 from __future__ import annotations
 
 import os
@@ -20,7 +21,6 @@ from textwrap import dedent
 from unittest import mock
 
 import pytest
-
 from dynaconf import Dynaconf
 
 

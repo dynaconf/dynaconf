@@ -18,9 +18,9 @@ os.environ["DYNACONF_PORT"] = "@int 5000"
 os.environ["DYNACONF_VALUE"] = "@float 42.1"
 os.environ["DYNACONF_ALIST"] = '@json ["item1", "item2", "item3"]'
 os.environ["DYNACONF_ADICT"] = '@json {"key": "value"}'
-os.environ[
-    "DYNACONF_DEBUG"
-] = "@bool true"  # on, enabled, 1, active accepted as keyword here
+os.environ["DYNACONF_DEBUG"] = (
+    "@bool true"  # on, enabled, 1, active accepted as keyword here
+)
 
 # Now when reading settings they will be get from your sources dynamically
 # defined data types are casted (but you can also do explicitly if want)

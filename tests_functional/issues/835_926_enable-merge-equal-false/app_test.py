@@ -5,12 +5,12 @@ Merge misbehaviour:
 https://github.com/dynaconf/dynaconf/issues/835
 https://github.com/dynaconf/dynaconf/issues/926
 """
+
 from __future__ import annotations
 
 from textwrap import dedent
 
 import pytest
-
 from dynaconf import Dynaconf
 
 
@@ -232,7 +232,6 @@ def test_file_scope_merge_false(tmp_path):
 
 
 def test_local_scope_merge_false_noenv_files(tmp_path):
-
     file_a = create_file(
         tmp_path / "a.toml",
         """\
@@ -262,7 +261,6 @@ def test_local_scope_merge_false_noenv_files(tmp_path):
 
 
 def test_local_scope_merge_false_env_nested(tmp_path):
-
     file_a = create_file(
         tmp_path / "a.toml",
         """\
