@@ -13,7 +13,6 @@ from dynaconf.utils import DynaconfDict
 
 
 def test_py_loader_from_file(tmpdir):
-
     settings = DynaconfDict()
     dummy_path = tmpdir.join("dummy_module.py")
     with open(
@@ -29,7 +28,6 @@ def test_py_loader_from_file(tmpdir):
 
 
 def test_py_loader_from_module(tmpdir):
-
     settings = DynaconfDict()
     dummy_folder = tmpdir.mkdir("dummy")
 

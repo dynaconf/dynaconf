@@ -1,6 +1,7 @@
 """
 Test dynaconf.utils.inspect:inspect
 """
+
 from __future__ import annotations
 
 import copy
