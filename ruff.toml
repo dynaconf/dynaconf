@@ -4,7 +4,7 @@ line-length = 79
 exclude = ["dynaconf/vendor*"]
 
 [lint]
-select =[
+extend-select =[
     "T100", # https://docs.astral.sh/ruff/rules/#flake8-debugger-t10
     "T2", # https://docs.astral.sh/ruff/rules/#flake8-print-t20
     "TD", # https://docs.astral.sh/ruff/rules/#flake8-todos-td
@@ -22,3 +22,6 @@ ignore = [
     # "W504", # (line break after binary operator, I prefer to put `and|or` at the end)
     # "W503", # (line break before binary operator, black prefer to put `and|or` at the end)
 ]
+
+[lint.isort]
+force-single-line = true

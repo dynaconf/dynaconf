@@ -13,15 +13,18 @@ repos:
       - id: debug-statements
       - id: fix-encoding-pragma
         args: [--remove]
-  - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.1.0
-    hooks:
-      - id: reorder-python-imports
-        args: [--py37-plus, --add-import, 'from __future__ import annotations']
+  # - repo: https://github.com/asottile/reorder_python_imports
+  #   rev: v3.1.0
+  #   hooks:
+  #     - id: reorder-python-imports
+  #       args: [--py37-plus, --add-import, 'from __future__ import annotations']
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
     rev: v0.3.0
     hooks:
+      # Run the linter.
+      - id: ruff
+        args: [--select, I, --fix]
       # Run the linter.
       - id: ruff
       # Run the formatter.
