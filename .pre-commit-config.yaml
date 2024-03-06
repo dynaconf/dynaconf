@@ -24,3 +24,8 @@ repos:
     hooks:
       - id: mypy
         files: ^dynaconf/
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.18.2
+    hooks:
+      - id: typos
+        args: []  # Overrides default to write changes.

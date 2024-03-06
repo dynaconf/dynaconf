@@ -160,6 +160,6 @@ def test_setting_instance_options_works_case_insensitive():
     assert app.config.env_switcher_for_dynaconf == "MY_ENV_SWITCHER"
     assert app.config.environments_for_dynaconf is False
 
-    # oddly, using '_for_dynaconf' won't work, altough
+    # oddly, using '_for_dynaconf' won't work, although
     # the option functionality seems to work as expected
     assert app.config.load_dotenv is False

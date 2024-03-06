@@ -24,6 +24,7 @@ radon
 pre-commit
 mypy
 ruff
+typos
 
 # tools
 ipython<=8.12.1

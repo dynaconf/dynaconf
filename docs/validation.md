@@ -177,7 +177,7 @@ Validator(
   must_exist=True, # redundant but allowed
   startswith="user_",
   cast=str,
-  condition=lambda v: v not in FORBIDEN_USERS,
+  condition=lambda v: v not in FORBIDDEN_USERS,
   ...
 )
 ```
