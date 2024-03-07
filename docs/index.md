@@ -103,7 +103,9 @@ pip install dynaconf
         number = 1234
         a_float = 56.8
         a_list = [1, 2, 3, 4]
-        a_dict = {hello="world"}
+
+        [a_dict]
+        hello = "world"
 
         [a_dict.nested]
         other_level = "nested value"
