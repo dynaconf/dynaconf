@@ -13,7 +13,6 @@ extend-select =[
     "N", # https://docs.astral.sh/ruff/rules/#pep8-naming-n
 ]
 ignore = [
-    "F841", # (local variable assigned but never used, useful for debugging on exception)
     # These W rules don't seem to work with ruff.
     # Requested in this closed issue - seems open for discussion:
     # https://github.com/astral-sh/ruff/issues/4125
