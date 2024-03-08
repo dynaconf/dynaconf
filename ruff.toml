@@ -14,7 +14,6 @@ extend-select =[
 ]
 ignore = [
     "F841", # (local variable assigned but never used, useful for debugging on exception)
-    "F403", # (star import `from foo import *` often used in __init__ files)
     # These W rules don't seem to work with ruff.
     # Requested in this closed issue - seems open for discussion:
     # https://github.com/astral-sh/ruff/issues/4125
@@ -23,6 +22,10 @@ ignore = [
 ]
 
 [lint.per-file-ignores]
+"*/__init__.py" = [
+    "F401", # (not used import)
+    "F403", # (star import `from foo import *`)
+]
 "tests/*" = [
     "N806", # Lowercase variables
     "N802", # Lowercase function names
