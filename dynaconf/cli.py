@@ -20,6 +20,11 @@ from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
 from dynaconf.utils.functional import empty
+from dynaconf.utils.inspect import builtin_dumpers
+from dynaconf.utils.inspect import EnvNotFoundError
+from dynaconf.utils.inspect import inspect_settings
+from dynaconf.utils.inspect import KeyNotFoundError
+from dynaconf.utils.inspect import OutputFormatError
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import unparse_conf_data
 from dynaconf.validator import ValidationError
@@ -801,12 +806,6 @@ def validate(path):  # pragma: no cover
         click.echo(click.style("Validation error!", fg="white", bg="red"))
         sys.exit(1)
 
-
-from dynaconf.utils.inspect import builtin_dumpers
-from dynaconf.utils.inspect import EnvNotFoundError
-from dynaconf.utils.inspect import inspect_settings
-from dynaconf.utils.inspect import KeyNotFoundError
-from dynaconf.utils.inspect import OutputFormatError
 
 INSPECT_FORMATS = list(builtin_dumpers.keys())
 
