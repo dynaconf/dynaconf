@@ -16,7 +16,7 @@ ignore = [
     "F841", # (local variable assigned but never used, useful for debugging on exception)
     "F403", # (star import `from foo import *` often used in __init__ files)
     "E401", # (multiple imports on one line)
-    "F401", # (not used import)
+
     # These W rules don't seem to work with ruff.
     # Requested in this closed issue - seems open for discussion:
     # https://github.com/astral-sh/ruff/issues/4125
@@ -34,6 +34,7 @@ ignore = [
     "TD", # flake8-todos
     "N806", # flake8-todos
     "E402", # (Imports not on top)
+    "F401", # (not used import)
 ]
 
 [lint.isort]

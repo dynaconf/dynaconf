@@ -9,7 +9,6 @@ from pathlib import PosixPath
 from typing import Any
 from typing import Callable
 from typing import Literal
-from typing import Optional
 from typing import Protocol
 from typing import TextIO
 from typing import TYPE_CHECKING

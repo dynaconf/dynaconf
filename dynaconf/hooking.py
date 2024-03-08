@@ -5,8 +5,6 @@ from enum import Enum
 from functools import wraps
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import List
 
 from dynaconf.base import RESERVED_ATTRS
 from dynaconf.base import Settings
