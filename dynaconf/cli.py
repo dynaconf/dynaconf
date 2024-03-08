@@ -34,7 +34,7 @@ from dynaconf.vendor import toml
 from dynaconf.vendor import tomllib
 
 if TYPE_CHECKING:  # pragma: no cover
-    from dynaconf.base import Settings
+    from dynaconf.base import Settings  # noqa: F401
 
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
@@ -82,7 +82,7 @@ def set_settings(ctx, instance=None):
         try:
             # Django extension v2
             from django.conf import settings  # noqa
-            import dynaconf
+            import dynaconf  # noqa: F401
             import django
 
             # see https://docs.djangoproject.com/en/4.2/ref/applications/

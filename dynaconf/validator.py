@@ -13,7 +13,7 @@ from dynaconf.utils import ensure_a_list
 from dynaconf.utils.functional import empty
 
 if TYPE_CHECKING:
-    from dynaconf.base import LazySettings
+    from dynaconf.base import LazySettings  # noqa: F401
     from dynaconf.base import Settings
 
 EQUALITY_ATTRS = (
