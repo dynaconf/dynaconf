@@ -1,8 +1,0 @@
-# Extend the `ruff.toml` file in the parent directory...
-extend = "../ruff.toml"
-
-[lint]
-ignore = [
-    "N806", # Lowercase variables
-    "N802", # Lowercase function names
-]

@@ -4,9 +4,9 @@ from collections import namedtuple
 
 import pytest
 from flask import Flask
-from tests_functional.flask_with_dotenv.app import app as flask_app
 
 from dynaconf.contrib import FlaskDynaconf
+from tests_functional.flask_with_dotenv.app import app as flask_app
 
 DBDATA = namedtuple("DbData", ["server", "port"])
 

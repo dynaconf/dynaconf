@@ -1,9 +1,0 @@
-# Extend the `ruff.toml` file in the parent directory...
-extend = "../ruff.toml"
-
-[lint]
-ignore = [
-    "T2", # flake8-print
-    "TD", # flake8-todos
-    "N806", # flake8-todos
-]
