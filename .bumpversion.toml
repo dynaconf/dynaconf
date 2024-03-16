@@ -5,7 +5,7 @@ parse = """(?x)
     (?P<minor>0|[1-9]\\d*)\\.
     (?P<patch>0|[1-9]\\d*)
     (?:
-        -                             # dash seperator for pre-release section
+        -                             # dash separator for pre-release section
         (?P<pre>[a-zA-Z-]+)           # pre-release label
         (?P<pre_n>0|[1-9]\\d*)        # pre-release version number
     )?                                # pre-release section is optional
@@ -19,15 +19,17 @@ replace = "{new_version}"
 regex = false
 ignore_missing_version = false
 ignore_missing_files = false
-allow_dirty = true # allow bumping when there are uncommited git files
+allow_dirty = true # allow bumping when there are uncommitted git files
 
 # that is used explicitly for release
-commit = false
+ignore_missing_version = false
 tag = false
 sign_tags = false
-tag_name = "{new_version}"
-tag_message = "{new_version} Release"
-message = "Release version {new_version}"
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+allow_dirty = false
+commit = false
+message = "Bump version: {current_version} → {new_version}"
 commit_args = ""
 
 [tool.bumpversion.parts.pre]
