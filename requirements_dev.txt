@@ -1,15 +1,18 @@
 # base
 redis
-wheel
-twine
 flask>=1.0
 setuptools>=38.6.0
 configobj
 hvac
 django
 django-debug-toolbar
-gitchangelog
 boto3
+
+# release
+wheel
+twine
+git-changelog
+bump-my-version
 
 # testing
 pytest
