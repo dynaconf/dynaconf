@@ -77,7 +77,6 @@ dist: clean
 	@make source_vendor
 
 publish:
-	make run-tox
 	@twine upload dist/*
 
 clean:

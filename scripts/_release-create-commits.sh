@@ -7,13 +7,18 @@
 set -euo pipefail
 
 # create release-commit
-git add dynaconf/VERSION mkdocs.yml CHANGELOG.md
+echo "[COMMIT] Creating release-commit (x.y.z)"
+git add \
+    CHANGELOG.md \
+    dynaconf/VERSION \
+    mkdocs.yml \
+    .bumpversion.toml
 
-LATEST_RELEASE="$(bump-my-version show scm_info.current_version)"
+LATEST_RELEASE="$(git describe --tags --abbrev=0)"
 NEW_VERSION="$(bump-my-version show current_version)"
 
-COMMIT_TITLE="Release version ${NEW_VERSION}"
-COMMIT_MSG="$(git shortlog "${LATEST_RELEASE}.." | sed 's/^./    &/')"
+COMMIT_TITLE="Release version ${NEW_VERSION:?is-empty}"
+COMMIT_MSG="$(git shortlog "${LATEST_RELEASE:?is-empty}.." | sed 's/^./    &/')"
 TAG_TITLE="${NEW_VERSION}"
 TAG_MSG="Released in $(date -Idate) by $(git config user.name) <$(git config user.email)>"
 
@@ -25,4 +30,7 @@ git tag --annotate "${TAG_TITLE}" \
     --message "${TAG_MSG}" \
 
 # create bump-commit
+echo "[COMMIT] Creating bump-commit (x.y.z -> x.y.next-dev0)"
 bump-my-version bump patch --commit
+
+echo "[COMMIT] Done."
