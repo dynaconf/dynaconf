@@ -31,12 +31,8 @@ Changelog
 - Replace lint and formatting tools with ruff (#1074). *By Mitchell Edmunds*.
 - Replace/Update release script (#1078). *By Pedro Brochado*.
 - add "typos" tool and run it in codebase/docs (#1063). *By Mitchell Edmunds*.
-- fix create-release-commit.sh permission. *By Pedro Brochado*.
-- fix shell script in release.yml (2). *By Pedro Brochado*.
-- fix shell script in release.yml. *By Pedro Brochado*.
 - move release workflow to GitHub actions (partial) (#1043). *By Pedro Brochado*.
 - Fix misspelled variable name (#1032). *By HAMASHITA*.
-- Fix misspelled GitHub action names on main.yml (#1033). *By Pedro Brochado*.
 
 
 ## [3.2.4](https://github.com/dynaconf/dynaconf/releases/tag/3.2.4) - 2023-10-30
