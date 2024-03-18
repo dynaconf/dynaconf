@@ -9,6 +9,5 @@ parse-trailers = false
 repository = "."
 sections = ["fix", "feat", "doc", "chore"]
 template = "path:.github/changelog_template.md.jinja"
-# version-regex = "^## \\\\[(?P<version>v?[^\\\\]]+)"
 provider = "github"
 zerover = true
