@@ -11,7 +11,6 @@ from dynaconf import ValidationError
 from dynaconf import Validator
 from dynaconf.validator import ValidatorList
 
-
 TOML = """
 [default]
 EXAMPLE = true
@@ -132,7 +131,6 @@ def test_validators_on_init(tmpdir):
 
 
 def test_validators_register(tmpdir):
-
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 
@@ -205,7 +203,6 @@ def test_validators_register(tmpdir):
 
 
 def test_dotted_validators(settings):
-
     settings.set(
         "PARAMS",
         {"PASSWORD": "secret", "SSL": {"CONTEXT": "SECURE", "ENABLED": True}},

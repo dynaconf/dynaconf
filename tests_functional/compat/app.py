@@ -6,7 +6,6 @@ import tempfile
 from dynaconf import LazySettings
 from dynaconf.utils import RENAMED_VARS
 
-
 # 0 given a bare settings
 settings = LazySettings(environments=True)
 

@@ -4,7 +4,6 @@ import pytest
 
 from dynaconf import validator_conditions
 
-
 positive_conditions = [
     ("eq", 1, 1),
     ("ne", 1, 2),

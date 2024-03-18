@@ -239,7 +239,6 @@ def test_tomlfy_unparsable(test_input, settings):
 
 
 def test_missing_sentinel():
-
     # The missing singleton should always compare truthfully to itself
     assert missing == missing
 
@@ -347,7 +346,6 @@ def test_trimmed_split():
 
 
 def test_ensure_a_list():
-
     # No data is empty list
     assert ensure_a_list(None) == []
 

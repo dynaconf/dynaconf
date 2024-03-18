@@ -4,7 +4,6 @@ import os
 
 from dynaconf import LazySettings
 
-
 TOML = """
 [default]
 DATA = true
@@ -18,7 +17,6 @@ DASHBOARD=false
 
 
 def test_feature_flag(tmpdir):
-
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
 

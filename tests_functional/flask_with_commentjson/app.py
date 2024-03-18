@@ -5,7 +5,6 @@ from flask import render_template
 
 from dynaconf import FlaskDynaconf
 
-
 # create your app
 app = Flask(__name__)
 

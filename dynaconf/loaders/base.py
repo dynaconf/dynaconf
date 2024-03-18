@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import io
 import warnings
 from typing import NamedTuple
 

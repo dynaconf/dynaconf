@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: all citest clean mypy dist docs install pep8 publish run-pre-commit run-tox setup-pre-commit test test_functional test_only test_redis test_vault help coverage-report
+.PHONY: all citest clean mypy dist docs install publish run-pre-commit run-tox setup-pre-commit test test_functional test_only test_redis test_vault help coverage-report
 
 help:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
@@ -39,7 +39,7 @@ coverage-report:
 mypy:
 	mypy dynaconf/ --exclude '^dynaconf/vendor*'
 
-test: pep8 mypy test_only
+test: mypy test_only
 
 citest:
 	py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml
@@ -62,14 +62,6 @@ run-pre-commit:
 	rm -rf .tox/
 	rm -rf build/
 	pre-commit run --all-files
-
-pep8:
-	# Flake8 ignores
-	#   F841 (local variable assigned but never used, useful for debugging on exception)
-	#   W504 (line break after binary operator, I prefer to put `and|or` at the end)
-	#   F403 (star import `from foo import *` often used in __init__ files)
-	# flake8 dynaconf --ignore=F403,W504,W503,F841,E401,F401,E402 --exclude=dynaconf/vendor
-	flake8 dynaconf --exclude=dynaconf/vendor*
 
 dist: clean
 	@make minify_vendor

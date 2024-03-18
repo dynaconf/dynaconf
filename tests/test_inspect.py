@@ -1,6 +1,7 @@
 """
 Test dynaconf.utils.inspect:inspect
 """
+
 from __future__ import annotations
 
 import copy
@@ -18,7 +19,6 @@ from dynaconf.utils.inspect import inspect_settings
 from dynaconf.utils.inspect import KeyNotFoundError
 from dynaconf.utils.inspect import OutputFormatError
 from dynaconf.validator import Validator
-from dynaconf.vendor.ruamel import yaml
 
 
 def create_file(filename: str, data: str) -> str:

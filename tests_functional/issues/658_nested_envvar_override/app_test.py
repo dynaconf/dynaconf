@@ -10,6 +10,7 @@ Instead
 
 https://github.com/dynaconf/dynaconf/issues/658
 """
+
 from __future__ import annotations
 
 from textwrap import dedent

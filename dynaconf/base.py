@@ -1231,7 +1231,6 @@ class Settings:
         if files:
             already_loaded = set()
             for _filename in files:
-
                 # load_file() will handle validation later
                 with suppress(ValidationError):
                     if py_loader.try_to_load_from_py_module_name(

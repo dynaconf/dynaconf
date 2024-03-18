@@ -107,7 +107,6 @@ def test_hook_dynaconf_class_after_get():
 
 def test_hooked_dict():
     class HookedDict(BaseHookedSettings, dict):
-
         _store = {}
 
         @hookable
@@ -124,8 +123,7 @@ def test_hooked_dict():
 
 
 def test_hooked_dict_store():
-    class HookedDict(BaseHookedSettings, dict):
-        ...
+    class HookedDict(BaseHookedSettings, dict): ...
 
     d = HookedDict(
         key="to",
@@ -142,7 +140,6 @@ def test_hook_before_and_after_bypass_method():
     """Method is never executed, before and after hooks are called"""
 
     class HookedSettings(BaseHookedSettings):
-
         _store = {}
 
         _registered_hooks = {
@@ -181,8 +178,7 @@ def test_hook_runs_after_method():
         assert d.get("feature_enabled") is False
         return DATABASE.get(key, value.value)
 
-    class HookedSettings(BaseHookedSettings):
-        ...
+    class HookedSettings(BaseHookedSettings): ...
 
     settings = HookedSettings(
         feature_enabled=False,

@@ -23,14 +23,10 @@ lovely-pytest-docker
 tox
 
 # style check
-flake8
-pep8-naming
-flake8-debugger
-flake8-print
-flake8-todo
 radon
 pre-commit
 mypy
+ruff
 typos
 
 # tools
