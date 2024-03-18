@@ -1,4 +1,4 @@
-# advanced usage
+# Advanced Usage
 
 ## Hooks
 

@@ -15,9 +15,6 @@ def evaluate_lazy_format(f):
 
     @wraps(f)
     def evaluate(dynabox, item, *args, **kwargs):
-        if dynabox._box_config.get("_bypass_evaluation") is True:
-            return f(dynabox, item, *args, **kwargs)
-
         value = f(dynabox, item, *args, **kwargs)
         settings = dynabox._box_config["box_settings"]
 
