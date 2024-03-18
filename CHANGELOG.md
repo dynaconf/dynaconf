@@ -2,6 +2,42 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.2.5](https://github.com/pedro-psb/dynaconf/releases/tag/3.2.5) - 2024-03-18
+
+### Bug Fixes
+
+- `_bypass_evaluation` showing in end-user settings (#1071). *By Pedro Brochado*.
+- dependabot alert 21 about Django (on tests) (#1067). *By Bruno Rocha*.
+- include load with relative root path (#1049). *By Pedro Brochado*.
+
+### Features
+
+- Add `@get` converter to alias existing keys (#1040). *By Bruno Rocha*.
+
+### Docs
+
+- fix wrong info about validation trigger on insantiation (#1076). *By Pedro Brochado*.
+- fix incorrect combination of TOML table and inline table (#1070). *By Aaron DeVore*.
+- Fix mkdocs warnings for cleaner build output (#1061). *By Mitchell Edmunds*.
+- Add dynaconf API to docs with mkdocstrings (#1058). *By Mitchell Edmunds*.
+- fix argument `env` in Validation at validation.md (#1051). *By Mostafa Alayesh*.
+- fix click help syntax error (#1041). *By xiaohuanshu*.
+- replace dead link to flask subclassing page (#1031). *By Adam Kjems*.
+- Add explicit Dynaconf instantiation to sample code (#1022). *By Lucas Limeira*.
+- Fix the syntax errors in the sample program. (#1027). *By Sun Jianjiao*.
+
+### Chore
+
+- Replace lint and formatting tools with ruff (#1074). *By Mitchell Edmunds*.
+- Replace/Update release script (#1078). *By Pedro Brochado*.
+- add "typos" tool and run it in codebase/docs (#1063). *By Mitchell Edmunds*.
+- fix create-release-commit.sh permission. *By Pedro Brochado*.
+- fix shell script in release.yml (2). *By Pedro Brochado*.
+- fix shell script in release.yml. *By Pedro Brochado*.
+- move release workflow to GitHub actions (partial) (#1043). *By Pedro Brochado*.
+- Fix misspelled variable name (#1032). *By HAMASHITA*.
+- Fix misspelled GitHub action names on main.yml (#1033). *By Pedro Brochado*.
+
 
 ## [3.2.4](https://github.com/dynaconf/dynaconf/releases/tag/3.2.4) - 2023-10-30
 
