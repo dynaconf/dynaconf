@@ -42,6 +42,3 @@ filename = "mkdocs.yml"
 search = "site_name: Dynaconf - {current_version}"
 replace = "site_name: Dynaconf - {new_version}"
 
-[[tool.bumpversion.files]]
-filename = "CHANGELOG.md"
-ignore_missing_version = true # only used on release script
