@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dynaconf import settings
 
-
 print(
     f"# 1 all values in {settings.DEFAULT_ENV_FOR_DYNACONF}"
     f"{settings.current_env}: env of yaml file:"

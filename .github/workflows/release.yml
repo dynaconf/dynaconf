@@ -1,0 +1,109 @@
+name: publish-and-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Release tag (e.g. 3.2.1)"
+      release-again:
+        description: "Just checking."
+
+jobs:
+  build-and-test:
+    name: "Build and Test distribution"
+    runs-on: ubuntu-latest
+    if: ${{ inputs.release == inputs.release-again }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - name: "Prepare build environment"
+        run: |
+          pip install --user python-minifier wheel setuptools
+
+      - name: "Build and Check distribution"
+        run: |
+          make dist
+          .github/scripts/dist-health-check.sh
+
+      - name: Save dist files
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-folder
+          path: dist
+          if-no-files-found: "error"
+
+  create-release-commit:
+    name: "Create and push release commit, post-release"
+    needs: "build-and-test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - name: "Prepare release tools"
+        run: |
+          pip install --user git-changelog
+
+      - name: "Bump Versions, update changelog and create release-commit"
+        run: |
+          .github/scripts/create-release-commit.sh {{ github.event.input.release}}
+
+      - name: "Push commit to master"
+        run: |
+          echo "Pushing commit to master"
+          git log --oneline -5
+          git show HEAD
+
+
+  pypi-publish:
+    name: "Upload release to PyPI"
+    needs: create-release-commit
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/dynaconf
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+      - name: Get distribution
+        uses: actions/download-artifact@v3
+        with:
+          name: dist-folder
+          path: dist
+
+      - name: Test publish
+        run: |
+          tree dist
+
+      # - name: Publish package distributions to PyPI
+      #   uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    name: Create GitHub Release
+    needs: pypi-publish
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+
+    - name: Install git-changelog
+      run: pip install git-changelog
+
+    - name: Prepare release notes
+      run: |
+        git-changelog --release-notes > release-notes.md
+        echo "Release notes being used:"
+        cat release-notes.md
+
+    # - name: Create GitHub release
+    #   uses: softprops/action-gh-release@v1
+    #   with:
+    #     body_path: release-notes.md

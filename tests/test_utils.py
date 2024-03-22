@@ -12,6 +12,7 @@ import pytest
 from dynaconf import add_converter
 from dynaconf import default_settings
 from dynaconf import Dynaconf
+from dynaconf import DynaconfFormatError
 from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
@@ -230,7 +231,7 @@ def test_tomlfy(settings):
 
 
 @pytest.mark.parametrize("test_input", ["something=42"])
-def test_tomlfy_unparseable(test_input, settings):
+def test_tomlfy_unparsable(test_input, settings):
     assert (
         parse_conf_data(test_input, tomlfy=True, box_settings=settings)
         == test_input
@@ -238,7 +239,6 @@ def test_tomlfy_unparseable(test_input, settings):
 
 
 def test_missing_sentinel():
-
     # The missing singleton should always compare truthfully to itself
     assert missing == missing
 
@@ -346,7 +346,6 @@ def test_trimmed_split():
 
 
 def test_ensure_a_list():
-
     # No data is empty list
     assert ensure_a_list(None) == []
 
@@ -355,7 +354,7 @@ def test_ensure_a_list():
     assert ensure_a_list((1, 2)) == [1, 2]
     assert ensure_a_list({1, 2}) == [1, 2]
 
-    # A string is trimmed_splitted
+    # A string is trimmed_split
     assert ensure_a_list("ab.toml") == ["ab.toml"]
     assert ensure_a_list("ab.toml,cd.toml") == ["ab.toml", "cd.toml"]
     assert ensure_a_list("ab.toml;cd.toml") == ["ab.toml", "cd.toml"]
@@ -519,3 +518,21 @@ def test_boolean_fix():
     assert boolean_fix("TrueNotOnly") == "TrueNotOnly"
     assert boolean_fix("FalseNotOnly") == "FalseNotOnly"
     assert boolean_fix("NotOnlyFalse") == "NotOnlyFalse"
+
+
+def test_get_converter(settings):
+    """Ensure the work of @get converter"""
+    settings.set("FOO", 12)
+    settings.set("BAR", "@get FOO")
+    assert settings.BAR == settings.FOO == 12
+
+    settings.set("ZAZ", "@get RAZ @float 42")
+    assert settings.ZAZ == 42.0
+
+
+def test_get_converter_error_when_converting(settings):
+    """Malformed declaration errors"""
+    settings.set("BLA", "@get")
+
+    with pytest.raises(DynaconfFormatError):
+        settings.BLA

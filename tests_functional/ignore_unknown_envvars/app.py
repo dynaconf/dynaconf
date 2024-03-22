@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dynaconf import LazySettings
 
-
 # No prefix.
 settings = LazySettings(
     settings_file="settings.toml",

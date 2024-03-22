@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dynaconf import Dynaconf
 
-
 settings = Dynaconf(
     settings_file="config.toml",  # location of config file
     environments=["ansible", "puppet"],  # available modes/environments

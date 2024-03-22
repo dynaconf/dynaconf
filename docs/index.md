@@ -93,7 +93,7 @@ pip install dynaconf
             settings_files=['settings.toml', '.secrets.toml'],
         )
         ```
-        More options are described on [Dynaconf Configuration](/configuration/)
+        More options are described on [Dynaconf Configuration](configuration.md)
 
     === "settings.toml"
         **Optionally** store settings in a file (or in multiple files)
@@ -103,12 +103,14 @@ pip install dynaconf
         number = 1234
         a_float = 56.8
         a_list = [1, 2, 3, 4]
-        a_dict = {hello="world"}
+
+        [a_dict]
+        hello = "world"
 
         [a_dict.nested]
         other_level = "nested value"
         ```
-        More details in [Settings Files](/settings_files/)
+        More details in [Settings Files](settings_files.md)
 
     === ".secrets.toml"
         **Optionally** store sensitive data in a local-only file `.secrets.toml`
@@ -125,7 +127,7 @@ pip install dynaconf
         .secrets.*
         ```
 
-        read more on [Secrets](/secrets/)
+        read more on [Secrets](secrets.md)
 
     === "env vars"
         **Optionally** override using prefixed environment variables. (`.env` files are also supported)
@@ -187,7 +189,7 @@ pip install dynaconf
 
         > ℹ️ On Flask, settings files are layered in multiple environments by default, you can disable it by passing `environments=False` to FlaskDynaconf extension.
 
-        More details in [Settings Files](/settings_files/)
+        More details in [Settings Files](settings_files.md)
 
     === ".secrets.toml"
         **Optionally** store sensitive data in a local-only file `.secrets.toml`
@@ -205,7 +207,7 @@ pip install dynaconf
         .secrets.*
         ```
 
-        read more on [Secrets](/secrets/)
+        read more on [Secrets](secrets.md)
 
     === "env vars"
         **Optionally** override any setting using `FLASK_` prefixed environment variables. (`.env` files are also supported)
@@ -218,7 +220,7 @@ pip install dynaconf
 
     ---
 
-    Dynaconf can also **load your Flask extensions** for you see more details in [Flask Extension](/flask/)
+    Dynaconf can also **load your Flask extensions** for you see more details in [Flask Extension](flask.md)
 
 
 ??? "Or using Django"
@@ -301,7 +303,7 @@ pip install dynaconf
 
         > ℹ️ On Django settings files are layered in multiple environments by default, you can disable it by passing `environments=False` to FlaskDynaconf extension.
 
-        More details in [Settings Files](/settings_files/)
+        More details in [Settings Files](settings_files.md)
 
     === ".secrets.yaml"
         **Optionally** store sensitive data in a local-only file `.secrets.toml`
@@ -319,7 +321,7 @@ pip install dynaconf
         .secrets.*
         ```
 
-        read more on [Secrets](/secrets/)
+        read more on [Secrets](secrets.md)
 
     === "env vars"
         **Optionally** override any setting using `DJANGO_` prefixed environment variables. (`.env` files are also supported)
@@ -346,21 +348,21 @@ pip install dynaconf
 
     ---
 
-    More details in [Django Extension](django/)
+    More details in [Django Extension](django.md)
 
 ---
 
 !!! tip
-    The `dynaconf` CLI has more useful commands such as `list | export`, `init`, `write` and `validate` read more on [CLI](/cli/)
+    The `dynaconf` CLI has more useful commands such as `list | export`, `init`, `write` and `validate` read more on [CLI](cli.md)
 
 ## Defining your settings variables
 
-Dynaconf prioritizes the use of [environment variables](/envvars/) and
-you can optionally store settings in [Settings Files](/settings_files/) using any of `toml|yaml|json|ini|py` extension.
+Dynaconf prioritizes the use of [environment variables](envvars.md) and
+you can optionally store settings in [Settings Files](settings_files.md) using any of `toml|yaml|json|ini|py` extension.
 
 ### On env vars
 
-[environment variables](/envvars/) are loaded by Dynaconf if prefixed either with
+[environment variables](envvars.md) are loaded by Dynaconf if prefixed either with
 `DYNACONF_` or a `CUSTOM_` name that you can customize on your settings instance, or
 `FLASK_` and `DJANGO_` respectively if you are using extensions.
 
@@ -386,7 +388,7 @@ export DYNACONF_NESTED__LEVEL__KEY=1         # Double underlines
                                              # }
 ```
 
-More details on [environment variables](/envvars/).
+More details on [environment variables](envvars.md).
 
 ### On files
 
@@ -411,7 +413,7 @@ The following are the currently supported formats:
 !!! tip
     Can't find the file format you need for your settings?
     You can create your custom loader and read any data source.
-    read more on [extending dynaconf](/advanced/)
+    read more on [extending dynaconf](advanced.md)
 
 #### Key types
 
@@ -548,7 +550,7 @@ You can for example name it `[testing]` or `[anything]`
     `env="development"` to `Dynaconf` class on instantiation.
 
 
-Read more on [Settings Files](/settings_files/)
+Read more on [Settings Files](settings_files.md)
 
 ## Reading settings variables
 
@@ -585,7 +587,7 @@ If the key has spaces it can be accessed by replacing the space with an undersco
 ROOT:
     MY KEY: "value"
 ```
-    
+
 ```python
 settings.root.my_key == "value"
 settings.root["my key"] == "value"
@@ -646,7 +648,7 @@ validate your settings in 2 ways.
     dynaconf -i config.settings validate
     ```
 
-Read more on [Validation](/validation/)
+Read more on [Validation](validation.md)
 
 ## Dependencies
 
@@ -672,7 +674,7 @@ pip install dynaconf[vault]
 pip install dynaconf[redis]
 ```
 
-Read more on [external loaders](/advanced/#creating-new-loaders)
+Read more on [external loaders](advanced.md#creating-new-loaders)
 
 ## License
 

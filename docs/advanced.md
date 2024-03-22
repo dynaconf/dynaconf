@@ -1,4 +1,4 @@
-# advanced usage
+# Advanced Usage
 
 ## Hooks
 
@@ -79,7 +79,7 @@ settings = Dynaconf(post_hooks=hook_function)
 ```
 
 You can also set the merging individually for each settings variable as seen on
-[merging](/merging/) documentation.
+[merging](merging.md) documentation.
 
 ## Inspecting History
 
@@ -89,7 +89,7 @@ You can also set the merging individually for each settings variable as seen on
     This feature is in **tech preview** the usage interface and output format is
     subject to change.
 
-This feature purpose is to allow tracking any config-data loading history, that is, the loading steps that lead to a given final value. It can return a dict data report, print to `stdout` or write to a file, and is also available as a [CLI command](/cli#dynaconf-inspect-tech-preview).
+This feature purpose is to allow tracking any config-data loading history, that is, the loading steps that lead to a given final value. It can return a dict data report, print to `stdout` or write to a file, and is also available as a [CLI command](cli.md#dynaconf-inspect-tech-preview).
 
 It works by setting a *SourceMetadata* object to every ingested data, so it can be recovered and filtered to generate meaningful reports. The properties of this object are:
 
@@ -287,7 +287,7 @@ if __name__ == "__main__":
 You can load files from within a python script.
 
 When using relative paths, it will use `root_path` as its basepath.
-Learn more about how `root_path` fallback works [here](/configuration#root_path).
+Learn more about how `root_path` fallback works [here](configuration.md#root_path).
 
 ```python
 from dynaconf import Dynaconf
@@ -511,7 +511,7 @@ all_settings = settings.from_env('development', keep=True).from_env('other', kee
 
 The variables from [development] are loaded keeping pre-loaded values, then the variables from [other] are loaded keeping pre-loaded from [development] and overriding it.
 
-It is also possible to pass additional [configuration](/configuration/) variables to `from_env` method.
+It is also possible to pass additional [configuration](configuration.md) variables to `from_env` method.
 
 ```py
 new_settings = settings.from_env('production', keep=True, SETTINGS_FILE_FOR_DYNACONF='another_file_path.yaml')
@@ -590,7 +590,7 @@ assert obj.VALUE == 42.1  # AttributeError
 
 ## Exporting
 
-You can generate a file with current configs by calling `dynaconf list -o /path/to/file.ext` see more in [cli](/cli/)
+You can generate a file with current configs by calling `dynaconf list -o /path/to/file.ext` see more in [cli](cli.md)
 
 You can also do that programmatically with:
 

@@ -7,12 +7,12 @@ mixed settings formats across your application.
 
 !!! tip
     You are not required to use settings files, if not specified dynaconf
-    can load your data only from [environment variables](/envvars/)
+    can load your data only from [environment variables](envvars.md)
 
 ## Supported formats
 
 - **.toml** - Default and **recommended** file format.
-- **.yaml|.yml** - Recommended for Django applications. (see [yaml caveats](#yamlcaveats))
+- **.yaml|.yml** - Recommended for Django applications (see [YAML Caveats](#yaml-caveats)).
 - **.json** - Useful to reuse existing or exported settings.
 - **.ini** - Useful to reuse legacy settings.
 - **.py** - **Not Recommended** but supported for backwards compatibility.
@@ -25,7 +25,7 @@ mixed settings formats across your application.
 !!! tip
     Can't find the file format you need for your settings?
     You can create your custom loader and read any data source.
-    read more on [extending dynaconf](/advanced/)
+    read more on [extending dynaconf](advanced.md)
 
 !!! warning
     To use the `.ini` or `.properties` file format you need to install an extra dependency
@@ -76,7 +76,7 @@ settings.name == "Bruno"
 
 Dynaconf will start looking for each file defined in `settings_files` from the folder where your entry point python file is located (like `app.py`). Then, it will look at each parent down to the root of the system. For each visited folder, it will also try looking inside a `/config` folder.
 
-- If you define [root_path](/configuration/#root_path), it will look start looking from there, instead. Keep in mind that `root_path` is relative to `cwd`, which is from where the python interpreter was called.
+- If you define [root_path](configuration.md/#root_path), it will look start looking from there, instead. Keep in mind that `root_path` is relative to `cwd`, which is from where the python interpreter was called.
 - Absolute paths are recognized and dynaconf will attempt to load them directly.
 - For each file specified in `settings_files` dynaconf will also try to load an optional `name`**.local.**`extension`. Eg, `settings_file="settings.toml"` will look for `settings.local.toml` too.
 - Globs are accepted.
@@ -89,8 +89,8 @@ settings = Dynaconf(settings_files=["settings.toml", "*.yaml"])
 
 # using root_path
 settings = Dynaconf(
-    root_path="my/project/root"
-    settings_files=["settings.toml", "*.yaml"],
+    root_path="my/project/root",
+    settings_files=["settings.toml", "*.yaml"]
 )
 ```
 
@@ -107,7 +107,7 @@ export SETTINGS_FILES_FOR_DYNACONF='["settings.toml", "*.yaml"]'
 
 ## Includes and Preloads
 
-If you need, you can specify files to be loaded before or after the `settings_files` using the options [preload](/configuration/#preload) and [includes](/configuration/#includes). Their loading strategy is more strict, and will use `root_path` as the basepath for the relative paths provided. If `root_path` is not defined, `includes` will also try using the last found settings directory as the basepath.
+If you need, you can specify files to be loaded before or after the `settings_files` using the options [preload](configuration.md#preload) and [includes](configuration.md#includes). Their loading strategy is more strict, and will use `root_path` as the basepath for the relative paths provided. If `root_path` is not defined, `includes` will also try using the last found settings directory as the basepath.
 
 They can be defined in the Dynaconf instance or in a file:
 
@@ -131,7 +131,7 @@ anotherkey = value
 
 ## Layered environments on files
 
-It is also possible to make dynaconf read the files separated by layered 
+It is also possible to make dynaconf read the files separated by layered
 environments so each section or first level key is loaded as a
 distinct environment.
 
@@ -192,7 +192,7 @@ distinct environment.
 
 === "program.py"
 
-    Then in your program, you can use environment variables 
+    Then in your program, you can use environment variables
     to switch environments.
 
     `#!bash export ENV_FOR_DYNACONF=development`
@@ -210,7 +210,7 @@ distinct environment.
 !!! warning
     On **Flask** and **Django** extensions the default behaviour is already
     the layered environments.
-    Also to switch the environment you use `#!bash export FLASK_ENV=production` or `#!bash export DJANGO_ENV=production` respectively. 
+    Also to switch the environment you use `#!bash export FLASK_ENV=production` or `#!bash export DJANGO_ENV=production` respectively.
 
 !!! tip
     It is also possible to switch environments programmatically passing
@@ -226,7 +226,7 @@ Yaml parser used by dynaconf (ruamel.yaml) reads undefined values as `None` so
 key:
 key: ~
 key: null
-``` 
+```
 
 All those 3 keys will be parsed as python's `None` object.
 

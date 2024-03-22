@@ -5,7 +5,6 @@ from flask import Flask
 from dynaconf import FlaskDynaconf
 from dynaconf import settings
 
-
 app = Flask(__name__)
 
 settings["MESSAGE"] = "hello"

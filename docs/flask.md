@@ -2,7 +2,7 @@
 
 Dynaconf provides a drop in replacement for `app.config`.
 
-As Flask encourages the composition by overriding the `config_class` attribute this extension follows the [patterns of Flask](http://flask.pocoo.org/docs/0.12/patterns/subclassing/) and turns your Flask's `app.config` in to a `dynaconf` instance.
+As Flask encourages the composition by overriding the `config_class` attribute this extension follows the [patterns of Flask](https://flask.palletsprojects.com/en/2.3.x/patterns/subclassing/) and turns your Flask's `app.config` in to a `dynaconf` instance.
 
 ## Initialize the extension
 
@@ -62,7 +62,7 @@ in development mode or `FLASK_ENV=production` to switch to production.
 
 > **IMPORTANT**: To use `$ dynaconf` CLI the `FLASK_APP` must be defined.
 
-IF you don't want to manually create your config files take a look at the [CLI](/cli/)
+IF you don't want to manually create your config files take a look at the [CLI](cli.md)
 
 ## Loading Flask Extensions Dynamically
 

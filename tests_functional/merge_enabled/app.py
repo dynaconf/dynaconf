@@ -56,9 +56,7 @@ for key in keys:
     assert key in settings.A_BIG_DICT.get("file")
 
 
-print(
-    "Big nest", settings.A_BIG_DICT.nested_1.nested_2.nested_3.nested_4
-)  # noqa
+print("Big nest", settings.A_BIG_DICT.nested_1.nested_2.nested_3.nested_4)  # noqa
 
 assert settings.A_BIG_DICT.nested_1.nested_2.nested_3.nested_4 == {
     "json": True,

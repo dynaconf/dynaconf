@@ -7,7 +7,9 @@
 # mkdocs-material-extensions
 
 mkdocs
+mkdocstrings[python]
 pymdown-extensions
 mkdocs-material
 mkdocs-git-revision-date-plugin
+mkdocs-autorefs
 Jinja2>3.0.0

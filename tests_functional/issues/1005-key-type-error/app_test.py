@@ -1,6 +1,7 @@
 """
 https://github.com/dynaconf/dynaconf/issues/1005
 """
+
 from __future__ import annotations
 
 from textwrap import dedent

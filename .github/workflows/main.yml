@@ -7,10 +7,10 @@ on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches: [master]
-    # will run when at least one file matches something else than those
-    paths-ignore:
+    paths-ignore: # run if anything different from these is modified
       - "docs/**"
       - "mkdocs.yml"
+
   pull_request:
     branches: [master]
     paths-ignore:
@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
 
 # When a Push is made on an existing branch/PR
-# it cancells any pre running job and
+# it cancels any pre running job and
 # let only the latest executing
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

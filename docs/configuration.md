@@ -102,7 +102,7 @@ other_value = "other value from dev"
 ...     default_env="my_default",
 ...     env="development", # this is the active env, by default
 ... )
- 
+
 >>> settings.other_value
 "other value from dev"
 
@@ -111,7 +111,7 @@ other_value = "other value from dev"
 ```
 
 !!! note
-		The `default_env` is not the environment that will be active on startup. For this, see [`env`](/configuration/#env).
+		The `default_env` is not the environment that will be active on startup. For this, see [`env`](configuration.md#env).
 
 
 ---
@@ -237,7 +237,7 @@ ex: `MYPROGRAM_ENV=production`
 > type=`class`, default=`None` </br>
 > env-var=`FILTERING_STRATEGY_FOR_DYNACONF`
 
-Callable accepting data to be filtered, built-ins currently include [PrefixFilter](/dynaconf/strategies/filtering.py)
+Callable accepting data to be filtered, built-ins currently include [PrefixFilter](strategies.md#filtering).
 
 ---
 
@@ -272,7 +272,7 @@ After loading the files specified in `settings_files` dynaconf will load all the
 Note that:
 
 - Globs are allowed
-- When relative paths are given it will use [root_path](/configuration#root_path) as their basedir.
+- When relative paths are given it will use [root_path](configuration.md#root_path) as their basedir.
 - If `root_path` is not defined explicitly, will fallback to the directory of the last loaded setting or
 to the `cwd`. Eg:
 
@@ -310,12 +310,12 @@ Dynaconf(includes="extra.yaml")
 > env-var=`LOADERS_FOR_DYNACONF`
 
 The list of loaders dynaconf will trigger after its core loaders, this list is useful to include
-[custom loaders](/advanced/#custom loaders) and also to control the loading of env vars as the last step.
+[custom loaders](advanced.md/#custom loaders) and also to control the loading of env vars as the last step.
 
 !!! warning
     By default the `env_loader` will be latest on this list, so it ensures environment variables has the priority following the Unix philosophy.
 
-Learn more about [loaders](/advanced/)
+Learn more about [loaders](advanced.md)
 
 ---
 
@@ -364,7 +364,7 @@ With `merge_enabled` the ending `settings.server` will be
 {"port": 8888, "address": "server.com"}
 ```
 
-Otherwise it will be only what is specified in the latest loaded file. read more about [merging strategies](/merging)
+Otherwise it will be only what is specified in the latest loaded file. read more about [merging strategies](merging.md)
 
 ---
 
@@ -373,7 +373,7 @@ Otherwise it will be only what is specified in the latest loaded file. read more
 > type=`str`, default=`"__"` (double underescore) </br>
 > env-var=`NESTED_SEPARATOR_FOR_DYNACONF`
 
-One of the [merging strategies](/merging) is the use of `__` to access nested level data structures. By default the separator is `__` (double underline), this variable allows you to change that.
+One of the [merging strategies](merging.md) is the use of `__` to access nested level data structures. By default the separator is `__` (double underline), this variable allows you to change that.
 
 ex:
 
@@ -480,7 +480,7 @@ Note that:
     - The place of the last loaded file, if any files were already loaded
     - CWD
 
-Read more on [settings_files](/settings_files/#load).
+Read more on [settings_files](settings_files.md#load).
 
 !!! note
      The `cwd` is from where the python interpreter was called.
@@ -536,7 +536,7 @@ export SETTINGS_FILE_FOR_DYNACONF="/etc/program/settings.toml"
 export SETTINGS_FILES_FOR_DYNACONF="/etc/program/settings.toml;/tmp/foo.yaml"
 ```
 
-Read more on [settings_files](/settings_files/) </br>
+Read more on [settings_files](settings_files.md) </br>
 
 ---
 
@@ -602,7 +602,7 @@ settings.get("user") # won't try loading unprefixed USER
 
 Defines if validation will be triggered when a Dynaconf instance
 is updated with the methods `update()`, `set()` or `load_file()`.
-Also defines which raising strategy will be used (see more on [Validation](/validation/#trigger-on-data-update)).
+Also defines which raising strategy will be used (see more on [Validation](validation.md#trigger-on-data-update)).
 
 Valid options are:
 
@@ -646,7 +646,7 @@ validators=[
 
 When `envs` is enabled, defines if validation will be performed only on `default` + `current_env` or if all envs will be validated (even if not activated).
 
-Setting this to `True` can be useful if you have validators that apply only to some `env`s, like requiring a setting in `production` but not in `development`. See [this section](/validation#validating-only-the-current_env) in the Validation page.
+Setting this to `True` can be useful if you have validators that apply only to some `env`s, like requiring a setting in `production` but not in `development`. See [this section](validation.md#validating-only-the-current_env) in the Validation page.
 
 ### **validate_only**
 
@@ -658,7 +658,7 @@ This setting only applies during `Dynaconf` instantiation. Further calls to `Dyn
 
 In practice, this forwards `validate_only` to the `only` kwarg during the validation step upon `Dynaconf` instantiation for all `Validator`s passed. Note that this setting has interaction with [`validate_exclude`](#validate_exclude).
 
-Read more about it in the [selective validation](/validation#selective-validation) section.
+Read more about it in the [selective validation](validation.md#selective-validation) section.
 
 ### **validate_exclude**
 
@@ -670,7 +670,7 @@ This setting only applies during `Dynaconf` instantiation. Further calls to `Dyn
 
 In practice, this forwards `validate_exclude` to the `exclude` kwarg during the validation step upon `Dynaconf` instantiation for all `Validator`s passed. Note that this setting has interaction with [`validate_only`](#validate_only).
 
-Read more about it in the [selective validation](/validation#selective-validation) section.
+Read more about it in the [selective validation](validation.md#selective-validation) section.
 
 ---
 
@@ -702,7 +702,7 @@ default = {
 }
 ```
 
-Read more on [Secrets](/secrets/)
+Read more on [Secrets](secrets.md)
 
 ---
 

@@ -1,0 +1,13 @@
+# bump = "auto"
+convention = "angular"
+in-place = true
+filter-commits = "c5d9f2f36f07aabf002eaa199891a39317a07507.."
+marker-line = "<!-- insertion marker -->"
+output = "CHANGELOG.md"
+parse-refs = false
+parse-trailers = false
+repository = "."
+sections = ["fix", "feat", "doc", "chore"]
+template = "path:.github/changelog_template.md.jinja"
+provider = "github"
+zerover = true

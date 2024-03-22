@@ -1,4 +1,4 @@
-site_name: Dynaconf - 3.2.3
+site_name: Dynaconf - 3.2.6-dev0
 site_url: https://dynaconf.com
 site_description: Configuration Management for Python
 site_author: Bruno Rocha
@@ -19,6 +19,9 @@ nav:
   - Django: django.md
   - Advanced usage: advanced.md
   - FAQ: faq.md
+  - Reference:
+    - dynaconf: api.md
+    - dynaconf.strategies: strategies.md
 theme:
   features:
     - search.suggest
@@ -47,7 +50,7 @@ theme:
 markdown_extensions:
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.inlinehilite
   - pymdownx.magiclink
@@ -65,10 +68,24 @@ markdown_extensions:
   - toc:
       permalink: true
 plugins:
+  - autorefs
   - git-revision-date
   - search:
       lang: en
-      prebuild_index: true
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_root_toc_entry: true
+            show_object_full_path: true
+            filters: ["!^_"]
+            docstring_options:
+              ignore_init_summary: true
+            merge_init_into_class: true
+            docstring_section_style: table
+            summary: true
 extra:
   disqus: dynaconf
   social:
@@ -80,3 +97,5 @@ extra:
       link: https://linkedin.com/in/rochacbruno
     - icon: fontawesome/brands/twitch
       link: https://twitch.tv/codeshow
+extra_css:
+  - stylesheets/mkdocstrings.css

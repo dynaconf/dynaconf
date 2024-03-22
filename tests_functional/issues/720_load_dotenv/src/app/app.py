@@ -24,6 +24,6 @@ settings = Dynaconf(
     # load_dotenv=True
 )
 
-assert (
-    settings.FOO.get("bar") == "baz"
-), "Missing key FOO=bar in settings" + str(settings.FOO)
+assert settings.FOO.get("bar") == "baz", (
+    "Missing key FOO=bar in settings" + str(settings.FOO)
+)

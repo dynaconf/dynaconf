@@ -9,7 +9,7 @@ Every command (except the init) will require the Instance can be set using `-i` 
 
 The `$ dynaconf -i config.settings` cli provides some useful commands
 
-> **IMPORTANT** if you are using [Flask Extension](/flask/) the env var `FLASK_APP` must be defined to use the CLI, and if using [Django Extension](/django/) the `DJANGO_SETTINGS_MODULE` must be defined.
+> **IMPORTANT** if you are using [Flask Extension](flask.md) the env var `FLASK_APP` must be defined to use the CLI, and if using [Django Extension](django.md) the `DJANGO_SETTINGS_MODULE` must be defined.
 
 ### dynaconf --help
 
@@ -66,7 +66,7 @@ as well as `.gitignore` file ignoring the generated `.secrets.toml`
 .secrets.*
 ```
 
-> For sensitive data in production is recommended using [Vault Server](/secrets/)
+> For sensitive data in production is recommended using [Vault Server](secrets.md)
 
 ```bash
 Usage: dynaconf init [OPTIONS]
@@ -113,14 +113,14 @@ Note that `-i`/`--instance` cannot be used with `init` as `-i` must point to an 
 
 Inspect and dump data's loading history about a specific key or environment.
 
-It is also available as a [utility function](/advanced#inspecting-history).
+It is also available as a [utility function](advanced.md#inspecting-history).
 
 ```
 Usage: dynaconf inspect [OPTIONS]
 
   Inspect the loading history of the given settings instance.
 
-  Filters by key and environement, otherwise shows all.
+  Filters by key and environment, otherwise shows all.
 
 Options:
   -k, --key TEXT                  Filters result by key.
@@ -176,7 +176,7 @@ Usage: dynaconf get [OPTIONS] KEY
 
   Returns the raw value for a settings key.
 
-  If result is a dict, list or tuple it is printes as a valid json string.
+  If result is a dict, list or tuple it is printed as a valid json string.
 
 Options:
   -d, --default TEXT  Default value if settings doesn't exist
