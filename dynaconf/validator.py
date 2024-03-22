@@ -257,12 +257,10 @@ class Validator:
             # to default on validator (see #585)
             # The solution we added on #667 introduced a new problem
             # This fix here makes it to work for both cases.
-            if (
-                isinstance(default_value, str)
-                and default_value.startswith(("+", "-"))
-                and self.is_type_of is str
-            ):
-                # avoid TOML from parsing "+-1" as integer
+            # This guard also fixes #1064 assuming that any validator
+            # having is_type_of=str wants to bypass toml inference.
+            if isinstance(default_value, str) and self.is_type_of is str:
+                # avoid TOML from parsing "+-1" started strings as integer
                 default_value = f"'{default_value}'"
 
             value = settings.setdefault(
