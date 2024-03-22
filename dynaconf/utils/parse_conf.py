@@ -487,7 +487,7 @@ def boolean_fix(value: str | None):
     """Gets a value like `True/False` and turns to `true/false`
     This function exists because of issue #976
     Toml parser casts booleans from true/false lower case
-    however envvars are usually exportes as True/False capitalized
+    however envvars are usually exported as True/False capitalized
     by mistake, this helper fixes it for envvars only.
 
     Assume envvars are always str.

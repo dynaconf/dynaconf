@@ -9,7 +9,6 @@ from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.loaders.json_loader import load
 from dynaconf.strategies.filtering import PrefixFilter
 
-
 settings = LazySettings(environments=True, ENV_FOR_DYNACONF="PRODUCTION")
 
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dynaconf import settings
 
-
 EXPECTED = {
     "URL_FIELD_NAME": "pulp_href",
     "DEFAULT_FILTER_BACKENDS": [

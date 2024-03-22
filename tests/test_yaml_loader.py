@@ -241,7 +241,6 @@ def test_load_dunder(settings):
 
 
 def test_local_files(tmpdir):
-
     settings_file_yaml = """
     default:
       name: Bruno
@@ -286,7 +285,6 @@ def test_local_files(tmpdir):
 
 
 def test_explicit_local_files(tmpdir):
-
     settings_file_yaml = """
     default:
       name: Bruno

@@ -4,7 +4,6 @@ import pytest
 
 from dynaconf.base import LazySettings
 
-
 TOML = """
 [default]
 dynaconf_include = ["plugin1.toml", "plugin2.toml", "plugin2.toml"]

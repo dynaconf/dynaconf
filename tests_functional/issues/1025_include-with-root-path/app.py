@@ -3,6 +3,7 @@
 
 https://github.com/dynaconf/dynaconf/issues/1025
 """
+
 from __future__ import annotations
 
 import os

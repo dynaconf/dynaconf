@@ -10,7 +10,6 @@ from time import sleep
 
 from dynaconf.vendor.tomllib import load
 
-
 HERE = Path(__file__).parent
 skips = load(open(HERE / "skipfile.toml", "rb")).get(os.name, [])
 

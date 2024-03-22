@@ -231,7 +231,7 @@ def test_tomlfy(settings):
 
 
 @pytest.mark.parametrize("test_input", ["something=42"])
-def test_tomlfy_unparseable(test_input, settings):
+def test_tomlfy_unparsable(test_input, settings):
     assert (
         parse_conf_data(test_input, tomlfy=True, box_settings=settings)
         == test_input
@@ -239,7 +239,6 @@ def test_tomlfy_unparseable(test_input, settings):
 
 
 def test_missing_sentinel():
-
     # The missing singleton should always compare truthfully to itself
     assert missing == missing
 
@@ -347,7 +346,6 @@ def test_trimmed_split():
 
 
 def test_ensure_a_list():
-
     # No data is empty list
     assert ensure_a_list(None) == []
 
@@ -356,7 +354,7 @@ def test_ensure_a_list():
     assert ensure_a_list((1, 2)) == [1, 2]
     assert ensure_a_list({1, 2}) == [1, 2]
 
-    # A string is trimmed_splitted
+    # A string is trimmed_split
     assert ensure_a_list("ab.toml") == ["ab.toml"]
     assert ensure_a_list("ab.toml,cd.toml") == ["ab.toml", "cd.toml"]
     assert ensure_a_list("ab.toml;cd.toml") == ["ab.toml", "cd.toml"]

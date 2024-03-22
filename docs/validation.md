@@ -4,21 +4,6 @@
 
 Dynaconf allows the validation of settings parameters, for cases where you want to validate the settings before starting the program.
 
-For this section, let's say you have this `settings.toml`:
-
-```ini
-[default]
-version = "1.0.0"
-age = 35
-name = "Bruno"
-DEV_SERVERS = ['127.0.0.1', 'localhost', 'development.com']
-PORT = 8001
-JAVA_BIN = "/usr/bin/java"
-
-[production]
-PROJECT = "This is not hello_world"
-```
-
 ## Usage
 
 To define validation rules, you must create `Validator` objects, which are constructed using keys (positional arguments) and rules (kwargs). For example:
@@ -29,33 +14,67 @@ Validator("NAME", "VERSION", "PORT", must_exist=True) # multiple keys
 Validator("DB.PORT", eq=8080) # keys with dot-path notation
 ```
 
-There are some different ways to use `Validator`s, as we'll see.
+In the first sections, we'll see some different ways to use `Validator` objects.
+For an extensive description of available validators, see the [Reference](#reference) section.
 
 ### With Python
 
 #### On instantiation
 
-When you instantiate your settings, Dynaconf will run all the validators you've defined against your initial data. All `ValidationError`s are collected an displayed at the end. For example,
-
-```python
-from pathlib import Path
-from dynaconf import Dynaconf, Validator
+When you instantiate your settings, the declared validators won't be immediately run.
+They'll be first triggered upon trying to access some setting, and only the first exception will be raised:
 
 
-settings = Dynaconf(
-    validators=[
-        # Ensure some parameter meets a condition
-        Validator('AGE', lte=30, gte=10),
+=== "app.py"
 
-        # validate a value is eq in specific env
-        Validator('PROJECT', eq='hello_world', env='production'),
-    ]
-)
-```
+    ```python
+    from dynaconf import Dynaconf, Validator
 
-will raise `dynaconf.validator.ValidationError("AGE must be lte=30 but it is 35 in env DEVELOPMENT")` and `dynaconf.validator.ValidationError("PROJECT must be eq='hello_world' but it is 'This is not hello_world' in env PRODUCTION")`.
+    settings = Dynaconf(
+        settings_file=["settings.toml"],
+        environments=True,
+        validators=[
+            # Ensure some parameter meets a condition
+            Validator("AGE", lte=30, gte=10),
+            # Only the first ValidationError will be raised
+            Validator("NAME", eq="John"),
+        ],
+    )
 
-Please see the [Reference](#reference) section to find out what kinds of validations can be performed.
+    # The following three lines will trigger a validation error:
+    print(settings.age)
+    print(settings.validators)
+    print(settings.as_dict())
+    ```
+
+=== "settings.toml"
+
+    ```toml
+    [default]
+    version = "1.0.0"
+    age = 35
+    name = "Bruno"
+    DEV_SERVERS = ['127.0.0.1', 'localhost', 'development.com']
+    PORT = 8001
+    JAVA_BIN = "/usr/bin/java"
+
+    [production]
+    PROJECT = "This is not hello_world"
+    ```
+
+=== "output"
+
+    ```bash
+    $ python app.py
+    (...)
+    dynaconf.validator.ValidationError: AGE must lte 30 but it is 35 in env DEVELOPMENT
+    ```
+
+!!! warning
+    Sometimes an external library might implicitly access your settings object through module inspection.
+    This may may trigger an undesired validation, even without an explicit access call in your code.
+
+    If you are running into early validation triggering problems, consider if this is not the case.
 
 #### Lazy validation
 
@@ -177,7 +196,7 @@ Validator(
   must_exist=True, # redundant but allowed
   startswith="user_",
   cast=str,
-  condition=lambda v: v not in FORBIDEN_USERS,
+  condition=lambda v: v not in FORBIDDEN_USERS,
   ...
 )
 ```

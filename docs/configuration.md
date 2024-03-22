@@ -237,7 +237,7 @@ ex: `MYPROGRAM_ENV=production`
 > type=`class`, default=`None` </br>
 > env-var=`FILTERING_STRATEGY_FOR_DYNACONF`
 
-Callable accepting data to be filtered, built-ins currently include [PrefixFilter](/dynaconf/strategies/filtering.py)
+Callable accepting data to be filtered, built-ins currently include [PrefixFilter](strategies.md#filtering).
 
 ---
 

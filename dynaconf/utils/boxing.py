@@ -15,16 +15,13 @@ def evaluate_lazy_format(f):
 
     @wraps(f)
     def evaluate(dynabox, item, *args, **kwargs):
-        if dynabox._box_config.get("_bypass_evaluation") is True:
-            return f(dynabox, item, *args, **kwargs)
-
         value = f(dynabox, item, *args, **kwargs)
         settings = dynabox._box_config["box_settings"]
 
         if getattr(value, "_dynaconf_lazy_format", None):
-            dynabox._box_config[
-                f"raw_{item.lower()}"
-            ] = f"@{value.formatter.token} {value.value}"
+            dynabox._box_config[f"raw_{item.lower()}"] = (
+                f"@{value.formatter.token} {value.value}"
+            )
 
         return recursively_evaluate_lazy_format(value, settings)
 
