@@ -16,6 +16,10 @@ if TYPE_CHECKING:
     from dynaconf.base import LazySettings  # noqa: F401
     from dynaconf.base import Settings
 
+
+DEFAULT_CAST = lambda value: value  # noqa
+
+
 EQUALITY_ATTRS = (
     "names",
     "must_exist",
@@ -23,6 +27,7 @@ EQUALITY_ATTRS = (
     "condition",
     "operations",
     "envs",
+    "cast",
 )
 
 
@@ -132,7 +137,7 @@ class Validator:
         self.must_exist = must_exist if must_exist is not None else required
         self.condition = condition
         self.when = when
-        self.cast = cast or (lambda value: value)
+        self.cast = cast or DEFAULT_CAST
         self.operations = operations
         self.default = default
         self.description = description
