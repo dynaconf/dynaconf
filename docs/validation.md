@@ -350,9 +350,8 @@ assert settings.colors == '["red", "green", "blue"]'
 assert type(settings.colors) == str
 ```
 
-> **NOTE**: When multiple validators for the same field specifies a `cast`, Dynaconf
-> will execute both in order, so the end result in the settings object is the result
-> of the cumulative pipeline.
+!!! info
+    When multiple validators for the same field specifies a `cast`, Dynaconf will execute both in order, so the end result in the settings object is the result of the cumulative pipeline.
 
 ### Custom conditional expressions
 
