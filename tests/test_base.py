@@ -700,6 +700,40 @@ def test_dotted_set(settings):
     }
 
 
+def test_dotted_set_with_indexing(settings):
+    settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
+
+    # Dotted set with index
+    settings.set("nested_a.nested_b[2][1].nested_c.nested_d[3]", "old_conf")
+    settings.set(
+        "nested_a.nested_b[2][1].nested_c.nested_d[3]", "new_conf1"
+    )  # overwrite
+    settings.set(
+        "nested_a.nested_b[2][1].nested_c.nested_d[2]", "new_conf2"
+    )  # insert
+    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[3] == "new_conf1"
+    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[2] == "new_conf2"
+    assert len(settings.NESTED_A.NESTED_B[0]) < 1
+    settings.set(
+        "nested_a.nested_b[0][2].nested_c.nested_d[0]", "extra_conf"
+    )  # add more
+    assert len(settings.NESTED_A.NESTED_B[0]) > 0
+    settings.set(
+        "nested_a.nested_b[2][1].nested_c.nested_d",
+        ["conf1", "conf2", "conf3"],
+    )  # overwrite list
+    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D == [
+        "conf1",
+        "conf2",
+        "conf3",
+    ]
+
+    # This test case is the reason why choosing
+    # __(\d+) pattern instead of _(\d+)_
+    settings.set("nested_5.nested_6_0", "World")
+    assert settings.NESTED_5.NESTED_6_0 == "World"
+
+
 def test_dotted_set_with_merge(settings):
     settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
 
@@ -1508,3 +1542,21 @@ def test_no_extra_values_in_nested_structure():
     settings = Dynaconf()
     settings.set("key", [{"d": "v"}])
     assert settings.key == [{"d": "v"}]
+
+
+def test_environ_dotted_set_with_index():
+    os.environ["DYNACONF_NESTED_A__nested_1__nested_2"] = "new_conf"
+    os.environ[
+        "DYNACONF_NESTED_A__nested_b___2___1__nested_c__nested_d___3"
+    ] = "old_conf"
+    settings = Dynaconf(envvar_prefix="DYANCONF")
+    assert isinstance(settings.NESTED_A.NESTED_B, list)
+    assert isinstance(settings.NESTED_A.NESTED_B[2], list)
+    assert isinstance(settings.NESTED_A.NESTED_B[2][1], dict)
+    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[3] == "old_conf"
+    assert settings.NESTED_A.NESTED_1.NESTED_2 == "new_conf"
+    # remove environment variables after testing
+    del os.environ["DYNACONF_NESTED_A__nested_1__nested_2"]
+    del os.environ[
+        "DYNACONF_NESTED_A__nested_b___2___1__nested_c__nested_d___3"
+    ]

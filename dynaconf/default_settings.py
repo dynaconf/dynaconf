@@ -144,6 +144,17 @@ DOTTED_LOOKUP_FOR_DYNACONF = get("DOTTED_LOOKUP_FOR_DYNACONF", True)
 # To disable it one can set `NESTED_SEPARATOR_FOR_DYNACONF=false`
 NESTED_SEPARATOR_FOR_DYNACONF = get("NESTED_SEPARATOR_FOR_DYNACONF", "__")
 
+# By default `__(\d+)` (regexp) is the separated for nested list env vars
+# export `DYNACONF_DATABASE_servers__0=server.com`
+# export `DYNACONF_DATABASE_servers__1=server.org`
+# export `DYNACONF_DATABASE_servers_2_0=server.io`
+# Should result in settings.DATABASE == {
+#   "servers": ["server.com", "server.org"],
+#   "servers_2_0": "server.io"
+# }
+# To disable it one can set `INDEX_SEPARATOR_FOR_DYNACONF=false`
+INDEX_SEPARATOR_FOR_DYNACONF = get("INDEX_SEPARATOR_FOR_DYNACONF", "___")
+
 # The env var specifying settings module
 ENVVAR_FOR_DYNACONF = get("ENVVAR_FOR_DYNACONF", "SETTINGS_FILE_FOR_DYNACONF")
 
