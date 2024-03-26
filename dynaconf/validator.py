@@ -16,6 +16,10 @@ if TYPE_CHECKING:
     from dynaconf.base import LazySettings  # noqa: F401
     from dynaconf.base import Settings
 
+
+DEFAULT_CAST = lambda value: value  # noqa
+
+
 EQUALITY_ATTRS = (
     "names",
     "must_exist",
@@ -23,6 +27,7 @@ EQUALITY_ATTRS = (
     "condition",
     "operations",
     "envs",
+    "cast",
 )
 
 
@@ -132,7 +137,7 @@ class Validator:
         self.must_exist = must_exist if must_exist is not None else required
         self.condition = condition
         self.when = when
-        self.cast = cast or (lambda value: value)
+        self.cast = cast or DEFAULT_CAST
         self.operations = operations
         self.default = default
         self.description = description
@@ -257,12 +262,10 @@ class Validator:
             # to default on validator (see #585)
             # The solution we added on #667 introduced a new problem
             # This fix here makes it to work for both cases.
-            if (
-                isinstance(default_value, str)
-                and default_value.startswith(("+", "-"))
-                and self.is_type_of is str
-            ):
-                # avoid TOML from parsing "+-1" as integer
+            # This guard also fixes #1064 assuming that any validator
+            # having is_type_of=str wants to bypass toml inference.
+            if isinstance(default_value, str) and self.is_type_of is str:
+                # avoid TOML from parsing "+-1" started strings as integer
                 default_value = f"'{default_value}'"
 
             value = settings.setdefault(
