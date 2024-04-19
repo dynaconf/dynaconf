@@ -16,6 +16,7 @@ from dynaconf import DynaconfFormatError
 from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
+from dynaconf.utils import ensure_upperfied_list
 from dynaconf.utils import extract_json_objects
 from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import Missing
@@ -361,6 +362,10 @@ def test_ensure_a_list():
 
     # other types get wrapped in a list
     assert ensure_a_list(1) == [1]
+
+
+def test_ensure_upperfied_list():
+    assert ensure_upperfied_list([1, "a", "A__b"]) == [1, "A", "A__b"]
 
 
 def test_get_local_filename():
