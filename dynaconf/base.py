@@ -26,6 +26,7 @@ from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import BANNER
 from dynaconf.utils import compat_kwargs
 from dynaconf.utils import ensure_a_list
+from dynaconf.utils import ensure_upperfied_list
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
 from dynaconf.utils import recursively_evaluate_lazy_format
@@ -138,7 +139,8 @@ class LazySettings(LazyObject):
             name.isupper()
             and (
                 self._wrapped._fresh
-                or name in self._wrapped.FRESH_VARS_FOR_DYNACONF
+                or name
+                in ensure_upperfied_list(self._wrapped.FRESH_VARS_FOR_DYNACONF)
             )
             and name not in UPPER_DEFAULT_SETTINGS
         ):
@@ -525,7 +527,10 @@ class Settings:
         if (
             fresh
             or self._fresh
-            or key in getattr(self, "FRESH_VARS_FOR_DYNACONF", ())
+            or key
+            in ensure_upperfied_list(
+                getattr(self, "FRESH_VARS_FOR_DYNACONF", ())
+            )
         ) and key not in UPPER_DEFAULT_SETTINGS:
             self.unset(key)
             self.execute_loaders(key=key)

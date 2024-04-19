@@ -365,6 +365,11 @@ def ensure_a_list(data: T | list[T]) -> list[T]:
     return [data]
 
 
+def ensure_upperfied_list(data: list) -> list:
+    """Ensure list of strings contains upperfied items."""
+    return [upperfy(item) if isinstance(item, str) else item for item in data]
+
+
 def build_env_list(obj: Settings | LazySettings, env: str | None) -> list[str]:
     """Build env list for loaders to iterate.
 
