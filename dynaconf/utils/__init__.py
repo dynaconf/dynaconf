@@ -6,6 +6,7 @@ from collections import defaultdict
 from json import JSONDecoder
 from typing import Any
 from typing import Iterator
+from typing import Literal
 from typing import TYPE_CHECKING
 from typing import TypeVar
 
@@ -30,7 +31,11 @@ if os.name == "nt":  # pragma: no cover
 
 
 def object_merge(
-    old: Any, new: Any, unique: bool = False, full_path: list[str] = None
+    old: Any,
+    new: Any,
+    unique: bool = False,
+    full_path: list[str] = None,
+    list_merge: Literal["merge", "shallow", "deep"] = "merge",
 ) -> Any:
     """
     Recursively merge two data structures, new is mutated in-place.
@@ -39,6 +44,11 @@ def object_merge(
     :param new: The new data to get old values merged in to.
     :param unique: When set to True existing list items are not set.
     :param full_path: Indicates the elements of a tree.
+    :param list_merge: Methods to use to merge lists
+        - merge: default merge behavior, i.e. (unique) concatenation
+        - shallow: replace the top-most level list of the nested structure
+        - deep: iteratively traverse the nested structure and replace
+            the element in the list at the level specified by the full_path
     """
     if full_path is None:
         full_path = []
@@ -52,10 +62,29 @@ def object_merge(
             new.remove("dynaconf_merge_unique")
             unique = True
 
-        for item in old[::-1]:
-            if unique and item in new:
-                continue
-            new.insert(0, item)
+        if list_merge == "merge" or unique:
+            for item in old[::-1]:
+                if unique and item in new:
+                    continue
+                new.insert(0, item)
+        # replace mode
+        # elif list_merge == "replace": pass
+        elif len(full_path) > 0:  # element-wise merge
+            new.extend([[]] * max(len(old) - len(new), 0))
+            for ii, item in enumerate(old):
+                # replace at corresponding positions
+                if list_merge == "shallow":
+                    new[ii] = new[ii] or item
+                else:  # deep replace
+                    if not new[ii]:  # copy over the older values
+                        new[ii] = item
+                    elif item:  # old[ii] is not None
+                        object_merge(
+                            old[ii],
+                            new[ii],
+                            full_path=full_path[1:],
+                            list_merge="deep",
+                        )
 
     if isinstance(old, dict) and isinstance(new, dict):
         existing_value = recursive_get(old, full_path)  # doesn't handle None
@@ -96,13 +125,13 @@ def object_merge(
                 if old_key not in new:
                     new[old_key] = value
                 else:
-                    object_merge(
+                    new[old_key] = object_merge(
                         value,
                         new[old_key],
                         full_path=full_path[1:] if full_path else None,
+                        list_merge=list_merge,
                     )
-
-        handle_metavalues(old, new)
+        handle_metavalues(old, new, list_merge=list_merge)
 
     return new
 
@@ -111,22 +140,39 @@ def recursive_get(
     obj: DynaBox | dict[str, int] | dict[str, str | int],
     names: list[str] | None,
 ) -> Any:
-    """Given a dot accessible object and a list of names `foo.bar.zaz`
-    gets recursively all names one by one obj.foo.bar.zaz.
+    """Given a dot accessible object and a list of names `foo.bar.[1].zaz`
+    gets recursively all names one by one obj.foo.bar.[1].zaz.
     """
-    if not names:
+    if not names or obj is None:
         return
     head, *tail = names
-    result = getattr(obj, head, None)
+    if "[" not in head:
+        result = getattr(obj, head, None)
+    else:
+        index = int(head.replace("[", "").replace("]", ""))
+        result = obj[index] if index < len(obj) else []
+
     if not tail:
         return result
+
     return recursive_get(result, tail)
 
 
 def handle_metavalues(
-    old: DynaBox | dict[str, int] | dict[str, str | int], new: Any
+    old: DynaBox | dict[str, int] | dict[str, str | int],
+    new: Any,
+    list_merge: Literal["merge", "shallow", "deep"] = "merge",
 ) -> None:
-    """Cleanup of MetaValues on new dict"""
+    """
+    Cleanup of MetaValues on new dict
+    :param old: old values
+    :param new: new values
+    :param list_merge: Methods to use to merge lists
+        - merge: default merge behavior, i.e. (unique) concatenation
+        - shallow: replace the top-most level list of the nested structure
+        - deep: iteratively traverse the nested structure and replace
+            the element in the list at the level specified by the full_path
+    """
 
     for key in list(new.keys()):
         # MetaValue instances
@@ -140,7 +186,9 @@ def handle_metavalues(
         elif getattr(new[key], "_dynaconf_merge", False):
             # a Merge on `new` triggers merge with existing data
             new[key] = object_merge(
-                old.get(key), new[key].unwrap(), unique=new[key].unique
+                old.get(key),
+                new[key].unwrap(),
+                unique=new[key].unique,
             )
 
         # Data structures containing merge tokens
@@ -173,7 +221,9 @@ def handle_metavalues(
                 new[key] = local_merge
 
             if local_merge:
-                new[key] = object_merge(old.get(key), new[key])
+                new[key] = object_merge(
+                    old.get(key), new[key], list_merge=list_merge
+                )
 
 
 class DynaconfDict(dict):

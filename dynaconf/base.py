@@ -4,6 +4,7 @@ import copy
 import importlib
 import inspect
 import os
+import re
 import warnings
 from collections import defaultdict
 from contextlib import contextmanager
@@ -887,15 +888,34 @@ class Settings:
                 "VALIDATE_ON_UPDATE_FOR_DYNACONF"
             )  # pragma: nocover
 
-        split_keys = dotted_key.split(".")
+        # Add a "." before "[" to help splitting
+        split_keys = dotted_key.replace("[", ".[").split(".")
         existing_data = self.get(split_keys[0], {})
         new_data = tree = DynaBox(box_settings=self)
-
-        for k in split_keys[:-1]:
-            tree = tree.setdefault(k, {})
-
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
-        tree[split_keys[-1]] = value
+
+        for n, k in enumerate(split_keys):
+            is_not_end = n < (len(split_keys) - 1)
+            if is_not_end:
+                next_default = [] if "[" in split_keys[n + 1] else {}
+
+            if "[" not in k:  # accessing field of a dict
+                if is_not_end:
+                    tree = tree.setdefault(k, next_default)  # get next
+                else:
+                    tree[k] = value  # assign value
+            elif k.startswith("[") and k.endswith(
+                "]"
+            ):  # accessing index of a list
+                index = int(k.replace("[", "").replace("]", ""))
+                # This makes sure we can assign any arbitrary index
+                tree.extend([next_default] * (index + 1))
+                if is_not_end:
+                    tree = tree[index]  # get at index
+                else:
+                    tree[index] = value  # assign value
+            else:  # odd cases like [2]0
+                raise (ValueError("Invalid field:", k))
 
         if existing_data:
             old_data = DynaBox(
@@ -905,6 +925,7 @@ class Settings:
                 old=old_data,
                 new=new_data,
                 full_path=split_keys,
+                list_merge="deep",  # when to use deep / shallow replace?
             )
         self.update(data=new_data, tomlfy=tomlfy, validate=validate, **kwargs)
 
@@ -945,13 +966,22 @@ class Settings:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
         if dotted_lookup is empty:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
+
+        # Do index replacement first
+        nested_ind = self.get("INDEX_SEPARATOR_FOR_DYNACONF")
+        # DYNACONF_DATA__a___0__key___2__subkey ->
+        # DYNACONF_DATA__a[0]__key[2]__subkey
+        if nested_ind and isinstance(key, str):
+            nested_ind = rf"{nested_ind}(\d+)"
+            key = re.sub(nested_ind, r"[\1]", key)
+
         nested_sep = self.get("NESTED_SEPARATOR_FOR_DYNACONF")
 
         if isinstance(key, str):
             if nested_sep and nested_sep in key:
                 key = key.replace(nested_sep, ".")  # FOO__bar -> FOO.bar
 
-            if "." in key and dotted_lookup is True:
+            if ("." in key or "[" in key) and dotted_lookup is True:
                 return self._dotted_set(
                     key,
                     value,
@@ -1003,7 +1033,15 @@ class Settings:
                 # `dynaconf_merge` may be used within the key structure
                 # Or merge_enabled is set to True
                 parsed, source_metadata = self._merge_before_set(
-                    existing, parsed, source_metadata, context_merge=merge
+                    existing,
+                    parsed,
+                    source_metadata,
+                    context_merge=merge,
+                    list_merge="replace"
+                    if source_metadata
+                    and source_metadata.loader == "setdefault"
+                    and source_metadata.env == "development"
+                    else "merge",  # fix 905
                 )
 
         if isinstance(parsed, dict) and not isinstance(parsed, DynaBox):
@@ -1070,6 +1108,7 @@ class Settings:
 
         data = data or {}
         data.update(kwargs)
+
         for key, value in data.items():
             # update() will handle validation later
             with suppress(ValidationError):
@@ -1095,6 +1134,7 @@ class Settings:
         value,
         identifier: SourceMetadata | None = None,
         context_merge=empty,
+        list_merge="merge",
     ):
         """
         Merge the new value being set with the existing value before set
@@ -1116,7 +1156,7 @@ class Settings:
                 identifier = (
                     identifier._replace(merged=True) if identifier else None
                 )
-                value = object_merge(existing, value)
+                value = object_merge(existing, value, list_merge=list_merge)
 
         if isinstance(value, (list, tuple)):
             value = list(value)

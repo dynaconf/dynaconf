@@ -368,7 +368,7 @@ Otherwise it will be only what is specified in the latest loaded file. read more
 
 ---
 
-### **nested_separator**
+### **nested_separators**
 
 > type=`str`, default=`"__"` (double underescore) </br>
 > env-var=`NESTED_SEPARATOR_FOR_DYNACONF`
@@ -389,6 +389,34 @@ DATABASES = {
         "ENGINE": {
             "Address": "0.0.0.0"
         }
+    }
+}
+```
+
+To access list by indexing
+
+> type=`str`, default=`"___"` (triple underescore) </br>
+> env-var=`INDEX_SEPARATOR_FOR_DYNACONF`
+
+ex:
+
+```bash
+export DYNACONF_DATABASES__default__WORKERS___0__Address="1.1.1.1"
+export DYNACONF_DATABASES__default__WORKERS___1__Address="2.2.2.2"
+```
+
+generates:
+
+```python
+DATABASES = {
+    "default": {
+        "ENGINE": {
+            "Address": "0.0.0.0"
+        },
+        "WORKERS": [
+            {"Address": "1.1.1.1"},
+            {"Address": "2.2.2.2"} 
+        ]
     }
 }
 ```
