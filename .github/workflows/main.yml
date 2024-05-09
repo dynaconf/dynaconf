@@ -97,10 +97,11 @@ jobs:
           check_name: Test Results (Python ${{ matrix.python-version }})
 
       - name: "Upload coverage to Codecov"
-        if: ${{ matrix.python-version == '3.8' }}
-        uses: codecov/codecov-action@v3
+        if: ${{ matrix.python-version == '3.11' }}
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage.xml
           fail_ci_if_error: true
 
