@@ -68,6 +68,20 @@ dist: clean
 	@python setup.py sdist bdist_wheel
 	@make source_vendor
 
+# Bump
+# Used if we want a minor release.
+bump-minor:
+	bump-my-version bump minor
+
+# Release
+# 1. Create release-commit: bump-version to stable + changelog-update + build package
+# 2. Create bump-commit: bump-version to next cycle
+release: clean
+	./scripts/release-main.sh
+
+# Publish
+# 1. Publish to PiPY
+# 2. TODO: Publish to Github (Github Release)
 publish:
 	@twine upload dist/*
 

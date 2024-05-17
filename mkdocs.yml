@@ -19,9 +19,16 @@ nav:
   - Django: django.md
   - Advanced usage: advanced.md
   - FAQ: faq.md
+  - Development:
+    - development/contributing.md
+    - development/maintainers-manual.md
+    - development/code-of-conduct.md
   - Reference:
-    - dynaconf: api.md
-    - dynaconf.strategies: strategies.md
+    - Code API:
+      - dynaconf: api.md
+      - dynaconf.strategies: strategies.md
+    - Changelog: CHANGELOG.md
+
 theme:
   features:
     - search.suggest
@@ -47,11 +54,12 @@ theme:
       toggle:
         icon: material/lightbulb
         name: Switch to light mode
+
 markdown_extensions:
   - pymdownx.details
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.inlinehilite
   - pymdownx.magiclink
   - pymdownx.mark
@@ -62,11 +70,13 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.tilde
+  - pymdownx.snippets
   - admonition
   - codehilite:
       guess_lang: false
   - toc:
       permalink: true
+
 plugins:
   - autorefs
   - git-revision-date
