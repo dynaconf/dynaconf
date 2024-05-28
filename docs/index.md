@@ -162,7 +162,7 @@ pip install dynaconf
         Across your Flask application you can access all the settings variables direct from `app.config` that is now replaced by a dynaconf settings instance.
 
         ```python
-        @app.route("/a_view)
+        @app.route("/a_view")
         def a_view():
             app.config.NAME == "BRUNO"
             app.config['DEBUG'] is True
