@@ -5,7 +5,10 @@ setuptools>=38.6.0
 configobj
 hvac
 django
-django-debug-toolbar
+# django-debug-toolbar 4.4.0 has a breaking change for our tests
+# this is a workaround, we may adapt it later
+# https://django-debug-toolbar.readthedocs.io/en/latest/changes.html#id3
+django-debug-toolbar~=4.3.0
 boto3
 
 # release
