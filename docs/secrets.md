@@ -54,6 +54,8 @@ VAULT_AUTH_WITH_IAM_FOR_DYNACONF=True
 VAULT_AUTH_ROLE_FOR_DYNACONF="vault-role"
 # Authenticate with root token
 VAULT_ROOT_TOKEN_FOR_DYNACONF="root-token"
+# If you want to perform (can be useful when using orphan VAULT_TOKEN_FOR_DYNACONF)
+VAULT_TOKEN_RENEW_FOR_DYNACONF="true"
 ```
 
 Or pass it to the `Dynaconf` instance.
