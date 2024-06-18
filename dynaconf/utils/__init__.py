@@ -3,9 +3,9 @@ from __future__ import annotations
 import os
 import warnings
 from collections import defaultdict
+from collections.abc import Iterator
 from json import JSONDecoder
 from typing import Any
-from typing import Iterator
 from typing import Literal
 from typing import TYPE_CHECKING
 from typing import TypeVar
