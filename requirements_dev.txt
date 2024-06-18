@@ -35,7 +35,7 @@ typos
 # tools
 ipython<=8.12.1
 ipdb
-python-minifier
+# python-minifier # Doesnt work with 3.12, must be installed by CI on release job
 pdbr[ipython]
 
 # MKDOCS

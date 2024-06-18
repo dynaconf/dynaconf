@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Sequence
 from itertools import chain
 from types import MappingProxyType
 from typing import Any
 from typing import Callable
-from typing import Sequence
 from typing import TYPE_CHECKING
 
 from dynaconf import validator_conditions

@@ -17,7 +17,7 @@ Additional links:
 
 1. Ensure your local environment is set.
     1. Clone your own fork of this repo
-    2. Activate a python3.8+ virtualenv
+    2. Activate a python3.9+ virtualenv
     3. Write the code
 2. Update the `docs/guides/` related to your changes.
 3. Update `tests_functional/` (editing or adding a new one related to your changes)
@@ -39,7 +39,7 @@ git clone git@github.com:{$USER}/dynaconf.git
 git remote add upstream https://github.com/dynaconf/dynaconf.git
 
 # Activate your Python Environment
-python3.8 -m venv venv
+python3.9 -m venv venv
 source venv/bin/activate
 
 # Install dynaconf for development

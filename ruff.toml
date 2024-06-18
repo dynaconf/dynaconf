@@ -1,5 +1,5 @@
-# Always generate Python 3.8-compatible code.
-target-version = "py38"
+# Always generate Python 3.9-compatible code.
+target-version = "py39"
 line-length = 79
 exclude = ["dynaconf/vendor*"]
 
