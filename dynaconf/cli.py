@@ -17,6 +17,7 @@ from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf import settings as legacy_settings
 from dynaconf.loaders.py_loader import get_module
+from dynaconf.utils import prepare_json
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
 from dynaconf.utils.functional import empty
@@ -485,7 +486,7 @@ def get(key, default, env, unparse):
         result = unparse_conf_data(result)
 
     if isinstance(result, (dict, list, tuple)):
-        result = json.dumps(result, sort_keys=True)
+        result = json.dumps(prepare_json(result), sort_keys=True)
 
     click.echo(result, nl=False)
 
@@ -530,7 +531,24 @@ def get(key, default, env, unparse):
     default=False,
     help="Output file is flat (do not include [env] name)",
 )
-def _list(env, key, more, loader, _all=False, output=None, flat=False):
+@click.option(
+    "--json",
+    "_json",
+    "-j",
+    is_flag=True,
+    default=False,
+    help="Prints out data serialized as JSON",
+)
+def _list(
+    env,
+    key,
+    more,
+    loader,
+    _all=False,
+    output=None,
+    flat=False,
+    _json=False,
+):
     """
     Lists user defined settings or all (including internal configs).
 
@@ -552,14 +570,15 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
     if cur_env == "main":
         flat = True
 
-    click.echo(
-        click.style(
-            f"Working in {cur_env} environment ",
-            bold=True,
-            bg="bright_blue",
-            fg="bright_white",
+    if not _json:
+        click.echo(
+            click.style(
+                f"Working in {cur_env} environment ",
+                bold=True,
+                bg="bright_blue",
+                fg="bright_white",
+            )
         )
-    )
 
     if not loader:
         data = settings.as_dict(env=env, internal=_all)
@@ -585,14 +604,18 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
         return f"{key}{data_type} {value}"
 
     if not key:
-        datalines = "\n".join(
-            format_setting(k, v)
-            for k, v in data.items()
-            if k not in data.get("RENAMED_VARS", [])
-        )
-        (click.echo_via_pager if more else click.echo)(datalines)
+        if not _json:
+            datalines = "\n".join(
+                format_setting(k, v)
+                for k, v in data.items()
+                if k not in data.get("RENAMED_VARS", [])
+            )
+            (click.echo_via_pager if more else click.echo)(datalines)
         if output:
-            loaders.write(output, data, env=not flat and cur_env)
+            loaders.write(output, prepare_json(data), env=not flat and cur_env)
+        if _json:
+            json_data = json.dumps(prepare_json(data), sort_keys=True)
+            click.echo(json_data, nl=False)
     else:
         key = upperfy(key)
 
@@ -605,9 +628,14 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
             click.secho("Key not found", bg="red", fg="white", err=True)
             return
 
-        click.echo(format_setting(key, value))
+        if not _json:
+            click.echo(format_setting(key, value))
         if output:
-            loaders.write(output, {key: value}, env=not flat and cur_env)
+            loaders.write(
+                output, prepare_json({key: value}), env=not flat and cur_env
+            )
+        if _json:
+            click.echo(json.dumps(prepare_json({key: value})), nl=True)
 
     if env:
         settings.setenv()

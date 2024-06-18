@@ -212,9 +212,20 @@ Options:
   -l, --loader TEXT  a loader identifier to filter e.g: toml|yaml
   -a, --all          show dynaconf internal settings?
   -o, --output FILE  Filepath to write the listed values as json
+  -j, --json         Prints out a valid JSON string
   --output-flat      Output file is flat (do not include [env] name)
   --help             Show this message and exit.
 ```
+
+#### Printing out the settings as JSON
+
+```console
+$ dynaconf list --json
+{"a_valid_raw": "json_output"}
+```
+
+The above output is printed to stdout and can be piped to a file or processed
+using tools such as `jq`.
 
 #### Exporting current environment as a file
 
