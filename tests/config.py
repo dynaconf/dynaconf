@@ -9,5 +9,5 @@ settings = Dynaconf(
     TEST_KEY="test_value",
     ANOTHER_KEY="another_value",
     DATA={"KEY": "value", "OTHERKEY": "other value"},
-    A_PATH=Path("/foo/bar"),
+    A_PATH=Path("foo"),
 )

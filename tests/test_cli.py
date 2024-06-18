@@ -239,7 +239,7 @@ def test_list_prints_json(testdir):
     )
     data = json.loads(result)
     assert data["TEST_KEY"] == "test_value"
-    assert data["A_PATH"] == "/foo/bar"
+    assert data["A_PATH"] == "foo"
 
 
 def test_list_with_all(testdir):

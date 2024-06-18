@@ -547,10 +547,10 @@ def test_get_converter_error_when_converting(settings):
 @pytest.mark.parametrize(
     "input_expected",
     [
-        ({"path": Path("/foo/bar")}, {"path": "/foo/bar"}),
-        ({1: Path("/foo/bar")}, {"1": "/foo/bar"}),
-        ({True: Path("/foo/bar")}, {"True": "/foo/bar"}),
-        ([Path("/one"), Path("/two"), 1, True], ["/one", "/two", 1, True]),
+        ({"path": Path("foo")}, {"path": "foo"}),
+        ({1: Path("foo")}, {"1": "foo"}),
+        ({True: Path("foo")}, {"True": "foo"}),
+        ([Path("one"), Path("two"), 1, True], ["one", "two", 1, True]),
         (1, 1),
         (True, True),
         ("test", "test"),
