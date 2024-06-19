@@ -1,10 +1,12 @@
-from __future__ import annotations
+# from __future__ import annotations  # WARNING: remove this when debugging
 
+import os
 from typing import Annotated
 
 import pytest
 
 from dynaconf.typed import Dynaconf
+from dynaconf.typed import Nested
 from dynaconf.typed import Options
 from dynaconf.typed import ValidationError
 from dynaconf.typed import Validator
@@ -64,3 +66,47 @@ def test_options_contains_only_valid_and_set_attributes():
         "envvar_prefix": "BATATA",
         "settings_file": "foo.json",
     }
+
+
+def test_sub_types():
+    class Database(Nested):
+        host: str = "server.com"
+        port: Annotated[int, Validator(gt=999)]
+        engine: str = "postgres"
+
+    class Settings(Dynaconf):
+        dynaconf_options = Options(
+            envvar_prefix="MYTYPEDAPP",
+            # _trigger_validation=False,
+        )
+        database: Database
+        batata: Annotated[int, Validator(gt=999)]
+
+    os.environ["MYTYPEDAPP_BATATA"] = "1000"
+    os.environ["MYTYPEDAPP_DATABASE__PORT"] = "5000"
+    settings = Settings()
+
+    assert settings.database.port == 5000
+    assert settings.database.host == "server.com"
+    assert settings.database.engine == "postgres"
+
+
+def test_sub_types_fail_validation():
+    class Database(Nested):
+        host: str = "server.com"
+        port: Annotated[int, Validator(gt=999)]
+        engine: str = "postgres"
+
+    class Settings(Dynaconf):
+        dynaconf_options = Options(
+            envvar_prefix="MYTYPEDAPP",
+        )
+        database: Database
+        batata: Annotated[int, Validator(gt=999)]
+
+    os.environ["MYTYPEDAPP_DATABASE__PORT"] = "888"
+
+    with pytest.raises(ValidationError) as exc:
+        Settings()
+
+    assert "database.port must gt 999 but it is 888" in str(exc)

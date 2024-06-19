@@ -40,5 +40,7 @@ ignore = [
 [lint.isort]
 force-single-line = true
 order-by-type = false
-required-imports = ["from __future__ import annotations"]
+# Cant require the future annotations because it breaks typed settings.
+# typed settings are supposed to work only with Python 3.10+
+# required-imports = ["from __future__ import annotations"]
 known-first-party = ["dynaconf"]

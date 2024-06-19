@@ -1,6 +1,6 @@
 """Implements wrappers, types and helpers for Schema based settings."""
 
-from __future__ import annotations
+from __future__ import annotations  # WARNING: remove this when debugging
 
 from dataclasses import asdict
 from dataclasses import dataclass
@@ -19,7 +19,7 @@ class Empty: ...
 empty = Empty()
 
 
-@dataclass
+@dataclass  # wanted to pass (kw_only=True) but that works only for 3.10+
 class Options:
     """Options to configure the initialization of Dynaconf Object.
 
@@ -63,19 +63,51 @@ class Dynaconf(BaseDynaconfSettings):
         defaults = {}
 
         # Extract Validators and default value from type Annotations
-        for name, annotation in cls.__annotations__.items():
+        for name, _annotation in cls.__annotations__.items():
             default_value = getattr(cls, name, empty)
             if default_value is not empty:
                 defaults[name] = default_value
 
-            if _validators := getattr(annotation, "__metadata__", None):
+            # take the metadata from Annotated[type, *metadata]
+            if _validators := getattr(_annotation, "__metadata__", None):
                 for _validator in _validators:
                     _validator.names = [name]
+                    # take the type from Annotated[type, *metadata]
+                    _validator.is_type_of = _annotation.__origin__
                     if default_value is empty:
                         _validator.must_exist = True  # required
                     validators.append(_validator)
+            elif issubclass(_annotation, Nested):
+                # process one level of nesting, later we deal with recursion
+                # THIS IS SMELLING VERY BAD!!!!
+                # Too much repetition, this whole code must be extracted to
+                # functions and used recursively.
+                for (
+                    n_name,
+                    n_annotation,
+                ) in _annotation.__annotations__.items():
+                    dot_name = f"{name}.{n_name}"
+                    n_default_value = getattr(_annotation, n_name, empty)
+                    if n_default_value is not empty:
+                        defaults[dot_name] = n_default_value
+                    if n_validators := getattr(
+                        n_annotation, "__metadata__", None
+                    ):
+                        for n_validator in n_validators:
+                            n_validator.names = [dot_name]
+                            n_validator.is_type_of = n_annotation.__origin__
+                            if n_default_value is empty:
+                                n_validator.must_exist = True
+                            validators.append(n_validator)
+                    else:
+                        n_validator = Validator(
+                            dot_name, is_type_of=n_annotation
+                        )
+                        if n_default_value is empty:
+                            n_validator.must_exist = True
+                        validators.append(n_validator)
             else:
-                _validator = Validator(name, is_type_of=annotation)
+                _validator = Validator(name, is_type_of=_annotation)
 
                 if default_value is empty:
                     _validator.must_exist = True  # required
@@ -110,3 +142,6 @@ class Dynaconf(BaseDynaconfSettings):
             new_cls.validators.validate()
 
         return cast(cls, new_cls)
+
+
+class Nested: ...
