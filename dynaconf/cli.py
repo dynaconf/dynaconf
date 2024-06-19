@@ -7,6 +7,7 @@ import pprint
 import sys
 import warnings
 import webbrowser
+from contextlib import redirect_stdout
 from contextlib import suppress
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -132,7 +133,8 @@ def import_settings(dotted_path):
             f"invalid path to settings instance: {dotted_path}"
         )
     try:
-        module = importlib.import_module(module)
+        with redirect_stdout(None):
+            module = importlib.import_module(module)
     except ImportError as e:
         raise click.UsageError(e)
     except FileNotFoundError:
