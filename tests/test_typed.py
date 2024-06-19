@@ -68,7 +68,7 @@ def test_options_contains_only_valid_and_set_attributes():
     }
 
 
-def test_sub_types():
+def test_sub_types(monkeypatch):
     class Database(Nested):
         host: str = "server.com"
         port: Annotated[int, Validator(gt=999)]
@@ -82,16 +82,18 @@ def test_sub_types():
         database: Database
         batata: Annotated[int, Validator(gt=999)]
 
-    os.environ["MYTYPEDAPP_BATATA"] = "1000"
-    os.environ["MYTYPEDAPP_DATABASE__PORT"] = "5000"
-    settings = Settings()
+    with monkeypatch.context() as m:
+        m.setenv("MYTYPEDAPP_BATATA", "1000")
+        m.setenv("MYTYPEDAPP_DATABASE__PORT", "5000")
 
-    assert settings.database.port == 5000
-    assert settings.database.host == "server.com"
-    assert settings.database.engine == "postgres"
+        settings = Settings()
+
+        assert settings.database.port == 5000
+        assert settings.database.host == "server.com"
+        assert settings.database.engine == "postgres"
 
 
-def test_sub_types_fail_validation():
+def test_sub_types_fail_validation(monkeypatch):
     class Database(Nested):
         host: str = "server.com"
         port: Annotated[int, Validator(gt=999)]
@@ -104,9 +106,10 @@ def test_sub_types_fail_validation():
         database: Database
         batata: Annotated[int, Validator(gt=999)]
 
-    os.environ["MYTYPEDAPP_DATABASE__PORT"] = "888"
+    with monkeypatch.context() as m:
+        m.setenv("MYTYPEDAPP_DATABASE__PORT", "5000")
+        os.environ["MYTYPEDAPP_DATABASE__PORT"] = "888"
 
-    with pytest.raises(ValidationError) as exc:
-        Settings()
-
-    assert "database.port must gt 999 but it is 888" in str(exc)
+        error_msg = "database.port must gt 999 but it is 888"
+        with pytest.raises(ValidationError, match=error_msg):
+            Settings()

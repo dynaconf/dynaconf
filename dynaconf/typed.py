@@ -54,7 +54,10 @@ class Options:
         return options_dict
 
 
-class Dynaconf(BaseDynaconfSettings):
+class Nested: ...
+
+
+class Dynaconf(BaseDynaconfSettings, Nested):
     """Implementation of Dynaconf that is aware of type annotations."""
 
     def __new__(cls, *args, **kwargs):
@@ -62,56 +65,35 @@ class Dynaconf(BaseDynaconfSettings):
         validators = kwargs.pop("validators", [])
         defaults = {}
 
-        # Extract Validators and default value from type Annotations
-        for name, _annotation in cls.__annotations__.items():
-            default_value = getattr(cls, name, empty)
-            if default_value is not empty:
-                defaults[name] = default_value
+        def handle_schema_class(schema_cls, path: tuple):
+            # Extract Validators and default value from type Annotations:
+            # name: _annotation = default_value or Empty
+            for name, _annotation in schema_cls.__annotations__.items():
+                default_value = getattr(schema_cls, name, empty)
+                full_name = path + (name,)  # E.g, path.to.name
+                if default_value is not empty:
+                    defaults[".".join(full_name)] = default_value
 
-            # take the metadata from Annotated[type, *metadata]
-            if _validators := getattr(_annotation, "__metadata__", None):
-                for _validator in _validators:
-                    _validator.names = [name]
-                    # take the type from Annotated[type, *metadata]
-                    _validator.is_type_of = _annotation.__origin__
+                if isinstance(_annotation, type) and issubclass(
+                    _annotation, Nested
+                ):
+                    handle_schema_class(_annotation, full_name)
+                elif _validators := getattr(_annotation, "__metadata__", None):
+                    # take the metadata from Annotated[type, *metadata]
+                    for _validator in _validators:
+                        _validator.names = [".".join(full_name)]
+                        # take the type from Annotated[type, *metadata]
+                        _validator.is_type_of = _annotation.__origin__
+                        if default_value is empty:
+                            _validator.must_exist = True  # required
+                        validators.append(_validator)
+                else:
+                    _validator = Validator(name, is_type_of=_annotation)
                     if default_value is empty:
                         _validator.must_exist = True  # required
                     validators.append(_validator)
-            elif issubclass(_annotation, Nested):
-                # process one level of nesting, later we deal with recursion
-                # THIS IS SMELLING VERY BAD!!!!
-                # Too much repetition, this whole code must be extracted to
-                # functions and used recursively.
-                for (
-                    n_name,
-                    n_annotation,
-                ) in _annotation.__annotations__.items():
-                    dot_name = f"{name}.{n_name}"
-                    n_default_value = getattr(_annotation, n_name, empty)
-                    if n_default_value is not empty:
-                        defaults[dot_name] = n_default_value
-                    if n_validators := getattr(
-                        n_annotation, "__metadata__", None
-                    ):
-                        for n_validator in n_validators:
-                            n_validator.names = [dot_name]
-                            n_validator.is_type_of = n_annotation.__origin__
-                            if n_default_value is empty:
-                                n_validator.must_exist = True
-                            validators.append(n_validator)
-                    else:
-                        n_validator = Validator(
-                            dot_name, is_type_of=n_annotation
-                        )
-                        if n_default_value is empty:
-                            n_validator.must_exist = True
-                        validators.append(n_validator)
-            else:
-                _validator = Validator(name, is_type_of=_annotation)
 
-                if default_value is empty:
-                    _validator.must_exist = True  # required
-                validators.append(_validator)
+        handle_schema_class(cls, tuple())
 
         # Set init options for Dynaconf coming first from Options on Schema
         init_options = options.as_dict()
@@ -142,6 +124,3 @@ class Dynaconf(BaseDynaconfSettings):
             new_cls.validators.validate()
 
         return cast(cls, new_cls)
-
-
-class Nested: ...
