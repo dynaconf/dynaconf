@@ -90,6 +90,19 @@ def test_enclosed_type_raises_for_invalid_enclosed():
         Settings()
 
 
+def test_annotated_forbidden_with_nested():
+    class Plugin(Nested):
+        name: str
+
+    class Settings(Dynaconf):
+        # This is not allowed, should add validators on the nested type itself
+        plug: Annotated[Plugin, Validator()]
+
+    msg = "Nested type cannot be Annotated"
+    with pytest.raises(DynaconfSchemaError, match=msg):
+        Settings()
+
+
 def test_enclosed_type_validates(monkeypatch):
     class Plugin(Nested):
         name: str
@@ -148,12 +161,15 @@ def test_deeply_enclosed_type_validates_with_bare_type_required(monkeypatch):
         """
         !!! QUESTIONS !!!
 
-        Required and can't be an empty list
+        Optional, but if set, value types are validated
+            Optional[list[T]]
+
+        Required, value types validated and can't be an empty list
             list[T]
 
-        Optional, must be a list, but can be an empty list
+        Required, must be a list, but can be an empty list,
+        If has values, value types are validated
             list[Optional[T]]
-
         """
 
     class Database(Nested):
@@ -218,7 +234,7 @@ def test_sub_types_works(monkeypatch):
         assert settings.database.port == 5000
         assert settings.database.host == "server.com"
         assert settings.database.engine == "postgres"
-        # assert isinstance(settings.database.extra.plugins[0]["name"], str)
+        assert isinstance(settings.database.extra.plugins[0]["name"], str)
 
 
 def test_sub_types_fail_validation(monkeypatch):

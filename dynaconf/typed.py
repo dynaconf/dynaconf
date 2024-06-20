@@ -125,6 +125,14 @@ ALLOWED_ENCLOSED_TYPES = (
 )
 
 
+def get_annotations(schema_cls) -> dict:
+    """NOTE: move to inspect.get_annotations when Python 3.9 is dropped"""
+    if isinstance(schema_cls, type):
+        return schema_cls.__dict__.get("__annotations__", {})
+    else:
+        return getattr(schema_cls, "__annotations__", {})
+
+
 def extract_defaults_and_validators_from_typing(
     schema_cls,
     path: tuple | None = None,
@@ -142,18 +150,18 @@ def extract_defaults_and_validators_from_typing(
     path = path or tuple()
     defaults = defaults or {}
     validators = validators or []
-
-    # NOTE: move to inspect.get_annotations when Python 3.9 is dropped
-    if isinstance(schema_cls, type):
-        schema_annotations = schema_cls.__dict__.get("__annotations__", {})
-    else:
-        schema_annotations = getattr(schema_cls, "__annotations__", {})
+    schema_annotations = get_annotations(schema_cls)
 
     for name, annotation in schema_annotations.items():
         default_value = getattr(schema_cls, name, empty)
         full_path = path + (name,)  # E.g, ("path", "to", "name")
         full_name = ".".join(full_path)  # E.g, path.to.name
-        _type = get_origin(annotation)  # type from X[type,]
+
+        # NOTE: get_origin doesn't work for Annotated
+        # _type = get_origin(annotation)  # type from X[type,]
+        _type = getattr(annotation, "__origin__", None)
+
+        # In case of Annotated, the following will return (T, *metadata)
         _type_args = get_args(annotation)  # args from X[_,*args]
 
         if default_value is not empty:
@@ -166,12 +174,21 @@ def extract_defaults_and_validators_from_typing(
             )
         # It is a field: Annotated[type, Validator(...)]
         elif _annotated_validators := get_annotated_metadata(annotation):
+            if isinstance(_type, type) and issubclass(_type, Nested):
+                raise DynaconfSchemaError(
+                    "Nested type cannot be Annotated, "
+                    f"set the validators on the {_type.__name__!r} fields "
+                    f"this error is caused by "
+                    f"`{full_name}: Annotated[{_type.__name__}, *]`"
+                )
+
             for _validator in _annotated_validators:
                 _validator.names = [full_name]
                 _validator.is_type_of = _type
                 if default_value is empty and not is_optional(annotation):
                     _validator.must_exist = True  # required
                 validators.append(_validator)
+
         # it is a field: list[Nested] (or any ALLOWED_ENCLOSED_TYPES)
         elif _type_args and _type in (list, tuple):
             _validator = Validator(full_name, is_type_of=_type)
@@ -181,7 +198,7 @@ def extract_defaults_and_validators_from_typing(
                 raise DynaconfSchemaError(
                     f"Invalid enclosed type {inner_type.__name__!r} "
                     f"must be one of {ALLOWED_ENCLOSED_TYPES} "
-                    f"this is error is caused by "
+                    f"this error is caused by "
                     f"`{full_name}: {_type.__name__}[{inner_type.__name__}]`"
                 )
 
@@ -192,7 +209,7 @@ def extract_defaults_and_validators_from_typing(
                 raise DynaconfSchemaError(
                     "List enclosed types cannot define default values. "
                     f"{inner_type.__name__!r} defines {enclosed_defaults}. "
-                    f"this is error is caused by "
+                    f"this error is caused by "
                     f"`{full_name}: {_type.__name__}[{inner_type.__name__}]`"
                 )
 
