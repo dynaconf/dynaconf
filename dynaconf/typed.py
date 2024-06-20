@@ -6,6 +6,9 @@ from dataclasses import asdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
+from typing import get_args
+from typing import get_origin
+from typing import Union
 
 from dynaconf.base import LazySettings as OriginalDynaconf
 from dynaconf.base import Settings as BaseDynaconfSettings
@@ -85,9 +88,41 @@ class Dynaconf(BaseDynaconfSettings, Nested):
 
         # Trigger validation if not explicitly disabled
         if options._trigger_validation:
-            new_cls.validators.validate()
+            new_cls.validators.validate_all()
 
         return cast(cls, new_cls)
+
+
+def is_union(annotation) -> bool:
+    """Tell if an annotation is strictly Union."""
+    return get_origin(annotation) is Union
+
+
+def is_optional(annotation) -> bool:
+    """Tell if an annotation is strictly typing.Optional or Union[**, None]"""
+    return is_union(annotation) and type(None) in get_args(annotation)
+
+
+def get_annotated_metadata(annotation) -> tuple | None:
+    """metadata from Annotated[type, *metadata]"""
+    # Any other way to extract metadata from Annotated?
+    if "Annotated" in str(annotation):
+        return getattr(annotation, "__metadata__", None)
+    return None
+
+
+# Types that can be used on `field: list[x]`
+ALLOWED_ENCLOSED_TYPES = (
+    Nested,
+    int,
+    float,
+    str,
+    bool,
+    type(None),
+    list,
+    tuple,
+    dict,
+)
 
 
 def extract_defaults_and_validators_from_typing(
@@ -114,70 +149,78 @@ def extract_defaults_and_validators_from_typing(
     else:
         schema_annotations = getattr(schema_cls, "__annotations__", {})
 
-    for name, _annotation in schema_annotations.items():
+    for name, annotation in schema_annotations.items():
         default_value = getattr(schema_cls, name, empty)
         full_path = path + (name,)  # E.g, ("path", "to", "name")
         full_name = ".".join(full_path)  # E.g, path.to.name
-        # take the type from Annotated[type, *metadata]
-        _type = getattr(_annotation, "__origin__", None)
-        _type_args = getattr(_annotation, "__args__", None)
-        # take the metadata from Annotated[type, *metadata]
-        _annotated_validators = getattr(_annotation, "__metadata__", None)
+        _type = get_origin(annotation)  # type from X[type,]
+        _type_args = get_args(annotation)  # args from X[_,*args]
 
         if default_value is not empty:
             defaults[full_name] = default_value
 
-        if isinstance(_annotation, type) and issubclass(_annotation, Nested):
+        # it is a field: Nested
+        if isinstance(annotation, type) and issubclass(annotation, Nested):
             defaults, validators = extract_defaults_and_validators_from_typing(
-                _annotation, full_path, defaults, validators
+                annotation, full_path, defaults, validators
             )
-        elif _annotated_validators:
+        # It is a field: Annotated[type, Validator(...)]
+        elif _annotated_validators := get_annotated_metadata(annotation):
             for _validator in _annotated_validators:
                 _validator.names = [full_name]
-                if _type:
-                    _validator.is_type_of = _type
-                if default_value is empty:
+                _validator.is_type_of = _type
+                if default_value is empty and not is_optional(annotation):
                     _validator.must_exist = True  # required
                 validators.append(_validator)
-        else:
-            if _type_args and _type in (list, tuple):
-                _validator = Validator(full_name, is_type_of=_type)
-                enc_type = _type_args[0]
-                enclosed_defaults, enclosed_validators = (
-                    extract_defaults_and_validators_from_typing(enc_type)
+        # it is a field: list[Nested] (or any ALLOWED_ENCLOSED_TYPES)
+        elif _type_args and _type in (list, tuple):
+            _validator = Validator(full_name, is_type_of=_type)
+            # consider only the first by now, should it handle more?
+            inner_type = _type_args[0]
+            if not issubclass(inner_type, ALLOWED_ENCLOSED_TYPES):
+                raise DynaconfSchemaError(
+                    f"Invalid enclosed type {inner_type.__name__!r} "
+                    f"must be one of {ALLOWED_ENCLOSED_TYPES} "
+                    f"this is error is caused by "
+                    f"`{full_name}: {_type.__name__}[{inner_type.__name__}]`"
                 )
-                if enclosed_defaults:
-                    raise DynaconfSchemaError(
-                        "List enclosed types cannot define default values. "
-                        f"{enc_type.__name__!r} defines {enclosed_defaults}. "
-                        f"this is error is caused by "
-                        f"`{full_name}: {_type.__name__}[{enc_type.__name__}]`"
-                    )
-                # Transform the lis tof enclosed_validators in a function
-                # that will be added as _validator.condition
-                # that function will iterate the items in the list
-                # and ensure each validator validates.
-                if enclosed_validators:
-                    _validator.condition = (
-                        lambda value: validate_enclosed_list(
-                            value, enclosed_validators, full_name
-                        )
-                    )
-            else:
-                _validator = Validator(full_name, is_type_of=_annotation)
 
-            if default_value is empty:
+            enclosed_defaults, enclosed_validators = (
+                extract_defaults_and_validators_from_typing(inner_type)
+            )
+            if enclosed_defaults:
+                raise DynaconfSchemaError(
+                    "List enclosed types cannot define default values. "
+                    f"{inner_type.__name__!r} defines {enclosed_defaults}. "
+                    f"this is error is caused by "
+                    f"`{full_name}: {_type.__name__}[{inner_type.__name__}]`"
+                )
+
+            _validator.condition = validate_enclosed_list(
+                enclosed_validators, full_name, inner_type
+            )
+
+            if default_value is empty and not is_optional(annotation):
+                _validator.must_exist = True  # required
+
+            validators.append(_validator)
+
+        # It is just a bare type annotation like field: type
+        else:
+            _validator = Validator(full_name, is_type_of=annotation)
+            if default_value is empty and not is_optional(annotation):
                 _validator.must_exist = True  # required
             validators.append(_validator)
 
     return defaults, validators
 
 
-def validate_enclosed_list(values, validators, prefix):
+def validate_enclosed_list(validators, prefix, _type):
     """takes list[_type] and test against validators"""
-    for value in values:
-        for validator in validators:
-            msgs = {
+
+    def validator_condition(values):
+        if issubclass(_type, Nested):  # a dict
+            validator_messages = {
                 "must_exist_true": prefix
                 + "[].{name} is required in env {env}",
                 "must_exist_false": prefix
@@ -189,7 +232,31 @@ def validate_enclosed_list(values, validators, prefix):
                     "but it is {value} in env {env}"
                 ),
             }
-            validator.messages.update(msgs)
-            validator.validate(BaseDynaconfSettings(**value))
-    # No validation error
-    return True
+            for value in values:
+                for validator in validators:
+                    validator.messages.update(validator_messages)
+                    validator.validate(BaseDynaconfSettings(**value))
+        else:  # not a dict
+            validator_messages = {
+                "must_exist_true": "{name}[] is required in env {env}",
+                "must_exist_false": "{name}[] cannot exists in env {env}",
+                "condition": "{name}[] invalid for {function}({value}) in env {env}",
+                "operations": (
+                    "{name}[] must {operation} {op_value} "
+                    "but it is {value} in env {env}"
+                ),
+            }
+            for value in values:
+                _settings = BaseDynaconfSettings()
+                _settings.set(prefix, value)
+                _validator = Validator(
+                    prefix,
+                    is_type_of=_type,
+                    messages=validator_messages,
+                )
+                _validator.validate(_settings)
+
+        # No validation error
+        return True
+
+    return validator_condition

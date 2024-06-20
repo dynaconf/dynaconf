@@ -1,11 +1,12 @@
 import os
 from typing import Annotated
+from typing import Optional
+from typing import Union
 
-# from typing import Optional
-# from typing import Union
 import pytest
 
 from dynaconf.typed import Dynaconf
+from dynaconf.typed import DynaconfSchemaError
 from dynaconf.typed import Nested
 from dynaconf.typed import Options
 from dynaconf.typed import ValidationError
@@ -66,11 +67,115 @@ def test_options_contains_only_valid_and_set_attributes():
     }
 
 
+def test_enclosed_type_raises_for_defaults():
+    class Plugin(Nested):
+        name: str = "default_name"
+
+    class Settings(Dynaconf):
+        plugins: list[Plugin]
+
+    msg = "List enclosed types cannot define default values"
+    with pytest.raises(DynaconfSchemaError, match=msg):
+        Settings()
+
+
+def test_enclosed_type_raises_for_invalid_enclosed():
+    class Dummy: ...
+
+    class Settings(Dynaconf):
+        plugins: list[Dummy]
+
+    msg = "Invalid enclosed type"
+    with pytest.raises(DynaconfSchemaError, match=msg):
+        Settings()
+
+
+def test_enclosed_type_validates(monkeypatch):
+    class Plugin(Nested):
+        name: str
+
+    class Settings(Dynaconf):
+        plugins: list[Plugin]
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_PLUGINS", '@json [{"name": true}]')
+        msg = r"plugins\[].name must is_type_of"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
+def test_deeply_enclosed_type_validates(monkeypatch):
+    class Plugin(Nested):
+        name: str
+
+    class Extra(Nested):
+        plugins: list[Plugin]
+
+    class Database(Nested):
+        extra: Extra
+
+    class Settings(Dynaconf):
+        database: Database
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", '@json [{"name": null}]')
+        msg = r"database.extra.plugins\[].name must is_type_of"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
+def test_deeply_enclosed_type_validates_with_bare_type(monkeypatch):
+    class Extra(Nested):
+        plugins: list[str]
+
+    class Database(Nested):
+        extra: Extra
+
+    class Settings(Dynaconf):
+        database: Database
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", "@json [12]")
+        msg = r"database.extra.plugins\[] must is_type_of"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
+@pytest.mark.xfail
+def test_deeply_enclosed_type_validates_with_bare_type_required(monkeypatch):
+    class Extra(Nested):
+        plugins: list[str]  ## Must raise because value is [] not a list[str]
+        """
+        !!! QUESTIONS !!!
+
+        Required and can't be an empty list
+            list[T]
+
+        Optional, must be a list, but can be an empty list
+            list[Optional[T]]
+
+        """
+
+    class Database(Nested):
+        extra: Extra
+
+    class Settings(Dynaconf):
+        database: Database
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", "@json []")
+        msg = "database.extra.plugins is required"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
 def test_sub_types_works(monkeypatch):
     class Plugin(Nested):
-        name: str  # = "default_name"
-        # path: Optional[str]  # NOTE: This must mark path as not required
-        # order: int
+        name: str
+        path: Optional[
+            str
+        ]  # NOTE: This must mark path as not required on dict
+        order: Union[int, bool, None]  # This is the same as above ^
 
     class Auth(Nested):
         username: str
@@ -82,6 +187,8 @@ def test_sub_types_works(monkeypatch):
         transactions: bool
         auth: Auth
         plugins: list[Plugin]
+        # Make this work
+        batatas: list[int] = [1, 2]
 
     class Database(Nested):
         host: str = "server.com"
@@ -103,7 +210,7 @@ def test_sub_types_works(monkeypatch):
         m.setenv("MYTYPEDAPP_DATABASE__EXTRA__AUTH__USERNAME", "admin")
         m.setenv("MYTYPEDAPP_DATABASE__EXTRA__AUTH__PASSWORD", "1234")
         m.setenv(
-            "MYTYPEDAPP_DATABASE__EXTRA__PLUGINS", '@json [{"name": "xpto"}]'
+            "MYTYPEDAPP_DATABASE__EXTRA__PLUGINS", '@json [{"name": "aaa"}]'
         )
 
         settings = Settings()
@@ -111,6 +218,7 @@ def test_sub_types_works(monkeypatch):
         assert settings.database.port == 5000
         assert settings.database.host == "server.com"
         assert settings.database.engine == "postgres"
+        # assert isinstance(settings.database.extra.plugins[0]["name"], str)
 
 
 def test_sub_types_fail_validation(monkeypatch):
