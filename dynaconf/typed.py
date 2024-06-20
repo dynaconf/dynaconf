@@ -54,6 +54,9 @@ class Options:
         return options_dict
 
 
+class DynaconfSchemaError(Exception): ...
+
+
 class Nested: ...
 
 
@@ -62,38 +65,9 @@ class Dynaconf(BaseDynaconfSettings, Nested):
 
     def __new__(cls, *args, **kwargs):
         options = getattr(cls, "dynaconf_options", Options())
-        validators = kwargs.pop("validators", [])
-        defaults = {}
-
-        def handle_schema_class(schema_cls, path: tuple):
-            # Extract Validators and default value from type Annotations:
-            # name: _annotation = default_value or Empty
-            for name, _annotation in schema_cls.__annotations__.items():
-                default_value = getattr(schema_cls, name, empty)
-                full_name = path + (name,)  # E.g, path.to.name
-                if default_value is not empty:
-                    defaults[".".join(full_name)] = default_value
-
-                if isinstance(_annotation, type) and issubclass(
-                    _annotation, Nested
-                ):
-                    handle_schema_class(_annotation, full_name)
-                elif _validators := getattr(_annotation, "__metadata__", None):
-                    # take the metadata from Annotated[type, *metadata]
-                    for _validator in _validators:
-                        _validator.names = [".".join(full_name)]
-                        # take the type from Annotated[type, *metadata]
-                        _validator.is_type_of = _annotation.__origin__
-                        if default_value is empty:
-                            _validator.must_exist = True  # required
-                        validators.append(_validator)
-                else:
-                    _validator = Validator(name, is_type_of=_annotation)
-                    if default_value is empty:
-                        _validator.must_exist = True  # required
-                    validators.append(_validator)
-
-        handle_schema_class(cls, tuple())
+        defaults, validators = extract_defaults_and_validators_from_typing(cls)
+        passed_in_validators = kwargs.pop("validators", [])
+        validators += passed_in_validators
 
         # Set init options for Dynaconf coming first from Options on Schema
         init_options = options.as_dict()
@@ -106,16 +80,6 @@ class Dynaconf(BaseDynaconfSettings, Nested):
         new_cls = OriginalDynaconf(*args, **init_options)
         new_cls.__annotations__ = cls.__annotations__
 
-        # Alternative for setting defaults:
-        # WARNING: This triggers the settings initialization
-        # so it is not Lazy anymore, should we consider accumulating
-        # default values somewhere and retrieving on `settings.get` ?
-        # or add default_value to Validator above?
-        #
-        # for name, value in defaults.items():
-        #     if new_cls.get(name, empty) is empty:
-        #         new_cls.set(name, value, loader_identifier="type_annotations")
-
         if validators:
             new_cls.validators.register(*validators)
 
@@ -124,3 +88,108 @@ class Dynaconf(BaseDynaconfSettings, Nested):
             new_cls.validators.validate()
 
         return cast(cls, new_cls)
+
+
+def extract_defaults_and_validators_from_typing(
+    schema_cls,
+    path: tuple | None = None,
+    defaults: dict | None = None,
+    validators: list | None = None,
+) -> tuple[dict, list]:
+    """From schema class extract defaults and validators from annotations.
+
+    Recursively handle all `Nested` subtypes.
+
+    key: int -> Validator(key, is_type_of=int)
+    key: int = 1 -> Validator(key, is_type_of=int) + defaults[key] = 1
+    key: Annotated[int, Validator()] -> Validator(key, is_type_of=int)
+    """
+    path = path or tuple()
+    defaults = defaults or {}
+    validators = validators or []
+
+    # NOTE: move to inspect.get_annotations when Python 3.9 is dropped
+    if isinstance(schema_cls, type):
+        schema_annotations = schema_cls.__dict__.get("__annotations__", {})
+    else:
+        schema_annotations = getattr(schema_cls, "__annotations__", {})
+
+    for name, _annotation in schema_annotations.items():
+        default_value = getattr(schema_cls, name, empty)
+        full_path = path + (name,)  # E.g, ("path", "to", "name")
+        full_name = ".".join(full_path)  # E.g, path.to.name
+        # take the type from Annotated[type, *metadata]
+        _type = getattr(_annotation, "__origin__", None)
+        _type_args = getattr(_annotation, "__args__", None)
+        # take the metadata from Annotated[type, *metadata]
+        _annotated_validators = getattr(_annotation, "__metadata__", None)
+
+        if default_value is not empty:
+            defaults[full_name] = default_value
+
+        if isinstance(_annotation, type) and issubclass(_annotation, Nested):
+            defaults, validators = extract_defaults_and_validators_from_typing(
+                _annotation, full_path, defaults, validators
+            )
+        elif _annotated_validators:
+            for _validator in _annotated_validators:
+                _validator.names = [full_name]
+                if _type:
+                    _validator.is_type_of = _type
+                if default_value is empty:
+                    _validator.must_exist = True  # required
+                validators.append(_validator)
+        else:
+            if _type_args and _type in (list, tuple):
+                _validator = Validator(full_name, is_type_of=_type)
+                enc_type = _type_args[0]
+                enclosed_defaults, enclosed_validators = (
+                    extract_defaults_and_validators_from_typing(enc_type)
+                )
+                if enclosed_defaults:
+                    raise DynaconfSchemaError(
+                        "List enclosed types cannot define default values. "
+                        f"{enc_type.__name__!r} defines {enclosed_defaults}. "
+                        f"this is error is caused by "
+                        f"`{full_name}: {_type.__name__}[{enc_type.__name__}]`"
+                    )
+                # Transform the lis tof enclosed_validators in a function
+                # that will be added as _validator.condition
+                # that function will iterate the items in the list
+                # and ensure each validator validates.
+                if enclosed_validators:
+                    _validator.condition = (
+                        lambda value: validate_enclosed_list(
+                            value, enclosed_validators, full_name
+                        )
+                    )
+            else:
+                _validator = Validator(full_name, is_type_of=_annotation)
+
+            if default_value is empty:
+                _validator.must_exist = True  # required
+            validators.append(_validator)
+
+    return defaults, validators
+
+
+def validate_enclosed_list(values, validators, prefix):
+    """takes list[_type] and test against validators"""
+    for value in values:
+        for validator in validators:
+            msgs = {
+                "must_exist_true": prefix
+                + "[].{name} is required in env {env}",
+                "must_exist_false": prefix
+                + "[].{name} cannot exists in env {env}",
+                "condition": prefix
+                + "[].{name} invalid for {function}({value}) in env {env}",
+                "operations": (
+                    prefix + "[].{name} must {operation} {op_value} "
+                    "but it is {value} in env {env}"
+                ),
+            }
+            validator.messages.update(msgs)
+            validator.validate(BaseDynaconfSettings(**value))
+    # No validation error
+    return True
