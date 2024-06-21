@@ -90,6 +90,17 @@ def test_enclosed_type_raises_for_invalid_enclosed():
         Settings()
 
 
+def test_union_enclosed_type_raises_for_invalid_enclosed():
+    class A: ...
+
+    class Settings(Dynaconf):
+        numbers: list[Union[int, float, bool, A]]
+
+    msg = "Invalid enclosed type 'A'"
+    with pytest.raises(DynaconfSchemaError, match=msg):
+        Settings()
+
+
 def test_annotated_forbidden_with_nested():
     class Plugin(Nested):
         name: str
@@ -99,6 +110,18 @@ def test_annotated_forbidden_with_nested():
         plug: Annotated[Plugin, Validator()]
 
     msg = "Nested type cannot be Annotated"
+    with pytest.raises(DynaconfSchemaError, match=msg):
+        Settings()
+
+
+def test_enclosed_forbidden_with_more_than_one_arg():
+    class Plugin(Nested):
+        value: list[Union[int, float, bool], int, float]
+
+    class Settings(Dynaconf):
+        plug: Plugin
+
+    msg = "Invalid enclosed type for plug.value enclosed types"
     with pytest.raises(DynaconfSchemaError, match=msg):
         Settings()
 
@@ -115,6 +138,38 @@ def test_enclosed_type_validates(monkeypatch):
         msg = r"plugins\[].name must is_type_of"
         with pytest.raises(ValidationError, match=msg):
             Settings()
+
+
+def test_union_type_validates(monkeypatch):
+    class Settings(Dynaconf):
+        number: Union[int, float, bool]
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_NUMBER", "one")
+        msg = r"number must is_type_of"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
+def test_union_enclosed_type_validates(monkeypatch):
+    class Settings(Dynaconf):
+        numbers: list[Union[int, float, bool]]
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_NUMBERS", '["banana"]')
+        msg = r"numbers\[] must is_type_of"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
+def test_union_enclosed_type_works(monkeypatch):
+    class Settings(Dynaconf):
+        numbers: list[Union[int, float, bool]]
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_NUMBERS", "[1, 4.2, true]")
+        settings = Settings()
+        assert settings.numbers == [1, 4.2, True]
 
 
 def test_deeply_enclosed_type_validates(monkeypatch):
@@ -154,23 +209,18 @@ def test_deeply_enclosed_type_validates_with_bare_type(monkeypatch):
             Settings()
 
 
-@pytest.mark.xfail
-def test_deeply_enclosed_type_validates_with_bare_type_required(monkeypatch):
+def test_deeply_enclosed_type_validates_with_bare_type_allows_empty(
+    monkeypatch,
+):
+    """Ensure empty list is valid when list has enclosed type.
+
+    list[T] will validate [T] but also an empty list []
+    NOTE: It does not look right for me, but looks like it is valid.
+    https://mypy-play.net/?gist=d16da1574497dbe585eab679f09432ef
+    """
+
     class Extra(Nested):
-        plugins: list[str]  ## Must raise because value is [] not a list[str]
-        """
-        !!! QUESTIONS !!!
-
-        Optional, but if set, value types are validated
-            Optional[list[T]]
-
-        Required, value types validated and can't be an empty list
-            list[T]
-
-        Required, must be a list, but can be an empty list,
-        If has values, value types are validated
-            list[Optional[T]]
-        """
+        plugins: list[str]
 
     class Database(Nested):
         extra: Extra
@@ -180,9 +230,7 @@ def test_deeply_enclosed_type_validates_with_bare_type_required(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", "@json []")
-        msg = "database.extra.plugins is required"
-        with pytest.raises(ValidationError, match=msg):
-            Settings()
+        assert Settings().database.extra.plugins == []
 
 
 def test_sub_types_works(monkeypatch):
@@ -216,21 +264,24 @@ def test_sub_types_works(monkeypatch):
         dynaconf_options = Options(
             envvar_prefix="MYTYPEDAPP",
         )
+        version: Union[int, float, bool]
         database: Database
         batata: Annotated[int, Validator(gt=999)]
 
     with monkeypatch.context() as m:
+        m.setenv("MYTYPEDAPP_version", "4.4")
         m.setenv("MYTYPEDAPP_BATATA", "1000")
         m.setenv("MYTYPEDAPP_DATABASE__PORT", "5000")
         m.setenv("MYTYPEDAPP_DATABASE__EXTRA__TRANSACTIONS", "true")
         m.setenv("MYTYPEDAPP_DATABASE__EXTRA__AUTH__USERNAME", "admin")
         m.setenv("MYTYPEDAPP_DATABASE__EXTRA__AUTH__PASSWORD", "1234")
-        m.setenv(
-            "MYTYPEDAPP_DATABASE__EXTRA__PLUGINS", '@json [{"name": "aaa"}]'
-        )
+        m.setenv("MYTYPEDAPP_database__extra__plugins___0__name", "MyPlugin")
+        m.setenv("MYTYPEDAPP_database__extra__plugins___0__order", "1")
+        # NOTE: This key is not in the Plugin spec, must be disallowed
+        # and raise validation
+        m.setenv("MYTYPEDAPP_database__extra__plugins___0__batata", "1")
 
         settings = Settings()
-
         assert settings.database.port == 5000
         assert settings.database.host == "server.com"
         assert settings.database.engine == "postgres"

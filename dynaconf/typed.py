@@ -5,6 +5,8 @@ from __future__ import annotations  # WARNING: remove this when debugging
 from dataclasses import asdict
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Annotated
+from typing import Callable
 from typing import cast
 from typing import get_args
 from typing import get_origin
@@ -63,7 +65,7 @@ class DynaconfSchemaError(Exception): ...
 class Nested: ...
 
 
-class Dynaconf(BaseDynaconfSettings, Nested):
+class Dynaconf(BaseDynaconfSettings):
     """Implementation of Dynaconf that is aware of type annotations."""
 
     def __new__(cls, *args, **kwargs):
@@ -103,14 +105,6 @@ def is_optional(annotation) -> bool:
     return is_union(annotation) and type(None) in get_args(annotation)
 
 
-def get_annotated_metadata(annotation) -> tuple | None:
-    """metadata from Annotated[type, *metadata]"""
-    # Any other way to extract metadata from Annotated?
-    if "Annotated" in str(annotation):
-        return getattr(annotation, "__metadata__", None)
-    return None
-
-
 # Types that can be used on `field: list[x]`
 ALLOWED_ENCLOSED_TYPES = (
     Nested,
@@ -131,6 +125,12 @@ def get_annotations(schema_cls) -> dict:
         return schema_cls.__dict__.get("__annotations__", {})
     else:
         return getattr(schema_cls, "__annotations__", {})
+
+
+def get_type_name(_type):
+    if name := getattr(_type, "__name__", None):
+        return name
+    return str(_type)
 
 
 def extract_defaults_and_validators_from_typing(
@@ -156,13 +156,14 @@ def extract_defaults_and_validators_from_typing(
         default_value = getattr(schema_cls, name, empty)
         full_path = path + (name,)  # E.g, ("path", "to", "name")
         full_name = ".".join(full_path)  # E.g, path.to.name
+        _annotated_validators = None
+        _type_args: tuple = tuple()
 
-        # NOTE: get_origin doesn't work for Annotated
-        # _type = get_origin(annotation)  # type from X[type,]
-        _type = getattr(annotation, "__origin__", None)
-
-        # In case of Annotated, the following will return (T, *metadata)
-        _type_args = get_args(annotation)  # args from X[_,*args]
+        _type = get_origin(annotation)  # type from X[type,]
+        if _type is Annotated:
+            _type, *_annotated_validators = get_args(annotation)
+        else:
+            _type_args = get_args(annotation)
 
         if default_value is not empty:
             defaults[full_name] = default_value
@@ -173,7 +174,7 @@ def extract_defaults_and_validators_from_typing(
                 annotation, full_path, defaults, validators
             )
         # It is a field: Annotated[type, Validator(...)]
-        elif _annotated_validators := get_annotated_metadata(annotation):
+        elif _annotated_validators:
             if isinstance(_type, type) and issubclass(_type, Nested):
                 raise DynaconfSchemaError(
                     "Nested type cannot be Annotated, "
@@ -192,15 +193,34 @@ def extract_defaults_and_validators_from_typing(
         # it is a field: list[Nested] (or any ALLOWED_ENCLOSED_TYPES)
         elif _type_args and _type in (list, tuple):
             _validator = Validator(full_name, is_type_of=_type)
-            # consider only the first by now, should it handle more?
-            inner_type = _type_args[0]
-            if not issubclass(inner_type, ALLOWED_ENCLOSED_TYPES):
+            # ADR: Decided to consider only the first enclosed type
+            # which means T[T] is allowed, but T[T, T] not
+            # This is subject to change in future, PRs welcome.
+            inner_type, *more_enclosed_types = _type_args
+            if more_enclosed_types:
                 raise DynaconfSchemaError(
-                    f"Invalid enclosed type {inner_type.__name__!r} "
-                    f"must be one of {ALLOWED_ENCLOSED_TYPES} "
-                    f"this error is caused by "
-                    f"`{full_name}: {_type.__name__}[{inner_type.__name__}]`"
+                    f"Invalid enclosed type for {full_name} "
+                    "enclosed types supports only one argument "
+                    f"{get_type_name(_type)}[{get_type_name(inner_type)}] "
+                    "is allowed, but this error is caused by "
+                    f"`{full_name}: {get_type_name(_type)}[{get_type_name(inner_type)}, "
+                    f"{', '.join(get_type_name(i) for i in more_enclosed_types)}]`"
                 )
+
+            # # Handle list[Union...]
+            if is_union(inner_type):
+                all_types = get_args(inner_type)
+            else:
+                all_types = (inner_type,)
+
+            for item in all_types:
+                if not issubclass(item, ALLOWED_ENCLOSED_TYPES):
+                    raise DynaconfSchemaError(
+                        f"Invalid enclosed type {get_type_name(item)!r} "
+                        f"must be one of {ALLOWED_ENCLOSED_TYPES} "
+                        f"this error is caused by "
+                        f"`{full_name}: {get_type_name(_type)}[{get_type_name(inner_type)}]`"
+                    )
 
             enclosed_defaults, enclosed_validators = (
                 extract_defaults_and_validators_from_typing(inner_type)
@@ -213,7 +233,7 @@ def extract_defaults_and_validators_from_typing(
                     f"`{full_name}: {_type.__name__}[{inner_type.__name__}]`"
                 )
 
-            _validator.condition = validate_enclosed_list(
+            _validator.condition = validator_condition_factory(
                 enclosed_validators, full_name, inner_type
             )
 
@@ -232,11 +252,11 @@ def extract_defaults_and_validators_from_typing(
     return defaults, validators
 
 
-def validate_enclosed_list(validators, prefix, _type):
-    """takes list[_type] and test against validators"""
+def validator_condition_factory(validators, prefix, _type) -> Callable:
+    """takes _type: T and generates a function to validate a value against it"""
 
     def validator_condition(values):
-        if issubclass(_type, Nested):  # a dict
+        if isinstance(_type, type) and issubclass(_type, Nested):  # a dict
             validator_messages = {
                 "must_exist_true": prefix
                 + "[].{name} is required in env {env}",

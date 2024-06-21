@@ -182,7 +182,7 @@ or to strictly specify your environments.
 
 ```python
 settings = Dynaconf(
-    environments=["default", "prodution", "testing", "xyz"],
+    environments=["default", "production", "testing", "xyz"],
 )
 ```
 
