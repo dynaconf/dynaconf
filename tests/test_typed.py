@@ -342,3 +342,42 @@ def test_deeply_nested_fail_validation(monkeypatch):
         error_msg = "database.extra.auth.username is required"
         with pytest.raises(ValidationError, match=error_msg):
             Settings()
+
+
+##### TYPING SCENARIOS #######
+
+# Use dynaconf_options to set Dynaconf initialization
+# Set validation as immediate or lazy
+# Validate type based on annotated type `name: T`
+# Set default based `name: T = default`
+# Extract Validators from Annotated `field: Annotated[T, Validator()]`
+# Forbid Annotated with types out of the allowed list
+# Forbid args to Annotated that are not Validator `Annotated[T, strange_thing]`
+# Handle Union types `field: Union[T, T, T]`
+# Handle Optional types `field: Optional[T]` and `field: Union[T, None]`
+# Handle list enclosed types `field: list[T]`  (and with default)
+# Handle empty list, must be allowed `field: list[T]` accepts `[]`
+# Handle list enclosed union `field: list[Union[T, T, T]]`
+# Handle list enclosed optional `field: list[Optional[T]]`
+# Handle list enclosed new union `field: list[T | T]`
+# Forbid list enclosed with more than one arg `list[T, T]`
+# Handle Annotated + enclosed type `field: Annotated[list[T], Validator()]`
+# Handle Annotated + union type `field: Annotated[Union[T, T], Validator()]`
+# Handle Annotated + optional `field: Annotated[Optional[T], Validator()]`
+# Handle Annotated + new union `field: Annotated[T | T, Validator()]`
+# Forbid Nested Subtype on Annotated `Annotated[Nested, ...]`
+# Handle SubType/Map/Nested `class Struct: ...` - `field: Struct`
+# Handle deeply nested Subtype (multiple levels)
+# Handle enclosed SubType `field: list[Struct]`
+# Handle deeply nested Subtype (multiple levels) with enclosed types
+# Forbid enclosed subtype with defaults
+# Forbid enclosed subtypes that are not on allowed list `field: list[A]`
+# Forbid union subtypes that are not on allowed list `field: list[Union[A]]`
+# Handle dict type `field: dict[T, T]` + Annotated and enclosed
+# Handle tuple type `field: tuple[T, T, T]` + Annotated and enclosed
+
+##### IDEAS  ###########
+
+# Move typed.py to typed/main.py
+# Move helpers to typed/utils.py
+# Define ALLOWED_TYPES as type aliases on typed/types.py
