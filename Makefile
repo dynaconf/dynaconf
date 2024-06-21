@@ -1,6 +1,5 @@
 SHELL := /bin/bash
-.PHONY: all citest clean mypy dist docs install publish run-pre-commit run-tox setup-pre-commit test test_functional test_only test_redis test_vault help coverage-report
-
+.PHONY: all citest clean mypy dist docs install publish run-pre-commit run-tox setup-pre-commit test test_functional test_only test_redis test_vault help coverage-report watch_test
 help:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
 
@@ -18,6 +17,10 @@ test_redis:
 
 watch:
 	ls **/**.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/
+
+watch_test:
+	# make watch_test ARGS="tests/test_typed.py -k union"
+	ls **/**.py | entr py.test --showlocals -sx -vv --disable-warnings --tb=short $(ARGS)
 
 watch_django:
 	ls {**/**.py,~/.virtualenvs/dynaconf/**/**.py,.venv/**/**.py} | PYTHON_PATH=. DJANGO_SETTINGS_MODULE=foo.settings entr tests_functional/django_example/manage.py test polls -v 2
@@ -106,7 +109,7 @@ run-tox:
 	rm -rf .tox
 
 minify_vendor:
-	# Ensure vendor is source and cleanup vendor_src bck folder
+	# Ensure vendor is source and cleanup vendor_src backup folder
 	ls dynaconf/vendor/source && rm -rf dynaconf/vendor_src
 
 	# Backup dynaconf/vendor folder as dynaconf/vendor_src

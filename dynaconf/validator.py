@@ -72,6 +72,8 @@ class Validator:
         len_ne: len(value) != other
         len_min: len(value) > other
         len_max: len(value) < other
+        startswith: value.startswith(term)
+        endswith:  value.endswith(term)
 
     `env` is which env to be checked, can be a list or
     default is used.
@@ -106,6 +108,14 @@ class Validator:
             "combined": "combined validators failed {errors}",
         }
     )
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}("
+            f"{','.join(self.names)}, "
+            f"required={bool(self.must_exist)}, "
+            f"operations={self.operations})"
+        )
 
     def __init__(
         self,

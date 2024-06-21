@@ -263,7 +263,11 @@ class Settings:
             )
         for key, value in kwargs.items():
             self.set(
-                key, value, loader_identifier="init_kwargs", validate=False
+                key,
+                value,
+                loader_identifier="init_kwargs",
+                validate=False,
+                dotted_lookup=True,
             )
         # execute loaders only after setting defaults got from kwargs
         self._defaults = kwargs

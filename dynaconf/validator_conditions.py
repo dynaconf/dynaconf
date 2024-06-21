@@ -5,6 +5,10 @@ Implement basic assertions to be used in assertion action
 
 from __future__ import annotations
 
+from typing import get_args
+from typing import get_origin
+from typing import Union
+
 
 def eq(value, other):
     """Equal"""
@@ -43,6 +47,10 @@ def identity(value, other):
 
 def is_type_of(value, other):
     """Type check"""
+    # Support Union[T, Y, Z] for python 3.9
+    # on python 3.10 isinstance can handle Union
+    if get_origin(other) is Union:
+        other = get_args(other)
     return isinstance(value, other)
 
 
