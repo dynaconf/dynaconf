@@ -110,12 +110,24 @@ class Validator:
     )
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}("
-            f"{','.join(self.names)}, "
-            f"required={bool(self.must_exist)}, "
-            f"operations={self.operations})"
-        )
+        _repr = f"{self.__class__.__name__}("
+        _elements = [
+            f"{','.join(self.names)}",
+            f"required={bool(self.required)}",
+        ]
+        if self.operations:
+            _elements.append(f"operations={self.operations}")
+        if self.cast is not DEFAULT_CAST:
+            _elements.append(f"cast={self.cast}")
+        if self.condition:
+            _elements.append(f"condition={self.condition}")
+        if self.envs:
+            _elements.append(f"env={self.envs}")
+        if self.when:
+            _elements.append(f"when={self.when}")
+        _repr += ", ".join(_elements)
+        _repr += ")"
+        return _repr
 
     def __init__(
         self,
@@ -154,13 +166,27 @@ class Validator:
         self.envs: Sequence[str] | None = None
         self.apply_default_on_none = apply_default_on_none
 
-        # See #585
-        self.is_type_of = operations.get("is_type_of")
-
         if isinstance(env, str):
             self.envs = [env]
         elif isinstance(env, (list, tuple)):
             self.envs = env
+
+    @property
+    def required(self) -> bool:
+        return bool(self.must_exist)
+
+    @required.setter
+    def required(self, value: bool):
+        self.must_exist = value
+
+    @property
+    def is_type_of(self):
+        # See #585
+        return self.operations.get("is_type_of")
+
+    @is_type_of.setter
+    def is_type_of(self, value):
+        self.operations["is_type_of"] = value
 
     def __or__(self, other: Validator) -> CombinedValidator:
         return OrValidator(self, other, description=self.description)
@@ -514,7 +540,8 @@ class ValidatorList(list):
         only: str | Sequence | None = None,
         exclude: str | Sequence | None = None,
         only_current_env: bool = False,
-    ) -> None:
+        raise_error=True,
+    ) -> list | None:
         errors = []
         details = []
         for validator in self:
@@ -530,7 +557,8 @@ class ValidatorList(list):
                 details.append((validator, str(e)))
                 continue
 
-        if errors:
+        if errors and raise_error:
             raise ValidationError(
                 "; ".join(str(e) for e in errors), details=details
             )
+        return errors

@@ -62,7 +62,19 @@ class Options:
 class DynaconfSchemaError(Exception): ...
 
 
-class Nested: ...
+class Nested:
+    """A nested Subtype is actually a Dict, so instantiating it just returns
+    the dict."""
+
+    def __new__(cls, **kwargs):
+        defaults = {}
+        schema_annotations = get_annotations(cls)
+        for name, annotation in schema_annotations.items():
+            value = getattr(cls, name, empty)
+            if value is not empty:
+                defaults[name] = value
+        defaults.update(kwargs)
+        return defaults
 
 
 class Dynaconf(BaseDynaconfSettings):
@@ -77,6 +89,7 @@ class Dynaconf(BaseDynaconfSettings):
         # Set init options for Dynaconf coming first from Options on Schema
         init_options = options.as_dict()
         # Add defaults defined on class as it was passed to Dynaconf(k=v)
+        # It will take first the default from cls, then from Nested type.
         init_options.update(defaults)
         # Override from kwargs as if matching key was passed to Settings(k=v)
         init_options.update(kwargs)
@@ -166,7 +179,12 @@ def extract_defaults_and_validators_from_typing(
             _type_args = get_args(annotation)
 
         if default_value is not empty:
-            defaults[full_name] = default_value
+            previous_default = defaults.get(".".join(path))
+            already_defined = (
+                isinstance(previous_default, dict) and name in previous_default
+            )
+            if not already_defined:
+                defaults[full_name] = default_value
 
         # it is a field: Nested
         if isinstance(annotation, type) and issubclass(annotation, Nested):
@@ -184,7 +202,7 @@ def extract_defaults_and_validators_from_typing(
                 )
 
             for _validator in _annotated_validators:
-                _validator.names = [full_name]
+                _validator.names = (full_name,)
                 _validator.is_type_of = _type
                 if default_value is empty and not is_optional(annotation):
                     _validator.must_exist = True  # required

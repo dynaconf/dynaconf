@@ -346,11 +346,234 @@ def test_deeply_nested_fail_validation(monkeypatch):
 
 ##### TYPING SCENARIOS #######
 
+
 # Use dynaconf_options to set Dynaconf initialization
+def test_dynaconf_options(monkeypatch):
+    class Settings(Dynaconf):
+        dynaconf_options = Options(envvar_prefix="XPTO")
+        name: str
+
+    with monkeypatch.context() as m:
+        m.setenv("XPTO_NAME", "Bruno")
+        settings = Settings()
+        assert settings.name == "Bruno"
+
+    with monkeypatch.context() as m:
+        m.setenv("FOO_NAME", "Erik")
+        settings = Settings(envvar_prefix="FOO")
+        assert settings.name == "Erik"
+
+    settings = Settings(name="Karla")
+    assert settings.name == "Karla"
+
+
 # Set validation as immediate or lazy
+def test_eager_validation(monkeypatch):
+    class Settings(Dynaconf):
+        dynaconf_options = Options(envvar_prefix="XPTO")
+        name: Annotated[str, Validator(ne="Valdemort")]
+
+    with monkeypatch.context() as m:
+        m.setenv("XPTO_NAME", "Valdemort")
+        err_msg = "name must ne Valdemort"
+        with pytest.raises(ValidationError, match=err_msg):
+            Settings()
+
+
+def test_lazy_validation(monkeypatch):
+    class Settings(Dynaconf):
+        dynaconf_options = Options(
+            envvar_prefix="XPTO",
+            _trigger_validation=False,
+        )
+        name: Annotated[str, Validator(ne="Valdemort")]
+
+    with monkeypatch.context() as m:
+        m.setenv("XPTO_NAME", "Valdemort")
+        settings = Settings()
+        err_msg = "name must ne Valdemort"
+        with pytest.raises(ValidationError, match=err_msg):
+            settings.validators.validate()
+
+
 # Validate type based on annotated type `name: T`
+def test_validate_based_on_type_annotation(monkeypatch):
+    class Settings(Dynaconf):
+        dynaconf_options = Options(envvar_prefix="XPTO")
+        name: str
+
+    with monkeypatch.context() as m:
+        m.setenv("XPTO_NAME", "1234")
+        err_msg = "name must is_type_of .+str"
+        with pytest.raises(ValidationError, match=err_msg):
+            Settings()
+
+
+# handle nested subtype
+def test_nested_subtype():
+    class Person(Nested):
+        name: str = "Bruno"
+        age: int
+
+    class Settings(Dynaconf):
+        person: Person
+
+    err_msg = "person.age is required"
+    with pytest.raises(ValidationError, match=err_msg):
+        Settings()
+
+
 # Set default based `name: T = default`
+def test_default_based_on_type_annotation(monkeypatch):
+    class Person(Nested):
+        name: str = "Bruno"
+        age: int
+
+    class Settings(Dynaconf):
+        name: Annotated[str, Validator(ne="Valdemort")] = "John"
+        age: int = 45
+        colors: list[str] = ["red", "green", "blue"]
+        option: Union[int, float, bool] = 4.2
+        kwargs: dict[str, int] = {"foo": 3}
+        person: Person = Person(age=42)  # works with instance
+        # also works with dict overriding Person class defaults
+        other_person: Person = {"name": "Erik", "age": 5}
+        even_other_person: Person = {}
+        yet_another_person: Person
+
+    # arguments passed to init will combine with Person defaults
+    settings = Settings(
+        even_other_person={"age": 21},
+        yet_another_person={"name": "John", "age": 19},
+    )
+
+    assert settings.name == "John"
+    assert settings.age == 45
+    assert settings.colors == ["red", "green", "blue"]
+    assert settings.option == 4.2
+    assert settings.kwargs.foo == 3
+    assert settings.person.name == "Bruno"
+    assert settings.person.age == 42
+    assert settings.other_person.name == "Erik"
+    assert settings.other_person.age == 5
+    assert settings.even_other_person.name == "Bruno"
+    assert settings.even_other_person.age == 21
+    assert settings.yet_another_person.name == "John"
+    assert settings.yet_another_person.age == 19
+
+
 # Extract Validators from Annotated `field: Annotated[T, Validator()]`
+def test_extracted_validators(monkeypatch):
+    def cast_url(v):
+        return v.lower()
+
+    def auth_condition(v):
+        return "token" in v
+
+    class Auth(Nested):
+        token: Annotated[str, Validator(len_min=10)]
+
+    class Settings(Dynaconf):
+        dynaconf_options = Options(
+            _trigger_validation=False,
+        )
+        name: Annotated[str, Validator(ne="Valdemort")]
+        age: int
+        team: str = "Default"
+        colors: Annotated[list, Validator(cont="red")]
+        port: Annotated[int, Validator(lt=1000), Validator(gt=10)]
+        url: Annotated[str, Validator(cast=cast_url)]
+        auth: Annotated[dict, Validator(condition=auth_condition)]
+        typed_auth: Auth
+
+    settings = Settings()
+
+    expected = [
+        {
+            "names": ("name",),
+            "operations": {"ne": "Valdemort", "is_type_of": str},
+            "required": True,
+        },
+        {
+            "names": ("age",),
+            "operations": {"is_type_of": int},
+            "required": True,
+        },
+        {
+            "names": ("team",),
+            "operations": {"is_type_of": str},
+            "required": False,
+        },
+        {
+            "names": ("colors",),
+            "operations": {"is_type_of": list, "cont": "red"},
+            "required": True,
+        },
+        {
+            "names": ("port",),
+            "operations": {"is_type_of": int, "lt": 1000},
+            "required": True,
+        },
+        {
+            "names": ("port",),
+            "operations": {"is_type_of": int, "gt": 10},
+            "required": True,
+        },
+        {
+            "names": ("url",),
+            "operations": {
+                "is_type_of": str,
+            },
+            "cast": cast_url,
+            "required": True,
+        },
+        {
+            "names": ("auth",),
+            "operations": {"is_type_of": dict},
+            "condition": auth_condition,
+            "required": True,
+        },
+        {
+            "names": ("typed_auth.token",),
+            "operations": {"is_type_of": str, "len_min": 10},
+            "required": True,
+        },
+    ]
+
+    for i, validator in enumerate(settings.validators):
+        for key, val in expected[i].items():
+            assert getattr(validator, key) == val
+
+    errors = settings.validators.validate_all(raise_error=False)
+    for i, exp in enumerate(item for item in expected if item["required"]):
+        assert exp["names"][0] in str(errors[i])
+
+    settings = Settings(
+        name="Valdemort",
+        age=4.1,
+        team=True,
+        colors={"red": "green"},
+        port=5,
+        url="SERVER.com",
+        auth="user",
+        typed_auth={"token": []},
+    )
+    errors = settings.validators.validate_all(raise_error=False)
+    expected_errors = [
+        "name must ne Valdemort",
+        "age must is_type_of <class 'int'> but it is 4.1",
+        "team must is_type_of <class 'str'> but it is True",
+        "colors must is_type_of <class 'list'> but it is {'red': 'green'}",
+        "port must gt 10 but it is 5",
+        "auth invalid for auth_condition(user)",
+        "typed_auth.token must len_min 10 but it is []",
+    ]
+    for i, error in enumerate(errors):
+        assert expected_errors[i] in str(error)
+
+
+# Forbid validators with defaults,is_type_of,names,must_exist,required
+
 # Forbid Annotated with types out of the allowed list
 # Forbid args to Annotated that are not Validator `Annotated[T, strange_thing]`
 # Handle Union types `field: Union[T, T, T]`
@@ -375,6 +598,8 @@ def test_deeply_nested_fail_validation(monkeypatch):
 # Forbid union subtypes that are not on allowed list `field: list[Union[A]]`
 # Handle dict type `field: dict[T, T]` + Annotated and enclosed
 # Handle tuple type `field: tuple[T, T, T]` + Annotated and enclosed
+# Handle Any type in all cases
+# Handle Totality and Allow Extra
 
 ##### IDEAS  ###########
 
