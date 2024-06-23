@@ -7,7 +7,7 @@ import pytest
 
 from dynaconf.typed import Dynaconf
 from dynaconf.typed import DynaconfSchemaError
-from dynaconf.typed import Nested
+from dynaconf.typed import DictValue
 from dynaconf.typed import Options
 from dynaconf.typed import ValidationError
 from dynaconf.typed import Validator
@@ -68,7 +68,7 @@ def test_options_contains_only_valid_and_set_attributes():
 
 
 def test_enclosed_type_raises_for_defaults():
-    class Plugin(Nested):
+    class Plugin(DictValue):
         name: str = "default_name"
 
     class Settings(Dynaconf):
@@ -101,21 +101,21 @@ def test_union_enclosed_type_raises_for_invalid_enclosed():
         Settings()
 
 
-def test_annotated_forbidden_with_nested():
-    class Plugin(Nested):
+def test_annotated_forbidden_with_dictvalue():
+    class Plugin(DictValue):
         name: str
 
     class Settings(Dynaconf):
-        # This is not allowed, should add validators on the nested type itself
+        # This is not allowed, should add validators on the dictvalue type itself
         plug: Annotated[Plugin, Validator()]
 
-    msg = "Nested type cannot be Annotated"
+    msg = "DictValue type cannot be Annotated"
     with pytest.raises(DynaconfSchemaError, match=msg):
         Settings()
 
 
 def test_enclosed_forbidden_with_more_than_one_arg():
-    class Plugin(Nested):
+    class Plugin(DictValue):
         value: list[Union[int, float, bool], int, float]
 
     class Settings(Dynaconf):
@@ -127,7 +127,7 @@ def test_enclosed_forbidden_with_more_than_one_arg():
 
 
 def test_enclosed_type_validates(monkeypatch):
-    class Plugin(Nested):
+    class Plugin(DictValue):
         name: str
 
     class Settings(Dynaconf):
@@ -173,13 +173,13 @@ def test_union_enclosed_type_works(monkeypatch):
 
 
 def test_deeply_enclosed_type_validates(monkeypatch):
-    class Plugin(Nested):
+    class Plugin(DictValue):
         name: str
 
-    class Extra(Nested):
+    class Extra(DictValue):
         plugins: list[Plugin]
 
-    class Database(Nested):
+    class Database(DictValue):
         extra: Extra
 
     class Settings(Dynaconf):
@@ -193,10 +193,10 @@ def test_deeply_enclosed_type_validates(monkeypatch):
 
 
 def test_deeply_enclosed_type_validates_with_bare_type(monkeypatch):
-    class Extra(Nested):
+    class Extra(DictValue):
         plugins: list[str]
 
-    class Database(Nested):
+    class Database(DictValue):
         extra: Extra
 
     class Settings(Dynaconf):
@@ -219,10 +219,10 @@ def test_deeply_enclosed_type_validates_with_bare_type_allows_empty(
     https://mypy-play.net/?gist=d16da1574497dbe585eab679f09432ef
     """
 
-    class Extra(Nested):
+    class Extra(DictValue):
         plugins: list[str]
 
-    class Database(Nested):
+    class Database(DictValue):
         extra: Extra
 
     class Settings(Dynaconf):
@@ -234,18 +234,18 @@ def test_deeply_enclosed_type_validates_with_bare_type_allows_empty(
 
 
 def test_sub_types_works(monkeypatch):
-    class Plugin(Nested):
+    class Plugin(DictValue):
         name: str
         path: Optional[
             str
         ]  # NOTE: This must mark path as not required on dict
         order: Union[int, bool, None]  # This is the same as above ^
 
-    class Auth(Nested):
+    class Auth(DictValue):
         username: str
         password: int
 
-    class Extra(Nested):
+    class Extra(DictValue):
         log: bool = True
         socket_type: Annotated[int, Validator(is_in=[1, 2, 3])] = 1
         transactions: bool
@@ -254,7 +254,7 @@ def test_sub_types_works(monkeypatch):
         # Make this work
         batatas: list[int] = [1, 2]
 
-    class Database(Nested):
+    class Database(DictValue):
         host: str = "server.com"
         port: Annotated[int, Validator(gt=999)]
         engine: str = "postgres"
@@ -289,7 +289,7 @@ def test_sub_types_works(monkeypatch):
 
 
 def test_sub_types_fail_validation(monkeypatch):
-    class Database(Nested):
+    class Database(DictValue):
         host: str = "server.com"
         port: Annotated[int, Validator(gt=999)]
         engine: str = "postgres"
@@ -310,19 +310,19 @@ def test_sub_types_fail_validation(monkeypatch):
             Settings()
 
 
-def test_deeply_nested_fail_validation(monkeypatch):
+def test_deeply_dictvalue_fail_validation(monkeypatch):
     """Ensure validation happens on deeply nested type"""
 
-    class Auth(Nested):
+    class Auth(DictValue):
         username: str
         password: int
 
-    class Extra(Nested):
+    class Extra(DictValue):
         log: bool = True
         socket_type: Annotated[int, Validator(is_in=[1, 2, 3])] = 1
         auth: Auth
 
-    class Database(Nested):
+    class Database(DictValue):
         host: str = "server.com"
         port: Annotated[int, Validator(gt=999)]
         engine: str = "postgres"
@@ -409,9 +409,9 @@ def test_validate_based_on_type_annotation(monkeypatch):
             Settings()
 
 
-# handle nested subtype
-def test_nested_subtype():
-    class Person(Nested):
+# handle dictvalue subtype
+def test_dictvalue_subtype():
+    class Person(DictValue):
         name: str = "Bruno"
         age: int
 
@@ -425,7 +425,7 @@ def test_nested_subtype():
 
 # Set default based `name: T = default`
 def test_default_based_on_type_annotation(monkeypatch):
-    class Person(Nested):
+    class Person(DictValue):
         name: str = "Bruno"
         age: int
 
@@ -470,7 +470,7 @@ def test_extracted_validators(monkeypatch):
     def auth_condition(v):
         return "token" in v
 
-    class Auth(Nested):
+    class Auth(DictValue):
         token: Annotated[str, Validator(len_min=10)]
 
     class Settings(Dynaconf):
@@ -574,6 +574,7 @@ def test_extracted_validators(monkeypatch):
 
 # Forbid validators with defaults,is_type_of,names,must_exist,required
 
+
 # Forbid Annotated with types out of the allowed list
 # Forbid args to Annotated that are not Validator `Annotated[T, strange_thing]`
 # Handle Union types `field: Union[T, T, T]`
@@ -588,11 +589,11 @@ def test_extracted_validators(monkeypatch):
 # Handle Annotated + union type `field: Annotated[Union[T, T], Validator()]`
 # Handle Annotated + optional `field: Annotated[Optional[T], Validator()]`
 # Handle Annotated + new union `field: Annotated[T | T, Validator()]`
-# Forbid Nested Subtype on Annotated `Annotated[Nested, ...]`
-# Handle SubType/Map/Nested `class Struct: ...` - `field: Struct`
-# Handle deeply nested Subtype (multiple levels)
+# Forbid DictValue Subtype on Annotated `Annotated[DictValue, ...]`
+# Handle SubType/Map/DictValue `class Struct: ...` - `field: Struct`
+# Handle deeply dictvalue Subtype (multiple levels)
 # Handle enclosed SubType `field: list[Struct]`
-# Handle deeply nested Subtype (multiple levels) with enclosed types
+# Handle deeply dictvalue Subtype (multiple levels) with enclosed types
 # Forbid enclosed subtype with defaults
 # Forbid enclosed subtypes that are not on allowed list `field: list[A]`
 # Forbid union subtypes that are not on allowed list `field: list[Union[A]]`

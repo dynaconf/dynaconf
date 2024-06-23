@@ -62,8 +62,8 @@ class Options:
 class DynaconfSchemaError(Exception): ...
 
 
-class Nested:
-    """A nested Subtype is actually a Dict, so instantiating it just returns
+class DictValue:
+    """A dictvalue Subtype is actually a Dict, so instantiating it just returns
     the dict."""
 
     def __new__(cls, **kwargs):
@@ -89,7 +89,7 @@ class Dynaconf(BaseDynaconfSettings):
         # Set init options for Dynaconf coming first from Options on Schema
         init_options = options.as_dict()
         # Add defaults defined on class as it was passed to Dynaconf(k=v)
-        # It will take first the default from cls, then from Nested type.
+        # It will take first the default from cls, then from DictValue type.
         init_options.update(defaults)
         # Override from kwargs as if matching key was passed to Settings(k=v)
         init_options.update(kwargs)
@@ -120,7 +120,7 @@ def is_optional(annotation) -> bool:
 
 # Types that can be used on `field: list[x]`
 ALLOWED_ENCLOSED_TYPES = (
-    Nested,
+    DictValue,
     int,
     float,
     str,
@@ -154,7 +154,7 @@ def extract_defaults_and_validators_from_typing(
 ) -> tuple[dict, list]:
     """From schema class extract defaults and validators from annotations.
 
-    Recursively handle all `Nested` subtypes.
+    Recursively handle all `DictValue` subtypes.
 
     key: int -> Validator(key, is_type_of=int)
     key: int = 1 -> Validator(key, is_type_of=int) + defaults[key] = 1
@@ -186,16 +186,16 @@ def extract_defaults_and_validators_from_typing(
             if not already_defined:
                 defaults[full_name] = default_value
 
-        # it is a field: Nested
-        if isinstance(annotation, type) and issubclass(annotation, Nested):
+        # it is a field: DictValue
+        if isinstance(annotation, type) and issubclass(annotation, DictValue):
             defaults, validators = extract_defaults_and_validators_from_typing(
                 annotation, full_path, defaults, validators
             )
         # It is a field: Annotated[type, Validator(...)]
         elif _annotated_validators:
-            if isinstance(_type, type) and issubclass(_type, Nested):
+            if isinstance(_type, type) and issubclass(_type, DictValue):
                 raise DynaconfSchemaError(
-                    "Nested type cannot be Annotated, "
+                    "DictValue type cannot be Annotated, "
                     f"set the validators on the {_type.__name__!r} fields "
                     f"this error is caused by "
                     f"`{full_name}: Annotated[{_type.__name__}, *]`"
@@ -208,7 +208,7 @@ def extract_defaults_and_validators_from_typing(
                     _validator.must_exist = True  # required
                 validators.append(_validator)
 
-        # it is a field: list[Nested] (or any ALLOWED_ENCLOSED_TYPES)
+        # it is a field: list[DictValue] (or any ALLOWED_ENCLOSED_TYPES)
         elif _type_args and _type in (list, tuple):
             _validator = Validator(full_name, is_type_of=_type)
             # ADR: Decided to consider only the first enclosed type
@@ -274,7 +274,7 @@ def validator_condition_factory(validators, prefix, _type) -> Callable:
     """takes _type: T and generates a function to validate a value against it"""
 
     def validator_condition(values):
-        if isinstance(_type, type) and issubclass(_type, Nested):  # a dict
+        if isinstance(_type, type) and issubclass(_type, DictValue):  # a dict
             validator_messages = {
                 "must_exist_true": prefix
                 + "[].{name} is required in env {env}",
