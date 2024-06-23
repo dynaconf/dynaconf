@@ -5,9 +5,9 @@ from typing import Union
 
 import pytest
 
+from dynaconf.typed import DictValue
 from dynaconf.typed import Dynaconf
 from dynaconf.typed import DynaconfSchemaError
-from dynaconf.typed import DictValue
 from dynaconf.typed import Options
 from dynaconf.typed import ValidationError
 from dynaconf.typed import Validator
@@ -573,6 +573,21 @@ def test_extracted_validators(monkeypatch):
 
 
 # Forbid validators with defaults,is_type_of,names,must_exist,required
+@pytest.mark.parametrize(
+    "invalid_arg",
+    [
+        {"required": True},
+        {"must_exist": True},
+        {"is_type_of": int},
+        {"default": 42},
+        ("name",),
+    ],
+    ids=lambda value: str(value),
+)
+def test_some_arguments_forbid_on_validators(invalid_arg):
+    """these arguments doesnt make sense on a typed dynaconf"""
+    with pytest.raises(TypeError):
+        Validator(**invalid_arg)
 
 
 # Forbid Annotated with types out of the allowed list

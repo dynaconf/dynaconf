@@ -2,10 +2,12 @@
 
 from __future__ import annotations  # WARNING: remove this when debugging
 
+from collections.abc import Sequence
 from dataclasses import asdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated
+from typing import Any
 from typing import Callable
 from typing import cast
 from typing import get_args
@@ -14,14 +16,73 @@ from typing import Union
 
 from dynaconf.base import LazySettings as OriginalDynaconf
 from dynaconf.base import Settings as BaseDynaconfSettings
+from dynaconf.utils.functional import Empty
+from dynaconf.utils.functional import empty
 from dynaconf.validator import ValidationError  # noqa
-from dynaconf.validator import Validator
+from dynaconf.validator import Validator as BaseValidator
 
 
-class Empty: ...
+class Validator:
+    """Define an interface to generate a valid BaseValidator.
+
+    The `operations` are::
+
+        eq: value == other
+        ne: value != other
+        gt: value > other
+        lt: value < other
+        gte: value >= other
+        lte: value <= other
+        is_type_of: isinstance(value, type)
+        is_in:  value in sequence
+        is_not_in: value not in sequence
+        identity: value is other
+        cont: contain value in
+        len_eq: len(value) == other
+        len_ne: len(value) != other
+        len_min: len(value) > other
+        len_max: len(value) < other
+        startswith: value.startswith(term)
+        endswith:  value.endswith(term)
+        condition: fn(value) is True
 
 
-empty = Empty()
+    """
+
+    def __new__(
+        cls,
+        *,  # kw_only
+        # Operations
+        eq: Any = empty,
+        ne: Any = empty,
+        gt: Any = empty,
+        lt: Any = empty,
+        gte: Any = empty,
+        lte: Any = empty,
+        identity: Any = empty,
+        is_in: Any = empty,
+        is_not_in: Any = empty,
+        cont: Any = empty,
+        len_eq: Any = empty,
+        len_ne: Any = empty,
+        len_min: Any = empty,
+        len_max: Any = empty,
+        startswith: Any = empty,
+        endswith: Any = empty,
+        condition: Callable[[Any], bool] | None | Empty = empty,
+        # options
+        env: str | Sequence[str] | None | Empty = empty,
+        messages: dict[str, str] | None | Empty = empty,
+        cast: Callable[[Any], Any] | None | Empty = empty,
+        description: str | None | Empty = empty,
+        # To be implemented, a interface like this to generate a When Validator
+        # when: When | None = empty,
+    ):
+        kwargs = locals()
+        kwargs.pop("cls")
+        return BaseValidator(
+            **{k: v for k, v in kwargs.items() if v is not empty}
+        )
 
 
 @dataclass  # wanted to pass (kw_only=True) but that works only for 3.10+
@@ -146,6 +207,18 @@ def get_type_name(_type):
     return str(_type)
 
 
+def get_type_and_args(annotation) -> tuple:
+    """From annotation name: T[T, args] extract type, args, validators"""
+    _annotated_validators = None
+    _type_args: tuple = tuple()
+    _type = get_origin(annotation)  # type from X[type,]
+    if _type is Annotated:
+        _type, *_annotated_validators = get_args(annotation)
+    else:
+        _type_args = get_args(annotation)
+    return _type, _type_args, _annotated_validators
+
+
 def extract_defaults_and_validators_from_typing(
     schema_cls,
     path: tuple | None = None,
@@ -169,14 +242,8 @@ def extract_defaults_and_validators_from_typing(
         default_value = getattr(schema_cls, name, empty)
         full_path = path + (name,)  # E.g, ("path", "to", "name")
         full_name = ".".join(full_path)  # E.g, path.to.name
-        _annotated_validators = None
-        _type_args: tuple = tuple()
 
-        _type = get_origin(annotation)  # type from X[type,]
-        if _type is Annotated:
-            _type, *_annotated_validators = get_args(annotation)
-        else:
-            _type_args = get_args(annotation)
+        _type, _type_args, _args_validators = get_type_and_args(annotation)
 
         if default_value is not empty:
             previous_default = defaults.get(".".join(path))
@@ -192,7 +259,7 @@ def extract_defaults_and_validators_from_typing(
                 annotation, full_path, defaults, validators
             )
         # It is a field: Annotated[type, Validator(...)]
-        elif _annotated_validators:
+        elif _args_validators:
             if isinstance(_type, type) and issubclass(_type, DictValue):
                 raise DynaconfSchemaError(
                     "DictValue type cannot be Annotated, "
@@ -201,7 +268,7 @@ def extract_defaults_and_validators_from_typing(
                     f"`{full_name}: Annotated[{_type.__name__}, *]`"
                 )
 
-            for _validator in _annotated_validators:
+            for _validator in _args_validators:
                 _validator.names = (full_name,)
                 _validator.is_type_of = _type
                 if default_value is empty and not is_optional(annotation):
@@ -210,19 +277,20 @@ def extract_defaults_and_validators_from_typing(
 
         # it is a field: list[DictValue] (or any ALLOWED_ENCLOSED_TYPES)
         elif _type_args and _type in (list, tuple):
-            _validator = Validator(full_name, is_type_of=_type)
+            _validator = BaseValidator(full_name, is_type_of=_type)
             # ADR: Decided to consider only the first enclosed type
             # which means T[T] is allowed, but T[T, T] not
             # This is subject to change in future, PRs welcome.
-            inner_type, *more_enclosed_types = _type_args
-            if more_enclosed_types:
+            inner_type, *more_types = _type_args
+            if more_types:
                 raise DynaconfSchemaError(
                     f"Invalid enclosed type for {full_name} "
                     "enclosed types supports only one argument "
                     f"{get_type_name(_type)}[{get_type_name(inner_type)}] "
                     "is allowed, but this error is caused by "
-                    f"`{full_name}: {get_type_name(_type)}[{get_type_name(inner_type)}, "
-                    f"{', '.join(get_type_name(i) for i in more_enclosed_types)}]`"
+                    f"`{full_name}: {get_type_name(_type)}"
+                    f"[{get_type_name(inner_type)}, "
+                    f"{', '.join(get_type_name(i) for i in more_types)}]`"
                 )
 
             # # Handle list[Union...]
@@ -237,7 +305,8 @@ def extract_defaults_and_validators_from_typing(
                         f"Invalid enclosed type {get_type_name(item)!r} "
                         f"must be one of {ALLOWED_ENCLOSED_TYPES} "
                         f"this error is caused by "
-                        f"`{full_name}: {get_type_name(_type)}[{get_type_name(inner_type)}]`"
+                        f"`{full_name}: {get_type_name(_type)}"
+                        f"[{get_type_name(inner_type)}]`"
                     )
 
             enclosed_defaults, enclosed_validators = (
@@ -262,7 +331,7 @@ def extract_defaults_and_validators_from_typing(
 
         # It is just a bare type annotation like field: type
         else:
-            _validator = Validator(full_name, is_type_of=annotation)
+            _validator = BaseValidator(full_name, is_type_of=annotation)
             if default_value is empty and not is_optional(annotation):
                 _validator.must_exist = True  # required
             validators.append(_validator)
@@ -271,7 +340,7 @@ def extract_defaults_and_validators_from_typing(
 
 
 def validator_condition_factory(validators, prefix, _type) -> Callable:
-    """takes _type: T and generates a function to validate a value against it"""
+    """takes _type: T, generates a function to validate a value against it"""
 
     def validator_condition(values):
         if isinstance(_type, type) and issubclass(_type, DictValue):  # a dict
@@ -295,7 +364,9 @@ def validator_condition_factory(validators, prefix, _type) -> Callable:
             validator_messages = {
                 "must_exist_true": "{name}[] is required in env {env}",
                 "must_exist_false": "{name}[] cannot exists in env {env}",
-                "condition": "{name}[] invalid for {function}({value}) in env {env}",
+                "condition": (
+                    "{name}[] invalid for {function}({value}) in env {env}"
+                ),
                 "operations": (
                     "{name}[] must {operation} {op_value} "
                     "but it is {value} in env {env}"
@@ -304,7 +375,7 @@ def validator_condition_factory(validators, prefix, _type) -> Callable:
             for value in values:
                 _settings = BaseDynaconfSettings()
                 _settings.set(prefix, value)
-                _validator = Validator(
+                _validator = BaseValidator(
                     prefix,
                     is_type_of=_type,
                     messages=validator_messages,
