@@ -226,6 +226,13 @@ class Settings:
         :param settings_module: defines the settings file
         :param kwargs:  override default settings
         """
+        if "dynaconf_options" in kwargs:
+            warnings.warn(
+                "dynaconf_options: Options works only with typed Dynaconf"
+                "Change your import to: `from dynaconf.typed import Dynaconf`",
+                RuntimeWarning,
+            )
+
         self._fresh = False
         self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)

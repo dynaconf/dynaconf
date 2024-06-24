@@ -541,7 +541,7 @@ class ValidatorList(list):
         exclude: str | Sequence | None = None,
         only_current_env: bool = False,
         raise_error=True,
-    ) -> list | None:
+    ) -> list[ValidationError]:
         errors = []
         details = []
         for validator in self:

@@ -348,6 +348,7 @@ def test_deeply_dictvalue_fail_validation(monkeypatch):
 
 
 # Use dynaconf_options to set Dynaconf initialization
+# NOTE: ADD more options for completeness
 def test_dynaconf_options(monkeypatch):
     class Settings(Dynaconf):
         dynaconf_options = Options(envvar_prefix="XPTO")
@@ -604,8 +605,9 @@ def test_some_arguments_forbid_on_validators(invalid_arg):
 # Handle Annotated + union type `field: Annotated[Union[T, T], Validator()]`
 # Handle Annotated + optional `field: Annotated[Optional[T], Validator()]`
 # Handle Annotated + new union `field: Annotated[T | T, Validator()]`
+# Handle DictValue `class Struct: ...` - `field: Struct`
+# Ensure DictValue adds a is_type_of=dict validator
 # Forbid DictValue Subtype on Annotated `Annotated[DictValue, ...]`
-# Handle SubType/Map/DictValue `class Struct: ...` - `field: Struct`
 # Handle deeply dictvalue Subtype (multiple levels)
 # Handle enclosed SubType `field: list[Struct]`
 # Handle deeply dictvalue Subtype (multiple levels) with enclosed types

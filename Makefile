@@ -16,11 +16,11 @@ test_redis:
 	./tests_functional/test_redis.sh
 
 watch:
-	ls **/**.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/
+	ls **/*.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/
 
 watch_test:
 	# make watch_test ARGS="tests/test_typed.py -k union"
-	ls **/**.py | entr py.test --showlocals -sx -vv --disable-warnings --tb=short $(ARGS)
+	ls **/*.py | entr py.test --showlocals -sx -vv --disable-warnings --tb=short $(ARGS)
 
 watch_django:
 	ls {**/**.py,~/.virtualenvs/dynaconf/**/**.py,.venv/**/**.py} | PYTHON_PATH=. DJANGO_SETTINGS_MODULE=foo.settings entr tests_functional/django_example/manage.py test polls -v 2
