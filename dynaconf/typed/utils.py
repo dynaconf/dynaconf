@@ -13,19 +13,7 @@ from dynaconf.validator import Validator as BaseValidator
 from .compat import get_annotations
 from .exceptions import DynaconfSchemaError
 from .types import DictValue
-
-# Types that can be used on `field: list[x]`
-ALLOWED_ENCLOSED_TYPES = (
-    DictValue,
-    int,
-    float,
-    str,
-    bool,
-    type(None),
-    list,
-    tuple,
-    dict,
-)
+from .types import SUPPORTED_TYPES
 
 
 def extract_defaults_and_validators_from_typing(
@@ -42,17 +30,17 @@ def extract_defaults_and_validators_from_typing(
     key: int = 1 -> Validator(key, is_type_of=int) + defaults[key] = 1
     key: Annotated[int, Validator()] -> Validator(key, is_type_of=int)
     """
+    # These names passes down recursively
     path = path or tuple()
     defaults = defaults or {}
     validators = validators or []
-    schema_annotations = get_annotations(schema_cls)
 
-    for name, annotation in schema_annotations.items():
+    for name, annotation in get_annotations(schema_cls).items():
         default_value = getattr(schema_cls, name, empty)
         full_path = path + (name,)  # E.g, ("path", "to", "name")
         full_name = ".".join(full_path)  # E.g, path.to.name
-
         _type, _type_args, _args_validators = get_type_and_args(annotation)
+        raise_for_unsupported_type(full_name, _type, _type_args, annotation)
 
         if default_value is not empty:
             previous_default = defaults.get(".".join(path))
@@ -62,90 +50,70 @@ def extract_defaults_and_validators_from_typing(
             if not already_defined:
                 defaults[full_name] = default_value
 
-        # it is a field: DictValue
-        if isinstance(annotation, type) and issubclass(annotation, DictValue):
+        raise_for_optional_without_none(
+            full_name, _type, _type_args, default_value, annotation
+        )
+
+        # field: DictValue
+        if is_dict_value(annotation):
+            validators.append(BaseValidator(full_name, is_type_of=dict))
+            # Recursively call this same function until all nested exhausts.
             defaults, validators = extract_defaults_and_validators_from_typing(
                 annotation, full_path, defaults, validators
             )
-        # It is a field: Annotated[type, Validator(...)]
+        # field: Annotated[T, Validator(...)]
         elif _args_validators:
-            if isinstance(_type, type) and issubclass(_type, DictValue):
-                raise DynaconfSchemaError(
-                    "DictValue type cannot be Annotated, "
-                    f"set the validators on the {_type.__name__!r} fields "
-                    f"this error is caused by "
-                    f"`{full_name}: Annotated[{_type.__name__}, *]`"
-                )
+            raise_for_invalid_annotated(full_name, _type, _args_validators)
 
             for _validator in _args_validators:
                 _validator.names = (full_name,)
                 _validator.is_type_of = _type
-                if default_value is empty and not is_optional(annotation):
-                    _validator.must_exist = True  # required
+                if default_value is empty and not is_not_required(annotation):
+                    _validator.must_exist = True
                 validators.append(_validator)
 
-        # it is a field: list[DictValue] (or any ALLOWED_ENCLOSED_TYPES)
-        elif _type_args and _type in (list, tuple):
+        # field: list[T]
+        elif is_enclosed_list(_type, _type_args):
             _validator = BaseValidator(full_name, is_type_of=_type)
-            # ADR: Decided to consider only the first enclosed type
-            # which means T[T] is allowed, but T[T, T] not
-            # This is subject to change in future, PRs welcome.
             inner_type, *more_types = _type_args
-            if more_types:
-                raise DynaconfSchemaError(
-                    f"Invalid enclosed type for {full_name} "
-                    "enclosed types supports only one argument "
-                    f"{get_type_name(_type)}[{get_type_name(inner_type)}] "
-                    "is allowed, but this error is caused by "
-                    f"`{full_name}: {get_type_name(_type)}"
-                    f"[{get_type_name(inner_type)}, "
-                    f"{', '.join(get_type_name(i) for i in more_types)}]`"
-                )
 
-            # # Handle list[Union...]
-            if is_union(inner_type):
-                all_types = get_args(inner_type)
-            else:
-                all_types = (inner_type,)
-
-            for item in all_types:
-                if not issubclass(item, ALLOWED_ENCLOSED_TYPES):
-                    raise DynaconfSchemaError(
-                        f"Invalid enclosed type {get_type_name(item)!r} "
-                        f"must be one of {ALLOWED_ENCLOSED_TYPES} "
-                        f"this error is caused by "
-                        f"`{full_name}: {get_type_name(_type)}"
-                        f"[{get_type_name(inner_type)}]`"
-                    )
+            raise_for_invalid_amount_of_enclosed_types(
+                full_name, _type, inner_type, more_types
+            )
 
             enclosed_defaults, enclosed_validators = (
                 extract_defaults_and_validators_from_typing(inner_type)
             )
-            if enclosed_defaults:
-                raise DynaconfSchemaError(
-                    "List enclosed types cannot define default values. "
-                    f"{inner_type.__name__!r} defines {enclosed_defaults}. "
-                    f"this error is caused by "
-                    f"`{full_name}: {_type.__name__}[{inner_type.__name__}]`"
-                )
+
+            raise_for_enclosed_with_defaults(
+                full_name, _type, inner_type, enclosed_defaults, annotation
+            )
 
             _validator.condition = validator_condition_factory(
                 enclosed_validators, full_name, inner_type
             )
 
-            if default_value is empty and not is_optional(annotation):
+            if default_value is empty and not is_not_required(annotation):
                 _validator.must_exist = True  # required
 
             validators.append(_validator)
-
-        # It is just a bare type annotation like field: type
+        # field: T
         else:
             _validator = BaseValidator(full_name, is_type_of=annotation)
-            if default_value is empty and not is_optional(annotation):
+            if default_value is empty and not is_not_required(annotation):
                 _validator.must_exist = True  # required
             validators.append(_validator)
 
     return defaults, validators
+
+
+def get_all_enclosed_types(inner_type):
+    # # Handle list[Union...]
+    if is_union(inner_type):
+        all_types = get_args(inner_type)
+    else:
+        all_types = (inner_type,)
+    return all_types
 
 
 def get_type_name(_type):
@@ -155,10 +123,11 @@ def get_type_name(_type):
 
 
 def get_type_and_args(annotation) -> tuple:
-    """From annotation name: T[T, args] extract type, args, validators"""
+    """From annotation name: T[T, args] extract type, args, validators."""
     _annotated_validators = None
     _type_args: tuple = tuple()
-    _type = get_origin(annotation)  # type from X[type,]
+    # _type from `field: T` or `field: list[T]`
+    _type = get_origin(annotation) or annotation
     if _type is Annotated:
         _type, *_annotated_validators = get_args(annotation)
     else:
@@ -166,9 +135,21 @@ def get_type_and_args(annotation) -> tuple:
     return _type, _type_args, _annotated_validators
 
 
+def is_dict_value(annotation):
+    return isinstance(annotation, type) and issubclass(annotation, DictValue)
+
+
+def is_enclosed_list(_type, _type_args):
+    return _type_args and _type in (list, tuple)
+
+
 def is_union(annotation) -> bool:
     """Tell if an annotation is strictly Union."""
     return get_origin(annotation) is Union
+
+
+def is_not_required(annotation) -> bool:
+    return False
 
 
 def is_optional(annotation) -> bool:
@@ -223,3 +204,92 @@ def validator_condition_factory(validators, prefix, _type) -> Callable:
         return True
 
     return validator_condition
+
+
+def raise_for_invalid_annotated(full_name, _type, _args_validators) -> None:
+    if isinstance(_type, type) and issubclass(_type, DictValue):
+        raise DynaconfSchemaError(
+            f"{get_type_name(_type)!r} type cannot be Annotated, "
+            f"set the validators on the {get_type_name(_type)!r} fields "
+            f"this error is caused by "
+            f"`{full_name}: Annotated[{get_type_name(_type)!r}, *]`"
+        )
+    if not all(isinstance(arg, BaseValidator) for arg in _args_validators):
+        raise DynaconfSchemaError(
+            f"Invalid Annotated Args "
+            f"all items must be instances of Validator "
+            f"this error is caused by "
+            f"`{full_name}: Annotated[{get_type_name(_type)!r}"
+            f"[{', '.join(str(i) for i in _args_validators)}]`"
+        )
+
+
+def raise_for_invalid_amount_of_enclosed_types(
+    full_name, _type, inner_type, more_types
+) -> None:
+    """Decided to consider only the first enclosed type
+    which means list[T] is allowed, but list[T, T] not
+    This is subject to change in future.
+    """
+    if more_types:
+        raise DynaconfSchemaError(
+            f"Invalid enclosed type for {full_name} "
+            "enclosed types supports only one argument "
+            f"{get_type_name(_type)}[{get_type_name(inner_type)}] "
+            "is allowed, but this error is caused by "
+            f"`{full_name}: {get_type_name(_type)}"
+            f"[{get_type_name(inner_type)}, "
+            f"{', '.join(get_type_name(i) for i in more_types)}]`"
+        )
+
+
+def raise_for_enclosed_with_defaults(
+    full_name, _type, inner_type, enclosed_defaults, annotation
+):
+    """A DictValue enclosed on list[DictValue] cannot define defaults.
+    because it is indexed and we have no way to return default values from
+    dynaconf.get.
+    """
+    if enclosed_defaults:
+        raise DynaconfSchemaError(
+            "List enclosed types cannot define default values. "
+            f"{inner_type.__name__!r} defines {enclosed_defaults}. "
+            f"this error is caused by "
+            f"`{full_name}: {_type.__name__}[{inner_type.__name__}]`"
+        )
+
+
+def raise_for_unsupported_type(
+    full_name, _type, _type_args, annotation
+) -> None:
+    _types = _type_args or [_type]
+    for _type in _types:
+        if is_union(_type):
+            raise_for_unsupported_type(
+                full_name, _type, get_args(_type), annotation
+            )
+        unsupported = isinstance(_type, type) and not issubclass(
+            _type, SUPPORTED_TYPES
+        )
+        if unsupported:
+            raise DynaconfSchemaError(
+                f"Invalid type {get_type_name(_type)!r} "
+                f"must be one of {SUPPORTED_TYPES} "
+                f"this error is caused by "
+                f"`{full_name}: {annotation}`"
+            )
+
+
+def raise_for_optional_without_none(
+    full_name, _type, _type_args, default_value, annotation
+):
+    if default_value is empty and is_optional(annotation):
+        raise DynaconfSchemaError(
+            f"Optional Union "
+            "must assign `None` explicitly as default. "
+            f"try changing to: `{full_name}: {annotation} = None` "
+            f"this error is caused by "
+            f"`{full_name}: {annotation}`. "
+            "Did you mean to declare as `NotRequired` "
+            f"instead of {get_type_name(annotation)!r}?"
+        )

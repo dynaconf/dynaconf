@@ -14,6 +14,9 @@ from .compat import get_annotations
 Annotated = Annotated
 
 
+class NotRequired: ...
+
+
 class DictValue:
     """A dictvalue Subtype is actually a Dict, so instantiating it just returns
     the dict."""
@@ -90,3 +93,35 @@ class Validator:
         return BaseValidator(
             **{k: v for k, v in kwargs.items() if v is not empty}
         )
+
+
+# Aliases for supported types
+# That can be used with Annotated, Union and T[T]
+# These are defined here mainly to help with auto complete
+"""
+from dynaconf.typed import types as ts
+class Settings(Dynaconf):
+    field: ts.Str
+    # actually the same as
+    field: str
+"""
+Str = str
+Int = int
+Float = float
+Bool = bool
+NoneType = type(None)
+List = list
+Tuple = tuple
+Dict = dict
+
+SUPPORTED_TYPES = (
+    Str,
+    Int,
+    Float,
+    Bool,
+    NoneType,
+    List,
+    Tuple,
+    Dict,
+    DictValue,
+)

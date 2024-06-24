@@ -304,12 +304,15 @@ class Validator:
                 # avoid TOML from parsing "+-1" started strings as integer
                 default_value = f"'{default_value}'"
 
-            value = settings.setdefault(
-                name,
-                default_value,
-                apply_default_on_none=self.apply_default_on_none,
-                env=env,
-            )
+            try:
+                value = settings.setdefault(
+                    name,
+                    default_value,
+                    apply_default_on_none=self.apply_default_on_none,
+                    env=env,
+                )
+            except AttributeError:  # dotted get/set on a non-dict type
+                raise ValidationError(f"Mismatched type for {name}")
 
             # is name required but not exists?
             if self.must_exist is True and value is empty:

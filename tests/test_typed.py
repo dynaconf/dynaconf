@@ -8,6 +8,8 @@ import pytest
 from dynaconf.typed import DictValue
 from dynaconf.typed import Dynaconf
 from dynaconf.typed import DynaconfSchemaError
+
+# from dynaconf.typed import NotRequired
 from dynaconf.typed import Options
 from dynaconf.typed import ValidationError
 from dynaconf.typed import Validator
@@ -85,7 +87,7 @@ def test_enclosed_type_raises_for_invalid_enclosed():
     class Settings(Dynaconf):
         plugins: list[Dummy]
 
-    msg = "Invalid enclosed type"
+    msg = "Invalid type 'Dummy'"
     with pytest.raises(DynaconfSchemaError, match=msg):
         Settings()
 
@@ -96,7 +98,7 @@ def test_union_enclosed_type_raises_for_invalid_enclosed():
     class Settings(Dynaconf):
         numbers: list[Union[int, float, bool, A]]
 
-    msg = "Invalid enclosed type 'A'"
+    msg = "Invalid type 'A'"
     with pytest.raises(DynaconfSchemaError, match=msg):
         Settings()
 
@@ -109,7 +111,7 @@ def test_annotated_forbidden_with_dictvalue():
         # This is not allowed, should add validators on the dictvalue type itself
         plug: Annotated[Plugin, Validator()]
 
-    msg = "DictValue type cannot be Annotated"
+    msg = "'Plugin' type cannot be Annotated"
     with pytest.raises(DynaconfSchemaError, match=msg):
         Settings()
 
@@ -236,10 +238,8 @@ def test_deeply_enclosed_type_validates_with_bare_type_allows_empty(
 def test_sub_types_works(monkeypatch):
     class Plugin(DictValue):
         name: str
-        path: Optional[
-            str
-        ]  # NOTE: This must mark path as not required on dict
-        order: Union[int, bool, None]  # This is the same as above ^
+        # path: NotRequired[str]
+        # order: Union[int, bool, None]
 
     class Auth(DictValue):
         username: str
@@ -410,6 +410,19 @@ def test_validate_based_on_type_annotation(monkeypatch):
             Settings()
 
 
+# Forbid `name: UnsupportedType`
+def test_only_supported_types_can_be_used():
+    class A: ...
+
+    class Settings(Dynaconf):
+        dynaconf_options = Options(_trigger_validation=False)
+        name: A
+
+    err_msg = "Invalid type 'A'"
+    with pytest.raises(DynaconfSchemaError, match=err_msg):
+        Settings()
+
+
 # handle dictvalue subtype
 def test_dictvalue_subtype():
     class Person(DictValue):
@@ -535,6 +548,11 @@ def test_extracted_validators(monkeypatch):
             "required": True,
         },
         {
+            "names": ("typed_auth",),
+            "operations": {"is_type_of": dict},
+            "required": False,
+        },
+        {
             "names": ("typed_auth.token",),
             "operations": {"is_type_of": str, "len_min": 10},
             "required": True,
@@ -592,9 +610,79 @@ def test_some_arguments_forbid_on_validators(invalid_arg):
 
 
 # Forbid Annotated with types out of the allowed list
+def test_annotated_accepts_only_supported_types():
+    class A: ...
+
+    class Settings(Dynaconf):
+        name: Annotated[A, Validator()]
+
+    msg = "Invalid type 'A'"
+    with pytest.raises(DynaconfSchemaError, match=msg):
+        Settings()
+
+    class B(DictValue):
+        foo: str
+
+    class Settings(Dynaconf):
+        name: Annotated[B, Validator()]
+
+    msg = "'B' type cannot be Annotated"
+    with pytest.raises(DynaconfSchemaError, match=msg):
+        Settings()
+
+
 # Forbid args to Annotated that are not Validator `Annotated[T, strange_thing]`
+def test_annotated_args_must_be_only_validators():
+    # OK
+    class Settings(Dynaconf):
+        name: Annotated[str, Validator()] = "John"
+
+    Settings()
+
+    # NOT OK
+    class Settings(Dynaconf):
+        name: Annotated[str, Validator(), "Hello", 123] = "John"
+
+    msg = "Invalid Annotated Args"
+    with pytest.raises(DynaconfSchemaError, match=msg):
+        Settings()
+
+
 # Handle Union types `field: Union[T, T, T]`
+def test_all_kinds_of_union():
+    class Person(DictValue):
+        name: str
+
+    class Settings(Dynaconf):
+        person: Union[Person, str, dict]
+
+    assert Settings(person="Bruno").person == "Bruno"
+    assert Settings(person={"name": "Bruno"}).person.name == "Bruno"
+    assert Settings(person=Person()).person == {}
+    assert Settings(person=Person(name="Bruno")).person.name == "Bruno"
+
+    with pytest.raises(ValidationError, match="person must is_type_of"):
+        Settings(person=1)
+
+
 # Handle Optional types `field: Optional[T]` and `field: Union[T, None]`
+def test_optional_types():
+    class Profile(DictValue):
+        username: str
+
+    class Settings(Dynaconf):
+        name: Optional[str] = None
+        age: Optional[int] = None
+        colors: Optional[list] = None
+        profile: Optional[Profile] = None
+
+    settings = Settings()
+    settings.name
+
+
+# NOTE: Handle NotRequired
+
+
 # Handle list enclosed types `field: list[T]`  (and with default)
 # Handle empty list, must be allowed `field: list[T]` accepts `[]`
 # Handle list enclosed union `field: list[Union[T, T, T]]`
@@ -606,7 +694,6 @@ def test_some_arguments_forbid_on_validators(invalid_arg):
 # Handle Annotated + optional `field: Annotated[Optional[T], Validator()]`
 # Handle Annotated + new union `field: Annotated[T | T, Validator()]`
 # Handle DictValue `class Struct: ...` - `field: Struct`
-# Ensure DictValue adds a is_type_of=dict validator
 # Forbid DictValue Subtype on Annotated `Annotated[DictValue, ...]`
 # Handle deeply dictvalue Subtype (multiple levels)
 # Handle enclosed SubType `field: list[Struct]`

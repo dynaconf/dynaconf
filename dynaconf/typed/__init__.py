@@ -4,6 +4,7 @@ from .main import Dynaconf
 from .main import Options
 from .types import Annotated
 from .types import DictValue
+from .types import NotRequired
 from .types import Validator
 
 __all__ = [
@@ -11,6 +12,7 @@ __all__ = [
     "DictValue",
     "Dynaconf",
     "DynaconfSchemaError",
+    "NotRequired",
     "Options",
     "Validator",
     "ValidationError",
