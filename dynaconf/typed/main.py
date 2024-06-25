@@ -12,6 +12,7 @@ from dynaconf.base import Settings as BaseDynaconfSettings
 from dynaconf.utils.functional import Empty
 
 from .utils import extract_defaults_and_validators_from_typing
+from .utils import raise_for_invalid_class_variable
 
 if sys.version_info < (3, 10):
     dclass_args: dict[str, Any] = {}
@@ -56,7 +57,12 @@ class Dynaconf(BaseDynaconfSettings):
     """Implementation of Dynaconf that is aware of type annotations."""
 
     def __new__(cls, *args, **kwargs):
+        raise_for_invalid_class_variable(cls)
         options = getattr(cls, "dynaconf_options", Options())
+        if not isinstance(options, Options):
+            raise TypeError(
+                "dynaconf_options must be an instance of `Options`"
+            )
         defaults, validators = extract_defaults_and_validators_from_typing(cls)
         passed_in_validators = kwargs.pop("validators", [])
         validators += passed_in_validators

@@ -8,8 +8,7 @@ import pytest
 from dynaconf.typed import DictValue
 from dynaconf.typed import Dynaconf
 from dynaconf.typed import DynaconfSchemaError
-
-# from dynaconf.typed import NotRequired
+from dynaconf.typed import NotRequired
 from dynaconf.typed import Options
 from dynaconf.typed import ValidationError
 from dynaconf.typed import Validator
@@ -667,20 +666,75 @@ def test_all_kinds_of_union():
 
 # Handle Optional types `field: Optional[T]` and `field: Union[T, None]`
 def test_optional_types():
+    """Optional and Union[T, None] must define a None default"""
+
     class Profile(DictValue):
         username: str
 
+    # Good
     class Settings(Dynaconf):
         name: Optional[str] = None
         age: Optional[int] = None
         colors: Optional[list] = None
         profile: Optional[Profile] = None
+        city: Union[str, None] = None
 
-    settings = Settings()
-    settings.name
+    Settings()
+
+    # Not Good
+    class Settings(Dynaconf):
+        name: Optional[str]  # Should have used NotRequired
+
+    msg = "Optional Union must assign `None` explicitly as default."
+    with pytest.raises(DynaconfSchemaError, match=msg):
+        Settings()
 
 
 # NOTE: Handle NotRequired
+def test_notrequired():
+    class Settings(Dynaconf):
+        name: NotRequired[str]
+        name2: Annotated[NotRequired[str], Validator()]
+        name3: NotRequired[Annotated[str, Validator()]]  # same as above
+
+    # No error as none of the variables are required
+    settings = Settings()
+
+    # However the NotRequired attribute might be undefined
+    with pytest.raises(AttributeError):
+        settings.name
+
+    # Same on SubTypes
+    class Person(DictValue):
+        name: str
+        age: NotRequired[int]
+        team: NotRequired[Annotated[str, Validator(is_in=["A", "B"])]]
+
+    class Settings(Dynaconf):
+        person: Person
+        person2: NotRequired[Person]
+        something: NotRequired[list]
+
+    # Good, partial dict because some fields are NotRequired
+    Settings(person={"name": "Bruno"})
+
+    # Validates for types and checks if a not required field is informed
+    with pytest.raises(
+        ValidationError,
+        match="person.age must is_type_of.+int",
+    ):
+        Settings(person={"name": "Bruno", "age": "too-old"})
+
+    with pytest.raises(
+        ValidationError, match="person.team must is_in \['A', 'B']"
+    ):
+        Settings(person={"name": "Bruno", "team": "C"})
+
+    with pytest.raises(
+        ValidationError,
+        match="something must is_type_of.+list",
+    ):
+        Settings(person={"name": "Bruno", "team": "A"}, something=5.6)
 
 
 # Handle list enclosed types `field: list[T]`  (and with default)

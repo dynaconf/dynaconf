@@ -5,7 +5,9 @@ import operator
 
 
 class Empty:
-    def __str__(self):
+    __slots__ = ()
+
+    def __repr__(self):
         return "EMPTY"
 
 

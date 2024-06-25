@@ -12,6 +12,7 @@ from dynaconf.validator import Validator as BaseValidator
 
 from .compat import get_annotations
 from .exceptions import DynaconfSchemaError
+from .types import _NotRequiredMarker
 from .types import DictValue
 from .types import SUPPORTED_TYPES
 
@@ -36,11 +37,30 @@ def extract_defaults_and_validators_from_typing(
     validators = validators or []
 
     for name, annotation in get_annotations(schema_cls).items():
+        if name == "dynaconf_options":
+            # In case someone does dyanconf_options: Options = Options(...)
+            # That value is kept out of the schema validation
+            continue
+
         default_value = getattr(schema_cls, name, empty)
         full_path = path + (name,)  # E.g, ("path", "to", "name")
         full_name = ".".join(full_path)  # E.g, path.to.name
         _type, _type_args, _args_validators = get_type_and_args(annotation)
         raise_for_unsupported_type(full_name, _type, _type_args, annotation)
+        is_notrequired = False
+
+        if _args_validators and isinstance(
+            _args_validators[0], _NotRequiredMarker
+        ):
+            # Annotated[NotRequired[T], ...]
+            _, *_args_validators = _args_validators
+            is_notrequired = True
+        if _args_validators and isinstance(
+            _args_validators[-1], _NotRequiredMarker
+        ):
+            # NotRequired[Annotated[T, ...]]
+            *_args_validators, _ = _args_validators
+            is_notrequired = True
 
         if default_value is not empty:
             previous_default = defaults.get(".".join(path))
@@ -68,7 +88,7 @@ def extract_defaults_and_validators_from_typing(
             for _validator in _args_validators:
                 _validator.names = (full_name,)
                 _validator.is_type_of = _type
-                if default_value is empty and not is_not_required(annotation):
+                if default_value is empty and not is_notrequired:
                     _validator.must_exist = True
                 validators.append(_validator)
 
@@ -93,15 +113,25 @@ def extract_defaults_and_validators_from_typing(
                 enclosed_validators, full_name, inner_type
             )
 
-            if default_value is empty and not is_not_required(annotation):
+            if default_value is empty and not is_notrequired:
                 _validator.must_exist = True  # required
 
             validators.append(_validator)
         # field: T
         else:
-            _validator = BaseValidator(full_name, is_type_of=annotation)
-            if default_value is empty and not is_not_required(annotation):
+            _validator = BaseValidator(full_name)
+            if default_value is empty and not is_notrequired:
                 _validator.must_exist = True  # required
+
+            if is_notrequired:
+                # Extract the types from the Annotated
+                if is_dict_value(annotation):
+                    _validator.is_type_of = dict
+                else:
+                    _validator.is_type_of = _type
+            else:
+                _validator.is_type_of = annotation
+
             validators.append(_validator)
 
     return defaults, validators
@@ -148,13 +178,14 @@ def is_union(annotation) -> bool:
     return get_origin(annotation) is Union
 
 
-def is_not_required(annotation) -> bool:
-    return False
-
-
 def is_optional(annotation) -> bool:
     """Tell if an annotation is strictly typing.Optional or Union[**, None]"""
     return is_union(annotation) and type(None) in get_args(annotation)
+
+
+def is_type(value) -> bool:
+    _type = get_origin(value) or value
+    return isinstance(_type, type) or is_union(value) or is_optional(value)
 
 
 def validator_condition_factory(validators, prefix, _type) -> Callable:
@@ -293,3 +324,25 @@ def raise_for_optional_without_none(
             "Did you mean to declare as `NotRequired` "
             f"instead of {get_type_name(annotation)!r}?"
         )
+
+
+def raise_for_invalid_class_variable(cls):
+    """typed.Dynaconf only allows typed variables or dynaconf_options attr"""
+    for name, value in vars(cls).items():
+        if (
+            name.startswith(("_", "dynaconf_options"))
+            or name in cls.__annotations__
+        ):
+            continue
+        msg = (
+            f"Invalid assignment on `{get_type_name(cls)}:"
+            f" {name} = {get_type_name(value)}`. "
+            "All attributes must include type annotations or "
+            "be a `dynaconf_options = Options(...)`. "
+        )
+        if is_type(value):
+            msg += f"Did you mean '{name}: {get_type_name(value)}'?"
+        else:
+            msg += f"Did you mean '{name}: T = {value}'?"
+
+        raise DynaconfSchemaError(msg)

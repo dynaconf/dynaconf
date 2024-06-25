@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from typing import Annotated
 from typing import Any
 from typing import Callable
+from typing import TypeVar
 
 from dynaconf.utils.functional import Empty
 from dynaconf.utils.functional import empty
@@ -14,12 +15,37 @@ from .compat import get_annotations
 Annotated = Annotated
 
 
-class NotRequired: ...
+T = TypeVar("T")
+
+
+class _NotRequiredMarker:
+    __slots__ = ()
+
+
+NotRequired = Annotated[T, _NotRequiredMarker()]
+"""
+This type will mark keys as NotRequired which means it can be completely
+absent from the settings object.
+This differs from Optional, as Optional requires T or None,
+NotRequired requires T or simply nothing at all.
+In practice this will make the generated Validator to have required=False
+and skip the check for a default value, so settings.key will raise for
+AttributeError.
+
+When used as `NotRequired[T]`
+    _type = T, _type_args = (_NotRequiredMarker(),)
+When uses as `Annotated[NotRequired[T], Validator()]`
+    _type = T
+    _type_args (_NotRequiredMarker(), Validator())
+
+"""
 
 
 class DictValue:
     """A dictvalue Subtype is actually a Dict, so instantiating it just returns
     the dict."""
+
+    __slots__ = ()
 
     def __new__(cls, **kwargs):
         defaults = {}
@@ -58,6 +84,8 @@ class Validator:
 
 
     """
+
+    __slots__ = ()
 
     def __new__(
         cls,
@@ -109,7 +137,7 @@ Str = str
 Int = int
 Float = float
 Bool = bool
-NoneType = type(None)
+NoneType = type(None)  # python 3.9 doesn't have types.NoneType
 List = list
 Tuple = tuple
 Dict = dict
