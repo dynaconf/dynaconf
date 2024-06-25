@@ -584,7 +584,7 @@ def test_extracted_validators(monkeypatch):
         "colors must is_type_of <class 'list'> but it is {'red': 'green'}",
         "port must gt 10 but it is 5",
         "auth invalid for auth_condition(user)",
-        "typed_auth.token must len_min 10 but it is []",
+        "typed_auth.token must is_type_of <class 'str'> but it is []",
     ]
     for i, error in enumerate(errors):
         assert expected_errors[i] in str(error)
@@ -738,6 +738,26 @@ def test_notrequired():
 
 
 # Handle list enclosed types `field: list[T]`  (and with default)
+def test_list_enclosed_types():
+    class Person(DictValue):
+        name: str
+
+    class Settings(Dynaconf):
+        colors: list[str]
+
+    Settings(colors=[])
+
+    class Settings(Dynaconf):
+        colors: Annotated[list[str], Validator(cont="red")]
+
+    Settings(colors=["red"])
+
+    class Settings(Dynaconf):
+        colors: Annotated[NotRequired[list[str]], Validator(cont="red")]
+
+    Settings()
+
+
 # Handle empty list, must be allowed `field: list[T]` accepts `[]`
 # Handle list enclosed union `field: list[Union[T, T, T]]`
 # Handle list enclosed optional `field: list[Optional[T]]`

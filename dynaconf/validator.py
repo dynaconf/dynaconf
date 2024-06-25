@@ -348,8 +348,15 @@ class Validator:
                     )
                     raise ValidationError(_message, details=[(self, _message)])
 
-            # operations
-            for op_name, op_value in self.operations.items():
+            # reorder passed operations so type check is first
+            operations = {}
+            if _type := self.operations.pop("is_type_of", None):
+                operations["is_type_of"] = _type
+            operations.update(
+                {k: v for k, v in self.operations.items() if k != "is_type_of"}
+            )
+
+            for op_name, op_value in operations.items():
                 op_function = getattr(validator_conditions, op_name)
                 op_succeeded = False
 

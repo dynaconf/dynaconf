@@ -295,12 +295,14 @@ def raise_for_unsupported_type(
 ) -> None:
     _types = _type_args or [_type]
     for _type in _types:
-        if is_union(_type):
+        _type_origin = get_origin(_type) or _type
+        _type_args = get_args(_type)
+        if _type_args:  # Union[] or list[] or tuple[]
             raise_for_unsupported_type(
-                full_name, _type, get_args(_type), annotation
+                full_name, _type, _type_args, annotation
             )
         unsupported = isinstance(_type, type) and not issubclass(
-            _type, SUPPORTED_TYPES
+            _type_origin, SUPPORTED_TYPES
         )
         if unsupported:
             raise DynaconfSchemaError(

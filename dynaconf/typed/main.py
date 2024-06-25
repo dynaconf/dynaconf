@@ -56,6 +56,8 @@ class Options:
 class Dynaconf(BaseDynaconfSettings):
     """Implementation of Dynaconf that is aware of type annotations."""
 
+    dynaconf_options: Options
+
     def __new__(cls, *args, **kwargs):
         raise_for_invalid_class_variable(cls)
         options = getattr(cls, "dynaconf_options", Options())

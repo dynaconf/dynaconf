@@ -51,6 +51,10 @@ def is_type_of(value, other):
         origin = get_origin(other)
         if origin is Union:
             other = args
+        elif origin in (list, tuple):
+            return isinstance(value, (list, tuple)) and all(
+                isinstance(item, args) for item in value
+            )
         elif origin is dict:
             return isinstance(value, dict) and all(
                 isinstance(item, args) for item in value.values()
