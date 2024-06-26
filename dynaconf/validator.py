@@ -337,17 +337,6 @@ class Validator:
             value = self.cast(settings.get(name))
             settings.set(name, value, validate=False)
 
-            # is there a callable condition?
-            if self.condition is not None:
-                if not self.condition(value):
-                    _message = self.messages["condition"].format(
-                        name=name,
-                        function=self.condition.__name__,
-                        value=value,
-                        env=env,
-                    )
-                    raise ValidationError(_message, details=[(self, _message)])
-
             # reorder passed operations so type check is first
             operations = {}
             if _type := self.operations.pop("is_type_of", None):
@@ -384,6 +373,17 @@ class Validator:
                         name=name,
                         operation=op_function.__name__,
                         op_value=op_value,
+                        value=value,
+                        env=env,
+                    )
+                    raise ValidationError(_message, details=[(self, _message)])
+
+            # is there a callable condition?
+            if self.condition is not None:
+                if not self.condition(value):
+                    _message = self.messages["condition"].format(
+                        name=name,
+                        function=self.condition.__name__,
                         value=value,
                         env=env,
                     )

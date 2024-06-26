@@ -97,6 +97,7 @@ def extract_defaults_and_validators_from_typing(
             _validator = BaseValidator(full_name, is_type_of=_type)
             inner_type, *more_types = _type_args
 
+            # NOT SURE ABOUT THIS
             raise_for_invalid_amount_of_enclosed_types(
                 full_name, _type, inner_type, more_types
             )

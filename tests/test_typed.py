@@ -115,6 +115,7 @@ def test_annotated_forbidden_with_dictvalue():
         Settings()
 
 
+# NOT SURE ABOUT THIS
 def test_enclosed_forbidden_with_more_than_one_arg():
     class Plugin(DictValue):
         value: list[Union[int, float, bool], int, float]
@@ -573,7 +574,7 @@ def test_extracted_validators(monkeypatch):
         colors={"red": "green"},
         port=5,
         url="SERVER.com",
-        auth="user",
+        auth={"username": "foo"},
         typed_auth={"token": []},
     )
     errors = settings.validators.validate_all(raise_error=False)
@@ -583,7 +584,7 @@ def test_extracted_validators(monkeypatch):
         "team must is_type_of <class 'str'> but it is True",
         "colors must is_type_of <class 'list'> but it is {'red': 'green'}",
         "port must gt 10 but it is 5",
-        "auth invalid for auth_condition(user)",
+        "auth invalid for auth_condition({'username': 'foo'})",
         "typed_auth.token must is_type_of <class 'str'> but it is []",
     ]
     for i, error in enumerate(errors):
@@ -738,31 +739,205 @@ def test_notrequired():
 
 
 # Handle list enclosed types `field: list[T]`  (and with default)
-def test_list_enclosed_types():
-    class Person(DictValue):
-        name: str
-
-    class Settings(Dynaconf):
-        colors: list[str]
-
-    Settings(colors=[])
-
-    class Settings(Dynaconf):
-        colors: Annotated[list[str], Validator(cont="red")]
-
-    Settings(colors=["red"])
-
-    class Settings(Dynaconf):
-        colors: Annotated[NotRequired[list[str]], Validator(cont="red")]
-
-    Settings()
-
-
 # Handle empty list, must be allowed `field: list[T]` accepts `[]`
 # Handle list enclosed union `field: list[Union[T, T, T]]`
 # Handle list enclosed optional `field: list[Optional[T]]`
 # Handle list enclosed new union `field: list[T | T]`
 # Forbid list enclosed with more than one arg `list[T, T]`
+def test_list_enclosed_types():
+    # simple and required
+    class Settings(Dynaconf):
+        colors: list[str]
+
+    Settings(colors=[])
+    Settings(colors=["a"])
+
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=1)
+    with pytest.raises(
+        ValidationError,
+        match="colors is required",
+    ):
+        Settings()
+
+    # simple and required with multi args
+    # I THINK WE MUST ADD SUPPORT FOR IT
+    # but now it raises error
+    # class Settings(Dynaconf):
+    #     colors: list[str, float]
+    #
+    # Settings(colors=[])
+    # Settings(colors=["a"])
+    # Settings(colors=[4.2])
+    #
+    # with pytest.raises(
+    #     ValidationError,
+    #     match="colors must is_type_of.+list",
+    # ):
+    #     Settings(colors=1)
+    # with pytest.raises(
+    #     ValidationError,
+    #     match="colors is required",
+    # ):
+    #     Settings()
+
+    # Unionized and required
+    class Settings(Dynaconf):
+        colors: list[Union[str, int]]
+
+    Settings(colors=[])
+    Settings(colors=["a"])
+    Settings(colors=[1])
+
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=1)
+    with pytest.raises(
+        ValidationError,
+        match="colors is required",
+    ):
+        Settings()
+
+    # Outer Unionized and required
+    class Settings(Dynaconf):
+        colors: Union[list[str], str]
+
+    Settings(colors=[])
+    Settings(colors=["a"])
+    Settings(colors="a")
+
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=1)
+    with pytest.raises(
+        ValidationError,
+        match="colors is required",
+    ):
+        Settings()
+
+    # Annotated with Validator
+    class Settings(Dynaconf):
+        colors: Annotated[list[str], Validator(cont="red")]
+
+    Settings(colors=["red"])
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=1)
+    with pytest.raises(
+        ValidationError,
+        match="colors must cont red",
+    ):
+        Settings(colors=[])
+
+    # Annotated and Unionized
+    class Settings(Dynaconf):
+        colors: Annotated[Union[list[str], str], Validator(cont="blue")]
+
+    Settings(colors=["blue"])
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=1)
+    with pytest.raises(
+        ValidationError,
+        match="colors must cont blue",
+    ):
+        Settings(colors=[])
+
+    # Annotated and Unionized with Nesting Union (python will flatten it)
+    class Settings(Dynaconf):
+        colors: Annotated[
+            Union[list[Union[str, int]], str], Validator(cont="green")
+        ]
+
+    Settings(colors=["green"])
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=1)
+    with pytest.raises(
+        ValidationError,
+        match="colors must cont green",
+    ):
+        Settings(colors=[])
+
+    # More combinations with Unions
+    class Settings(Dynaconf):
+        colors: Annotated[
+            Union[list[Union[str, int]], str, Union[str, int]],
+            Validator(cont="purple"),
+        ]
+
+    Settings(colors=["purple"])
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=4.2)
+    with pytest.raises(
+        ValidationError,
+        match="colors must cont purple",
+    ):
+        Settings(colors=[])
+
+    # A type that makes no sense but still validates
+    crazy_type = Union[
+        list[Union[str, int]], str, Union[list[str], tuple[Union[int, float]]]
+    ]
+
+    class Settings(Dynaconf):
+        colors: Annotated[crazy_type, Validator(cont="pink")]
+
+    Settings(colors=["pink"])
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=4.2)
+    with pytest.raises(
+        ValidationError,
+        match="colors must cont pink",
+    ):
+        Settings(colors=[])
+
+    # NotRequired
+    class Settings(Dynaconf):
+        colors: Annotated[NotRequired[list[str]], Validator(cont="yellow")]
+
+    Settings()
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list\[str]",
+    ):
+        Settings(colors=[1, 2, 3])
+    with pytest.raises(
+        ValidationError,
+        match="colors must cont yellow",
+    ):
+        Settings(colors=["red"])
+
+    # With Default Value
+    crazy_type = Union[
+        list[Union[str, int]], str, Union[list[str], tuple[Union[int, float]]]
+    ]
+
+    class Settings(Dynaconf):
+        colors: Annotated[crazy_type, Validator(cont="cyan")] = ["cyan", 1]
+
+    assert Settings().colors == ["cyan", 1]
+
+
 # Handle Annotated + enclosed type `field: Annotated[list[T], Validator()]`
 # Handle Annotated + union type `field: Annotated[Union[T, T], Validator()]`
 # Handle Annotated + optional `field: Annotated[Optional[T], Validator()]`

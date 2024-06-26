@@ -5,6 +5,7 @@ Implement basic assertions to be used in assertion action
 
 from __future__ import annotations
 
+import sys
 from typing import get_args
 from typing import get_origin
 from typing import Union
@@ -46,19 +47,29 @@ def identity(value, other):
 
 
 def is_type_of(value, other):
-    """Type check"""
-    if args := get_args(other):
+    """Type check that performs lookup on parameterized generic types."""
+
+    args = get_args(other)
+
+    # NOTE: remove when dropping 3.9
+    if not args and isinstance(other, tuple) and sys.version_info < (3, 10):
+        # Got (T[T],) from recursive call
+        return any(is_type_of(value, item) for item in other)
+    # /NOTE
+
+    if args:
         origin = get_origin(other)
         if origin is Union:
-            other = args
+            return any(is_type_of(value, arg) for arg in args)
         elif origin in (list, tuple):
             return isinstance(value, (list, tuple)) and all(
-                isinstance(item, args) for item in value
+                is_type_of(item, args) for item in value
             )
         elif origin is dict:
             return isinstance(value, dict) and all(
-                isinstance(item, args) for item in value.values()
+                is_type_of(item, args) for item in value.values()
             )
+
     return isinstance(value, other)
 
 
