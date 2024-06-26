@@ -46,6 +46,7 @@ class DictValue:
     the dict."""
 
     __slots__ = ()
+    _dynaconf_dictvalue = True  # a marker for validator_conditions.is_type_of
 
     def __new__(cls, **kwargs):
         defaults = {}

@@ -1,4 +1,5 @@
 import os
+import sys
 from typing import Annotated
 from typing import Optional
 from typing import Union
@@ -102,17 +103,17 @@ def test_union_enclosed_type_raises_for_invalid_enclosed():
         Settings()
 
 
-def test_annotated_forbidden_with_dictvalue():
+def test_annotated_with_dictvalue():
     class Plugin(DictValue):
-        name: str
+        name: Annotated[Union[str, int], Validator()]
 
     class Settings(Dynaconf):
         # This is not allowed, should add validators on the dictvalue type itself
-        plug: Annotated[Plugin, Validator()]
+        plug: Annotated[Plugin, Validator(cont="name")]
 
-    msg = "'Plugin' type cannot be Annotated"
-    with pytest.raises(DynaconfSchemaError, match=msg):
-        Settings()
+    msg = "plug.name must is_type_of.+Union\[str, int]"
+    with pytest.raises(ValidationError, match=msg):
+        Settings(plug={"name": 4.2})
 
 
 # NOT SURE ABOUT THIS
@@ -137,7 +138,7 @@ def test_enclosed_type_validates(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_PLUGINS", '@json [{"name": true}]')
-        msg = r"plugins\[].name must is_type_of"
+        msg = r"plugins\[0].name must is_type_of"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -153,13 +154,25 @@ def test_union_type_validates(monkeypatch):
             Settings()
 
 
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="not supported on 3.9")
+def test_new_union_validates(monkeypatch):
+    class Settings(Dynaconf):
+        number: int | float | bool
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_NUMBER", "one")
+        msg = r"number must is_type_of"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
 def test_union_enclosed_type_validates(monkeypatch):
     class Settings(Dynaconf):
         numbers: list[Union[int, float, bool]]
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_NUMBERS", '["banana"]')
-        msg = r"numbers\[] must is_type_of"
+        msg = r"numbers\[0] must is_type_of"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -189,7 +202,41 @@ def test_deeply_enclosed_type_validates(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", '@json [{"name": null}]')
-        msg = r"database.extra.plugins\[].name must is_type_of"
+        msg = r"database.extra.plugins\[0].name must is_type_of"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
+def test_deeply_enclosed_type_validates_with_bare_dict(monkeypatch):
+    class Extra(DictValue):
+        plugins: list[dict]
+
+    class Database(DictValue):
+        extra: Extra
+
+    class Settings(Dynaconf):
+        database: Database
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", "[1]")
+        msg = r"database.extra.plugins\[0] must is_type_of.+dict"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
+def test_deeply_enclosed_type_validates_with_parameterized_dict(monkeypatch):
+    class Extra(DictValue):
+        plugins: list[dict[str, int]]
+
+    class Database(DictValue):
+        extra: Extra
+
+    class Settings(Dynaconf):
+        database: Database
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", '@json [{"name": 4.3}]')
+        msg = r"database.extra.plugins\[0] must is_type_of.+dict"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -206,7 +253,7 @@ def test_deeply_enclosed_type_validates_with_bare_type(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", "@json [12]")
-        msg = r"database.extra.plugins\[] must is_type_of"
+        msg = r"database.extra.plugins\[0] must is_type_of"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -477,7 +524,7 @@ def test_default_based_on_type_annotation(monkeypatch):
 
 
 # Extract Validators from Annotated `field: Annotated[T, Validator()]`
-def test_extracted_validators(monkeypatch):
+def test_extracted_validators_from_annotated(monkeypatch):
     def cast_url(v):
         return v.lower()
 
@@ -549,8 +596,8 @@ def test_extracted_validators(monkeypatch):
         },
         {
             "names": ("typed_auth",),
-            "operations": {"is_type_of": dict},
-            "required": False,
+            "operations": {"is_type_of": Auth},
+            "required": True,
         },
         {
             "names": ("typed_auth.token",),
@@ -620,13 +667,10 @@ def test_annotated_accepts_only_supported_types():
     with pytest.raises(DynaconfSchemaError, match=msg):
         Settings()
 
-    class B(DictValue):
-        foo: str
-
     class Settings(Dynaconf):
-        name: Annotated[B, Validator()]
+        name: Annotated[complex, Validator()]
 
-    msg = "'B' type cannot be Annotated"
+    msg = "Invalid type 'complex'"
     with pytest.raises(DynaconfSchemaError, match=msg):
         Settings()
 
@@ -679,8 +723,10 @@ def test_optional_types():
         colors: Optional[list] = None
         profile: Optional[Profile] = None
         city: Union[str, None] = None
+        team: Annotated[Optional[str], Validator()] = None
+        work: NotRequired[dict]
 
-    Settings()
+    Settings(work={}, team="A")
 
     # Not Good
     class Settings(Dynaconf):
@@ -691,7 +737,7 @@ def test_optional_types():
         Settings()
 
 
-# NOTE: Handle NotRequired
+# Handle NotRequired
 def test_notrequired():
     class Settings(Dynaconf):
         name: NotRequired[str]
@@ -740,11 +786,7 @@ def test_notrequired():
 
 # Handle list enclosed types `field: list[T]`  (and with default)
 # Handle empty list, must be allowed `field: list[T]` accepts `[]`
-# Handle list enclosed union `field: list[Union[T, T, T]]`
-# Handle list enclosed optional `field: list[Optional[T]]`
-# Handle list enclosed new union `field: list[T | T]`
-# Forbid list enclosed with more than one arg `list[T, T]`
-def test_list_enclosed_types():
+def test_list_enclosed_type_is_required():
     # simple and required
     class Settings(Dynaconf):
         colors: list[str]
@@ -763,27 +805,36 @@ def test_list_enclosed_types():
     ):
         Settings()
 
+
+# Forbid list enclosed with more than one arg `list[T, T]`
+@pytest.mark.xfail
+def test_list_enclosed_type_with_multi_args():
+    ...
+
     # simple and required with multi args
     # I THINK WE MUST ADD SUPPORT FOR IT
     # but now it raises error
-    # class Settings(Dynaconf):
-    #     colors: list[str, float]
-    #
-    # Settings(colors=[])
-    # Settings(colors=["a"])
-    # Settings(colors=[4.2])
-    #
-    # with pytest.raises(
-    #     ValidationError,
-    #     match="colors must is_type_of.+list",
-    # ):
-    #     Settings(colors=1)
-    # with pytest.raises(
-    #     ValidationError,
-    #     match="colors is required",
-    # ):
-    #     Settings()
+    class Settings(Dynaconf):
+        colors: list[str, float]
 
+    Settings(colors=[])
+    Settings(colors=["a"])
+    Settings(colors=[4.2])
+
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=1)
+    with pytest.raises(
+        ValidationError,
+        match="colors is required",
+    ):
+        Settings()
+
+
+# Handle list enclosed union `field: list[Union[T, T, T]]`
+def test_list_enclosed_type_with_union():
     # Unionized and required
     class Settings(Dynaconf):
         colors: list[Union[str, int]]
@@ -802,6 +853,13 @@ def test_list_enclosed_types():
         match="colors is required",
     ):
         Settings()
+
+
+def test_list_enclosed_type_outer_union():
+    """
+    As an alternative to list[T, T] one can use
+    Union[list[T], list[T]]
+    """
 
     # Outer Unionized and required
     class Settings(Dynaconf):
@@ -822,6 +880,8 @@ def test_list_enclosed_types():
     ):
         Settings()
 
+
+def test_list_enclosed_type_annotated():
     # Annotated with Validator
     class Settings(Dynaconf):
         colors: Annotated[list[str], Validator(cont="red")]
@@ -838,6 +898,8 @@ def test_list_enclosed_types():
     ):
         Settings(colors=[])
 
+
+def test_list_enclosed_type_annotated_with_union():
     # Annotated and Unionized
     class Settings(Dynaconf):
         colors: Annotated[Union[list[str], str], Validator(cont="blue")]
@@ -854,6 +916,27 @@ def test_list_enclosed_types():
     ):
         Settings(colors=[])
 
+
+@pytest.mark.skipif(sys.version_info < (3, 10), reason="not supported on 3.9")
+def test_list_enclosed_type_annotated_with_new_union():
+    # Annotated and Unionized
+    class Settings(Dynaconf):
+        colors: Annotated[list[str] | str, Validator(cont="blue")]
+
+    Settings(colors=["blue"])
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list",
+    ):
+        Settings(colors=1)
+    with pytest.raises(
+        ValidationError,
+        match="colors must cont blue",
+    ):
+        Settings(colors=[])
+
+
+def test_list_enclosed_type_annotated_with_union_nested():
     # Annotated and Unionized with Nesting Union (python will flatten it)
     class Settings(Dynaconf):
         colors: Annotated[
@@ -872,6 +955,8 @@ def test_list_enclosed_types():
     ):
         Settings(colors=[])
 
+
+def test_list_enclosed_type_with_more_complex_unions():
     # More combinations with Unions
     class Settings(Dynaconf):
         colors: Annotated[
@@ -891,6 +976,8 @@ def test_list_enclosed_types():
     ):
         Settings(colors=[])
 
+
+def test_list_enclosed_type_crazy_type():
     # A type that makes no sense but still validates
     crazy_type = Union[
         list[Union[str, int]], str, Union[list[str], tuple[Union[int, float]]]
@@ -911,6 +998,8 @@ def test_list_enclosed_types():
     ):
         Settings(colors=[])
 
+
+def test_list_enclosed_type_annotated_notrequired():
     # NotRequired
     class Settings(Dynaconf):
         colors: Annotated[NotRequired[list[str]], Validator(cont="yellow")]
@@ -927,6 +1016,21 @@ def test_list_enclosed_types():
     ):
         Settings(colors=["red"])
 
+
+def test_list_enclosed_type_notrequired():
+    # NotRequired
+    class Settings(Dynaconf):
+        colors: NotRequired[list[str]]
+
+    Settings()
+    with pytest.raises(
+        ValidationError,
+        match="colors must is_type_of.+list\[str]",
+    ):
+        Settings(colors=[1, 2, 3])
+
+
+def test_list_enclosed_type_with_default():
     # With Default Value
     crazy_type = Union[
         list[Union[str, int]], str, Union[list[str], tuple[Union[int, float]]]
@@ -938,12 +1042,78 @@ def test_list_enclosed_types():
     assert Settings().colors == ["cyan", 1]
 
 
-# Handle Annotated + enclosed type `field: Annotated[list[T], Validator()]`
-# Handle Annotated + union type `field: Annotated[Union[T, T], Validator()]`
-# Handle Annotated + optional `field: Annotated[Optional[T], Validator()]`
-# Handle Annotated + new union `field: Annotated[T | T, Validator()]`
-# Handle DictValue `class Struct: ...` - `field: Struct`
-# Forbid DictValue Subtype on Annotated `Annotated[DictValue, ...]`
+# Handle list enclosed optional `field: list[Optional[T]]`
+def test_list_enclosed_type_with_optional():
+    class Settings(Dynaconf):
+        colors: list[Optional[str]]  # Means list can be [], [None], [str]
+
+    Settings(colors=[])
+    Settings(colors=[None, None])
+    Settings(colors=["red"])
+    with pytest.raises(
+        ValidationError,
+        match="colors is required",
+    ):
+        Settings()
+
+    with pytest.raises(
+        ValidationError,
+        match="colors\[2] must is_type_of.+Optional\[str]",
+    ):
+        Settings(colors=["red", "#123", 3])
+
+
+def test_usage_of_dict_value():
+    class Person(DictValue):
+        name: str
+
+    class Settings(Dynaconf):
+        dynaconf_options = Options(_trigger_validation=False)
+        person: Person
+        bruno: Annotated[
+            Person, Validator(cont="name"), Validator(eq="batata")
+        ]
+        # dont wanna call is_type_of twice, for each validator
+        person_optional: Optional[Person] = None
+        person_notrequired: NotRequired[Person]
+        #
+        # people: list[Person]
+        # people_optional: Optional[list[Person]] = None
+        # people_notrequired: NotRequired[list[Person]]
+        # team: Annotated[list[Person], Validator(len_min=1)]
+
+    # jj = Person(name="jj")
+    # bruno = Person(name="Bruno")
+    # boss = Person(name="Mike")
+
+    # Good
+    # Settings(
+    #     person=jj,
+    #     bruno=bruno,
+    #     people=[],
+    #     team=[boss],
+    # )
+    # ....
+    Settings(
+        # person=jj,
+        # bruno=bruno,
+        # people=[bruno, jj, boss],
+        # team=[boss],
+        person_optional={"name": 1},  # must raise type error
+        person_notrequired={"name": 2},  # must raise type error
+    )
+    # print()
+    # for i, validator in enumerate(settings.validators):
+    #     print(i, validator)
+    """
+    When DictValue is OPtional, NotRequired
+    A validator must be factored for the base key
+    this condition= function must
+    check that, if the key is set, must match the type spec
+
+    """
+
+
 # Handle deeply dictvalue Subtype (multiple levels)
 # Handle enclosed SubType `field: list[Struct]`
 # Handle deeply dictvalue Subtype (multiple levels) with enclosed types

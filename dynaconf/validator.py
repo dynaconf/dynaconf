@@ -360,10 +360,10 @@ class Validator:
                     # invalid type (not in __builtins__) may raise TypeError
                     try:
                         op_succeeded = op_function(value, op_value)
-                    except TypeError:
+                    except TypeError as e:
                         raise ValidationError(
                             f"Invalid type '{op_value}' for condition "
-                            "'is_type_of'. Should provide a valid type"
+                            f"'is_type_of'. Should provide a valid type. {e}"
                         )
                 else:
                     op_succeeded = op_function(value, op_value)

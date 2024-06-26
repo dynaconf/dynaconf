@@ -16,6 +16,13 @@ from .types import _NotRequiredMarker
 from .types import DictValue
 from .types import SUPPORTED_TYPES
 
+# NOTE: Remove when dropping 3.9
+try:
+    from types import UnionType
+except ImportError:
+    UnionType = Union
+# /NOTE
+
 
 def extract_defaults_and_validators_from_typing(
     schema_cls,
@@ -76,7 +83,10 @@ def extract_defaults_and_validators_from_typing(
 
         # field: DictValue
         if is_dict_value(annotation):
-            validators.append(BaseValidator(full_name, is_type_of=dict))
+            _validator = BaseValidator(full_name, is_type_of=annotation)
+            if default_value is empty and not is_notrequired:
+                _validator.must_exist = True
+            validators.append(_validator)
             # Recursively call this same function until all nested exhausts.
             defaults, validators = extract_defaults_and_validators_from_typing(
                 annotation, full_path, defaults, validators
@@ -84,13 +94,20 @@ def extract_defaults_and_validators_from_typing(
         # field: Annotated[T, Validator(...)]
         elif _args_validators:
             raise_for_invalid_annotated(full_name, _type, _args_validators)
-
             for _validator in _args_validators:
                 _validator.names = (full_name,)
                 _validator.is_type_of = _type
                 if default_value is empty and not is_notrequired:
                     _validator.must_exist = True
                 validators.append(_validator)
+
+            if is_dict_value(_type):
+                # Recursively call this same function until all nested exhausts.
+                defaults, validators = (
+                    extract_defaults_and_validators_from_typing(
+                        _type, full_path, defaults, validators
+                    )
+                )
 
         # field: list[T]
         elif is_enclosed_list(_type, _type_args):
@@ -102,10 +119,10 @@ def extract_defaults_and_validators_from_typing(
                 full_name, _type, inner_type, more_types
             )
 
+            # In case of list[DictValue]
             enclosed_defaults, enclosed_validators = (
                 extract_defaults_and_validators_from_typing(inner_type)
             )
-
             raise_for_enclosed_with_defaults(
                 full_name, _type, inner_type, enclosed_defaults, annotation
             )
@@ -120,6 +137,10 @@ def extract_defaults_and_validators_from_typing(
             validators.append(_validator)
         # field: T
         else:
+            # print()
+            # print("AAAAAAAA", full_name, _type, annotation)
+            # hook creation of validators for Optional and Notrequired here
+
             _validator = BaseValidator(full_name)
             if default_value is empty and not is_notrequired:
                 _validator.must_exist = True  # required
@@ -127,7 +148,7 @@ def extract_defaults_and_validators_from_typing(
             if is_notrequired:
                 # Extract the types from the Annotated
                 if is_dict_value(annotation):
-                    _validator.is_type_of = dict
+                    _validator.is_type_of = annotation
                 else:
                     _validator.is_type_of = _type
             else:
@@ -176,7 +197,7 @@ def is_enclosed_list(_type, _type_args):
 
 def is_union(annotation) -> bool:
     """Tell if an annotation is strictly Union."""
-    return get_origin(annotation) is Union
+    return get_origin(annotation) in [Union, UnionType]
 
 
 def is_optional(annotation) -> bool:
@@ -192,44 +213,30 @@ def is_type(value) -> bool:
 def validator_condition_factory(validators, prefix, _type) -> Callable:
     """takes _type: T, generates a function to validate a value against it"""
 
+    # _type_origin = get_origin(_type) or _type
+    # print(_type, _type_origin)
+    # _type_origin = get_origin(_type)
     def validator_condition(values):
-        if isinstance(_type, type) and issubclass(_type, DictValue):  # a dict
-            validator_messages = {
-                "must_exist_true": prefix
-                + "[].{name} is required in env {env}",
-                "must_exist_false": prefix
-                + "[].{name} cannot exists in env {env}",
-                "condition": prefix
-                + "[].{name} invalid for {function}({value}) in env {env}",
-                "operations": (
-                    prefix + "[].{name} must {operation} {op_value} "
-                    "but it is {value} in env {env}"
-                ),
-            }
-            for value in values:
-                for validator in validators:
-                    validator.messages.update(validator_messages)
-                    validator.validate(BaseDynaconfSettings(**value))
-        else:  # not a dict
-            validator_messages = {
-                "must_exist_true": "{name}[] is required in env {env}",
-                "must_exist_false": "{name}[] cannot exists in env {env}",
-                "condition": (
-                    "{name}[] invalid for {function}({value}) in env {env}"
-                ),
-                "operations": (
-                    "{name}[] must {operation} {op_value} "
-                    "but it is {value} in env {env}"
-                ),
-            }
-            for value in values:
+        if isinstance(_type, type) and issubclass(_type, DictValue):
+            for i, value in enumerate(values):
+                for _validator in validators:
+                    for k, v in _validator.messages.items():
+                        _validator.messages[k] = v.replace(
+                            "{name}", prefix + f"[{i}]." + "{name}"
+                        )
+                    _validator.validate(BaseDynaconfSettings(**value))
+        else:
+            for i, value in enumerate(values):
                 _settings = BaseDynaconfSettings()
                 _settings.set(prefix, value)
                 _validator = BaseValidator(
                     prefix,
                     is_type_of=_type,
-                    messages=validator_messages,
                 )
+                for k, v in _validator.messages.items():
+                    _validator.messages[k] = v.replace(
+                        "{name}", "{name}" + f"[{i}]"
+                    )
                 _validator.validate(_settings)
 
         # No validation error
@@ -239,13 +246,13 @@ def validator_condition_factory(validators, prefix, _type) -> Callable:
 
 
 def raise_for_invalid_annotated(full_name, _type, _args_validators) -> None:
-    if isinstance(_type, type) and issubclass(_type, DictValue):
-        raise DynaconfSchemaError(
-            f"{get_type_name(_type)!r} type cannot be Annotated, "
-            f"set the validators on the {get_type_name(_type)!r} fields "
-            f"this error is caused by "
-            f"`{full_name}: Annotated[{get_type_name(_type)!r}, *]`"
-        )
+    # if isinstance(_type, type) and issubclass(_type, DictValue):
+    #     raise DynaconfSchemaError(
+    #         f"{get_type_name(_type)!r} type cannot be Annotated, "
+    #         f"set the validators on the {get_type_name(_type)!r} fields "
+    #         f"this error is caused by "
+    #         f"`{full_name}: Annotated[{get_type_name(_type)!r}, *]`"
+    #     )
     if not all(isinstance(arg, BaseValidator) for arg in _args_validators):
         raise DynaconfSchemaError(
             f"Invalid Annotated Args "
