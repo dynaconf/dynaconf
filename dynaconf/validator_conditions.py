@@ -11,7 +11,7 @@ from typing import Union
 
 # NOTE: Remove when dropping 3.9
 try:
-    from types import UnionType
+    from types import UnionType  # type: ignore
 except ImportError:
     UnionType = Union  # type: ignore
 # /NOTE
