@@ -113,8 +113,9 @@ class Validator:
         _repr = f"{self.__class__.__name__}("
         _elements = [
             f"{','.join(self.names)}",
-            f"required={bool(self.required)}",
         ]
+        if self.must_exist is not None:
+            _elements.append(f"required={self.must_exist}")
         if self.operations:
             _elements.append(f"operations={self.operations}")
         if self.cast is not DEFAULT_CAST:
@@ -366,7 +367,14 @@ class Validator:
                             f"'is_type_of'. Should provide a valid type. {e}"
                         )
                 else:
-                    op_succeeded = op_function(value, op_value)
+                    try:
+                        op_succeeded = op_function(value, op_value)
+                    except TypeError as e:
+                        raise ValidationError(
+                            f"Invalid Operation '{op_name}' "
+                            f"for type {type(value)!r} "
+                            f"on '{name}': {e}"
+                        )
 
                 if not op_succeeded:
                     _message = self.messages["operations"].format(

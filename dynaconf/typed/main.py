@@ -10,9 +10,13 @@ from typing import cast
 from dynaconf.base import LazySettings
 from dynaconf.base import Settings as BaseDynaconfSettings
 from dynaconf.utils.functional import Empty
+from dynaconf.utils.functional import empty
+from dynaconf.validator import Validator as BaseValidator
 
-from .utils import extract_defaults_and_validators_from_typing
-from .utils import raise_for_invalid_class_variable
+from . import guards as gu
+from . import types as ty
+from . import utils as ut
+from .compat import get_annotations
 
 if sys.version_info < (3, 10):
     dclass_args: dict[str, Any] = {}
@@ -59,7 +63,7 @@ class Dynaconf(BaseDynaconfSettings):
     dynaconf_options: Options
 
     def __new__(cls, *args, **kwargs):
-        raise_for_invalid_class_variable(cls)
+        gu.raise_for_invalid_class_variable(cls)
         options = getattr(cls, "dynaconf_options", Options())
         if not isinstance(options, Options):
             raise TypeError(
@@ -89,3 +93,139 @@ class Dynaconf(BaseDynaconfSettings):
             new_cls.validators.validate_all()
 
         return cast(cls, new_cls)
+
+
+def extract_defaults_and_validators_from_typing(
+    schema_cls,
+    path: tuple | None = None,
+    defaults: dict | None = None,
+    validators: list | None = None,
+) -> tuple[dict, list]:
+    """From schema class extract defaults and validators from annotations.
+
+    Recursively handle all `DictValue` subtypes.
+
+    key: int -> Validator(key, is_type_of=int)
+    key: int = 1 -> Validator(key, is_type_of=int) + defaults[key] = 1
+    key: Annotated[int, Validator()] -> Validator(key, is_type_of=int)
+    """
+    # These names passes down recursively
+    path = path or tuple()
+    defaults = defaults or {}
+    validators = validators or []
+
+    for name, annotation in get_annotations(schema_cls).items():
+        if name == "dynaconf_options":
+            # In case someone does dyanconf_options: Options = Options(...)
+            # That value is kept out of the schema validation
+            continue
+
+        default_value = getattr(schema_cls, name, empty)
+        full_path = path + (name,)  # E.g, ("path", "to", "name")
+        full_name = ".".join(full_path)  # E.g, path.to.name
+        _type, _type_args, _args_validators = ut.get_type_and_args(annotation)
+        gu.raise_for_unsupported_type(full_name, _type, _type_args, annotation)
+        is_notrequired = False
+
+        if _args_validators and isinstance(
+            _args_validators[0], ty._NotRequiredMarker
+        ):
+            # Annotated[NotRequired[T], ...]
+            _, *_args_validators = _args_validators
+            is_notrequired = True
+        if _args_validators and isinstance(
+            _args_validators[-1], ty._NotRequiredMarker
+        ):
+            # NotRequired[Annotated[T, ...]]
+            *_args_validators, _ = _args_validators
+            is_notrequired = True
+
+        if default_value is not empty:
+            previous_default = defaults.get(".".join(path))
+            already_defined = (
+                isinstance(previous_default, dict) and name in previous_default
+            )
+            if not already_defined:
+                defaults[full_name] = default_value
+
+        gu.raise_for_optional_without_none(
+            full_name, _type, _type_args, default_value, annotation
+        )
+
+        # field: DictValue
+        if ut.is_dict_value(annotation):
+            _validator = BaseValidator(full_name, is_type_of=annotation)
+            if default_value is empty and not is_notrequired:
+                _validator.must_exist = True
+            validators.append(_validator)
+            # Recursively call this same function until all nested exhausts.
+            defaults, validators = extract_defaults_and_validators_from_typing(
+                annotation, full_path, defaults, validators
+            )
+        # field: Annotated[T, Validator(...)]
+        elif _args_validators:
+            gu.raise_for_invalid_annotated(full_name, _type, _args_validators)
+            # add one base validator for type checking
+            _validator = BaseValidator(full_name, is_type_of=_type)
+            if default_value is empty and not is_notrequired:
+                _validator.must_exist = True
+            validators.append(_validator)
+            # Add all the extra validators added via Annotated args
+            for _validator in _args_validators:
+                _validator.names = (full_name,)
+                validators.append(_validator)
+            if ut.is_dict_value(_type):
+                # Recursively call this same function until all nested exhausts.
+                defaults, validators = (
+                    extract_defaults_and_validators_from_typing(
+                        _type, full_path, defaults, validators
+                    )
+                )
+        # field: list[T]
+        elif ut.is_enclosed_list(_type, _type_args):
+            _validator = BaseValidator(full_name, is_type_of=_type)
+            inner_type, *more_types = _type_args
+
+            # NOT SURE ABOUT THIS
+            gu.raise_for_invalid_amount_of_enclosed_types(
+                full_name, _type, inner_type, more_types
+            )
+
+            # In case of list[DictValue]
+            enclosed_defaults, enclosed_validators = (
+                extract_defaults_and_validators_from_typing(inner_type)
+            )
+            gu.raise_for_enclosed_with_defaults(
+                full_name, _type, inner_type, enclosed_defaults, annotation
+            )
+
+            _validator.condition = ut.validator_condition_factory(
+                enclosed_validators, full_name, inner_type
+            )
+
+            if default_value is empty and not is_notrequired:
+                _validator.must_exist = True  # required
+
+            validators.append(_validator)
+        # field: T
+        else:
+            # print()
+            # print("AAAAAAAA", full_name, _type, annotation)
+            # hook creation of validators for Optional and Notrequired here
+
+            _validator = BaseValidator(full_name)
+            if default_value is empty and not is_notrequired:
+                _validator.must_exist = True  # required
+
+            if is_notrequired:
+                # Extract the types from the Annotated
+                if ut.is_dict_value(annotation):
+                    _validator.is_type_of = annotation
+                else:
+                    _validator.is_type_of = _type
+            else:
+                _validator.is_type_of = annotation
+
+            validators.append(_validator)
+
+    return defaults, validators

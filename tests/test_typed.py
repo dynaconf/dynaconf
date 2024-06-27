@@ -552,8 +552,12 @@ def test_extracted_validators_from_annotated(monkeypatch):
     expected = [
         {
             "names": ("name",),
-            "operations": {"ne": "Valdemort", "is_type_of": str},
+            "operations": {"is_type_of": str},
             "required": True,
+        },
+        {
+            "names": ("name",),
+            "operations": {"ne": "Valdemort"},
         },
         {
             "names": ("age",),
@@ -567,32 +571,43 @@ def test_extracted_validators_from_annotated(monkeypatch):
         },
         {
             "names": ("colors",),
-            "operations": {"is_type_of": list, "cont": "red"},
+            "operations": {"is_type_of": list},
+            "required": True,
+        },
+        {
+            "names": ("colors",),
+            "operations": {"cont": "red"},
+        },
+        {
+            "names": ("port",),
+            "operations": {"is_type_of": int},
             "required": True,
         },
         {
             "names": ("port",),
-            "operations": {"is_type_of": int, "lt": 1000},
-            "required": True,
+            "operations": {"lt": 1000},
         },
         {
             "names": ("port",),
-            "operations": {"is_type_of": int, "gt": 10},
+            "operations": {"gt": 10},
+        },
+        {
+            "names": ("url",),
+            "operations": {"is_type_of": str},
             "required": True,
         },
         {
             "names": ("url",),
-            "operations": {
-                "is_type_of": str,
-            },
             "cast": cast_url,
-            "required": True,
         },
         {
             "names": ("auth",),
             "operations": {"is_type_of": dict},
-            "condition": auth_condition,
             "required": True,
+        },
+        {
+            "names": ("auth",),
+            "condition": auth_condition,
         },
         {
             "names": ("typed_auth",),
@@ -601,17 +616,26 @@ def test_extracted_validators_from_annotated(monkeypatch):
         },
         {
             "names": ("typed_auth.token",),
-            "operations": {"is_type_of": str, "len_min": 10},
+            "operations": {"is_type_of": str},
             "required": True,
+        },
+        {
+            "names": ("typed_auth.token",),
+            "operations": {"len_min": 10},
         },
     ]
 
     for i, validator in enumerate(settings.validators):
         for key, val in expected[i].items():
-            assert getattr(validator, key) == val
+            attr = getattr(validator, key)
+            if key == "operations":
+                for item in val.items():
+                    assert item in tuple(attr.items())
+            else:
+                assert attr == val
 
     errors = settings.validators.validate_all(raise_error=False)
-    for i, exp in enumerate(item for item in expected if item["required"]):
+    for i, exp in enumerate(item for item in expected if item.get("required")):
         assert exp["names"][0] in str(errors[i])
 
     settings = Settings(
@@ -633,6 +657,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
         "port must gt 10 but it is 5",
         "auth invalid for auth_condition({'username': 'foo'})",
         "typed_auth.token must is_type_of <class 'str'> but it is []",
+        "typed_auth.token must len_min 10",
     ]
     for i, error in enumerate(errors):
         assert expected_errors[i] in str(error)
@@ -884,6 +909,7 @@ def test_list_enclosed_type_outer_union():
 def test_list_enclosed_type_annotated():
     # Annotated with Validator
     class Settings(Dynaconf):
+        dynaconf_options = Options(_trigger_validation=False)
         colors: Annotated[list[str], Validator(cont="red")]
 
     Settings(colors=["red"])
@@ -891,12 +917,17 @@ def test_list_enclosed_type_annotated():
         ValidationError,
         match="colors must is_type_of.+list",
     ):
-        Settings(colors=1)
+        Settings(colors=1).validators.validate()
+    with pytest.raises(
+        ValidationError,
+        match="Invalid Operation 'cont' for type <class 'int'> on 'colors'",
+    ):
+        Settings(colors=1).validators.validate_all()
     with pytest.raises(
         ValidationError,
         match="colors must cont red",
     ):
-        Settings(colors=[])
+        Settings(colors=[]).validators.validate()
 
 
 def test_list_enclosed_type_annotated_with_union():
@@ -1094,14 +1125,14 @@ def test_usage_of_dict_value():
     #     team=[boss],
     # )
     # ....
-    Settings(
-        # person=jj,
-        # bruno=bruno,
-        # people=[bruno, jj, boss],
-        # team=[boss],
-        person_optional={"name": 1},  # must raise type error
-        person_notrequired={"name": 2},  # must raise type error
-    )
+    # settings = Settings(
+    #     # person=jj,
+    #     # bruno=bruno,
+    #     # people=[bruno, jj, boss],
+    #     # team=[boss],
+    #     person_optional={"name": 1},  # must raise type error
+    #     person_notrequired={"name": 2},  # must raise type error
+    # )
     # print()
     # for i, validator in enumerate(settings.validators):
     #     print(i, validator)
