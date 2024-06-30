@@ -9,6 +9,7 @@ import pytest
 from dynaconf.typed import DictValue
 from dynaconf.typed import Dynaconf
 from dynaconf.typed import DynaconfSchemaError
+from dynaconf.typed import ItemsValidator
 from dynaconf.typed import NotRequired
 from dynaconf.typed import Options
 from dynaconf.typed import ValidationError
@@ -69,18 +70,6 @@ def test_options_contains_only_valid_and_set_attributes():
     }
 
 
-def test_enclosed_type_raises_for_defaults():
-    class Plugin(DictValue):
-        name: str = "default_name"
-
-    class Settings(Dynaconf):
-        plugins: list[Plugin]
-
-    msg = "List enclosed types cannot define default values"
-    with pytest.raises(DynaconfSchemaError, match=msg):
-        Settings()
-
-
 def test_enclosed_type_raises_for_invalid_enclosed():
     class Dummy: ...
 
@@ -138,7 +127,7 @@ def test_enclosed_type_validates(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_PLUGINS", '@json [{"name": true}]')
-        msg = r"plugins\[0].name must is_type_of"
+        msg = r"plugins.0.name must is_type_of"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -166,13 +155,37 @@ def test_new_union_validates(monkeypatch):
             Settings()
 
 
-def test_union_enclosed_type_validates(monkeypatch):
+def test_union_enclosed_type_validates_type(monkeypatch):
     class Settings(Dynaconf):
         numbers: list[Union[int, float, bool]]
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_NUMBERS", '["banana"]')
-        msg = r"numbers\[0] must is_type_of"
+        msg = "numbers must is_type_of list\[typing.Union\[int, float, bool]]"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
+def test_union_enclosed_type_validates_operation(monkeypatch):
+    class Settings(Dynaconf):
+        numbers: Annotated[list[Union[int, float, bool]], Validator(len_min=3)]
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_NUMBERS", "[1]")
+        msg = "numbers must len_min 3"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
+
+
+def test_union_enclosed_type_validates_items_operations(monkeypatch):
+    class Settings(Dynaconf):
+        numbers: Annotated[
+            list[Union[int, float]], ItemsValidator(Validator(gt=3))
+        ]
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_NUMBERS", "[1]")
+        msg = r"numbers.0 must gt 3 but it is 1"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -185,6 +198,17 @@ def test_union_enclosed_type_works(monkeypatch):
         m.setenv("DYNACONF_NUMBERS", "[1, 4.2, true]")
         settings = Settings()
         assert settings.numbers == [1, 4.2, True]
+
+
+def test_union_enclosed_type_raises_validation(monkeypatch):
+    class Settings(Dynaconf):
+        numbers: list[Union[int, float, bool]]
+
+    with monkeypatch.context() as m:
+        m.setenv("DYNACONF_NUMBERS", "[1, 4.2, 'Batata']")
+        msg = r"\b(numbers.0|must|is_type_of|Union|int|float|bool|Batata)\b"
+        with pytest.raises(ValidationError, match=msg):
+            Settings()
 
 
 def test_deeply_enclosed_type_validates(monkeypatch):
@@ -201,8 +225,8 @@ def test_deeply_enclosed_type_validates(monkeypatch):
         database: Database
 
     with monkeypatch.context() as m:
-        m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", '@json [{"name": null}]')
-        msg = r"database.extra.plugins\[0].name must is_type_of"
+        m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", '@json [{"name": 42}]')
+        msg = r"database.extra.plugins.0.name must is_type_of"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -219,7 +243,7 @@ def test_deeply_enclosed_type_validates_with_bare_dict(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", "[1]")
-        msg = r"database.extra.plugins\[0] must is_type_of.+dict"
+        msg = r"database.extra.plugins must is_type_of list\[dict]"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -236,7 +260,7 @@ def test_deeply_enclosed_type_validates_with_parameterized_dict(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", '@json [{"name": 4.3}]')
-        msg = r"database.extra.plugins\[0] must is_type_of.+dict"
+        msg = r"database.extra.plugins must is_type_of list\[dict\[str, int]]"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -253,7 +277,7 @@ def test_deeply_enclosed_type_validates_with_bare_type(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_DATABASE__EXTRA__PLUGINS", "@json [12]")
-        msg = r"database.extra.plugins\[0] must is_type_of"
+        msg = r"database.extra.plugins must is_type_of list\[str]"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -312,7 +336,7 @@ def test_sub_types_works(monkeypatch):
             envvar_prefix="MYTYPEDAPP",
         )
         version: Union[int, float, bool]
-        database: Database
+        database: Database = Database()
         batata: Annotated[int, Validator(gt=999)]
 
     with monkeypatch.context() as m:
@@ -367,19 +391,19 @@ def test_deeply_dictvalue_fail_validation(monkeypatch):
     class Extra(DictValue):
         log: bool = True
         socket_type: Annotated[int, Validator(is_in=[1, 2, 3])] = 1
-        auth: Auth
+        auth: Auth = Auth()
 
     class Database(DictValue):
         host: str = "server.com"
         port: Annotated[int, Validator(gt=999)]
         engine: str = "postgres"
-        extra: Extra
+        extra: Extra = Extra()
 
     class Settings(Dynaconf):
         dynaconf_options = Options(
             envvar_prefix="MYTYPEDAPP",
         )
-        database: Database
+        database: Database = Database()
         batata: Annotated[int, Validator(gt=999)]
 
     with monkeypatch.context() as m:
@@ -477,7 +501,7 @@ def test_dictvalue_subtype():
         age: int
 
     class Settings(Dynaconf):
-        person: Person
+        person: Person = Person()
 
     err_msg = "person.age is required"
     with pytest.raises(ValidationError, match=err_msg):
@@ -534,6 +558,8 @@ def test_extracted_validators_from_annotated(monkeypatch):
     class Auth(DictValue):
         token: Annotated[str, Validator(len_min=10)]
 
+    not_banana = Validator(ne="banana")
+
     class Settings(Dynaconf):
         dynaconf_options = Options(
             _trigger_validation=False,
@@ -546,6 +572,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
         url: Annotated[str, Validator(cast=cast_url)]
         auth: Annotated[dict, Validator(condition=auth_condition)]
         typed_auth: Auth
+        fruits: Annotated[list[str], ItemsValidator(not_banana)]
 
     settings = Settings()
 
@@ -567,7 +594,6 @@ def test_extracted_validators_from_annotated(monkeypatch):
         {
             "names": ("team",),
             "operations": {"is_type_of": str},
-            "required": False,
         },
         {
             "names": ("colors",),
@@ -615,13 +641,13 @@ def test_extracted_validators_from_annotated(monkeypatch):
             "required": True,
         },
         {
-            "names": ("typed_auth.token",),
-            "operations": {"is_type_of": str},
+            "names": ("fruits",),
+            "operations": {"is_type_of": list[str]},
             "required": True,
         },
         {
-            "names": ("typed_auth.token",),
-            "operations": {"len_min": 10},
+            "names": ("fruits",),
+            "items_validators": (not_banana,),
         },
     ]
 
@@ -647,6 +673,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
         url="SERVER.com",
         auth={"username": "foo"},
         typed_auth={"token": []},
+        fruits=["apple", "banana"],
     )
     errors = settings.validators.validate_all(raise_error=False)
     expected_errors = [
@@ -657,6 +684,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
         "port must gt 10 but it is 5",
         "auth invalid for auth_condition({'username': 'foo'})",
         "typed_auth.token must is_type_of <class 'str'> but it is []",
+        "fruits.1 must ne banana",
         "typed_auth.token must len_min 10",
     ]
     for i, error in enumerate(errors):
@@ -690,7 +718,7 @@ def test_annotated_accepts_only_supported_types():
 
     msg = "Invalid type 'A'"
     with pytest.raises(DynaconfSchemaError, match=msg):
-        Settings()
+        Settings(name=A())
 
     class Settings(Dynaconf):
         name: Annotated[complex, Validator()]
@@ -1089,69 +1117,120 @@ def test_list_enclosed_type_with_optional():
 
     with pytest.raises(
         ValidationError,
-        match="colors\[2] must is_type_of.+Optional\[str]",
+        match="colors must is_type_of.+Optional\[str]",
     ):
         Settings(colors=["red", "#123", 3])
 
 
 def test_usage_of_dict_value():
-    class Person(DictValue):
+    class Service(DictValue):
         name: str
+
+    class Kind(DictValue):
+        id: int
+        services: list[Service]
+
+    class Profile(DictValue):
+        username: str
+        group: int = 1
+        team: int = 42
+        kind: Kind
+
+    class Person(DictValue):
+        name: str = "batata"
+        active: bool
+        bla: NotRequired[float]
+        numbers: list[int]
+        age: Annotated[NotRequired[int], Validator(gt=90)]
+        profile: Profile = Profile()  # w/ defaults
+        # profile2: Profile  # No defaults
+        profile2: NotRequired[Profile]
+        code: Union[str, int, float]
+
+    bruno = Person(
+        name="Bruno",
+        code="XPTO",
+        numbers=[1, 2, 3],
+        active=False,
+        profile=Profile(
+            username="br", kind=Kind(id=9, services=[Service(name="A")])
+        ),
+    )
+    jj = Person(
+        name="jj",
+        code=1234,
+        numbers=[1, 7, 9],
+        active=True,
+        profile=Profile(
+            username="j", kind=Kind(id=3, services=[Service(name="B")])
+        ),
+    )
+    boss = Person(
+        name="Mike",
+        code=45.5,
+        numbers=[5, 6, 7],
+        active=False,
+        profile=Profile(
+            username="m", kind=Kind(id=56, services=[Service(name="C")])
+        ),
+    )
 
     class Settings(Dynaconf):
         dynaconf_options = Options(_trigger_validation=False)
-        person: Person
-        bruno: Annotated[
-            Person, Validator(cont="name"), Validator(eq="batata")
-        ]
-        # dont wanna call is_type_of twice, for each validator
-        person_optional: Optional[Person] = None
-        person_notrequired: NotRequired[Person]
-        #
-        # people: list[Person]
+        # not covered
+        # thing: Union[int, str]
+        # person_union: Union[Person, str, None]
         # people_optional: Optional[list[Person]] = None
         # people_notrequired: NotRequired[list[Person]]
         # team: Annotated[list[Person], Validator(len_min=1)]
 
-    # jj = Person(name="jj")
-    # bruno = Person(name="Bruno")
-    # boss = Person(name="Mike")
+        # covered
+        number: int = 99
+        person: Person = {"profile": {"username": "aaa", "group": 2}}
+        contact: Annotated[Person, Validator(cont="name")]
+        person_optional: Optional[Person] = None
+        person_default: Person = Person(
+            name="Person With Defaults",
+            numbers=[3, 4],
+            code=5678,
+            active=False,
+            profile=Profile(
+                username="aa",
+                kind=Kind(
+                    id=9,
+                    services=[
+                        Service(name="A"),
+                        Service(name="B"),
+                    ],
+                ),
+            ),
+        )
+        person_notrequired: NotRequired[Person]
+        people: list[Person]
+        people_default: list[Person] = [jj, boss]
 
-    # Good
-    # Settings(
-    #     person=jj,
-    #     bruno=bruno,
-    #     people=[],
-    #     team=[boss],
-    # )
-    # ....
-    # settings = Settings(
-    #     # person=jj,
-    #     # bruno=bruno,
-    #     # people=[bruno, jj, boss],
-    #     # team=[boss],
-    #     person_optional={"name": 1},  # must raise type error
-    #     person_notrequired={"name": 2},  # must raise type error
-    # )
-    # print()
-    # for i, validator in enumerate(settings.validators):
-    #     print(i, validator)
-    """
-    When DictValue is OPtional, NotRequired
-    A validator must be factored for the base key
-    this condition= function must
-    check that, if the key is set, must match the type spec
+    settings = Settings(
+        _debug_mode=True,
+        person=bruno,
+        other_number=14,
+        number="@get other_number",
+        contact=jj,
+        people=[bruno, jj, boss],
+        # team=[boss],
+        # person_optional={"name": 1},  # must raise type error
+        # person_notrequired={"name": 2},  # must raise type error
+        # person_notrequired={"name": "aaaa"},  # must raise type error
+    )
 
-    """
+    settings.validators.validate()
+
+    assert settings.number == 14
+    assert settings.person.name == "Bruno"
+    assert settings.person.profile.kind.services[0].name == "A"
+    assert settings.people[1].name == "jj"
 
 
-# Handle deeply dictvalue Subtype (multiple levels)
-# Handle enclosed SubType `field: list[Struct]`
 # Handle deeply dictvalue Subtype (multiple levels) with enclosed types
-# Forbid enclosed subtype with defaults
-# Forbid enclosed subtypes that are not on allowed list `field: list[A]`
-# Forbid union subtypes that are not on allowed list `field: list[Union[A]]`
-# Handle dict type `field: dict[T, T]` + Annotated and enclosed
 # Handle tuple type `field: tuple[T, T, T]` + Annotated and enclosed
 # Handle Any type in all cases
 # Handle Totality and Allow Extra

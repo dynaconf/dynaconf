@@ -18,11 +18,11 @@ Annotated = Annotated
 T = TypeVar("T")
 
 
-class _NotRequiredMarker:
+class NotRequiredMarker:
     __slots__ = ()
 
 
-NotRequired = Annotated[T, _NotRequiredMarker()]
+NotRequired = Annotated[T, NotRequiredMarker()]
 """
 This type will mark keys as NotRequired which means it can be completely
 absent from the settings object.
@@ -42,8 +42,11 @@ When uses as `Annotated[NotRequired[T], Validator()]`
 
 
 class DictValue:
-    """A dictvalue Subtype is actually a Dict, so instantiating it just returns
-    the dict."""
+    """DictValue represents a Typed Dict in the settings.
+
+    When instantiating just returns a dict containing the default values only,
+    this type does not performs any validation.
+    """
 
     __slots__ = ()
     _dynaconf_dictvalue = True  # a marker for validator_conditions.is_type_of
@@ -114,6 +117,7 @@ class Validator:
         messages: dict[str, str] | None | Empty = empty,
         cast: Callable[[Any], Any] | None | Empty = empty,
         description: str | None | Empty = empty,
+        items_validators: list[BaseValidator] | None = None,
         # To be implemented, a interface like this to generate a When Validator
         # when: When | None = empty,
     ):
@@ -124,15 +128,24 @@ class Validator:
         )
 
 
-# Aliases for supported types
-# That can be used with Annotated, Union and T[T]
-# These are defined here mainly to help with auto complete
+class ItemsValidator:
+    __slots__ = ()
+
+    def __new__(cls, *args):
+        return BaseValidator(items_validators=args)
+
+
 """
-from dynaconf.typed import types as ts
-class Settings(Dynaconf):
-    field: ts.Str
-    # actually the same as
-    field: str
+Aliases for supported types
+That can be used with Annotated, Union and T[T]
+These are defined here mainly to help with auto complete
+
+    from dynaconf.typed import types as ts
+    class Settings(Dynaconf):
+        field: ts.Str
+        # actually the same as
+        field: str
+
 """
 Str = str
 Int = int

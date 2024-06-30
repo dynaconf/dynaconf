@@ -9,8 +9,8 @@ from typing import Union
 from dynaconf.base import Settings as BaseDynaconfSettings
 from dynaconf.validator import Validator as BaseValidator
 
+from . import types as ty
 from .compat import UnionType
-from .types import DictValue
 
 
 def get_all_enclosed_types(inner_type):
@@ -29,20 +29,31 @@ def get_type_name(_type):
 
 
 def get_type_and_args(annotation) -> tuple:
-    """From annotation name: T[T, args] extract type, args, validators."""
-    _annotated_validators = None
+    """From annotation name: T[T, args] extract type, args."""
     _type_args: tuple = tuple()
     # _type from `field: T` or `field: list[T]`
     _type = get_origin(annotation) or annotation
     if _type is Annotated:
-        _type, *_annotated_validators = get_args(annotation)
+        _type, *_type_args = get_args(annotation)
     else:
         _type_args = get_args(annotation)
-    return _type, _type_args, _annotated_validators
+    return _type, _type_args
+
+
+def is_notrequired(annotation):
+    return is_annotated(annotation) and any(
+        isinstance(item, ty.NotRequiredMarker) for item in get_args(annotation)
+    )
+
+
+def is_annotated(annotation):
+    return get_origin(annotation) is Annotated
 
 
 def is_dict_value(annotation):
-    return isinstance(annotation, type) and issubclass(annotation, DictValue)
+    return isinstance(annotation, type) and issubclass(
+        annotation, ty.DictValue
+    )
 
 
 def is_enclosed_list(_type, _type_args):
@@ -56,7 +67,7 @@ def is_union(annotation) -> bool:
 
 def is_optional(annotation) -> bool:
     """Tell if an annotation is strictly typing.Optional or Union[**, None]"""
-    return is_union(annotation) and type(None) in get_args(annotation)
+    return is_union(annotation) and get_args(annotation)[1] == type(None)
 
 
 def is_type(value) -> bool:
@@ -64,14 +75,15 @@ def is_type(value) -> bool:
     return isinstance(_type, type) or is_union(value) or is_optional(value)
 
 
-def validator_condition_factory(validators, prefix, _type) -> Callable:
+def condition_factory_for_list_items(validators, prefix, _type) -> Callable:
     """takes _type: T, generates a function to validate a value against it"""
+    # IDEA:
+    # Evaluate the possibility to replace this with a new attribute on a
+    # validator that will validate against each internal item of a list
+    # Validator("X", is_type_of=list, items=[Validator(is_type_of=int)])
 
-    # _type_origin = get_origin(_type) or _type
-    # print(_type, _type_origin)
-    # _type_origin = get_origin(_type)
     def validator_condition(values):
-        if isinstance(_type, type) and issubclass(_type, DictValue):
+        if isinstance(_type, type) and issubclass(_type, ty.DictValue):
             for i, value in enumerate(values):
                 for _validator in validators:
                     for k, v in _validator.messages.items():
@@ -97,3 +109,54 @@ def validator_condition_factory(validators, prefix, _type) -> Callable:
         return True
 
     return validator_condition
+
+
+def dict_merge(d1: dict, d2: dict) -> dict:
+    """Takes two dictionaries d1 and d2 and merges their data
+
+    Example:
+
+        >>> d1 = {'name': 'John', 'profile': {'group': 1, 'team': 42}}
+        >>> d2 = {'profile': {'username': 'jj', 'group': 2}}
+        >>> d3 = dict_merge(d1, d2)
+        >>> d3 == {'name': 'John', 'profile': {'group': 2, 'team': 42, 'username': 'jj'}}
+    """
+    if not isinstance(d2, dict):
+        return d1
+
+    merged = d1.copy()
+
+    for key, value in d2.items():
+        if (
+            key in merged
+            and isinstance(merged[key], dict)
+            and isinstance(value, dict)
+        ):
+            merged[key] = dict_merge(merged[key], value)
+        else:
+            merged[key] = value
+
+    return merged
+
+
+def dump_debug_info(init_options, validators):
+    """Debug utility to be removed later"""
+    dump = __builtins__["print"]  # cheat the linter
+
+    dump("\n----- INIT DEFAULTS -----")
+    __import__("pprint").pprint(init_options)
+    dump("\n----- VALIDATORS -----")
+    for i, validator in enumerate(validators, 1):
+        dump("#" * 80)
+        dump(validator.names[0].upper())
+        dump(i, validator)
+
+        def print_all_validators(v, prefix):
+            if v.items_validators:
+                dump(" " * len(prefix) + v.names[0].upper())
+                dump(" " * len(prefix) + ("-" * 80))
+            for n, item_v in enumerate(v.items_validators, 1):
+                dump(" " * len(prefix), f"{prefix}.{n}", item_v)
+                print_all_validators(item_v, f"{prefix}.{n}")
+
+        print_all_validators(validator, prefix=str(i))
