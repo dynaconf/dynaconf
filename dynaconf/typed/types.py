@@ -5,15 +5,13 @@ from typing import Annotated
 from typing import Any
 from typing import Callable
 from typing import TypeVar
+from typing import Union
 
 from dynaconf.utils.functional import Empty
 from dynaconf.utils.functional import empty
 from dynaconf.validator import Validator as BaseValidator
 
 from .compat import get_annotations
-
-Annotated = Annotated
-
 
 T = TypeVar("T")
 
@@ -129,6 +127,8 @@ class Validator:
 
 
 class ItemsValidator:
+    """Interface to instantiate a new Validator with items_validators"""
+
     __slots__ = ()
 
     def __new__(cls, *args):
@@ -155,6 +155,7 @@ NoneType = type(None)  # python 3.9 doesn't have types.NoneType
 List = list
 Tuple = tuple
 Dict = dict
+Numeric = Union[int, float]
 
 SUPPORTED_TYPES = (
     Str,

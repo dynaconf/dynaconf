@@ -40,22 +40,6 @@ def raise_for_invalid_amount_of_enclosed_types(
         )
 
 
-def raise_for_enclosed_with_defaults(
-    full_name, _type, inner_type, enclosed_defaults, annotation
-):
-    """A DictValue enclosed on list[DictValue] cannot define defaults.
-    because it is indexed and we have no way to return default values from
-    dynaconf.get.
-    """
-    if enclosed_defaults:
-        raise ex.DynaconfSchemaError(
-            "List enclosed types cannot define default values. "
-            f"{inner_type.__name__!r} defines {enclosed_defaults}. "
-            f"this error is caused by "
-            f"`{full_name}: {_type.__name__}[{inner_type.__name__}]`"
-        )
-
-
 def raise_for_unsupported_type(full_name, _type, _type_args, annotation):
     # Remove any Validator()|NotRequiredMarker from extracted _type_args
     _type_args = [
@@ -89,6 +73,7 @@ def raise_for_unsupported_type(full_name, _type, _type_args, annotation):
 def raise_for_optional_without_none(
     full_name, _type, _type_args, default_value, annotation
 ):
+    # NOTE: Not sure if we allow Optional[T] to also have T as default..
     if default_value is not None and ut.is_optional(annotation):
         raise ex.DynaconfSchemaError(
             f"Optional Union "
