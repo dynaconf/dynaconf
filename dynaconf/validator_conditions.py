@@ -9,6 +9,13 @@ from typing import get_args
 from typing import get_origin
 from typing import Union
 
+# NOTE: Remove when dropping 3.9
+try:
+    from types import UnionType  # type: ignore
+except ImportError:
+    UnionType = Union  # type: ignore
+# /NOTE
+
 
 def eq(value, other):
     """Equal"""
@@ -46,11 +53,39 @@ def identity(value, other):
 
 
 def is_type_of(value, other):
-    """Type check"""
-    # Support Union[T, Y, Z] for python 3.9
-    # on python 3.10 isinstance can handle Union
-    if get_origin(other) is Union:
-        other = get_args(other)
+    """Type check that performs lookup on parameterized generic types.
+    For singular primary types this check is very fast ans just
+    calls isinstance.
+    For SpecialForm annotations like Union and Parametrized types like T[T]
+    or T[T, T] then this is a bit more costly.
+    NOTE: Find ways to improve the execution time on this, like
+    caching same value -> same type
+    """
+
+    origin = get_origin(other)
+    args = get_args(other)
+
+    if not args and isinstance(other, tuple):
+        # Got (T[T],) from recursive call
+        return any(is_type_of(value, item) for item in other)
+
+    if args:
+        if origin in [Union, UnionType]:
+            return any(is_type_of(value, arg) for arg in args)
+        elif origin in (list, tuple):
+            return isinstance(value, (list, tuple)) and all(
+                is_type_of(item, args) for item in value
+            )
+        elif origin is dict:
+            k_type, v_type = args
+            return isinstance(value, dict) and all(
+                is_type_of(k, k_type) and is_type_of(v, v_type)
+                for k, v in value.items()
+            )
+
+    if getattr(other, "_dynaconf_dictvalue", None):
+        other = dict
+
     return isinstance(value, other)
 
 

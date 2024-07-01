@@ -2,10 +2,13 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Sequence
+from contextlib import suppress
+from copy import deepcopy
 from itertools import chain
 from types import MappingProxyType
 from typing import Any
 from typing import Callable
+from typing import get_args
 from typing import TYPE_CHECKING
 
 from dynaconf import validator_conditions
@@ -109,14 +112,6 @@ class Validator:
         }
     )
 
-    def __repr__(self):
-        return (
-            f"{self.__class__.__name__}("
-            f"{','.join(self.names)}, "
-            f"required={bool(self.must_exist)}, "
-            f"operations={self.operations})"
-        )
-
     def __init__(
         self,
         *names: str,
@@ -130,6 +125,7 @@ class Validator:
         default: Any | Callable[[Any, Validator], Any] | None = empty,
         description: str | None = None,
         apply_default_on_none: bool | None = False,
+        items_validators: list[Validator] | None = None,
         **operations: Any,
     ) -> None:
         # Copy immutable MappingProxyType as a mutable dict
@@ -153,14 +149,69 @@ class Validator:
         self.description = description
         self.envs: Sequence[str] | None = None
         self.apply_default_on_none = apply_default_on_none
-
-        # See #585
-        self.is_type_of = operations.get("is_type_of")
+        self.items_validators = items_validators or []
 
         if isinstance(env, str):
             self.envs = [env]
         elif isinstance(env, (list, tuple)):
             self.envs = env
+
+    def __repr__(self):
+        _repr = f"{self.__class__.__name__}("
+        _elements = []
+        if len(self.names) > 1:
+            _elements.append(f"{list(self.names)}")
+        elif self.names:
+            _elements.append(f"'{self.names[0]}'")
+        if self.is_type_of:
+            type_name = str(self.is_type_of)
+            if not get_args(self.is_type_of):
+                with suppress(Exception):
+                    type_name = (
+                        str(self.is_type_of)
+                        .replace("<class '", "")
+                        .replace("'>", "")
+                        .strip("<>'")
+                        .split(".")[-1]
+                    )
+            _elements.append(f"type={type_name}")
+        if self.must_exist is not None:
+            _elements.append(f"required={self.must_exist}")
+        operations = {
+            k: v for k, v in self.operations.items() if k != "is_type_of"
+        }
+        if operations:
+            _elements.append(f"operations={self.operations}")
+        if self.cast is not DEFAULT_CAST:
+            _elements.append(f"cast={self.cast}")
+        if self.condition:
+            _elements.append(f"condition={self.condition}")
+        if self.envs:
+            _elements.append(f"env={self.envs}")
+        if self.when:
+            _elements.append(f"when={self.when}")
+        if self.items_validators:
+            _elements.append(f"items_validators={self.items_validators}")
+        _repr += ", ".join(_elements)
+        _repr += ")"
+        return _repr
+
+    @property
+    def required(self) -> bool:
+        return bool(self.must_exist)
+
+    @required.setter
+    def required(self, value: bool):
+        self.must_exist = value
+
+    @property
+    def is_type_of(self):
+        # See #585
+        return self.operations.get("is_type_of")
+
+    @is_type_of.setter
+    def is_type_of(self, value):
+        self.operations["is_type_of"] = value
 
     def __or__(self, other: Validator) -> CombinedValidator:
         return OrValidator(self, other, description=self.description)
@@ -186,10 +237,11 @@ class Validator:
 
     def validate(
         self,
-        settings: Settings,
+        settings: Settings | dict,
         only: str | Sequence | None = None,
         exclude: str | Sequence | None = None,
         only_current_env: bool = False,
+        variable_path: tuple | None = None,
     ) -> None:
         """Raise ValidationError if invalid"""
         # If only or exclude are not set, this value always passes startswith
@@ -201,14 +253,15 @@ class Validator:
         if exclude and not isinstance(exclude[0], str):
             raise ValueError("'exclude' must be a string or list of strings.")
 
-        if self.envs is None:
-            self.envs = [settings.current_env]
+        current_env = getattr(settings, "current_env", "main")
+        envs = self.envs or [current_env]
 
+        # NOTE: Smells bad, must not mutate a validator
         if self.when is not None:
             try:
                 # inherit env if not defined
                 if self.when.envs is None:
-                    self.when.envs = self.envs
+                    self.when.envs = envs
 
                 self.when.validate(settings, only=only, exclude=exclude)
             except ValidationError:
@@ -216,38 +269,59 @@ class Validator:
                 return
 
         if only_current_env:
-            if settings.current_env.upper() in map(
-                lambda s: s.upper(), self.envs
-            ):
-                self._validate_items(
-                    settings, settings.current_env, only=only, exclude=exclude
+            if current_env.upper() in [s.upper() for s in envs]:
+                self._validate_names(
+                    settings,
+                    current_env,
+                    only=only,
+                    exclude=exclude,
+                    variable_path=variable_path,
                 )
             return
 
         # If only using current_env, skip using_env decoration (reload)
-        if (
-            len(self.envs) == 1
-            and self.envs[0].upper() == settings.current_env.upper()
-        ):
-            self._validate_items(
-                settings, settings.current_env, only=only, exclude=exclude
+        if len(envs) == 1 and envs[0].upper() == current_env.upper():
+            self._validate_names(
+                settings,
+                current_env,
+                only=only,
+                exclude=exclude,
+                variable_path=variable_path,
             )
             return
 
-        for env in self.envs:
-            env_settings: Settings = settings.from_env(env)
-            self._validate_items(env_settings, only=only, exclude=exclude)
-            # merge source metadata into original settings for history inspect
-            settings._loaded_by_loaders.update(env_settings._loaded_by_loaders)
+        for env in envs:
+            if from_env := getattr(settings, "from_env", None):
+                env_settings: Settings | dict = from_env(env)
+            else:
+                env_settings = settings
 
-    def _validate_items(
+            self._validate_names(
+                env_settings,
+                only=only,
+                exclude=exclude,
+                variable_path=variable_path,
+            )
+            # merge source metadata into original settings for history inspect
+            # use getattr to cheat mypy
+            if (d1 := getattr(settings, "_loaded_by_loaders", None)) and (
+                d2 := getattr(env_settings, "_loaded_by_loaders")
+            ):
+                d1.update(d2)
+
+    def _validate_names(
         self,
-        settings: Settings,
+        settings: Settings | dict,
         env: str | None = None,
         only: str | Sequence | None = None,
         exclude: str | Sequence | None = None,
+        variable_path: tuple | None = None,
     ) -> None:
-        env = env or settings.current_env
+        if env is None and (
+            current_env := getattr(settings, "current_env", None)
+        ):
+            env = current_env
+
         for name in self.names:
             # Skip if only is set and name isn't in the only list
             if only and not any(name.startswith(sub) for sub in only):
@@ -278,12 +352,20 @@ class Validator:
                 # avoid TOML from parsing "+-1" started strings as integer
                 default_value = f"'{default_value}'"
 
-            value = settings.setdefault(
-                name,
-                default_value,
-                apply_default_on_none=self.apply_default_on_none,
-                env=env,
-            )
+            # NOTE: must stop mutating settings here
+            if getattr(settings, "_store", None):
+                try:
+                    # settings is a Dynaconf instance
+                    value = getattr(settings, "setdefault")(  #  cheat mypy
+                        name,
+                        default_value,
+                        apply_default_on_none=self.apply_default_on_none,
+                        env=env,
+                    )
+                except AttributeError:  # dotted get/set on a non-dict type
+                    raise ValidationError(f"Mismatched type for {name}")
+            else:
+                value = settings.get(name, default_value)
 
             # is name required but not exists?
             if self.must_exist is True and value is empty:
@@ -305,22 +387,21 @@ class Validator:
             # by settings.setdefault above
             # however we need to cast it
             # so we call .set again
+            # NOTE: we must stop mutating settings here
             value = self.cast(settings.get(name))
-            settings.set(name, value, validate=False)
+            if _set := getattr(settings, "set", None):
+                # Settings is Dynaconf
+                _set(name, value, validate=False)
+            else:
+                # settings is a dict
+                settings[name] = value
 
-            # is there a callable condition?
-            if self.condition is not None:
-                if not self.condition(value):
-                    _message = self.messages["condition"].format(
-                        name=name,
-                        function=self.condition.__name__,
-                        value=value,
-                        env=env,
-                    )
-                    raise ValidationError(_message, details=[(self, _message)])
-
-            # operations
-            for op_name, op_value in self.operations.items():
+            # reorder passed operations so type check is made first
+            sorted_operations = sorted(
+                self.operations.items(),
+                key=lambda item: item[0] != "is_type_of",
+            )
+            for op_name, op_value in sorted_operations:
                 op_function = getattr(validator_conditions, op_name)
                 op_succeeded = False
 
@@ -335,13 +416,20 @@ class Validator:
                     # invalid type (not in __builtins__) may raise TypeError
                     try:
                         op_succeeded = op_function(value, op_value)
-                    except TypeError:
+                    except TypeError as e:
                         raise ValidationError(
                             f"Invalid type '{op_value}' for condition "
-                            "'is_type_of'. Should provide a valid type"
+                            f"'is_type_of'. Should provide a valid type. {e}"
                         )
                 else:
-                    op_succeeded = op_function(value, op_value)
+                    try:
+                        op_succeeded = op_function(value, op_value)
+                    except TypeError as e:
+                        raise ValidationError(
+                            f"Invalid Operation '{op_name}' "
+                            f"for type {type(value)!r} "
+                            f"on '{name}': {e}"
+                        )
 
                 if not op_succeeded:
                     _message = self.messages["operations"].format(
@@ -352,6 +440,67 @@ class Validator:
                         env=env,
                     )
                     raise ValidationError(_message, details=[(self, _message)])
+
+            # is there a callable condition?
+            if self.condition is not None:
+                if not self.condition(value):
+                    _message = self.messages["condition"].format(
+                        name=name,
+                        function=self.condition.__name__,
+                        value=value,
+                        env=env,
+                    )
+                    raise ValidationError(_message, details=[(self, _message)])
+
+            # Type is list or dict and has internal validators
+            self._validate_internal_items(value, name, variable_path)
+
+    def _validate_internal_items(
+        self,
+        value: Any,
+        name: str,
+        variable_path: tuple | None = None,
+    ):
+        """Validate internal items of a data structure."""
+        variable_path = variable_path or tuple()
+        variable_path += (name,)
+        if isinstance(value, list):
+            for i, item in enumerate(value):
+                _item_path = tuple(variable_path)
+                if isinstance(item, dict):
+                    _item_path += (f"{i}", "{name}")
+                    _validator_location = ".".join(_item_path)
+                    data = item
+                else:
+                    _item_path += (f"{i}",)
+                    _validator_location = ".".join(_item_path)
+                    data = {"<item>": item}
+
+                for validator in self.items_validators:
+                    # avoid mutating a reusable validator
+                    if not validator.names:
+                        _validator = deepcopy(validator)
+                        _validator.names = ("<item>",)
+                    else:
+                        _validator = validator
+
+                    for k, v in _validator.default_messages.items():
+                        _validator.messages[k] = v.replace(
+                            "{name}", _validator_location
+                        )
+
+                    _validator.validate(data, variable_path=_item_path)
+
+        elif isinstance(value, dict):
+            _validator_location = ".".join(variable_path)
+            for validator in self.items_validators:
+                for k, v in validator.default_messages.items():
+                    validator.messages[k] = v.replace(
+                        "{name}", _validator_location + ".{name}"
+                    )
+                validator.validate(
+                    value, only=validator.names, variable_path=variable_path
+                )
 
 
 class CombinedValidator(Validator):
@@ -378,6 +527,7 @@ class CombinedValidator(Validator):
         only: str | Sequence | None = None,
         exclude: str | Sequence | None = None,
         only_current_env: bool = False,
+        variable_path: tuple | None = None,
     ) -> None:  # pragma: no cover
         raise NotImplementedError(
             "subclasses OrValidator or AndValidator implements this method"
@@ -393,6 +543,7 @@ class OrValidator(CombinedValidator):
         only: str | Sequence | None = None,
         exclude: str | Sequence | None = None,
         only_current_env: bool = False,
+        variable_path: tuple | None = None,
     ) -> None:
         """Ensure at least one of the validators are valid"""
         errors = []
@@ -403,6 +554,7 @@ class OrValidator(CombinedValidator):
                     only=only,
                     exclude=exclude,
                     only_current_env=only_current_env,
+                    variable_path=variable_path,
                 )
             except ValidationError as e:
                 errors.append(e)
@@ -428,6 +580,7 @@ class AndValidator(CombinedValidator):
         only: str | Sequence | None = None,
         exclude: str | Sequence | None = None,
         only_current_env: bool = False,
+        variable_path: tuple | None = None,
     ) -> None:
         """Ensure both the validators are valid"""
         errors = []
@@ -438,6 +591,7 @@ class AndValidator(CombinedValidator):
                     only=only,
                     exclude=exclude,
                     only_current_env=only_current_env,
+                    variable_path=variable_path,
                 )
             except ValidationError as e:
                 errors.append(e)
@@ -514,7 +668,8 @@ class ValidatorList(list):
         only: str | Sequence | None = None,
         exclude: str | Sequence | None = None,
         only_current_env: bool = False,
-    ) -> None:
+        raise_error=True,
+    ) -> list[ValidationError]:
         errors = []
         details = []
         for validator in self:
@@ -530,7 +685,8 @@ class ValidatorList(list):
                 details.append((validator, str(e)))
                 continue
 
-        if errors:
+        if errors and raise_error:
             raise ValidationError(
                 "; ".join(str(e) for e in errors), details=details
             )
+        return errors
