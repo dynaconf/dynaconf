@@ -239,7 +239,12 @@ class Settings:
         self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
-        self._store = DynaBox(box_settings=self)
+
+        if kwargs.get("DYNABOXIFY", True):
+            self._store = DynaBox(box_settings=self)
+        else:
+            self._store = {}  # Disabled dot access
+
         self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []
@@ -526,7 +531,7 @@ class Settings:
                 default = self.get_environ(key, cast=True)
 
         # default values should behave exactly Dynaconf parsed values
-        if default is not None:
+        if default is not None and self._store.get("DYNABOXIFY", True):
             if isinstance(default, list):
                 default = BoxList(default)
             elif isinstance(default, dict):
@@ -907,7 +912,10 @@ class Settings:
         # Add a "." before "[" to help splitting
         split_keys = dotted_key.replace("[", ".[").split(".")
         existing_data = self.get(split_keys[0], {})
-        new_data = tree = DynaBox(box_settings=self)
+        if self.get("DYNABOXIFY", True):
+            new_data = tree = DynaBox(box_settings=self)
+        else:
+            new_data = tree = {}
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
 
         for n, k in enumerate(split_keys):
@@ -934,9 +942,13 @@ class Settings:
                 raise (ValueError("Invalid field:", k))
 
         if existing_data:
-            old_data = DynaBox(
-                {split_keys[0]: existing_data}, box_settings=self
-            )
+            if self.get("DYNABOXIFY", True):
+                old_data = DynaBox(
+                    {split_keys[0]: existing_data}, box_settings=self
+                )
+            else:
+                old_data = {split_keys[0]: existing_data}
+
             new_data = object_merge(
                 old=old_data,
                 new=new_data,
@@ -1060,7 +1072,11 @@ class Settings:
                     else "merge",  # fix 905
                 )
 
-        if isinstance(parsed, dict) and not isinstance(parsed, DynaBox):
+        if (
+            self.get("DYNABOXIFY", True)
+            and isinstance(parsed, dict)
+            and not isinstance(parsed, DynaBox)
+        ):
             parsed = DynaBox(parsed, box_settings=self)
 
         # Set the parsed value
