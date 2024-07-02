@@ -18,6 +18,29 @@ FlaskDynaconf(app)
 
 > You can optionally use `init_app` as well.
 
+
+## Compatibility mode
+
+Dynaconf transform nested data structures to a new DynaBox instance, this is an
+object that allows dot notation access such as `app.config.key.value.other`.
+However this feature is imcompatible with some Flask extensions, for example:
+`Flask-Alembic`.
+
+So in case you see a `BoxKeyError` when running your app with you can run it on
+compatibility mode.
+
+```python
+FlaskDynaconf(app, compatibility_mode=True)
+```
+
+The downside is that now you cannot access nested elements using dot notation
+but the usual access interface via dict subscription will work normally:
+`app.config["KEY"]["value"]["other"]`
+
+!!! info
+    On Dynaconf 4.0 compatibility_mode will default to True when running
+    on Flask.
+
 ## Use `FLASK_` environment variables
 
 Then the `app.config` will work as a `dynaconf.settings` instance and `FLASK_` will be the global prefix for exporting environment variables.
