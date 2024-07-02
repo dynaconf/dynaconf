@@ -39,6 +39,33 @@ except ImportError:  # pragma: no cover
     django_installed = False
 
 
+# Compat with Django 5.x
+def _add_script_prefix(value):
+    """
+    Add SCRIPT_NAME prefix to relative paths.
+
+    Useful when the app is being served at a subpath and manually prefixing
+    subpath to STATIC_URL and MEDIA_URL in settings is inconvenient.
+    """
+    # Don't apply prefix to absolute paths and URLs.
+    if value.startswith(("http://", "https://", "/")):
+        return value
+    from django.urls import get_script_prefix
+
+    return f"{get_script_prefix()}{value}"
+
+
+# Special case some settings which require further modification.
+# This is done here for performance reasons so the modified value is cached.
+def fix_absolute_urls(_settings):
+    data = {}
+    if media_url := _settings.get("MEDIA_URL"):
+        data["MEDIA_URL"] = _add_script_prefix(media_url)
+    if static_url := _settings.get("STATIC_URL"):
+        data["STATIC_URL"] = _add_script_prefix(static_url)
+    return data
+
+
 def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     converters_before_loading = set(
         dynaconf.utils.parse_conf.converters.keys()
@@ -101,10 +128,13 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
             and (key != "SETTINGS_MODULE")
             and key not in lazy_settings.store
         ):
-            dj[key] = getattr(django_settings, key, None)
+            val = getattr(django_settings, key, None)
+            dj[key] = val
         dj["ORIGINAL_SETTINGS_MODULE"] = django_settings.SETTINGS_MODULE
 
     lazy_settings.update(dj)
+
+    lazy_settings._post_hooks.append(fix_absolute_urls)
 
     # Allow dynaconf_hooks to be in the same folder as the django.settings
     dynaconf.loaders.execute_hooks(
