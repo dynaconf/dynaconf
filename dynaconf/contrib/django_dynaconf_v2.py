@@ -40,6 +40,9 @@ except ImportError:  # pragma: no cover
 
 
 def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
+    converters_before_loading = set(
+        dynaconf.utils.parse_conf.converters.keys()
+    )
     if not django_installed:
         raise RuntimeError(
             "To use this extension django must be installed "
@@ -137,7 +140,13 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         ):
             stack_item.frame.f_globals["settings"] = lazy_settings
 
-    lazy_settings.reload()
+    if converters_before_loading != set(
+        dynaconf.utils.parse_conf.converters.keys()
+    ):
+        # When new converter keys are added after settings initialization
+        # it is required to reload the settings so values a re-evaluated
+        # with the new converters.
+        lazy_settings.reload()
     return lazy_settings
 
 
