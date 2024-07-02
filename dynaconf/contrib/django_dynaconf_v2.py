@@ -137,6 +137,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         ):
             stack_item.frame.f_globals["settings"] = lazy_settings
 
+    lazy_settings.reload()
     return lazy_settings
 
 
