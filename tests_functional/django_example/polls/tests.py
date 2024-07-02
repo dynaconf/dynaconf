@@ -13,6 +13,7 @@ class SettingsTest(TestCase):
         # hooks
         self.assertEqual(settings.BEST_BOSS, "Michael Scott")
 
+        self.assertEqual(settings.LOGIN_URL, "/admin/login/")
         self.assertEqual(settings.ISSUE, 596)
         self.assertEqual(settings.SERVER, "prodserver.com")
         # self.assertEqual(
