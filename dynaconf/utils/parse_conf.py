@@ -412,7 +412,7 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
     else:
         value = parse_with_toml(data) if tomlfy else data
 
-    if isinstance(value, dict):
+    if isinstance(value, dict) and box_settings.get("DYNABOXIFY", True):
         value = DynaBox(value, box_settings=box_settings)
 
     return value
@@ -441,21 +441,23 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
 
     if isinstance(data, DynaBox):
         # recursively parse inner dict items
-        _parsed = DynaBox({}, box_settings=box_settings)
+        # It is important to keep the same object id because
+        # of mutability
         for k, v in data._safe_items():
-            _parsed[k] = parse_conf_data(
+            data[k] = parse_conf_data(
                 v, tomlfy=tomlfy, box_settings=box_settings
             )
-        return _parsed
+        return data
 
     if isinstance(data, dict):
         # recursively parse inner dict items
-        _parsed = {}
+        # It is important to keep the same object id because
+        # of mutability
         for k, v in data.items():
-            _parsed[k] = parse_conf_data(
+            data[k] = parse_conf_data(
                 v, tomlfy=tomlfy, box_settings=box_settings
             )
-        return _parsed
+        return data
 
     # return parsed string value
     return _parse_conf_data(data, tomlfy=tomlfy, box_settings=box_settings)
