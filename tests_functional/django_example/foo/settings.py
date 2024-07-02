@@ -12,7 +12,7 @@ import sys
 # Or use the dynaconf helper `settings.path_for('filename')`
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-STATIC_URL = "/etc/foo"
+STATIC_URL = "static_will_be_loaded_from_yaml/"
 
 
 # REAL CASE FOR PULP TESTING

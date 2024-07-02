@@ -73,6 +73,10 @@ class SettingsTest(TestCase):
         # Starting with Django 1.11 you can use
         # --debug-mode to set the DEBUG setting to True prior to running tests.
 
+    def test_static_url(self):
+        # transformed from static/ to /static/
+        self.assertEqual(settings.STATIC_URL, "/static/")
+
 
 assert settings.TEST_VALUE == "a"
 

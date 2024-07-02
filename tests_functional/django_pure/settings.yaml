@@ -7,7 +7,7 @@ default:
   # Django Required starting settings
   SECRET_KEY: 1234
   STATIC_ROOT: .
-  STATIC_URL: /static/
+  STATIC_URL: static/
   ALLOWED_HOSTS:
     - '*'
   INSTALLED_APPS:
