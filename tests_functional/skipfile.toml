@@ -21,4 +21,5 @@ nt = [
     "missing_pwd",
     "876_deleted_cwd",
     "982_wildcard",
+    "1037_django_explicit_mode",
 ]
