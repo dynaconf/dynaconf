@@ -1,0 +1,20 @@
+title = "Default Title"
+api_prefix = "https://my-great-api"
+middlewares= ["new.plugin", "admin"]
+static_url = "https://static.site.com/"
+
+[database]
+host = "postgres.com"
+
+[flags]
+ui_enabled = true
+power_mode = true
+
+[[plugins]]
+name = "admin"
+
+[[plugins]]
+name = "toolbar"
+version = ">=9"
+
+

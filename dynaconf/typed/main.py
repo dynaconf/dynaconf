@@ -46,6 +46,7 @@ class Options:
     root_path: str | Path | type = Empty
     settings_files: list[str] | type = Empty
     settings_file: str | type = Empty
+    load_dotenv: bool | type = Empty
 
     _trigger_validation: bool = True
 
