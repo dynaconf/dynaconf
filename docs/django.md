@@ -331,6 +331,11 @@ DATABASES = settings.get('DATABASES', {
 settings.populate_obj(sys.modules[__name__], ignore=locals())
 ```
 
+!!! info
+    populate_obj accepts a `merge` and `merge_unique` booleans to control
+    how merge is performed.
+    (added in 3.3.0)
+
 You can still change env with `export DJANGO_ENV=production` and also can export variables like `export DJANGO_DEBUG=true`
 
 !!! note

@@ -1429,19 +1429,37 @@ class Settings:
             value = self.get_fresh(key)
             return value is True or value in true_values
 
-    def populate_obj(self, obj, keys=None, ignore=None):
+    def populate_obj(
+        self, obj, keys=None, ignore=None, merge=False, merge_unique=False
+    ):
         """Given the `obj` populate it using self.store items.
 
         :param obj: An object to be populated, a class instance.
         :param keys: A list of keys to be included.
         :param ignore: A list of keys to be excluded.
         """
+        merge = merge or self.get("MERGE_ENABLED_FOR_DYNACONF")
         keys = keys or self.keys()
         for key in keys:
             key = upperfy(key)
             if ignore and key in ignore:
                 continue
             value = self.get(key, empty)
+
+            if isinstance(value, (list, dict)):
+                if isinstance(value, dict):
+                    if "dynaconf_merge" in value:
+                        # the key will be popped out inside object_merge
+                        merge = True
+                if isinstance(value, list):
+                    if "dynaconf_merge" in value:
+                        value.remove("dynaconf_merge")
+                        merge = True
+                    if "dynaconf_merge_unique" in value:
+                        merge = merge_unique = True
+                if merge and (existing := getattr(obj, key, None)):
+                    value = object_merge(existing, value, merge_unique)
+
             if value is not empty:
                 setattr(obj, key, value)
 
