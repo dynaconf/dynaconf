@@ -130,3 +130,17 @@ class TestMerge(TestCase):
             settings.LOGGING.loggers[""].level,
             "DEBUG",
         )
+
+
+@override_settings(CONTENT_APP_TTL=30)
+class TestIssue689(TestCase):
+    def test_settings_override_689(self):
+        # before
+        self.assertEqual(settings.CONTENT_APP_TTL, 30)
+
+        # after
+        with self.settings(CONTENT_APP_TTL=1):
+            self.assertEqual(settings.CONTENT_APP_TTL, 1)
+
+        # same as before
+        self.assertEqual(settings.CONTENT_APP_TTL, 30)
