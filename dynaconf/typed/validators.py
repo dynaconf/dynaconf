@@ -211,7 +211,7 @@ class Not(BaseValidator):
 # Generic Validation Aliases
 
 
-class GenericParametrizedOperation:
+class GenericOperation:
     """Base to create aliased Validator with generic parametrized operation.
 
     This class exists mainly to allow creation of semantic named validators.
@@ -239,133 +239,133 @@ class GenericParametrizedOperation:
         return Validator(**kwargs)
 
 
-class Eq(GenericParametrizedOperation):
+class Eq(GenericOperation):
     """Eq(x) -> Validator(eq=x)"""
 
     op_name = "eq"
 
 
-class Ne(GenericParametrizedOperation):
+class Ne(GenericOperation):
     """Ne(x) -> Validator(ne=x)"""
 
     op_name = "ne"
 
 
-class Gt(GenericParametrizedOperation):
+class Gt(GenericOperation):
     """Gt(x) -> Validator(gt=x)"""
 
     op_name = "gt"
 
 
-class Lt(GenericParametrizedOperation):
+class Lt(GenericOperation):
     """Lt(x) -> Validator(lt=x)"""
 
     op_name = "lt"
 
 
-class Gte(GenericParametrizedOperation):
+class Gte(GenericOperation):
     """Gte(x) -> Validator(gte=x)"""
 
     op_name = "gte"
 
 
-class Lte(GenericParametrizedOperation):
+class Lte(GenericOperation):
     """Lte(x) -> Validator(lte=x)"""
 
     op_name = "lte"
 
 
-class Id(GenericParametrizedOperation):
+class Id(GenericOperation):
     """Id(x) -> Validator(identity=x)"""
 
     op_name = "identity"
 
 
-class In(GenericParametrizedOperation):
+class In(GenericOperation):
     """In(x) -> Validator(is_in=x)"""
 
     op_name = "is_in"
 
 
-class NotIn(GenericParametrizedOperation):
+class NotIn(GenericOperation):
     """NotIn(x) -> Validator(is_not_in=x)"""
 
     op_name = "is_not_in"
 
 
-class Contains(GenericParametrizedOperation):
+class Contains(GenericOperation):
     """Contains(x) -> Validator(contains=x)"""
 
     op_name = "contains"
 
 
-class NotContains(GenericParametrizedOperation):
+class NotContains(GenericOperation):
     """NotContains(x) -> Validator(not_contains=x)"""
 
     op_name = "not_contains"
 
 
-class LenEq(GenericParametrizedOperation):
+class LenEq(GenericOperation):
     """LenEq(x) -> Validator(len_eq=x)"""
 
     op_name = "len_eq"
 
 
-class LenNe(GenericParametrizedOperation):
+class LenNe(GenericOperation):
     """LenNe(x) -> Validator(len_ne=x)"""
 
     op_name = "len_ne"
 
 
-class LenMin(GenericParametrizedOperation):
+class LenMin(GenericOperation):
     """LenMin(x) -> Validator(len_min=x)"""
 
     op_name = "len_min"
 
 
-class LenMax(GenericParametrizedOperation):
+class LenMax(GenericOperation):
     """LenMax(x) -> Validator(len_max=x)"""
 
     op_name = "len_max"
 
 
-class Starts(GenericParametrizedOperation):
+class Starts(GenericOperation):
     """Starts(x) -> Validator(startswith=x)"""
 
     op_name = "startswith"
 
 
-class Ends(GenericParametrizedOperation):
+class Ends(GenericOperation):
     """Ends(x) -> Validator(endswith=x)"""
 
     op_name = "endswith"
 
 
-class NotStarts(GenericParametrizedOperation):
+class NotStarts(GenericOperation):
     """NotStarts(x) -> Validator(not_startswith=x)"""
 
     op_name = "not_startswith"
 
 
-class NotEnds(GenericParametrizedOperation):
+class NotEnds(GenericOperation):
     """NotEnds(x) -> Validator(not_endswith=x)"""
 
     op_name = "not_endswith"
 
 
-class Regex(GenericParametrizedOperation):
+class Regex(GenericOperation):
     """Regex(x) -> Validator(regex=x)"""
 
     op_name = "regex"
 
 
-class NotRegex(GenericParametrizedOperation):
+class NotRegex(GenericOperation):
     """NotRegex(x) -> Validator(not_regex=x)"""
 
     op_name = "not_regex"
 
 
-class Condition(GenericParametrizedOperation):
+class Condition(GenericOperation):
     """Condition(x) -> Validator(condition=x)"""
 
     op_name = "condition"
