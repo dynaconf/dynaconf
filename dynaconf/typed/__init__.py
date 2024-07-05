@@ -6,9 +6,9 @@ from .main import Dynaconf
 from .main import Options
 from .types import Annotated
 from .types import DictValue
-from .types import ItemsValidator
 from .types import NotRequired
-from .types import Validator
+from .validators import ItemsValidator
+from .validators import Validator
 
 __all__ = [
     "Annotated",

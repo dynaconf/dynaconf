@@ -4,7 +4,9 @@ middlewares= ["new.plugin", "admin"]
 static_url = "https://static.site.com/"
 
 [database]
+dynaconf_merge = true
 host = "postgres.com"
+conn = "@format postgresql://user:password@{this.database.host}:{this.database.port}/database"
 
 [flags]
 ui_enabled = true

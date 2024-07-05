@@ -5,6 +5,7 @@ Implement basic assertions to be used in assertion action
 
 from __future__ import annotations
 
+import re
 from typing import get_args
 from typing import get_origin
 from typing import Union
@@ -17,42 +18,42 @@ except ImportError:
 # /NOTE
 
 
-def eq(value, other):
-    """Equal"""
+def eq(value, other) -> bool:
+    """Equals"""
     return value == other
 
 
-def ne(value, other):
-    """Not equal"""
+def ne(value, other) -> bool:
+    """Not equals"""
     return value != other
 
 
-def gt(value, other):
+def gt(value, other) -> bool:
     """Greater than"""
     return value > other
 
 
-def lt(value, other):
+def lt(value, other) -> bool:
     """Lower than"""
     return value < other
 
 
-def gte(value, other):
+def gte(value, other) -> bool:
     """Greater than or equal"""
     return value >= other
 
 
-def lte(value, other):
+def lte(value, other) -> bool:
     """Lower than or equal"""
     return value <= other
 
 
-def identity(value, other):
+def identity(value, other) -> bool:
     """Identity check using ID"""
     return value is other
 
 
-def is_type_of(value, other):
+def is_type_of(value, other) -> bool:
     """Type check that performs lookup on parameterized generic types.
     For singular primary types this check is very fast ans just
     calls isinstance.
@@ -89,46 +90,78 @@ def is_type_of(value, other):
     return isinstance(value, other)
 
 
-def is_in(value, other):
+def is_in(value, other) -> bool:
     """Existence"""
     return value in other
 
 
-def is_not_in(value, other):
+def is_not_in(value, other) -> bool:
     """Inexistence"""
     return value not in other
 
 
-def cont(value, other):
+def contains(value, other) -> bool:
     """Contains"""
     return other in value
 
 
-def len_eq(value, other):
+cont = contains  # backwards compatibility
+
+
+def not_contains(value, other) -> bool:
+    """Not Contains"""
+    return other not in value
+
+
+def len_eq(value, other) -> bool:
     """Length Equal"""
     return len(value) == other
 
 
-def len_ne(value, other):
+def len_ne(value, other) -> bool:
     """Length Not equal"""
     return len(value) != other
 
 
-def len_min(value, other):
+def len_min(value, other) -> bool:
     """Minimum length"""
     return len(value) >= other
 
 
-def len_max(value, other):
+def len_max(value, other) -> bool:
     """Maximum length"""
     return len(value) <= other
 
 
-def startswith(value, term):
+def startswith(value, term) -> bool:
     """returns value.startswith(term) result"""
     return value.startswith(term)
 
 
-def endswith(value, term):
+def endswith(value, term) -> bool:
     """returns value.endswith(term) result"""
     return value.endswith(term)
+
+
+def not_startswith(value, term) -> bool:
+    """returns not value.startswith(term) result"""
+    return not value.startswith(term)
+
+
+def not_endswith(value, term) -> bool:
+    """returns not value.endswith(term) result"""
+    return not value.endswith(term)
+
+
+def regex(value, pattern: str | re.Pattern) -> bool:
+    """Matches a regexp against the value"""
+    if isinstance(pattern, str):
+        pattern = re.compile(pattern)
+    return bool(pattern.match(value))
+
+
+def not_regex(value, pattern: str | re.Pattern) -> bool:
+    """Not Matches a regexp against the value"""
+    if isinstance(pattern, str):
+        pattern = re.compile(pattern)
+    return not pattern.match(value)
