@@ -98,7 +98,7 @@ def test_annotated_with_dictvalue():
 
     class Settings(Dynaconf):
         # This is not allowed, should add validators on the dictvalue type itself
-        plug: Annotated[Plugin, Validator(cont="name")]
+        plug: Annotated[Plugin, Validator(contains="name")]
 
     msg = "plug.name must is_type_of.+Union\[str, int]"
     with pytest.raises(ValidationError, match=msg):
@@ -567,7 +567,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
         name: Annotated[str, Validator(ne="Valdemort")]
         age: int
         team: str = "Default"
-        colors: Annotated[list, Validator(cont="red")]
+        colors: Annotated[list, Validator(contains="red")]
         port: Annotated[int, Validator(lt=1000), Validator(gt=10)]
         url: Annotated[str, Validator(cast=cast_url)]
         auth: Annotated[dict, Validator(condition=auth_condition)]
@@ -602,7 +602,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
         },
         {
             "names": ("colors",),
-            "operations": {"cont": "red"},
+            "operations": {"contains": "red"},
         },
         {
             "names": ("port",),
@@ -647,7 +647,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
         },
         {
             "names": ("fruits",),
-            "items_validators": (not_banana,),
+            "items_validators": [not_banana],
         },
     ]
 
@@ -938,7 +938,7 @@ def test_list_enclosed_type_annotated():
     # Annotated with Validator
     class Settings(Dynaconf):
         dynaconf_options = Options(_trigger_validation=False)
-        colors: Annotated[list[str], Validator(cont="red")]
+        colors: Annotated[list[str], Validator(contains="red")]
 
     Settings(colors=["red"])
     with pytest.raises(
@@ -948,12 +948,12 @@ def test_list_enclosed_type_annotated():
         Settings(colors=1).validators.validate()
     with pytest.raises(
         ValidationError,
-        match="Invalid Operation 'cont' for type <class 'int'> on 'colors'",
+        match="Invalid Operation 'contains' for type <class 'int'> on 'colors'",
     ):
         Settings(colors=1).validators.validate_all()
     with pytest.raises(
         ValidationError,
-        match="colors must cont red",
+        match="colors must contains red",
     ):
         Settings(colors=[]).validators.validate()
 
@@ -961,7 +961,7 @@ def test_list_enclosed_type_annotated():
 def test_list_enclosed_type_annotated_with_union():
     # Annotated and Unionized
     class Settings(Dynaconf):
-        colors: Annotated[Union[list[str], str], Validator(cont="blue")]
+        colors: Annotated[Union[list[str], str], Validator(contains="blue")]
 
     Settings(colors=["blue"])
     with pytest.raises(
@@ -971,7 +971,7 @@ def test_list_enclosed_type_annotated_with_union():
         Settings(colors=1)
     with pytest.raises(
         ValidationError,
-        match="colors must cont blue",
+        match="colors must contains blue",
     ):
         Settings(colors=[])
 
@@ -980,7 +980,7 @@ def test_list_enclosed_type_annotated_with_union():
 def test_list_enclosed_type_annotated_with_new_union():
     # Annotated and Unionized
     class Settings(Dynaconf):
-        colors: Annotated[list[str] | str, Validator(cont="blue")]
+        colors: Annotated[list[str] | str, Validator(contains="blue")]
 
     Settings(colors=["blue"])
     with pytest.raises(
@@ -990,7 +990,7 @@ def test_list_enclosed_type_annotated_with_new_union():
         Settings(colors=1)
     with pytest.raises(
         ValidationError,
-        match="colors must cont blue",
+        match="colors must contains blue",
     ):
         Settings(colors=[])
 
@@ -999,7 +999,7 @@ def test_list_enclosed_type_annotated_with_union_nested():
     # Annotated and Unionized with Nesting Union (python will flatten it)
     class Settings(Dynaconf):
         colors: Annotated[
-            Union[list[Union[str, int]], str], Validator(cont="green")
+            Union[list[Union[str, int]], str], Validator(contains="green")
         ]
 
     Settings(colors=["green"])
@@ -1010,7 +1010,7 @@ def test_list_enclosed_type_annotated_with_union_nested():
         Settings(colors=1)
     with pytest.raises(
         ValidationError,
-        match="colors must cont green",
+        match="colors must contains green",
     ):
         Settings(colors=[])
 
@@ -1020,7 +1020,7 @@ def test_list_enclosed_type_with_more_complex_unions():
     class Settings(Dynaconf):
         colors: Annotated[
             Union[list[Union[str, int]], str, Union[str, int]],
-            Validator(cont="purple"),
+            Validator(contains="purple"),
         ]
 
     Settings(colors=["purple"])
@@ -1031,7 +1031,7 @@ def test_list_enclosed_type_with_more_complex_unions():
         Settings(colors=4.2)
     with pytest.raises(
         ValidationError,
-        match="colors must cont purple",
+        match="colors must contains purple",
     ):
         Settings(colors=[])
 
@@ -1043,7 +1043,7 @@ def test_list_enclosed_type_crazy_type():
     ]
 
     class Settings(Dynaconf):
-        colors: Annotated[crazy_type, Validator(cont="pink")]
+        colors: Annotated[crazy_type, Validator(contains="pink")]
 
     Settings(colors=["pink"])
     with pytest.raises(
@@ -1053,7 +1053,7 @@ def test_list_enclosed_type_crazy_type():
         Settings(colors=4.2)
     with pytest.raises(
         ValidationError,
-        match="colors must cont pink",
+        match="colors must contains pink",
     ):
         Settings(colors=[])
 
@@ -1061,7 +1061,7 @@ def test_list_enclosed_type_crazy_type():
 def test_list_enclosed_type_annotated_notrequired():
     # NotRequired
     class Settings(Dynaconf):
-        colors: Annotated[NotRequired[list[str]], Validator(cont="yellow")]
+        colors: Annotated[NotRequired[list[str]], Validator(contains="yellow")]
 
     Settings()
     with pytest.raises(
@@ -1071,7 +1071,7 @@ def test_list_enclosed_type_annotated_notrequired():
         Settings(colors=[1, 2, 3])
     with pytest.raises(
         ValidationError,
-        match="colors must cont yellow",
+        match="colors must contains yellow",
     ):
         Settings(colors=["red"])
 
@@ -1096,7 +1096,7 @@ def test_list_enclosed_type_with_default():
     ]
 
     class Settings(Dynaconf):
-        colors: Annotated[crazy_type, Validator(cont="cyan")] = ["cyan", 1]
+        colors: Annotated[crazy_type, Validator(contains="cyan")] = ["cyan", 1]
 
     assert Settings().colors == ["cyan", 1]
 
@@ -1187,7 +1187,7 @@ def test_usage_of_dict_value():
         # covered
         number: int = 99
         person: Person = {"profile": {"username": "aaa", "group": 2}}
-        contact: Annotated[Person, Validator(cont="name")]
+        contact: Annotated[Person, Validator(contains="name")]
         person_optional: Optional[Person] = None
         person_default: Person = Person(
             name="Person With Defaults",

@@ -1,4 +1,3 @@
-import re
 from typing import Optional
 
 from dynaconf.typed import Annotated
@@ -8,11 +7,16 @@ from dynaconf.typed import ItemsValidator
 from dynaconf.typed import NotRequired
 from dynaconf.typed import Options
 from dynaconf.typed import Validator
+from dynaconf.typed.validators import IsConnectionString
+from dynaconf.typed.validators import IsUrl
+from dynaconf.typed.validators import Not
+from dynaconf.typed.validators import Regex
 
 
 class Database(DictValue):
     host: str
     port: int = 5432
+    conn: NotRequired[Annotated[str, IsConnectionString()]]
 
 
 class Plugin(DictValue):
@@ -20,7 +24,7 @@ class Plugin(DictValue):
     version: str = "latest"
 
 
-url_pattern = re.compile(
+url_pattern = (
     r"((http|https)://)"  # Match the protocol (http or https) required
     r"(www\.)?"  # Match 'www.' optionally
     r"[\w.-]+"  # Match the domain name
@@ -32,11 +36,12 @@ url_pattern = re.compile(
 class Settings(Dynaconf):
     title: Optional[str] = None
     api_prefix: Annotated[str, Validator(startswith="https://")]
-    middlewares: Annotated[
-        list[str], ItemsValidator(Validator(ne="deprecated.plugin"))
-    ]
-    static_url: Annotated[str, Validator(condition=url_pattern.match)]
-    database: Database
+    middlewares: Annotated[list[str], ItemsValidator(ne="deprecated.plugin")]
+    static_url: Annotated[str, IsUrl()]
+    # not_a_url: Annotated[str, Not(IsUrl())] = "https://foo.bar"  # fails validation
+    not_a_url: Annotated[str, Not(IsUrl())] = "batatinha 123"  # passes!
+    version: Annotated[str, Regex(r"^(\d+)\.(\d+)\.(\d+)$")] = "3.1.9"
+    database: Database = Database()
     flags: NotRequired[dict[str, bool]]
     plugins: list[Plugin] = []
     token: str
@@ -48,4 +53,4 @@ class Settings(Dynaconf):
     )
 
 
-settings = Settings()
+settings = Settings(_debug_mode=True)
