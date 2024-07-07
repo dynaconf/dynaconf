@@ -38,14 +38,24 @@ def lt(value, other) -> bool:
     return value < other
 
 
-def gte(value, other) -> bool:
+def ge(value, other) -> bool:
     """Greater than or equal"""
     return value >= other
 
 
-def lte(value, other) -> bool:
+def gte(value, other) -> bool:
+    """backwards compatibility"""
+    return ge(value, other)
+
+
+def le(value, other) -> bool:
     """Lower than or equal"""
     return value <= other
+
+
+def lte(value, other) -> bool:
+    """backwards compatibility"""
+    return le(value, other)
 
 
 def identity(value, other) -> bool:
@@ -105,7 +115,9 @@ def contains(value, other) -> bool:
     return other in value
 
 
-cont = contains  # backwards compatibility
+def cont(value, other) -> bool:
+    """backwards compatibility"""
+    return contains(value, other)
 
 
 def not_contains(value, other) -> bool:

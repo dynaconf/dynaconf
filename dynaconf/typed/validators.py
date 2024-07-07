@@ -20,8 +20,8 @@ class Validator:
         ne: value != other
         gt: value > other
         lt: value < other
-        gte: value >= other
-        lte: value <= other
+        ge: value >= other
+        le: value <= other
         is_type_of: isinstance(value, type)
         is_in:  value in sequence
         is_not_in: value not in sequence
@@ -51,8 +51,8 @@ class Validator:
         ne: Any = empty,
         gt: Any = empty,
         lt: Any = empty,
-        gte: Any = empty,
-        lte: Any = empty,
+        ge: Any = empty,
+        le: Any = empty,
         identity: Any = empty,
         is_in: Any = empty,
         is_not_in: Any = empty,
@@ -90,12 +90,12 @@ class ItemsValidator:
 
     Validates all integers in a list are >= 10::
 
-        field: Annotated[list[int], ItemsValidator(gte=10)]
+        field: Annotated[list[int], ItemsValidator(ge=10, le=100)]
 
     The same as above but reusing validators::
 
-        min_value = Validator(gte=10)
-        max_value = Validator(lte=100)
+        min_value = Validator(ge=10)
+        max_value = Validator(le=100)
         field: Annotated[list[int], ItemsValidator(min_value, max_value)]
 
     Validates that values of the `port` key is not equal 5432::
@@ -130,8 +130,8 @@ class ItemsValidator:
         ne: Any = empty,
         gt: Any = empty,
         lt: Any = empty,
-        gte: Any = empty,
-        lte: Any = empty,
+        ge: Any = empty,
+        le: Any = empty,
         identity: Any = empty,
         is_in: Any = empty,
         is_not_in: Any = empty,
@@ -211,15 +211,15 @@ class Not(BaseValidator):
 # Generic Validation Aliases
 
 
-class GenericOperation:
+class GenericValidator:
     """Base to create aliased Validator with generic parametrized operation.
 
     This class exists mainly to allow creation of semantic named validators.
 
     Usage::
 
-      class NoWayItIs(GenericOperation):
-          op_name = "eq"
+      class NoWayItIs(GenericValidator):
+          operations = ["eq"]
 
       field: Annotated[T, NoWatItIs("pineapple")]
 
@@ -232,218 +232,203 @@ class GenericOperation:
       NoWayItIsPineApple = Validator(ne="pineapple")
       field: Annotated[T, NoWayItIsPineApple]
 
+    This class also allows definition of operatiosn with multiple parameters::
+
+      class Interval(GenericOperation)
+          operations = ["gt", "lt"]
+
+     field: Annotated[int, Interval(5, 10)]  # 6, 7, 8, 9
+
+    This  also allows definition of Validator with partial arguments::
+
+        class GoodPassword(GenericValidator):
+            operations = ["condition", "len_min", "len_max"]
+
+            @staticmethod
+            def contains_special_chars(val):
+                return (
+                    any(c in val for c in "@#$&!%")
+                    and any(c.isupper() for c in val)
+                    and any(c.isdigit() for c in val)
+                )
+
+            args = [contains_special_chars]
+
+        field: Annotated[str, GoodPassword(10, 20)]
+
     """
 
-    def __new__(cls, op_value):
-        kwargs = {cls.op_name: op_value}
-        return Validator(**kwargs)
+    operations: list[str]
+    args: list[Any] = []
+
+    def __new__(cls, *params):
+        params = cls.args + list(params)
+        if len(cls.operations) != len(params):
+            raise TypeError(
+                f"{cls.__name__} takes "
+                f"{len(cls.operations)} positional arguments"
+            )
+        return Validator(**dict(zip(cls.operations, params)))
 
 
-class Eq(GenericOperation):
+class Eq(GenericValidator):
     """Eq(x) -> Validator(eq=x)"""
 
-    op_name = "eq"
+    operations = ["eq"]
 
 
-class Ne(GenericOperation):
+class Ne(GenericValidator):
     """Ne(x) -> Validator(ne=x)"""
 
-    op_name = "ne"
+    operations = ["ne"]
 
 
-class Gt(GenericOperation):
+class Gt(GenericValidator):
     """Gt(x) -> Validator(gt=x)"""
 
-    op_name = "gt"
+    operations = ["gt"]
 
 
-class Lt(GenericOperation):
+class Lt(GenericValidator):
     """Lt(x) -> Validator(lt=x)"""
 
-    op_name = "lt"
+    operations = ["lt"]
 
 
-class Gte(GenericOperation):
-    """Gte(x) -> Validator(gte=x)"""
+class Ge(GenericValidator):
+    """Ge(x) -> Validator(gte=x)"""
 
-    op_name = "gte"
-
-
-class Lte(GenericOperation):
-    """Lte(x) -> Validator(lte=x)"""
-
-    op_name = "lte"
+    operations = ["ge"]
 
 
-class Id(GenericOperation):
+class Le(GenericValidator):
+    """Le(x) -> Validator(lte=x)"""
+
+    operations = ["le"]
+
+
+class Id(GenericValidator):
     """Id(x) -> Validator(identity=x)"""
 
-    op_name = "identity"
+    operations = ["identity"]
 
 
-class In(GenericOperation):
+class In(GenericValidator):
     """In(x) -> Validator(is_in=x)"""
 
-    op_name = "is_in"
+    operations = ["is_in"]
 
 
-class NotIn(GenericOperation):
+class NotIn(GenericValidator):
     """NotIn(x) -> Validator(is_not_in=x)"""
 
-    op_name = "is_not_in"
+    operations = ["is_not_in"]
 
 
-class Contains(GenericOperation):
+class Contains(GenericValidator):
     """Contains(x) -> Validator(contains=x)"""
 
-    op_name = "contains"
+    operations = ["contains"]
 
 
-class NotContains(GenericOperation):
+class NotContains(GenericValidator):
     """NotContains(x) -> Validator(not_contains=x)"""
 
-    op_name = "not_contains"
+    operations = ["not_contains"]
 
 
-class LenEq(GenericOperation):
+class LenEq(GenericValidator):
     """LenEq(x) -> Validator(len_eq=x)"""
 
-    op_name = "len_eq"
+    operations = ["len_eq"]
 
 
-class LenNe(GenericOperation):
+class LenNe(GenericValidator):
     """LenNe(x) -> Validator(len_ne=x)"""
 
-    op_name = "len_ne"
+    operations = ["len_ne"]
 
 
-class LenMin(GenericOperation):
+class LenMin(GenericValidator):
     """LenMin(x) -> Validator(len_min=x)"""
 
-    op_name = "len_min"
+    operations = ["len_min"]
 
 
-class LenMax(GenericOperation):
+class LenMax(GenericValidator):
     """LenMax(x) -> Validator(len_max=x)"""
 
-    op_name = "len_max"
+    operations = ["len_max"]
 
 
-class Starts(GenericOperation):
+class Starts(GenericValidator):
     """Starts(x) -> Validator(startswith=x)"""
 
-    op_name = "startswith"
+    operations = ["startswith"]
 
 
-class Ends(GenericOperation):
+class Ends(GenericValidator):
     """Ends(x) -> Validator(endswith=x)"""
 
-    op_name = "endswith"
+    operations = ["endswith"]
 
 
-class NotStarts(GenericOperation):
+class NotStarts(GenericValidator):
     """NotStarts(x) -> Validator(not_startswith=x)"""
 
-    op_name = "not_startswith"
+    operations = ["not_startswith"]
 
 
-class NotEnds(GenericOperation):
+class NotEnds(GenericValidator):
     """NotEnds(x) -> Validator(not_endswith=x)"""
 
-    op_name = "not_endswith"
+    operations = ["not_endswith"]
 
 
-class Regex(GenericOperation):
+class Regex(GenericValidator):
     """Regex(x) -> Validator(regex=x)"""
 
-    op_name = "regex"
+    operations = ["regex"]
 
 
-class NotRegex(GenericOperation):
+class NotRegex(GenericValidator):
     """NotRegex(x) -> Validator(not_regex=x)"""
 
-    op_name = "not_regex"
+    operations = ["not_regex"]
 
 
-class Condition(GenericOperation):
+class Condition(GenericValidator):
     """Condition(x) -> Validator(condition=x)"""
 
-    op_name = "condition"
+    operations = ["condition"]
 
 
 # Custom Validation Aliases
 # The aliases defined here are mostly examples
 # users can create their own aliases for domain specific validation.
 
+is_url = Regex(
+    r"((http|https)://)"  # Match the protocol (http or https) required
+    r"(www\.)?"  # Match 'www.' optionally
+    r"[\w.-]+"  # Match the domain name
+    r"\.[a-z]{2,}"  # Match the top-level domain
+    r"(/[^\s]*)?"  # Match the path (everything after the domain name)
+)
 
-class CustomOperation:
-    """Base to create custom non-parametrized operations.
+is_connection_string = Regex(
+    r"^(?P<scheme>postgresql|mysql|sqlite):\/\/"
+    r"(?:(?P<user>[^:]+):"
+    r"(?P<password>[^@]+)@)?"
+    r"(?P<host>[^:\/]+)?"
+    r"(?::(?P<port>\d+))?"
+    r"\/(?P<path>[^\s]+)$"
+)
 
-    This base class is useful when the operation and parameters are constant.
+is_semver = Regex(
+    r"^(\d+)\.(\d+)\.(\d+)"
+    r"(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?"
+    r"(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
+)
 
-    Usage::
-
-        class IsAFruitILike(CustomOperation):
-            op_name = "is_in"
-            op_value = ["banana", "apple", "lemon", "orange"]
-
-            fruit: Annotated[str, IsAFruitILike()]  # callable
-
-    Which is equivalent to::
-
-       IsAFruitILike = Validator(is_in=["banana", "apple", "lemon", "orange"])
-       fruit: Annotated[str, IsAFruitILike]  # not callable
-
-    However simply assigning the validator to a variable doesnt allow for
-    inheritance and doesn't create a callable object, being a callable object
-    is useful to keep the possibility to accept arguments if needed without
-    breaking compatibility.
-    """
-
-    def __new__(cls):
-        kwargs = {cls.op_name: cls.op_value}
-        return Validator(**kwargs)
-
-
-class IsUrl(CustomOperation):
-    """IsUrl(x) -> Validator(regex=url_pattern)"""
-
-    op_name = "regex"
-    op_value = (
-        r"((http|https)://)"  # Match the protocol (http or https) required
-        r"(www\.)?"  # Match 'www.' optionally
-        r"[\w.-]+"  # Match the domain name
-        r"\.[a-z]{2,}"  # Match the top-level domain
-        r"(/[^\s]*)?"  # Match the path (everything after the domain name)
-    )
-
-
-class IsConnectionString(CustomOperation):
-    op_name = "regex"
-    op_value = (
-        r"^(?P<scheme>postgresql|mysql|sqlite):\/\/"
-        r"(?:(?P<user>[^:]+):"
-        r"(?P<password>[^@]+)@)?"
-        r"(?P<host>[^:\/]+)?"
-        r"(?::(?P<port>\d+))?"
-        r"\/(?P<path>[^\s]+)$"
-    )
-
-
-class IsSemVer(CustomOperation):
-    op_name = "regex"
-    op_value = (
-        r"^(\d+)\.(\d+)\.(\d+)"
-        r"(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?"
-        r"(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$"
-    )
-
-
-class PositiveInt(CustomOperation):
-    op_name = "gt"
-    op_value = 0
-
-
-class NegativeInt(CustomOperation):
-    op_name = "lt"
-    op_value = 0
+positive_int = Gt(0)
+negative_int = Lt(0)
