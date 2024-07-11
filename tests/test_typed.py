@@ -1230,13 +1230,125 @@ def test_usage_of_dict_value():
     assert settings.people[1].name == "jj"
 
 
-# Handle deeply dictvalue Subtype (multiple levels) with enclosed types
-# Handle tuple type `field: tuple[T, T, T]` + Annotated and enclosed
-# Handle Any type in all cases
-# Handle Totality and Allow Extra
+def test_dictvalue_isolated():
+    class Person(DictValue):
+        name: str
+        age: int = 17
+        nickname: NotRequired[str]
+        colors: list[str] = ["red"]
 
-##### IDEAS  ###########
+    # Defaults applied and attribute access
+    bruno = Person(name="Bruno")
+    assert bruno.name == "Bruno"
+    assert bruno.age == 17
+    assert bruno.colors[0] == "red"
 
-# Move typed.py to typed/main.py
-# Move helpers to typed/utils.py
-# Define ALLOWED_TYPES as type aliases on typed/types.py
+    # not required
+    with pytest.raises(AttributeError):
+        bruno.nickname
+
+    # required
+    with pytest.raises(TypeError, match="name is required"):
+        Person(age=90)
+
+    # defaults
+    defaults = Person.__get_defaults__()
+    assert defaults["age"] == 17
+    assert defaults["colors"] == ["red"]
+    assert "name" not in defaults
+    assert "nickname" not in defaults
+
+
+def test_dictvalue_isolated_conflicting_keys():
+    class Conflicting(DictValue):
+        """The attributes annotated here are
+        dictionary attributes so accessing any of it
+        will actually get you the method.
+
+        To access the value subscription might be used.
+
+        This special cases are the same found on
+        DynaBox and TypedDict.
+        """
+
+        clear: int = 1
+        copy: int = 1
+        fromkeys: int = 1
+        get: int = 1
+        items: int = 1
+        keys: int = 1
+        mro: int = 1
+        pop: int = 1
+        popitem: int = 1
+        setdefault: int = 1
+        update: int = 123
+        values: int = 1
+        name: str
+
+    conflicting = Conflicting(name="br")
+    conflicting.update(new="value")
+    assert conflicting["update"] == 123
+    conflicting.setdefault("dd", 1)
+    c2 = conflicting.copy()
+    assert c2["update"] == 123
+    assert callable(c2.update)
+
+    conflicting["batatinha"] = 123
+    conflicting.xpto = 999
+
+    assert conflicting.name == "br"
+    assert conflicting.new == "value"
+    assert conflicting["new"] == "value"
+    assert conflicting.get("new") == "value"
+    assert "name" in conflicting.keys()
+    assert "value" in conflicting.values()
+    assert ("new", "value") in conflicting.items()
+    assert isinstance(conflicting, dict)
+
+
+def test_dictvalue_isolated_dict_protocol():
+    class Person(DictValue):
+        name: str
+        age: int = 18
+
+    person = Person(name="Jon Doe")
+    assert isinstance(person, dict)
+    assert isinstance(person, DictValue)
+    assert person.setdefault("name", "Albert") == "Jon Doe"
+    assert person.setdefault("othername", "Albert") == "Albert"
+    assert person.othername == "Albert"
+    assert person["name"] == "Jon Doe"
+    assert person.get("name") == "Jon Doe"
+    assert person.get("fasdfdsf", 1) == 1
+    assert ("name", "Jon Doe") in person.items()
+    assert "name" in person.keys()
+    assert "othername" in person
+    assert "Albert" in person.values()
+    person.pop("othername")
+    assert "othername" not in person
+    assert person.popitem() == ("name", "Jon Doe")
+    person["name"] = "Jon Only"
+    assert person.name == "Jon Only"
+    assert person.copy()["name"] == "Jon Only"
+    assert person.copy().name == "Jon Only"
+    assert {"name": "H", "age": 18} == Person(name="H")
+    assert {"name": "H", "age": 10} != Person(name="H")
+    assert {"name": "H", "age": 18} == {**Person(name="H")}
+    d = {}
+    d.update(person)
+    assert d["name"] == "Jon Only"
+    d = {} | person
+    assert d["name"] == "Jon Only"
+
+
+def test_dictvalue_isolated_fromkeys():
+    class Person(DictValue):
+        name: str
+        age: int = 18
+        fromkeys: int = 12
+
+    d = Person(name=1).fromkeys(["name", "age", "thing"], 1)
+    assert d == {"age": 1, "name": 1, "thing": 1, "fromkeys": 12}
+
+    # fail
+    d = Person.fromkeys(["name", "age", "thing"], 1)

@@ -50,7 +50,7 @@ class Settings(Dynaconf):
     # not_a_url: Annotated[str, Not(IsUrl)] = "https://foo.bar"  # fails validation
     not_a_url: Annotated[str, Not(is_url)] = "batatinha 123"  # passes!
     version: Annotated[str, Regex(r"^(\d+)\.(\d+)\.(\d+)$")] = "3.1.9"
-    database: Database = Database()
+    database: Database
     flags: NotRequired[dict[str, bool]]
     plugins: list[Plugin] = []
     token: str
