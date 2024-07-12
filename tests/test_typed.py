@@ -1345,10 +1345,38 @@ def test_dictvalue_isolated_fromkeys():
     class Person(DictValue):
         name: str
         age: int = 18
-        fromkeys: int = 12
+        points: float = 9.9
 
-    d = Person(name=1).fromkeys(["name", "age", "thing"], 1)
-    assert d == {"age": 1, "name": 1, "thing": 1, "fromkeys": 12}
+        clear: int = 1
+        copy: int = 1
+        fromkeys: int = 1
+        get: int = 1
+        items: int = 1
+        keys: int = 1
+        mro: int = 1
+        pop: list = [1]
+        popitem: int = 1
+        setdefault: int = 1
+        update: int = 123
+        values: int = 2
 
-    # fail
-    d = Person.fromkeys(["name", "age", "thing"], 1)
+    # person = Person(name="abc", mro=900, batata=1, pop=789)
+    # print()
+    # print(person.values())
+    # print(person)
+    # print(person.copy())
+    # print(person.keys())
+    # print(person["pop"])  # value
+    # print(person.pop)  # method
+
+    # print(person.clear_)
+
+    # d = Person(name=1).fromkeys(["name", "age", "thing"], 1)
+    # assert d == {"age": 1, "name": 1, "thing": 1, "fromkeys": 12}
+    #
+    # # fail
+    # d = Person.fromkeys(["name", "age", "thing"], 1)
+    # print(d)
+    # e = d.fromkeys(["name", "age", "thing"], 22)
+    # print(e)
+    # print(Person.mro())

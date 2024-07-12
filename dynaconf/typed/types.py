@@ -1,5 +1,6 @@
 from __future__ import annotations  # WARNING: remove this when debugging
 
+import types
 from typing import Annotated
 from typing import get_args
 from typing import get_origin
@@ -9,6 +10,7 @@ from typing import Union
 from dynaconf.utils.functional import empty
 
 from .compat import get_annotations
+from .exceptions import DynaconfSchemaError
 
 T = TypeVar("T")
 
@@ -36,20 +38,10 @@ When uses as `Annotated[NotRequired[T], Validator()]`
 """
 
 
-class DictValue(dict):
-    """DictValue represents a Typed Dict in the settings.
-
-    The typing.TypedDict could not be used because the constraints differs.
-
-    The UseDict could not be used because it adds more reserved names for
-    attr access.
-    """
-
-    _dynaconf_dictvalue = True  # a marker for validator_conditions.is_type_of
-    __dict_attributes__ = [
+class M(type):
+    __dict_class_methods__ = ["copy", "fromkeys", "mro"]
+    __dict_methods__ = [
         "clear",
-        # 'copy',  # Reimplemented
-        # 'fromkeys',  # Reimplemented
         "get",
         "items",
         "keys",
@@ -59,16 +51,69 @@ class DictValue(dict):
         "update",
         "values",
     ]
-    __local_attributes__ = ["__defaults__", "__data__"]
+
+    def __new__(cls, name, bases, namespace):
+        if namespace["__module__"] != __name__:
+            # Rules applies only to subclasses
+            annotations = namespace.get("__annotations__")
+            dunders = [item for item in dir(cls) if item.startswith("_")]
+            attributes = [k for k in namespace if k not in dunders]
+            namespace["__reserved__"] = {}
+            for attr in attributes:
+                if attr not in annotations:
+                    if isinstance(
+                        namespace[attr],
+                        (
+                            types.FunctionType,
+                            types.ClassMethodDescriptorType,
+                            staticmethod,
+                            classmethod,
+                        ),
+                    ):
+                        raise DynaconfSchemaError(
+                            f"Invalid method definition {attr!r}: "
+                            "DictValue doesn't allow definition of methods. "
+                            f"{name!r} is a dict-like object, use a separate "
+                            "function that takes a 'dict'"
+                        )
+
+                    raise DynaconfSchemaError(
+                        f"{attr!r} must include type annotation"
+                    )
+
+                if attr in cls.__dict_class_methods__ + cls.__dict_methods__:
+                    namespace["__reserved__"][attr] = namespace.pop(attr)
+        return super().__new__(cls, name, bases, namespace)
+
+
+class DictValue(dict, metaclass=M):  # type: ignore
+    """DictValue represents a Typed Dict in the settings.
+
+    The typing.TypedDict could not be used because the constraints differs.
+
+    The UseDict could not be used because it adds more reserved names for
+    attr access.
+
+    self.__data__ dict that holds the actual data.
+    self.__defaults__ dict that holds default from annotation
+    self.__reserved__ dict that holds any key part of the reserved words
+    """
+
+    _dynaconf_dictvalue = True  # a marker for validator_conditions.is_type_of
+
+    # List of methods that when accessed are passed through to self.__data__
+    __dict_methods__ = M.__dict_methods__
+
+    __local_attributes__ = ["__defaults__", "__data__", "__reserved__"]
 
     def __init__(self, _dict: dict | None = None, **kwargs):
         """Initialize a DictValue.
         Validates only the existence of required keys but does not validate
         types as types are going to be validated lazily by Dynaconf validation.
         """
-        _dict = _dict or {}
         self.__defaults__ = self.__get_defaults__()
-        data = self.__defaults__ | _dict | kwargs
+        # print(f"{self.__defaults__=}")
+        data = self.__defaults__ | (_dict or {}) | kwargs
         self.__validate_required_keys__(data)
         self.__data__ = data
 
@@ -78,14 +123,10 @@ class DictValue(dict):
         self.__data__[name] = value
 
     def __getattribute__(self, attr):
-        dict_attrs = object.__getattribute__(self, "__dict_attributes__")
+        dict_attrs = object.__getattribute__(self, "__dict_methods__")
         if attr in dict_attrs:
             data = object.__getattribute__(self, "__data__")
             return getattr(data, attr)
-        if attr == "copy":
-            return self.__copy__
-        if attr == "fromkeys":
-            return self.__fromkeys__
         return super().__getattribute__(attr)
 
     def __getitem__(self, item):
@@ -120,8 +161,9 @@ class DictValue(dict):
         defaults = {}
         schema_annotations = get_annotations(cls)
         for name, annotation in schema_annotations.items():
-            value = getattr(cls, name, empty)
-            if value is not empty:
+            value = cls.__reserved__.get(name, getattr(cls, name, empty))
+            value_is_method = isinstance(value, types.MethodDescriptorType)
+            if value is not empty and not value_is_method:
                 defaults[name] = value
         return defaults
 
@@ -131,7 +173,7 @@ class DictValue(dict):
     def __contains__(self, other):
         return other in self.__data__
 
-    def __copy__(self):
+    def copy(self):
         return self.__class__(self.__data__.copy())
 
     def __eq__(self, other):
@@ -141,7 +183,7 @@ class DictValue(dict):
         return iter(self.__data__)
 
     @classmethod
-    def __fromkeys__(cls, iterable, value):
+    def fromkeys(cls, iterable, value):
         data = dict.fromkeys(iterable, value)
         return cls(data)
 
