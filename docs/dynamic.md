@@ -237,8 +237,9 @@ assert settings.token == "lets believe it was retrieved from special place"
 ### Merging with access hooks
 
 When the `result.value` is a mergeable data structure like `dict` or `list`
-and you want the merging to be applied then the hook must use the `settings`
-to wrap the result value and process the merging before returning.
+and you want the merging to be applied, then the hook must delegate the merging
+to the given `settings` by `set`ing the result (which will perform the merging)
+and returning the result of `get`ing the setting from the given `settings`.
 
 ```py
 def get_data_from_somewhere(settings, result, key, *args, **kwargs):
