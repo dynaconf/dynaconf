@@ -169,14 +169,12 @@ malformed expression, it is recommended to add validators.
 
 ## Access Hooks
 
-Dynaconf can be configured to retrieve a special variable from an external
-storage such as GCP or AWS secrets or a Vault server or even a secret located
-on the filesystem or encrypted.
+Dynaconf supports access hooks, which allow the user to register functions that
+will be called each time a variable is accessed on a `Dynaconf` instance.
 
-This works by registering a function hook that will be called for every variable
-access on Dynaconf.
-
-This feature is useful to load settings from BitWarden and other secret managers.
+This feature is useful to load settings from external sources, such as from
+cloud provider's secrets managers, or when you need special processing on top
+of raw values (such as decrypting an encrypted value).
 
 NOTES:
    - You must define the logic of each hook, dynaconf just calls it
