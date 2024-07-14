@@ -165,3 +165,129 @@ other_number = "@get number @int 12"
 
 The `@get` is lazily evaluated and subject to `DynaconfFormatError` in case of
 malformed expression, it is recommended to add validators.
+
+
+## Access Hooks
+
+Dynaconf supports access hooks, which allow the user to register functions that
+will be called each time a variable is accessed on a `Dynaconf` instance.
+
+This feature is useful to load settings from external sources, such as from
+cloud provider's secrets managers, or when you need special processing on top
+of raw values (such as decrypting an encrypted value).
+
+NOTES:
+
+- You must define the logic of each hook, dynaconf just calls it
+- You must take care of caching and caching invalidation
+- This may introduce overhead dependending on how the hook function is
+    implemented
+
+To register an access hook, you need to wrap the `Dynaconf` instance with
+`HookableSettings` and pass a `Action` to `Hook` mapping in to the constructor
+in the `_registered_hooks` kwarg. For example,
+
+```python
+# So you have a function that retrieves data from external source
+
+CACHE = {}  # could be Redis
+
+def get_data_from_somewhere(settings, result, key, *args, **kwargs):
+    """Your function that goes to external service like gcp, aws, vault, etc
+
+    Parameters:
+        settings: A copy of settings, changes made are valid only during the
+            scope of this function.
+        result: The object that holds the setting known to Dynaconf at the
+            moment of access in the .value attribute.
+        key: The accessed key just as passed to Dynaconf.get, usually a
+            single str, but if the requested key was dotted then the whole
+            path is passed to this function.
+        *args and **kwargs: extra positional or named arguments passed to .get
+            such as default,cast,fresh,parent etc.
+    """
+    if key in CACHE:
+        return CACHE[key]
+
+    # Assuming result.value is '@special:/foo/bar:token'
+    if isinstance(result.value, str) and result.value.startswith("@special:"):
+        _, path, identifier = result.value.split(":")
+        # value = get_value_from_special_place(path, identifier)
+        value = CACHE[key] = "lets believe it was retrieved from special place"
+        return value
+
+    return result
+
+# ---
+
+from dynaconf import Dynaconf
+from dynaconf.hooking import HookableSettings, Hook, Action
+
+# Create a Dynaconf instance
+settings = Dynaconf(
+    # set the Hookable wrapper class
+    _wrapper_class=HookableSettings,
+    # Register your hooks, see the Action enum for available values
+    # you can have multiple hooks, value passes from one to another
+    _registered_hooks={
+       Action.AFTER_GET: [Hook(get_data_from_somewhere)]
+    },
+)
+
+# this value can actually come from settings files or envvars
+settings.set("token", "@special:/vault/path:token")
+
+assert settings.token == "lets believe it was retrieved from special place"
+
+# from cache this time
+assert settings.token == "lets believe it was retrieved from special place"
+```
+
+### Merging with access hooks
+
+When the `result.value` is a mergeable data structure like `dict` or `list`
+and you want the merging to be applied, then the hook must delegate the merging
+to the given `settings` by `set`ing the result (which will perform the merging)
+and returning the result of `get`ing the setting from the given `settings`.
+
+```py
+def get_data_from_somewhere(settings, result, key, *args, **kwargs):
+    """Your function that goes to external service like gcp, aws, vault, etc
+    NOTE: settings in this context is copy of settings, changes made are
+    valid only during the scope of this function.
+    """
+    if key in CACHE:
+        return CACHE[key]
+
+    ...
+
+    interesting_keys = ["foo", "bar", "zaz"]  # known to be dicts or lists
+    if key in interesting_keys:
+      value = CACHE[key] = get_value_from_special_place(key)
+      settings.set(key, value)  # process merging and parsing
+      return settings.get(key, result.value)
+
+    return result
+```
+
+
+### Registering Hooks After Dynaconf is instantiated
+
+It is ok to register hooks later, which might be useful to do it conditionally.
+
+
+```py
+if something:
+    settings.set("_registered_hooks", {Action.AFTER_GET: [Hook(....)]})
+```
+
+It also works if you use `dynaconf_hooks.py` to register it conditionally.
+
+```py
+# dynaconf_hooks.py
+def post(settings):
+    data = {}
+    if settings.something:
+        data["_registered_hooks"] = {Action.AFTER_GET: [Hook(....)]}
+    return data
+```
