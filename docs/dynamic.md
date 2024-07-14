@@ -177,10 +177,11 @@ cloud provider's secrets managers, or when you need special processing on top
 of raw values (such as decrypting an encrypted value).
 
 NOTES:
-   - You must define the logic of each hook, dynaconf just calls it
-   - You must take care of caching and caching invalidation
-   - This may introduce overhead dependending on how the hook function is
-      implemented
+
+- You must define the logic of each hook, dynaconf just calls it
+- You must take care of caching and caching invalidation
+- This may introduce overhead dependending on how the hook function is
+    implemented
 
 ```python
 # So you have a function that retrieves data from external source
