@@ -194,8 +194,17 @@ CACHE = {}  # could be Redis
 
 def get_data_from_somewhere(settings, result, key, *args, **kwargs):
     """Your function that goes to external service like gcp, aws, vault, etc
-    NOTE: settings in this context is copy of settings, changes made are
-    valid only during the scope of this function.
+
+    Parameters:
+        settings: A copy of settings, changes made are valid only during the
+            scope of this function.
+        result: The object that holds the setting known to Dynaconf at the
+            moment of access in the .value attribute.
+        key: The accessed key just as passed to Dynaconf.get, usually a
+            single str, but if the requested key was dotted then the whole
+            path is passed to this function.
+        *args and **kwargs: extra positional or named arguments passed to .get
+            such as default,cast,fresh,parent etc.
     """
     if key in CACHE:
         return CACHE[key]
@@ -218,7 +227,7 @@ from dynaconf.hooking import HookableSettings, Hook, Action
 settings = Dynaconf(
     # set the Hookable wrapper class
     _wrapper_class=HookableSettings,
-    # Register your hooks, you can have AFTER_GET, BEFORE_GET
+    # Register your hooks, see the Action enum for available values
     # you can have multiple hooks, value passes from one to another
     _registered_hooks={
        Action.AFTER_GET: [Hook(get_data_from_somewhere)]
