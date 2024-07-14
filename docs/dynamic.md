@@ -183,6 +183,10 @@ NOTES:
 - This may introduce overhead dependending on how the hook function is
     implemented
 
+To register an access hook, you need to wrap the `Dynaconf` instance with
+`HookableSettings` and pass a `Action` to `Hook` mapping in to the constructor
+in the `_registered_hooks` kwarg. For example,
+
 ```python
 # So you have a function that retrieves data from external source
 
