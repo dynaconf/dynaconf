@@ -88,6 +88,7 @@ class Dynaconf(BaseDynaconfSettings):
         if kwargs.pop("_debug_mode", None):
             ut.dump_debug_info(init_options, validators)
 
+        init_options["DYNABOXIFY"] = False
         new_cls = LazySettings(*args, **init_options)
         new_cls.__annotations__ = cls.__annotations__
 
@@ -128,12 +129,13 @@ def extract_defaults_and_validators_from_typing(
         )
         extra_validators = []
         validator = BaseValidator(name, is_type_of=annotation)
-        required = default_value is empty and not ut.is_notrequired(annotation)
-        if required:
-            validator.must_exist = True
 
         # field: DictValue
         if ut.is_dict_value(annotation):
+            default_value = ut.aggregate_dict_schema_defaults(
+                annotation, default_value
+            )
+
             gu.raise_for_invalid_default_type(
                 full_name, default_value, annotation
             )
@@ -163,6 +165,9 @@ def extract_defaults_and_validators_from_typing(
                 extra_validators.append(_validator)
 
             if ut.is_dict_value(_type):
+                default_value = ut.aggregate_dict_schema_defaults(
+                    _type, default_value
+                )
                 items_defaults, items_validators = (
                     extract_defaults_and_validators_from_typing(
                         _type, full_path
@@ -190,6 +195,9 @@ def extract_defaults_and_validators_from_typing(
                 full_name, default_value, annotation
             )
             if ut.is_dict_value(inner_type):
+                default_value = ut.aggregate_dict_schema_defaults(
+                    inner_type, default_value
+                )
                 items_defaults, items_validators = (
                     extract_defaults_and_validators_from_typing(
                         inner_type, full_path
@@ -207,6 +215,9 @@ def extract_defaults_and_validators_from_typing(
         # field: Optional[T]
         elif ut.is_optional(annotation):
             if ut.is_dict_value(_type_args[0]):
+                default_value = ut.aggregate_dict_schema_defaults(
+                    _type_args[0], default_value
+                )
                 gu.raise_for_invalid_default_type(
                     full_name, default_value, annotation
                 )
@@ -228,6 +239,9 @@ def extract_defaults_and_validators_from_typing(
             # Optional and Notrequired here
             ...
 
+        required = default_value is empty and not ut.is_notrequired(annotation)
+        if required:
+            validator.must_exist = True
         validators.append(validator)
         validators.extend(extra_validators)
         if default_value is not empty:

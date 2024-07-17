@@ -57,6 +57,7 @@ class M(type):
             # Rules applies only to subclasses
             annotations = namespace.get("__annotations__")
             dunders = [item for item in dir(cls) if item.startswith("_")]
+            dunders.append("__annotations__")  # for python 3.9
             attributes = [k for k in namespace if k not in dunders]
             namespace["__reserved__"] = {}
             for attr in attributes:
@@ -91,11 +92,10 @@ class DictValue(dict, metaclass=M):  # type: ignore
 
     The typing.TypedDict could not be used because the constraints differs.
 
-    The UseDict could not be used because it adds more reserved names for
+    The UserDict could not be used because it adds more reserved names for
     attr access.
 
     self.__data__ dict that holds the actual data.
-    self.__defaults__ dict that holds default from annotation
     self.__reserved__ dict that holds any key part of the reserved words
     """
 
@@ -104,16 +104,14 @@ class DictValue(dict, metaclass=M):  # type: ignore
     # List of methods that when accessed are passed through to self.__data__
     __dict_methods__ = M.__dict_methods__
 
-    __local_attributes__ = ["__defaults__", "__data__", "__reserved__"]
+    __local_attributes__ = ["__data__", "__reserved__"]
 
     def __init__(self, _dict: dict | None = None, **kwargs):
         """Initialize a DictValue.
         Validates only the existence of required keys but does not validate
         types as types are going to be validated lazily by Dynaconf validation.
         """
-        self.__defaults__ = self.__get_defaults__()
-        # print(f"{self.__defaults__=}")
-        data = self.__defaults__ | (_dict or {}) | kwargs
+        data = self.__get_defaults__() | (_dict or {}) | kwargs
         self.__validate_required_keys__(data)
         self.__data__ = data
 
@@ -165,6 +163,10 @@ class DictValue(dict, metaclass=M):  # type: ignore
             value_is_method = isinstance(value, types.MethodDescriptorType)
             if value is not empty and not value_is_method:
                 defaults[name] = value
+            if isinstance(annotation, type) and issubclass(
+                annotation, cls.__base__
+            ):
+                defaults[name] = annotation.__get_defaults__()
         return defaults
 
     def __repr__(self):

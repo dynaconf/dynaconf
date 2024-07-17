@@ -309,8 +309,8 @@ def test_deeply_enclosed_type_validates_with_bare_type_allows_empty(
 def test_sub_types_works(monkeypatch):
     class Plugin(DictValue):
         name: str
-        # path: NotRequired[str]
-        # order: Union[int, bool, None]
+        path: NotRequired[str]
+        order: Union[int, bool, None]
 
     class Auth(DictValue):
         username: str
@@ -336,7 +336,7 @@ def test_sub_types_works(monkeypatch):
             envvar_prefix="MYTYPEDAPP",
         )
         version: Union[int, float, bool]
-        database: Database = Database()
+        database: Database
         batata: Annotated[int, Validator(gt=999)]
 
     with monkeypatch.context() as m:

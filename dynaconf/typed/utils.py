@@ -7,6 +7,7 @@ from typing import get_origin
 from typing import Union
 
 from dynaconf.base import Settings as BaseDynaconfSettings
+from dynaconf.utils.functional import empty
 from dynaconf.validator import Validator as BaseValidator
 
 from . import types as ty
@@ -160,3 +161,16 @@ def dump_debug_info(init_options, validators):
                 print_all_validators(item_v, f"{prefix}.{n}")
 
         print_all_validators(validator, prefix=str(i))
+
+
+def aggregate_dict_schema_defaults(dict_schema, data):
+    """Aggregated defaults from data on top of dict_schema defaults"""
+    # merge default with default from type
+    # NOTE: What to do in case of Lazy data?
+    #       @json @format {....}
+    dict_schema_defaults = dict_schema.__get_defaults__()
+    if isinstance(data, dict) and dict_schema_defaults:
+        data = dict_merge(dict_schema_defaults, data)
+    elif data is empty and dict_schema_defaults:
+        data = dict_schema_defaults
+    return data
