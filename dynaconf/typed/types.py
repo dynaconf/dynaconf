@@ -2,13 +2,12 @@ from __future__ import annotations  # WARNING: remove this when debugging
 
 import types
 from typing import Annotated
-from typing import get_args
-from typing import get_origin
 from typing import TypeVar
 from typing import Union
 
 from dynaconf.utils.functional import empty
 
+from . import utils as ut
 from .compat import get_annotations
 from .exceptions import DynaconfSchemaError
 
@@ -16,6 +15,7 @@ T = TypeVar("T")
 
 
 class NotRequiredMarker:
+    _dynaconf_notrequired = True
     __slots__ = ()
 
 
@@ -107,12 +107,8 @@ class DictValue(dict, metaclass=M):  # type: ignore
     __local_attributes__ = ["__data__", "__reserved__"]
 
     def __init__(self, _dict: dict | None = None, **kwargs):
-        """Initialize a DictValue.
-        Validates only the existence of required keys but does not validate
-        types as types are going to be validated lazily by Dynaconf validation.
-        """
-        data = self.__get_defaults__() | (_dict or {}) | kwargs
-        self.__validate_required_keys__(data)
+        """Initialize the dict-like object with its defaults applied."""
+        data = ut.multi_dict_merge(self.__get_defaults__(), _dict, kwargs)
         self.__data__ = data
 
     def __setattr__(self, name, value):
@@ -142,35 +138,57 @@ class DictValue(dict, metaclass=M):  # type: ignore
             )
 
     @classmethod
-    def __validate_required_keys__(cls, data):
-        for key, annotation in get_annotations(cls).items():
-            if get_origin(annotation) is Annotated and any(
-                isinstance(item, NotRequiredMarker)
-                for item in get_args(annotation)
-            ):
-                # skip NotRequired[T]
-                continue
-
-            if key not in data:
-                raise TypeError(f"{key} is required.")
-
-    @classmethod
     def __get_defaults__(cls):
         defaults = {}
         schema_annotations = get_annotations(cls)
         for name, annotation in schema_annotations.items():
+            # deal with attributes named against reserved methods e.g: copy
             value = cls.__reserved__.get(name, getattr(cls, name, empty))
             value_is_method = isinstance(value, types.MethodDescriptorType)
+
             if value is not empty and not value_is_method:
+                # set default earlier, so if it is a Lazy str it resolves later
                 defaults[name] = value
-            if isinstance(annotation, type) and issubclass(
-                annotation, cls.__base__
+
+            # Annotation[T, args], list[T], NotRequired[T], dict[T,T]
+            is_notrequired = ut.is_notrequired(annotation)
+            target_type, type_args = ut.get_type_and_args(annotation)
+
+            if ut.is_dict_value(target_type):
+                if isinstance(value, target_type):
+                    defaults[name] = value
+                elif isinstance(value, dict):
+                    defaults[name] = target_type(value)
+                elif not is_notrequired:
+                    defaults[name] = target_type()
+            elif (
+                ut.is_enclosed_list(target_type, type_args)  # list[T]
+                and ut.is_dict_value(type_args[0])  # list[DataDict]
+                and isinstance(defaults.get(name), list)  # list[T] = [...]
             ):
-                defaults[name] = annotation.__get_defaults__()
+                for i, item in enumerate(defaults[name]):
+                    if isinstance(item, dict):
+                        defaults[name][i] = type_args[0](item)
+            elif (
+                ut.is_optional(annotation)  # Optional[T]
+                and ut.is_dict_value(type_args[0])  # Optional[DataDict]
+                and isinstance(
+                    defaults.get(name), dict
+                )  # Optional[...] = {...}
+            ):
+                defaults[name] = type_args[0](defaults[name])
+            elif (
+                ut.maybe_dict_value(annotation)  # Union[DataDict, T]
+                and isinstance(defaults.get(name), dict)  # Union[...] = {}
+            ):
+                defaults[name] = type_args[0](defaults[name])
+
         return defaults
 
     def __repr__(self):
-        return f"DictValue({self.__data__.__repr__()})"
+        return (
+            f"{self.__class__.__name__}<DataDict>({self.__data__.__repr__()})"
+        )
 
     def __contains__(self, other):
         return other in self.__data__
@@ -183,6 +201,9 @@ class DictValue(dict, metaclass=M):  # type: ignore
 
     def __iter__(self):
         return iter(self.__data__)
+
+    def __bool__(self):
+        return bool(self.__data__)
 
     @classmethod
     def fromkeys(cls, iterable, value):

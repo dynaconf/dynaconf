@@ -1,16 +1,13 @@
 from __future__ import annotations  # WARNING: remove this when debugging
 
+from functools import reduce
 from typing import Annotated
-from typing import Callable
 from typing import get_args
 from typing import get_origin
 from typing import Union
 
-from dynaconf.base import Settings as BaseDynaconfSettings
 from dynaconf.utils.functional import empty
-from dynaconf.validator import Validator as BaseValidator
 
-from . import types as ty
 from .compat import UnionType
 
 
@@ -43,7 +40,8 @@ def get_type_and_args(annotation) -> tuple:
 
 def is_notrequired(annotation):
     return is_annotated(annotation) and any(
-        isinstance(item, ty.NotRequiredMarker) for item in get_args(annotation)
+        getattr(item, "_dynaconf_notrequired", None)
+        for item in get_args(annotation)
     )
 
 
@@ -52,9 +50,7 @@ def is_annotated(annotation):
 
 
 def is_dict_value(annotation):
-    return isinstance(annotation, type) and issubclass(
-        annotation, ty.DictValue
-    )
+    return getattr(annotation, "_dynaconf_dictvalue", None)
 
 
 def is_enclosed_list(_type, _type_args):
@@ -66,6 +62,12 @@ def is_union(annotation) -> bool:
     return get_origin(annotation) in [Union, UnionType]
 
 
+def maybe_dict_value(annotation):
+    return is_union(annotation) and any(
+        is_dict_value(item) for item in get_args(annotation)
+    )
+
+
 def is_optional(annotation) -> bool:
     """Tell if an annotation is strictly typing.Optional or Union[**, None]"""
     return is_union(annotation) and get_args(annotation)[1] == type(None)
@@ -74,42 +76,6 @@ def is_optional(annotation) -> bool:
 def is_type(value) -> bool:
     _type = get_origin(value) or value
     return isinstance(_type, type) or is_union(value) or is_optional(value)
-
-
-def condition_factory_for_list_items(validators, prefix, _type) -> Callable:
-    """takes _type: T, generates a function to validate a value against it"""
-    # IDEA:
-    # Evaluate the possibility to replace this with a new attribute on a
-    # validator that will validate against each internal item of a list
-    # Validator("X", is_type_of=list, items=[Validator(is_type_of=int)])
-
-    def validator_condition(values):
-        if isinstance(_type, type) and issubclass(_type, ty.DictValue):
-            for i, value in enumerate(values):
-                for _validator in validators:
-                    for k, v in _validator.messages.items():
-                        _validator.messages[k] = v.replace(
-                            "{name}", prefix + f"[{i}]." + "{name}"
-                        )
-                    _validator.validate(BaseDynaconfSettings(**value))
-        else:
-            for i, value in enumerate(values):
-                _settings = BaseDynaconfSettings()
-                _settings.set(prefix, value)
-                _validator = BaseValidator(
-                    prefix,
-                    is_type_of=_type,
-                )
-                for k, v in _validator.messages.items():
-                    _validator.messages[k] = v.replace(
-                        "{name}", "{name}" + f"[{i}]"
-                    )
-                _validator.validate(_settings)
-
-        # No validation error
-        return True
-
-    return validator_condition
 
 
 def dict_merge(d1: dict, d2: dict) -> dict:
@@ -138,6 +104,11 @@ def dict_merge(d1: dict, d2: dict) -> dict:
             merged[key] = value
 
     return merged
+
+
+def multi_dict_merge(*dicts) -> dict:
+    """Reduces merge of a list of dicts."""
+    return reduce(dict_merge, dicts)
 
 
 def dump_debug_info(init_options, validators):
