@@ -241,9 +241,10 @@ class Settings:
         self._deleted = set()
 
         if kwargs.get("DYNABOXIFY", True):
-            self._store = DynaBox(box_settings=self)
+            default_store = DynaBox(box_settings=self)
         else:
-            self._store = {}  # Disabled dot access
+            default_store = {}  # Disabled dot access
+        self._store = kwargs.pop("_store", default_store)
 
         self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
