@@ -126,12 +126,13 @@ def execute_module_hooks(
         hook_file = os.path.join(
             os.path.dirname(loaded_file), "dynaconf_hooks.py"
         )
+        if not os.path.exists(hook_file):
+            # Return early if file doesn't exist.
+            # Faster than attempting to import.
+            continue
         hook_module = py_loader.import_from_filename(
             obj, hook_file, silent=silent
         )
-        if not hook_module:
-            # There was no hook on the same path as a python file
-            continue
         _run_hook_module(
             hook_type=hook,
             hook_module=hook_module,

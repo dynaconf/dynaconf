@@ -229,7 +229,7 @@ class Settings:
         self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
-        self._store = DynaBox(box_settings=self)
+        self._store = kwargs.pop("_store", DynaBox(box_settings=self))
         self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []

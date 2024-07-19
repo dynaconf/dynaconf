@@ -441,21 +441,21 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
 
     if isinstance(data, DynaBox):
         # recursively parse inner dict items
-        _parsed = DynaBox({}, box_settings=box_settings)
+        # It is important to keep the same object id because
+        # of mutability
         for k, v in data._safe_items():
-            _parsed[k] = parse_conf_data(
+            data[k] = parse_conf_data(
                 v, tomlfy=tomlfy, box_settings=box_settings
             )
-        return _parsed
+        return data
 
     if isinstance(data, dict):
         # recursively parse inner dict items
-        _parsed = {}
         for k, v in data.items():
-            _parsed[k] = parse_conf_data(
+            data[k] = parse_conf_data(
                 v, tomlfy=tomlfy, box_settings=box_settings
             )
-        return _parsed
+        return data
 
     # return parsed string value
     return _parse_conf_data(data, tomlfy=tomlfy, box_settings=box_settings)

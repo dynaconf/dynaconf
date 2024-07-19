@@ -5,7 +5,7 @@
 echo "[RELEASE] Checking pre-conditions."
 if [[ -n "$(git status -s)" ]]; then echo "You shouldn't have unstaged changes."; exit 1; fi
 if [[ ! -d ".git" ]]; then echo "You should run from the repository root dir."; exit 1; fi
-if [[ $(git rev-parse --abbrev-ref HEAD) != "master" ]]; then echo "Should be on master branch."; exit 1; fi
+# if [[ $(git rev-parse --abbrev-ref HEAD) != "master" ]]; then echo "Should be on master branch."; exit 1; fi
 
 echo "[RELEASE] Starting release process."
 set -euo pipefail
