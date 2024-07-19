@@ -56,6 +56,13 @@ class DynaBox(Box):
             n_item = find_the_correct_casing(item, self) or item
             return super().__getitem__(n_item, *args, **kwargs)
 
+    def _safe_copy(self):
+        """Copy bypassing lazy evaluation"""
+        return self.__class__(
+            {k: self._safe_get(k) for k in self.keys()},
+            box_settings=self._box_config.get("box_settings"),
+        )
+
     def __copy__(self):
         return self.__class__(
             super(Box, self).copy(),

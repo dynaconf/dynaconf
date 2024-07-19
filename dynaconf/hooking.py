@@ -6,7 +6,6 @@ from functools import wraps
 from typing import Any
 from typing import Callable
 
-from dynaconf.base import RESERVED_ATTRS
 from dynaconf.base import Settings
 from dynaconf.loaders.base import SourceMetadata
 
@@ -77,17 +76,9 @@ def hookable(function=None, name=None):
         ):
             return fun(self, *args, **kwargs)
 
-        # Create an unhookable (to avoid recursion)
+        # Create an unhook-able (to avoid recursion)
         # temporary settings to pass to the hooked function
-        temp_settings = Settings(
-            dynaconf_skip_loaders=True,
-            dynaconf_skip_validators=True,
-        )
-        allowed_keys = self.__dict__.keys() - set(RESERVED_ATTRS)
-        temp_data = {
-            k: v for k, v in self.__dict__.items() if k in allowed_keys
-        }
-        temp_settings._store.update(temp_data)
+        temp_settings = TempSettingsHolder(self)
 
         def _hook(action: str, value: HookValue) -> HookValue:
             """executes the hooks for the given action"""
@@ -304,3 +295,45 @@ class HookableSettings(Settings):
     @hookable
     def get(self, *args, **kwargs):
         return Settings.get(self, *args, **kwargs)
+
+
+class TempSettingsHolder:
+    """Holds settings to be passed down to hooks.
+    To save runtime resources initialize a copy of it only if accessed.
+    """
+
+    _temp_settings = None
+
+    def __init__(self, settings):
+        self._original_settings = settings
+
+    @property
+    def _settings(self):
+        if self._temp_settings is None:
+            self._temp_settings = Settings(
+                dynaconf_skip_loaders=True,
+                dynaconf_skip_validators=True,
+                _store=self._original_settings._store._safe_copy(),
+            )
+        return self._temp_settings
+
+    def __getattr__(self, attr):
+        return getattr(self._settings, attr)
+
+    def __getitem__(self, item):
+        return self._settings[item]
+
+    def __setitem__(self, item, value):
+        self._settings[item] = value
+
+    def __iter__(self):
+        return iter(self._settings)
+
+    def __contains__(self, item):
+        return item in self._settings
+
+    def __setattr__(self, attr, value):
+        if attr in ["_original_settings", "_temp_settings"]:
+            super().__setattr__(attr, value)
+        else:
+            setattr(self._settings, attr, value)
