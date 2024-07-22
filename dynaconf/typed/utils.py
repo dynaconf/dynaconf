@@ -68,6 +68,12 @@ def maybe_dict_value(annotation):
     )
 
 
+def is_dict_value_in_a_dict(annotation):
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+    return origin is dict and len(args) == 2 and is_dict_value(args[1])
+
+
 def is_optional(annotation) -> bool:
     """Tell if an annotation is strictly typing.Optional or Union[**, None]"""
     return is_union(annotation) and get_args(annotation)[1] == type(None)

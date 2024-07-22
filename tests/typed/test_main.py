@@ -17,6 +17,7 @@ def test_extract():
         url: str = "/1"
         name: str
         scheme: Scheme
+        data: dict = {1: 2}
 
     class Profile(DictValue):
         username: str = "um"
@@ -37,6 +38,7 @@ def test_extract():
         profiles: list[Profile] = [{"username": "l1"}]
         profiles2: list[Profile] = []
         maybe_profile: Union[Profile, int] = {"port": 199}
+        dicted_profile: dict[str, Profile] = {"a": {"username": "dicted"}}
 
     # print("PG", Person.__get_defaults__())
 
@@ -46,9 +48,15 @@ def test_extract():
     # print(validators)
 
     # print()
-    # p = Person(port=123)
+    # p = Person()
     # for k, v in p.items():
     #     print(k,"=", v)
+    # print("#####")
+    # print(p.__defaults__)
+    # print("#####")
+    # for validator in p.__validators__:
+    #     print(validator)
+    #     print()
 
     # print(p)
     # print(p.profile.link.scheme.part)
