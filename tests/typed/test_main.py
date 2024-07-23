@@ -25,20 +25,26 @@ def test_extract():
         avatar: str
         link: Link
 
+    class City(DictValue):
+        name: str
+        year: int
+
     class Person(DictValue):
         name: str = "a"
         port: int
         profile: Profile
         profile2: Profile = {"username": "dois", "link": {"url": "/2"}}
         profile3: Profile = Profile(username="tres", link={"url": "/3"})
-        profile4: Annotated[Profile, Contains("name")] = {}
+        profile4: Annotated[Profile, Contains("username")] = {}
         profile5: NotRequired[Profile] = {"avatar": "123"}
         profile6: Optional[Profile] = {}
         profile7: NotRequired[Profile]
-        profiles: list[Profile] = [{"username": "l1"}]
+        profiles: list[Profile] = [{"username": "l1"}, {}]
         profiles2: list[Profile] = []
-        maybe_profile: Union[Profile, int] = {"port": 199}
+        profiles3: list[Profile]
+        maybe_profile: Union[int, Profile, float] = {"port": 199}
         dicted_profile: dict[str, Profile] = {"a": {"username": "dicted"}}
+        city: City
 
     # print("PG", Person.__get_defaults__())
 
@@ -51,8 +57,8 @@ def test_extract():
     # p = Person()
     # for k, v in p.items():
     #     print(k,"=", v)
-    # print("#####")
-    # print(p.__defaults__)
+    # # print("#####")
+    # # print(p.__defaults__)
     # print("#####")
     # for validator in p.__validators__:
     #     print(validator)

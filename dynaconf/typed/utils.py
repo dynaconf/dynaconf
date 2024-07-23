@@ -68,6 +68,12 @@ def maybe_dict_value(annotation):
     )
 
 
+def get_class_from_type_args(type_args):
+    for arg in type_args:
+        if is_dict_value(arg):
+            return arg
+
+
 def is_dict_value_in_a_dict(annotation):
     origin = get_origin(annotation)
     args = get_args(annotation)

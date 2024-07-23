@@ -8,6 +8,7 @@ from typing import Union
 from dynaconf.utils.functional import empty
 from dynaconf.validator import Validator as BaseValidator
 
+from . import exceptions as ex
 from . import guards as gu
 from . import utils as ut
 from .compat import get_annotations
@@ -163,52 +164,82 @@ class DictValue(dict, metaclass=M):  # type: ignore
                 defaults[name] = value
 
             # Annotation[T, args], list[T], NotRequired[T], dict[T,T]
-            is_notrequired = ut.is_notrequired(annotation)
             target_type, type_args = ut.get_type_and_args(annotation)
-
             gu.raise_for_unsupported_type(
                 name, target_type, type_args, annotation
             )
 
-            annotated_validators: list[BaseValidator] = []
+            marked_not_required = False
             validator = BaseValidator(name, is_type_of=annotation)
+
+            annotated_validators: list[BaseValidator] = []
+            extra_validators: list[BaseValidator] = []
+
+            if ut.is_annotated(annotation):
+                validator = BaseValidator(name, is_type_of=target_type)
+
+                # here is where we extract markers and validator from Annotated
+                for arg in type_args:
+                    if isinstance(arg, NotRequiredMarker):
+                        marked_not_required = True
+                    elif isinstance(arg, BaseValidator):
+                        arg.names = (name,)
+                        annotated_validators.append(arg)
+                        # Would use combined validators? validator &= arg
+                    else:
+                        _type = target_type
+                        raise ex.DynaconfSchemaError(
+                            f"Invalid Annotated Arg: {arg} "
+                            f"this error is caused by "
+                            f"`{name}: Annotated[{ut.get_type_name(_type)!r}"
+                            f", {', '.join(str(i) for i in type_args)}]`"
+                        )
+
+            if value is empty and not marked_not_required:
+                validator.must_exist = True
 
             if ut.is_dict_value(target_type):
                 if isinstance(value, target_type):
-                    instance = value
+                    instance = defaults[name] = value
                 elif isinstance(value, dict):
-                    instance = target_type(value)
-                elif not is_notrequired:
+                    instance = defaults[name] = target_type(value)
+                else:
                     instance = target_type()
-                defaults[name] = instance
+                    if instance and not marked_not_required:
+                        defaults[name] = instance
+
                 validator.items_validators = instance.__validators__
+
+                if instance:
+                    validator.must_exist = None  # can't be False
+
             elif (
                 ut.is_enclosed_list(target_type, type_args)  # list[T]
                 and ut.is_dict_value(type_args[0])  # list[DataDict]
-                and isinstance(defaults.get(name), list)  # list[T] = [...]
             ):
-                instance = None
-                for i, item in enumerate(defaults[name]):
-                    if isinstance(item, dict):
-                        instance = type_args[0](item)
-                        defaults[name][i] = instance
-                if instance:
-                    validator.items_validators = instance.__validators__
-            elif (
-                ut.is_optional(annotation)  # Optional[T]
-                and ut.is_dict_value(type_args[0])  # Optional[DataDict]
-                and isinstance(defaults.get(name), dict)  # Optional[.] = {.}
-            ):
-                instance = type_args[0](defaults[name])
-                defaults[name] = instance
+                instance_class = type_args[0]
+                instance = instance_class()
                 validator.items_validators = instance.__validators__
-            elif (
-                ut.maybe_dict_value(annotation)  # Union[DataDict, T]
-                and isinstance(defaults.get(name), dict)  # Union[...] = {}
-            ):
-                instance = type_args[0](defaults[name])
-                defaults[name] = instance
-                validator.items_validators = instance.__validators__
+                if isinstance(value, list):
+                    for i, item in enumerate(value):
+                        if isinstance(item, dict):
+                            value[i] = instance_class(item)
+
+            elif ut.maybe_dict_value(annotation):  # Optional[T], Union[T, T]
+                instance_class = ut.get_class_from_type_args(type_args)
+                instance = instance_class()
+                if isinstance(value, dict):
+                    instance.update(value)
+                    defaults[name] = instance
+
+                # NOTE: combine ORValidator here in case of
+                # Union[DictValue, DictValue, ...]
+                extra_validator = BaseValidator(
+                    name,
+                    items_validators=instance.__validators__,
+                    when=BaseValidator(name, is_type_of=dict),
+                )
+                extra_validators.append(extra_validator)
             elif (
                 ut.is_dict_value_in_a_dict(annotation)  # dict[T, DataDict]
                 and isinstance(dvalue := defaults.get(name), dict)  # {}
@@ -218,11 +249,12 @@ class DictValue(dict, metaclass=M):  # type: ignore
                     if isinstance(v, dict):
                         instance = type_args[1](dvalue)
                         dvalue[k] = instance
-                if instance:
+                if instance is not None:
                     validator.items_validators = instance.__validators__
 
             validators.append(validator)
             validators.extend(annotated_validators)
+            validators.extend(extra_validators)
 
         return defaults, validators
 
