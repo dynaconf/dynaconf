@@ -75,6 +75,7 @@ class Validator:
         cast: Callable[[Any], Any] | None | Empty = empty,
         description: str | None | Empty = empty,
         items_validators: list[BaseValidator] | None = None,
+        items_lookup: Callable[[Any], Any] | None = None,
         # To be implemented, a interface like this to generate a When Validator
         # when: When | None = empty,
     ):
@@ -154,6 +155,7 @@ class ItemsValidator:
         cast: Callable[[Any], Any] | None | Empty = empty,
         description: str | None | Empty = empty,
         items_validators: list[BaseValidator] | None = None,
+        items_lookup: Callable[[Any], Any] | None = None,
         # To be implemented, a interface like this to generate a When Validator
         # when: When | None = empty,
     ):

@@ -155,6 +155,11 @@ class DictValue(dict, metaclass=M):  # type: ignore
         validators = []
         schema_annotations = get_annotations(cls)
         for name, annotation in schema_annotations.items():
+            if name == "dynaconf_options":
+                # In case someone does dynaconf_options: Options = Options(...)
+                # That value is kept out of the schema validation
+                continue
+
             # deal with attributes named against reserved methods e.g: copy
             value = cls.__reserved__.get(name, getattr(cls, name, empty))
             value_is_method = isinstance(value, types.MethodDescriptorType)
@@ -240,17 +245,17 @@ class DictValue(dict, metaclass=M):  # type: ignore
                     when=BaseValidator(name, is_type_of=dict),
                 )
                 extra_validators.append(extra_validator)
-            elif (
-                ut.is_dict_value_in_a_dict(annotation)  # dict[T, DataDict]
-                and isinstance(dvalue := defaults.get(name), dict)  # {}
-            ):
-                instance = None
-                for k, v in dvalue.items():  # {T: {.}}
-                    if isinstance(v, dict):
-                        instance = type_args[1](dvalue)
-                        dvalue[k] = instance
-                if instance is not None:
-                    validator.items_validators = instance.__validators__
+
+            elif ut.is_dict_value_in_a_dict(annotation):  # dict[T, DataDict]
+                instance_class = type_args[1]
+                instance = instance_class()
+                validator.items_validators = instance.__validators__
+                validator.items_lookup = lambda item: item.values()
+
+                if isinstance(value, dict):
+                    for k, v in value.items():  # {T: {.}}
+                        if isinstance(v, dict):
+                            value[k] = instance_class(v)
 
             validators.append(validator)
             validators.extend(annotated_validators)

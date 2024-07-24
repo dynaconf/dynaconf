@@ -43,7 +43,10 @@ def test_extract():
         profiles2: list[Profile] = []
         profiles3: list[Profile]
         maybe_profile: Union[int, Profile, float] = {"port": 199}
-        dicted_profile: dict[str, Profile] = {"a": {"username": "dicted"}}
+        dicted_profile: dict[str, Profile] = {
+            "a": {"username": "dicted"},
+            "b": {},
+        }
         city: City
 
     # print("PG", Person.__get_defaults__())
@@ -56,7 +59,7 @@ def test_extract():
     # print()
     # p = Person()
     # for k, v in p.items():
-    #     print(k,"=", v)
+    #     print(k, "=", v)
     # # print("#####")
     # # print(p.__defaults__)
     # print("#####")

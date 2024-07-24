@@ -126,6 +126,7 @@ class Validator:
         description: str | None = None,
         apply_default_on_none: bool | None = False,
         items_validators: list[Validator] | None = None,
+        items_lookup: Callable[[Any], Any] | None = None,
         **operations: Any,
     ) -> None:
         # Copy immutable MappingProxyType as a mutable dict
@@ -149,7 +150,8 @@ class Validator:
         self.description = description
         self.envs: Sequence[str] | None = None
         self.apply_default_on_none = apply_default_on_none
-        self.items_validators = items_validators or []
+        self.items_validators = items_validators
+        self.items_lookup = items_lookup
 
         if isinstance(env, str):
             self.envs = [env]
@@ -192,6 +194,8 @@ class Validator:
             _elements.append(f"when={self.when}")
         if self.items_validators:
             _elements.append(f"items_validators={self.items_validators}")
+        if self.items_lookup:
+            _elements.append(f"items_lookup={self.items_lookup}")
         _repr += ", ".join(_elements)
         _repr += ")"
         return _repr
@@ -452,13 +456,23 @@ class Validator:
                     )
                     raise ValidationError(_message, details=[(self, _message)])
 
-            # Type is list or dict and has internal validators
-            self._validate_internal_items(value, name, variable_path)
+            # items_validators runs against internal elements
+            if self.items_validators:
+                if self.items_lookup:
+                    value = self.items_lookup(value)
+
+                self._validate_internal_items(
+                    value=value,
+                    name=name,
+                    validators=self.items_validators,
+                    variable_path=variable_path,
+                )
 
     def _validate_internal_items(
         self,
         value: Any,
         name: str,
+        validators: list[Validator],
         variable_path: tuple | None = None,
     ):
         """Validate internal items of a data structure."""
@@ -476,7 +490,7 @@ class Validator:
                     _validator_location = ".".join(_item_path)
                     data = {"<item>": item}
 
-                for validator in self.items_validators:
+                for validator in validators:
                     # avoid mutating a reusable validator
                     if not validator.names:
                         _validator = deepcopy(validator)
@@ -493,7 +507,7 @@ class Validator:
 
         elif isinstance(value, dict):
             _validator_location = ".".join(variable_path)
-            for validator in self.items_validators:
+            for validator in validators:
                 for k, v in validator.default_messages.items():
                     validator.messages[k] = v.replace(
                         "{name}", _validator_location + ".{name}"
