@@ -5,14 +5,9 @@ from typing import Annotated
 from typing import TypeVar
 from typing import Union
 
-from dynaconf.utils.functional import empty
-from dynaconf.validator import Validator as BaseValidator
-
-from . import exceptions as ex
-from . import guards as gu
 from . import utils as ut
-from .compat import get_annotations
 from .exceptions import DynaconfSchemaError
+from .parser import parse_schema
 
 T = TypeVar("T")
 
@@ -115,12 +110,13 @@ class DictValue(dict, metaclass=M):  # type: ignore
         "__reserved__",
         "__defaults__",
         "__validators__",
+        "__schema__",
     ]
 
     def __init__(self, _dict: dict | None = None, **kwargs):
         """Initialize the dict-like object with its defaults applied."""
-        self.__defaults__, self.__validators__ = self.__parse_schema__()
-        data = ut.multi_dict_merge(self.__defaults__, _dict, kwargs)
+        self.__schema__ = parse_schema(self.__class__)
+        data = ut.multi_dict_merge(self.__schema__.defaults, _dict, kwargs)
         self.__data__ = data
 
     def __setattr__(self, name, value):
@@ -143,130 +139,15 @@ class DictValue(dict, metaclass=M):  # type: ignore
 
     def __getattr__(self, attr):
         try:
-            return self.__data__[attr]
+            data = object.__getattribute__(self, "__data__")
+            return data[attr]
         except KeyError:
             raise AttributeError(
                 f"{self.__class__.__name__!r} has no attribute {attr!r}"
             )
 
-    @classmethod
-    def __parse_schema__(cls) -> tuple[dict, list[BaseValidator]]:
-        defaults = {}
-        validators = []
-        schema_annotations = get_annotations(cls)
-        for name, annotation in schema_annotations.items():
-            if name == "dynaconf_options":
-                # In case someone does dynaconf_options: Options = Options(...)
-                # That value is kept out of the schema validation
-                continue
-
-            # deal with attributes named against reserved methods e.g: copy
-            value = cls.__reserved__.get(name, getattr(cls, name, empty))
-            value_is_method = isinstance(value, types.MethodDescriptorType)
-
-            if value is not empty and not value_is_method:
-                # set default earlier, so if it is a Lazy str it resolves later
-                defaults[name] = value
-
-            # Annotation[T, args], list[T], NotRequired[T], dict[T,T]
-            target_type, type_args = ut.get_type_and_args(annotation)
-            gu.raise_for_unsupported_type(
-                name, target_type, type_args, annotation
-            )
-
-            marked_not_required = False
-            validator = BaseValidator(name, is_type_of=annotation)
-
-            annotated_validators: list[BaseValidator] = []
-            extra_validators: list[BaseValidator] = []
-
-            if ut.is_annotated(annotation):
-                validator = BaseValidator(name, is_type_of=target_type)
-
-                # here is where we extract markers and validator from Annotated
-                for arg in type_args:
-                    if isinstance(arg, NotRequiredMarker):
-                        marked_not_required = True
-                    elif isinstance(arg, BaseValidator):
-                        arg.names = (name,)
-                        annotated_validators.append(arg)
-                        # Would use combined validators? validator &= arg
-                    else:
-                        _type = target_type
-                        raise ex.DynaconfSchemaError(
-                            f"Invalid Annotated Arg: {arg} "
-                            f"this error is caused by "
-                            f"`{name}: Annotated[{ut.get_type_name(_type)!r}"
-                            f", {', '.join(str(i) for i in type_args)}]`"
-                        )
-
-            if value is empty and not marked_not_required:
-                validator.must_exist = True
-
-            if ut.is_dict_value(target_type):
-                if isinstance(value, target_type):
-                    instance = defaults[name] = value
-                elif isinstance(value, dict):
-                    instance = defaults[name] = target_type(value)
-                else:
-                    instance = target_type()
-                    if instance and not marked_not_required:
-                        defaults[name] = instance
-
-                validator.items_validators = instance.__validators__
-
-                if instance:
-                    validator.must_exist = None  # can't be False
-
-            elif (
-                ut.is_enclosed_list(target_type, type_args)  # list[T]
-                and ut.is_dict_value(type_args[0])  # list[DataDict]
-            ):
-                instance_class = type_args[0]
-                instance = instance_class()
-                validator.items_validators = instance.__validators__
-                if isinstance(value, list):
-                    for i, item in enumerate(value):
-                        if isinstance(item, dict):
-                            value[i] = instance_class(item)
-
-            elif ut.maybe_dict_value(annotation):  # Optional[T], Union[T, T]
-                instance_class = ut.get_class_from_type_args(type_args)
-                instance = instance_class()
-                if isinstance(value, dict):
-                    instance.update(value)
-                    defaults[name] = instance
-
-                # NOTE: combine ORValidator here in case of
-                # Union[DictValue, DictValue, ...]
-                extra_validator = BaseValidator(
-                    name,
-                    items_validators=instance.__validators__,
-                    when=BaseValidator(name, is_type_of=dict),
-                )
-                extra_validators.append(extra_validator)
-
-            elif ut.is_dict_value_in_a_dict(annotation):  # dict[T, DataDict]
-                instance_class = type_args[1]
-                instance = instance_class()
-                validator.items_validators = instance.__validators__
-                validator.items_lookup = lambda item: item.values()
-
-                if isinstance(value, dict):
-                    for k, v in value.items():  # {T: {.}}
-                        if isinstance(v, dict):
-                            value[k] = instance_class(v)
-
-            validators.append(validator)
-            validators.extend(annotated_validators)
-            validators.extend(extra_validators)
-
-        return defaults, validators
-
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}<DataDict>({self.__data__.__repr__()})"
-        )
+        return f"{self.__class__.__name__}({self.__data__.__repr__()})"
 
     def __contains__(self, other):
         return other in self.__data__

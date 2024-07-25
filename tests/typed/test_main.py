@@ -58,12 +58,13 @@ def test_extract():
 
     # print()
     # p = Person()
+    # print(p.__schema__.schema)
     # for k, v in p.items():
     #     print(k, "=", v)
     # # print("#####")
     # # print(p.__defaults__)
     # print("#####")
-    # for validator in p.__validators__:
+    # for validator in p.__schema__.validators:
     #     print(validator)
     #     print()
 

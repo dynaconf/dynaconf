@@ -1,5 +1,6 @@
 from __future__ import annotations  # WARNING: remove this when debugging
 
+import json
 from functools import reduce
 from typing import Annotated
 from typing import get_args
@@ -123,27 +124,41 @@ def multi_dict_merge(*dicts) -> dict:
     return reduce(dict_merge, dicts)
 
 
-def dump_debug_info(init_options, validators):
+def dump_debug_info(init_options, validators, schema):
     """Debug utility to be removed later"""
     dump = __builtins__["print"]  # cheat the linter
+    # pdump = __import__("pprint").pp
+    jdump = lambda v: dump(
+        json.dumps(v, indent=2, sort_keys=True, default=str)
+    )
 
-    dump("\n----- INIT DEFAULTS -----")
-    __import__("pprint").pprint(init_options)
-    dump("\n----- VALIDATORS -----")
+    def tdump(text, char="*", offset=0, s=""):
+        return dump(
+            "{s}{o}{:{c}^80}".format(f" {text} ", c=char, o=" " * offset, s=s)
+        )
+
+    tdump("INIT DEFAULTS", s="\n")
+    jdump(init_options)
+
+    tdump("VALIDATORS", s="\n")
     for i, validator in enumerate(validators, 1):
-        dump("#" * 80)
-        dump(validator.names[0].upper())
+        tdump(validator.names[0].upper(), "#")
         dump(i, validator)
 
         def print_all_validators(v, prefix):
             if v.items_validators:
-                dump(" " * len(prefix) + v.names[0].upper())
-                dump(" " * len(prefix) + ("-" * 80))
-            for n, item_v in enumerate(v.items_validators, 1):
-                dump(" " * len(prefix), f"{prefix}.{n}", item_v)
-                print_all_validators(item_v, f"{prefix}.{n}")
+                tdump(v.names[0].upper(), "-", len(prefix))
+                for n, item_v in enumerate(v.items_validators, 1):
+                    tdump(f"{prefix}.{n}", "_", len(prefix))
+                    dump(" " * len(prefix), item_v)
+                    print_all_validators(item_v, f"{prefix}.{n}")
 
         print_all_validators(validator, prefix=str(i))
+
+    tdump("SCHEMA", s="\n")
+    jdump(schema.as_dict())
+
+    tdump("END", s="\n")
 
 
 def aggregate_dict_schema_defaults(dict_schema, data):

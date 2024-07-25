@@ -1,4 +1,5 @@
 import sys
+from dataclasses import dataclass
 
 
 def _get_annotations_for_python_39(schema_cls) -> dict:
@@ -13,12 +14,15 @@ if sys.version_info < (3, 10):
 
     UnionType = Union
     get_annotations = _get_annotations_for_python_39
+    from typing_extensions import Self
+
+    _dataclass = dataclass
 else:
     from inspect import get_annotations
     from types import UnionType
+    from typing import Self
+
+    _dataclass = dataclass(kw_only=True)
 
 
-__all__ = [
-    "get_annotations",
-    "UnionType",
-]
+__all__ = ["get_annotations", "UnionType", "Self", "_dataclass"]
