@@ -50,8 +50,8 @@ def is_annotated(annotation):
     return get_origin(annotation) is Annotated
 
 
-def is_dict_value(annotation):
-    return getattr(annotation, "_dynaconf_dictvalue", None)
+def is_datadict(annotation):
+    return getattr(annotation, "_dynaconf_datadict", None)
 
 
 def is_enclosed_list(_type, _type_args):
@@ -63,22 +63,22 @@ def is_union(annotation) -> bool:
     return get_origin(annotation) in [Union, UnionType]
 
 
-def maybe_dict_value(annotation):
+def maybe_datadict(annotation):
     return is_union(annotation) and any(
-        is_dict_value(item) for item in get_args(annotation)
+        is_datadict(item) for item in get_args(annotation)
     )
 
 
 def get_class_from_type_args(type_args):
     for arg in type_args:
-        if is_dict_value(arg):
+        if is_datadict(arg):
             return arg
 
 
-def is_dict_value_in_a_dict(annotation):
+def is_datadict_in_a_dict(annotation):
     origin = get_origin(annotation)
     args = get_args(annotation)
-    return origin is dict and len(args) == 2 and is_dict_value(args[1])
+    return origin is dict and len(args) == 2 and is_datadict(args[1])
 
 
 def is_optional(annotation) -> bool:

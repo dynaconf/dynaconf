@@ -71,7 +71,7 @@ class M(type):
                     ):
                         raise DynaconfSchemaError(
                             f"Invalid method definition {attr!r}: "
-                            "DictValue doesn't allow definition of methods. "
+                            "DataDict doesn't allow definition of methods. "
                             f"{name!r} is a dict-like object, use a separate "
                             "function that takes a 'dict'"
                         )
@@ -85,8 +85,8 @@ class M(type):
         return super().__new__(cls, name, bases, namespace)
 
 
-class DictValue(dict, metaclass=M):  # type: ignore
-    """DictValue represents a Typed Dict in the settings.
+class DataDict(dict, metaclass=M):  # type: ignore
+    """DataDict represents a Typed Dict in the settings.
 
     The typing.TypedDict could not be used because the constraints differs.
 
@@ -100,7 +100,7 @@ class DictValue(dict, metaclass=M):  # type: ignore
     __reserved__: dict
     __data__: dict
 
-    _dynaconf_dictvalue = True  # a marker for validator_conditions.is_type_of
+    _dynaconf_datadict = True  # a marker for validator_conditions.is_type_of
 
     # List of methods that when accessed are passed through to self.__data__
     __dict_methods__ = M.__dict_methods__
@@ -201,5 +201,5 @@ SUPPORTED_TYPES = (
     List,
     Tuple,
     Dict,
-    DictValue,
+    DataDict,
 )

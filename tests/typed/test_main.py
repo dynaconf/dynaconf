@@ -3,33 +3,33 @@ from typing import Optional
 from typing import Union
 
 # from dynaconf.typed.main import extract_defaults_and_validators_from_typing
-from dynaconf.typed.types import DictValue
+from dynaconf.typed.types import DataDict
 from dynaconf.typed.types import NotRequired
 from dynaconf.typed.validators import Contains
 
 
 def test_extract():
-    class Scheme(DictValue):
+    class Scheme(DataDict):
         part: str = "http"
         tls: bool = True
 
-    class Link(DictValue):
+    class Link(DataDict):
         url: str = "/1"
         name: str
         scheme: Scheme
         data: dict = {1: 2}
 
-    class Profile(DictValue):
+    class Profile(DataDict):
         username: str = "um"
         team: int = 66
         avatar: str
         link: Link
 
-    class City(DictValue):
+    class City(DataDict):
         name: str
         year: int
 
-    class Person(DictValue):
+    class Person(DataDict):
         name: str = "a"
         port: int
         profile: Profile

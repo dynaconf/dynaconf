@@ -6,7 +6,7 @@ from typing import Union
 
 import pytest
 
-from dynaconf.typed import DictValue
+from dynaconf.typed import DataDict
 from dynaconf.typed import Dynaconf
 from dynaconf.typed import DynaconfSchemaError
 from dynaconf.typed import ItemsValidator
@@ -93,7 +93,7 @@ def test_union_enclosed_type_raises_for_invalid_enclosed():
 
 
 def test_annotated_with_dictvalue():
-    class Plugin(DictValue):
+    class Plugin(DataDict):
         name: Annotated[Union[str, int], Validator()]
 
     class Settings(Dynaconf):
@@ -106,7 +106,7 @@ def test_annotated_with_dictvalue():
 
 
 def test_crazy_union_type():
-    class Plugin(DictValue):
+    class Plugin(DataDict):
         value: list[Union[int, float, bool], int, float]
 
     class Settings(Dynaconf):
@@ -118,7 +118,7 @@ def test_crazy_union_type():
 
 
 def test_enclosed_type_validates(monkeypatch):
-    class Plugin(DictValue):
+    class Plugin(DataDict):
         name: str
 
     class Settings(Dynaconf):
@@ -212,13 +212,13 @@ def test_union_enclosed_type_raises_validation(monkeypatch):
 
 # def test_deeply_enclosed_type_validates(monkeypatch):
 def test_xxxxx(monkeypatch):
-    class Plugin(DictValue):
+    class Plugin(DataDict):
         name: str
 
-    class Extra(DictValue):
+    class Extra(DataDict):
         plugins: list[Plugin]
 
-    class Database(DictValue):
+    class Database(DataDict):
         extra: Extra
         a: int = 1
 
@@ -232,6 +232,7 @@ def test_xxxxx(monkeypatch):
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_DATABASE__extra__plugins", '@json [{"name": 42}]')
         settings = Settings(_debug_mode=True)
+        assert settings.database
         # print()
         # print(settings.keys())
         # print(settings.database)
@@ -242,10 +243,10 @@ def test_xxxxx(monkeypatch):
 
 
 def test_deeply_enclosed_type_validates_with_bare_dict(monkeypatch):
-    class Extra(DictValue):
+    class Extra(DataDict):
         plugins: list[dict]
 
-    class Database(DictValue):
+    class Database(DataDict):
         extra: Extra
 
     class Settings(Dynaconf):
@@ -259,10 +260,10 @@ def test_deeply_enclosed_type_validates_with_bare_dict(monkeypatch):
 
 
 def test_deeply_enclosed_type_validates_with_parameterized_dict(monkeypatch):
-    class Extra(DictValue):
+    class Extra(DataDict):
         plugins: list[dict[str, int]]
 
-    class Database(DictValue):
+    class Database(DataDict):
         extra: Extra
 
     class Settings(Dynaconf):
@@ -276,10 +277,10 @@ def test_deeply_enclosed_type_validates_with_parameterized_dict(monkeypatch):
 
 
 def test_deeply_enclosed_type_validates_with_bare_type(monkeypatch):
-    class Extra(DictValue):
+    class Extra(DataDict):
         plugins: list[str]
 
-    class Database(DictValue):
+    class Database(DataDict):
         extra: Extra
 
     class Settings(Dynaconf):
@@ -302,10 +303,10 @@ def test_deeply_enclosed_type_validates_with_bare_type_allows_empty(
     https://mypy-play.net/?gist=d16da1574497dbe585eab679f09432ef
     """
 
-    class Extra(DictValue):
+    class Extra(DataDict):
         plugins: list[str]
 
-    class Database(DictValue):
+    class Database(DataDict):
         extra: Extra
 
     class Settings(Dynaconf):
@@ -317,16 +318,16 @@ def test_deeply_enclosed_type_validates_with_bare_type_allows_empty(
 
 
 def test_sub_types_works(monkeypatch):
-    class Plugin(DictValue):
+    class Plugin(DataDict):
         name: str
         path: NotRequired[str]
         order: Union[int, bool, None]
 
-    class Auth(DictValue):
+    class Auth(DataDict):
         username: str
         password: int
 
-    class Extra(DictValue):
+    class Extra(DataDict):
         log: bool = True
         socket_type: Annotated[int, Validator(is_in=[1, 2, 3])] = 1
         transactions: bool
@@ -335,7 +336,7 @@ def test_sub_types_works(monkeypatch):
         # Make this work
         batatas: list[int] = [1, 2]
 
-    class Database(DictValue):
+    class Database(DataDict):
         host: str = "server.com"
         port: Annotated[int, Validator(gt=999)]
         engine: str = "postgres"
@@ -370,7 +371,7 @@ def test_sub_types_works(monkeypatch):
 
 
 def test_sub_types_fail_validation(monkeypatch):
-    class Database(DictValue):
+    class Database(DataDict):
         host: str = "server.com"
         port: Annotated[int, Validator(gt=999)]
         engine: str = "postgres"
@@ -394,16 +395,16 @@ def test_sub_types_fail_validation(monkeypatch):
 def test_deeply_dictvalue_fail_validation(monkeypatch):
     """Ensure validation happens on deeply nested type"""
 
-    class Auth(DictValue):
+    class Auth(DataDict):
         username: str
         password: int
 
-    class Extra(DictValue):
+    class Extra(DataDict):
         log: bool = True
         socket_type: Annotated[int, Validator(is_in=[1, 2, 3])] = 1
         auth: Auth = Auth()
 
-    class Database(DictValue):
+    class Database(DataDict):
         host: str = "server.com"
         port: Annotated[int, Validator(gt=999)]
         engine: str = "postgres"
@@ -506,7 +507,7 @@ def test_only_supported_types_can_be_used():
 
 # handle dictvalue subtype
 def test_dictvalue_subtype():
-    class Person(DictValue):
+    class Person(DataDict):
         name: str = "Bruno"
         age: int
 
@@ -520,7 +521,7 @@ def test_dictvalue_subtype():
 
 # Set default based `name: T = default`
 def test_default_based_on_type_annotation(monkeypatch):
-    class Person(DictValue):
+    class Person(DataDict):
         name: str = "Bruno"
         age: int
 
@@ -565,7 +566,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
     def auth_condition(v):
         return "token" in v
 
-    class Auth(DictValue):
+    class Auth(DataDict):
         token: Annotated[str, Validator(len_min=10)]
 
     not_banana = Validator(ne="banana")
@@ -757,7 +758,7 @@ def test_annotated_args_must_be_only_validators():
 
 # Handle Union types `field: Union[T, T, T]`
 def test_all_kinds_of_union():
-    class Person(DictValue):
+    class Person(DataDict):
         name: str
 
     class Settings(Dynaconf):
@@ -776,7 +777,7 @@ def test_all_kinds_of_union():
 def test_optional_types():
     """Optional and Union[T, None] must define a None default"""
 
-    class Profile(DictValue):
+    class Profile(DataDict):
         username: str
 
     # Good
@@ -815,7 +816,7 @@ def test_notrequired():
         settings.name
 
     # Same on SubTypes
-    class Person(DictValue):
+    class Person(DataDict):
         name: str
         age: NotRequired[int]
         team: NotRequired[Annotated[str, Validator(is_in=["A", "B"])]]
@@ -1133,20 +1134,20 @@ def test_list_enclosed_type_with_optional():
 
 
 def test_usage_of_dict_value():
-    class Service(DictValue):
+    class Service(DataDict):
         name: str
 
-    class Kind(DictValue):
+    class Kind(DataDict):
         id: int
         services: list[Service]
 
-    class Profile(DictValue):
+    class Profile(DataDict):
         username: str
         group: int = 1
         team: int = 42
         kind: Kind
 
-    class Person(DictValue):
+    class Person(DataDict):
         name: str = "batata"
         active: bool
         bla: NotRequired[float]
@@ -1241,7 +1242,7 @@ def test_usage_of_dict_value():
 
 
 def test_dictvalue_isolated():
-    class Person(DictValue):
+    class Person(DataDict):
         name: str
         age: int = 17
         nickname: NotRequired[str]
@@ -1270,7 +1271,7 @@ def test_dictvalue_isolated():
 
 
 def test_dictvalue_isolated_conflicting_keys():
-    class Conflicting(DictValue):
+    class Conflicting(DataDict):
         """The attributes annotated here are
         dictionary attributes so accessing any of it
         will actually get you the method.
@@ -1317,13 +1318,13 @@ def test_dictvalue_isolated_conflicting_keys():
 
 
 def test_dictvalue_isolated_dict_protocol():
-    class Person(DictValue):
+    class Person(DataDict):
         name: str
         age: int = 18
 
     person = Person(name="Jon Doe")
     assert isinstance(person, dict)
-    assert isinstance(person, DictValue)
+    assert isinstance(person, DataDict)
     assert person.setdefault("name", "Albert") == "Jon Doe"
     assert person.setdefault("othername", "Albert") == "Albert"
     assert person.othername == "Albert"
@@ -1352,7 +1353,7 @@ def test_dictvalue_isolated_dict_protocol():
 
 
 def test_dictvalue_isolated_fromkeys():
-    class Person(DictValue):
+    class Person(DataDict):
         name: str
         age: int = 18
         points: float = 9.9

@@ -121,8 +121,8 @@ class Dynaconf(BaseDynaconfSettings):
 #         extra_validators = []
 #         validator = BaseValidator(name, is_type_of=annotation)
 #
-#         # field: DictValue
-#         if ut.is_dict_value(annotation):
+#         # field: DataDict
+#         if ut.is_datadict(annotation):
 #             default_value = ut.aggregate_dict_schema_defaults(
 #                 annotation, default_value
 #             )
@@ -155,7 +155,7 @@ class Dynaconf(BaseDynaconfSettings):
 #                 _validator.names = (name,)
 #                 extra_validators.append(_validator)
 #
-#             if ut.is_dict_value(_type):
+#             if ut.is_datadict(_type):
 #                 default_value = ut.aggregate_dict_schema_defaults(
 #                     _type, default_value
 #                 )
@@ -185,7 +185,7 @@ class Dynaconf(BaseDynaconfSettings):
 #             gu.raise_for_invalid_default_type(
 #                 full_name, default_value, annotation
 #             )
-#             if ut.is_dict_value(inner_type):
+#             if ut.is_datadict(inner_type):
 #                 default_value = ut.aggregate_dict_schema_defaults(
 #                     inner_type, default_value
 #                 )
@@ -205,7 +205,7 @@ class Dynaconf(BaseDynaconfSettings):
 #
 #         # field: Optional[T]
 #         elif ut.is_optional(annotation):
-#             if ut.is_dict_value(_type_args[0]):
+#             if ut.is_datadict(_type_args[0]):
 #                 default_value = ut.aggregate_dict_schema_defaults(
 #                     _type_args[0], default_value
 #                 )
@@ -220,7 +220,7 @@ class Dynaconf(BaseDynaconfSettings):
 #                 extra_validator = BaseValidator(
 #                     name,
 #                     items_validators=items_validators,
-#                     when=BaseValidator(name, is_type_of=ty.DictValue),
+#                     when=BaseValidator(name, is_type_of=ty.DataDict),
 #                 )
 #                 extra_validators.append(extra_validator)
 #

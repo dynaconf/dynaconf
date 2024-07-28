@@ -5,14 +5,14 @@ from .exceptions import ValidationError
 from .main import Dynaconf
 from .main import Options
 from .types import Annotated
-from .types import DictValue
+from .types import DataDict
 from .types import NotRequired
 from .validators import ItemsValidator
 from .validators import Validator
 
 __all__ = [
     "Annotated",
-    "DictValue",
+    "DataDict",
     "Dynaconf",
     "DynaconfSchemaError",
     "ItemsValidator",

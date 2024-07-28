@@ -102,7 +102,7 @@ def parse_schema(cls) -> ParsedSchema:
         if value is empty and not marked_not_required:
             validator.must_exist = True
 
-        if ut.is_dict_value(target_type):
+        if ut.is_datadict(target_type):
             if isinstance(value, target_type):
                 instance = defaults[name] = value
             elif isinstance(value, dict):
@@ -120,7 +120,7 @@ def parse_schema(cls) -> ParsedSchema:
 
         elif (
             ut.is_enclosed_list(target_type, type_args)  # list[T]
-            and ut.is_dict_value(type_args[0])  # list[DataDict]
+            and ut.is_datadict(type_args[0])  # list[DataDict]
         ):
             instance_class = type_args[0]
             instance = instance_class()
@@ -135,7 +135,7 @@ def parse_schema(cls) -> ParsedSchema:
                     if isinstance(item, dict):
                         value[i] = instance_class(item)
 
-        elif ut.maybe_dict_value(annotation):  # Optional[T], Union[T, T]
+        elif ut.maybe_datadict(annotation):  # Optional[T], Union[T, T]
             instance_class = ut.get_class_from_type_args(type_args)
             instance = instance_class()
 
@@ -144,7 +144,7 @@ def parse_schema(cls) -> ParsedSchema:
                 defaults[name] = instance
 
             # NOTE: combine ORValidator here in case of
-            # Union[DictValue, DictValue, ...]
+            # Union[DataDict, DataDict, ...]
             extra_validator = BaseValidator(
                 name,
                 items_validators=instance.__schema__.validators,
@@ -152,7 +152,7 @@ def parse_schema(cls) -> ParsedSchema:
             )
             extra_validators.append(extra_validator)
 
-        elif ut.is_dict_value_in_a_dict(annotation):  # dict[T, DataDict]
+        elif ut.is_datadict_in_a_dict(annotation):  # dict[T, DataDict]
             instance_class = type_args[1]
             instance = instance_class()
             validator.items_validators = instance.__schema__.validators

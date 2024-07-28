@@ -1,7 +1,7 @@
 from typing import Optional
 
 from dynaconf.typed import Annotated
-from dynaconf.typed import DictValue
+from dynaconf.typed import DataDict
 from dynaconf.typed import Dynaconf
 from dynaconf.typed import ItemsValidator
 from dynaconf.typed import NotRequired
@@ -18,13 +18,13 @@ from dynaconf.typed.validators import Not
 from dynaconf.typed.validators import Regex
 
 
-class Database(DictValue):
+class Database(DataDict):
     host: str
     port: int = 5432
     conn: NotRequired[Annotated[str, is_connection_string]]
 
 
-class Plugin(DictValue):
+class Plugin(DataDict):
     name: str
     version: str = "latest"
 
