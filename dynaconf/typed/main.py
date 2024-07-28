@@ -3,6 +3,7 @@ from __future__ import annotations
 # WARNING: remove the import above when debugging on Python 3.12
 # otherwise type annotations will be stringified.
 from dataclasses import asdict
+from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
@@ -12,11 +13,10 @@ from dynaconf.utils.functional import Empty
 
 from . import guards as gu
 from . import utils as ut
-from .compat import _dataclass
 from .parser import parse_schema
 
 
-@_dataclass
+@dataclass
 class Options:
     """Options to configure the initialization of typed.Dynaconf Object.
 
@@ -55,7 +55,7 @@ class Dynaconf(BaseDynaconfSettings):
     and default values extracted from subclass type annotations and attributes.
     """
 
-    __reserved__ = {}
+    __reserved__: dict = {}
     dynaconf_options: Options
 
     def __new__(cls, *args, **kwargs):

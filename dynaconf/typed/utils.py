@@ -127,10 +127,10 @@ def multi_dict_merge(*dicts) -> dict:
 def dump_debug_info(init_options, validators, schema):
     """Debug utility to be removed later"""
     dump = __builtins__["print"]  # cheat the linter
+
     # pdump = __import__("pprint").pp
-    jdump = lambda v: dump(
-        json.dumps(v, indent=2, sort_keys=True, default=str)
-    )
+    def jdump(v):
+        return dump(json.dumps(v, indent=2, sort_keys=True, default=str))
 
     def tdump(text, char="*", offset=0, s=""):
         return dump(

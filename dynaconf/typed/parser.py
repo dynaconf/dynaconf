@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import types
 from dataclasses import asdict
+from dataclasses import dataclass
 from dataclasses import field
 from typing import Callable
 
@@ -12,12 +13,11 @@ from . import exceptions as ex
 from . import guards as gu
 from . import types as ty
 from . import utils as ut
-from .compat import _dataclass
 from .compat import get_annotations
 from .compat import Self
 
 
-@_dataclass
+@dataclass
 class Spec:
     type_class: type
     """The type for the value."""
@@ -28,13 +28,13 @@ class Spec:
     items: Spec | None = None
     """Item spec for list objects."""
     doc: str = ""
-    """Documentaion text"""
+    """Documentation text"""
 
     def as_dict(self):
         return {k: v for k, v in asdict(self).items() if v is not None}
 
 
-@_dataclass
+@dataclass
 class ParsedSchema:
     defaults: dict
     validators: list[BaseValidator]
