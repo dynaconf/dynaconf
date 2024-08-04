@@ -4,31 +4,72 @@ import types
 from dataclasses import asdict
 from dataclasses import dataclass
 from dataclasses import field
+from typing import Any
 from typing import Callable
+from typing import get_origin
 
+from dynaconf.typed import exceptions as ex
+from dynaconf.typed import guards as gu
+from dynaconf.typed import type_definitions as ty
+from dynaconf.typed import utils as ut
 from dynaconf.utils.functional import empty
 from dynaconf.validator import Validator as BaseValidator
 
-from . import exceptions as ex
-from . import guards as gu
-from . import types as ty
-from . import utils as ut
 from .compat import get_annotations
 from .compat import Self
 
 
 @dataclass
 class Spec:
-    type_class: type
-    """The type for the value."""
+    """
+    Given a Schema::
+
+        class Thing(DataDict):
+            name: str = "default"
+
+    Given the following annotation::
+
+        key: Annotation[
+            list[int, Thing],  # translates to list[int, dict]
+            Transformer(
+                lambda the_list: [i*2 for i in the_list if isinstance(i, int)]
+            ),
+        ]
+
+    Spec is generated as::
+
+        {
+           annotation: list[int, dict],
+           transformer: Transformer(<lambda>) obj,
+           items: {
+             annotation: dict,
+             transformer: Thing,
+             properties: {
+                 "name": {annotation: str}
+             }
+           }
+        }
+
+    Result is::
+
+        key = [1, {}]
+        key[0] == 2
+        key[1] == Thing({"name": "default"})
+
+    """
+
+    annotation: type
+    """The type as annotated on schema class."""
+    transformer: Callable[[Any], Any] | None = None
+    """Which transformer is used to transform the type annotations."""
     properties: dict[str, Self] = field(default_factory=dict)
     """Mapping for nested objects."""
-    transformer: Callable | None = None
-    """A callable to apply transformation upon loading."""
     items: Spec | None = None
     """Item spec for list objects."""
+    items_lookup: Callable[[Any], Any] | None = None
+    """Callable to grab items when nested."""
     doc: str = ""
-    """Documentation text"""
+    """Documentation text."""
 
     def as_dict(self):
         return {k: v for k, v in asdict(self).items() if v is not None}
@@ -38,16 +79,29 @@ class Spec:
 class ParsedSchema:
     defaults: dict
     validators: list[BaseValidator]
-    schema: dict[str, Spec]
+    specs: dict[str, Spec]
 
     def as_dict(self):
         return asdict(self)
+
+    def apply_transformer(self, name: str, value: Any) -> Any:
+        """Apply transformer if defined."""
+        if (spec := self.specs.get(name)) is not None:
+            if spec.transformer:
+                return spec.transformer(value)
+        return value
+
+    def apply_transformer_all(self, data: dict) -> dict:
+        """Apply transformers in a dictionary."""
+        for name, value in data.items():
+            data[name] = self.apply_transformer(name, value)
+        return data
 
 
 def parse_schema(cls) -> ParsedSchema:
     """Extracts defaults and validators from a cls.
 
-    This function is used on the main typed.Dynaconf and types.DataDict
+    This function is used on the main typed.Dynaconf and typed.DataDict
     """
     defaults = {}
     validators = []
@@ -73,14 +127,14 @@ def parse_schema(cls) -> ParsedSchema:
 
         marked_not_required = False
         validator = BaseValidator(name, is_type_of=annotation)
-        spec = schema[name] = Spec(type_class=annotation)
+        spec = schema[name] = Spec(annotation=annotation)
 
         annotated_validators: list[BaseValidator] = []
         extra_validators: list[BaseValidator] = []
 
         if ut.is_annotated(annotation):
             validator = BaseValidator(name, is_type_of=target_type)
-            spec.type_class = target_type
+            spec.annotation = target_type
 
             # here is where we extract markers and validator from Annotated
             for arg in type_args:
@@ -113,7 +167,9 @@ def parse_schema(cls) -> ParsedSchema:
                     defaults[name] = instance
 
             validator.items_validators = instance.__schema__.validators
-            spec.properties = instance.__schema__.schema
+            spec.annotation = dict
+            spec.properties = instance.__schema__.specs
+            spec.transformer = target_type
 
             if instance:
                 validator.must_exist = None  # can't be False
@@ -125,10 +181,11 @@ def parse_schema(cls) -> ParsedSchema:
             instance_class = type_args[0]
             instance = instance_class()
             validator.items_validators = instance.__schema__.validators
-            spec.type_class = list
+            spec.annotation = list[dict]
             spec.items = Spec(
-                type_class=dict,
+                annotation=dict,
                 transformer=instance_class,
+                properties=instance.__schema__.specs,
             )
             if isinstance(value, list):
                 for i, item in enumerate(value):
@@ -138,6 +195,22 @@ def parse_schema(cls) -> ParsedSchema:
         elif ut.maybe_datadict(annotation):  # Optional[T], Union[T, T]
             instance_class = ut.get_class_from_type_args(type_args)
             instance = instance_class()
+
+            # Set it to Union[dict, *args]
+            spec.annotation = get_origin(annotation).__getitem__(
+                tuple(
+                    [
+                        dict,
+                        *[
+                            arg
+                            for arg in type_args
+                            if arg is not instance_class
+                        ],
+                    ]
+                )
+            )
+            spec.transformer = instance_class
+            spec.properties = instance.__schema__.specs
 
             if isinstance(value, dict):
                 instance.update(value)
@@ -156,7 +229,15 @@ def parse_schema(cls) -> ParsedSchema:
             instance_class = type_args[1]
             instance = instance_class()
             validator.items_validators = instance.__schema__.validators
-            validator.items_lookup = lambda item: item.values()
+            validator.items_lookup = lambda _item: _item.values()
+
+            spec.annotation = dict[type_args[0], dict]  # type: ignore
+            spec.items_lookup = lambda _item: _item.values()
+            spec.items = Spec(
+                annotation=dict,
+                transformer=instance_class,
+                properties=instance.__schema__.specs,
+            )
 
             if isinstance(value, dict):
                 for k, v in value.items():  # {T: {.}}
@@ -171,5 +252,5 @@ def parse_schema(cls) -> ParsedSchema:
     return ParsedSchema(
         defaults=defaults,
         validators=validators,
-        schema=schema,
+        specs=schema,
     )

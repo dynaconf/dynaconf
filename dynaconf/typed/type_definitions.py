@@ -53,13 +53,13 @@ class M(type):
     def __new__(cls, name, bases, namespace):
         if namespace["__module__"] != __name__:
             # Rules applies only to subclasses
-            annotations = namespace.get("__annotations__")
+            _annotations = namespace.get("__annotations__")
             dunders = [item for item in dir(cls) if item.startswith("_")]
             dunders.append("__annotations__")  # for python 3.9
             attributes = [k for k in namespace if k not in dunders]
             namespace["__reserved__"] = {}
             for attr in attributes:
-                if attr not in annotations:
+                if attr not in _annotations:
                     if isinstance(
                         namespace[attr],
                         (
@@ -86,102 +86,52 @@ class M(type):
 
 
 class DataDict(dict, metaclass=M):  # type: ignore
-    """DataDict represents a Typed Dict in the settings.
+    """DataDict represents a Typed Dict in the settings."""
 
-    The typing.TypedDict could not be used because the constraints differs.
-
-    The UserDict could not be used because it adds more reserved names for
-    attr access.
-
-    self.__data__ dict that holds the actual data.
-    self.__reserved__ dict that holds any key part of the reserved words
-    """
-
+    __slots__ = ()
     __reserved__: dict
-    __data__: dict
-
     _dynaconf_datadict = True  # a marker for validator_conditions.is_type_of
-
-    # List of methods that when accessed are passed through to self.__data__
-    __dict_methods__ = M.__dict_methods__
-
-    __local_attributes__ = [
-        "__data__",
-        "__reserved__",
-        "__defaults__",
-        "__validators__",
-        "__schema__",
-    ]
+    __local_attributes__ = ["__reserved__", "__schema__"]
 
     def __init__(self, _dict: dict | None = None, **kwargs):
-        """Initialize the dict-like object with its defaults applied."""
+        """Initialize the dict-like object.
+
+        - Parse schema (defaults, validators, spec)
+        - Merge defaults from schema + dict parameters
+        - Apply transformations from schema if defined
+        """
         self.__schema__ = parse_schema(self.__class__)
         data = ut.multi_dict_merge(self.__schema__.defaults, _dict, kwargs)
-        self.__data__ = data
+        data = self.__schema__.apply_transformer_all(data)
+        super().__init__(data)
+
+    def __setitem__(self, key, value):
+        value = self.__schema__.apply_transformer(key, value)
+        super().__setitem__(key, value)
+
+    def update(self, _dict, **kwargs):
+        data = ut.multi_dict_merge(_dict, kwargs)
+        data = self.__schema__.apply_transformer_all(data)
+        super().update(data)
 
     def __setattr__(self, name, value):
         if name in self.__local_attributes__:
             return super().__setattr__(name, value)
-        self.__data__[name] = value
-
-    def __getattribute__(self, attr):
-        dict_attrs = object.__getattribute__(self, "__dict_methods__")
-        if attr in dict_attrs:
-            data = object.__getattribute__(self, "__data__")
-            return getattr(data, attr)
-        return super().__getattribute__(attr)
-
-    def __getitem__(self, item):
-        return self.__data__[item]
-
-    def __setitem__(self, item, value):
-        self.__data__[item] = value
+        self[name] = value
 
     def __getattr__(self, attr):
         try:
-            data = object.__getattribute__(self, "__data__")
-            return data[attr]
+            return self[attr]
         except KeyError:
-            raise AttributeError(
-                f"{self.__class__.__name__!r} has no attribute {attr!r}"
-            )
+            raise AttributeError(attr) from None
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({self.__data__.__repr__()})"
-
-    def __contains__(self, other):
-        return other in self.__data__
+        return f"{self.__class__.__name__}({dict(self)})"
 
     def copy(self):
-        return self.__class__(self.__data__.copy())
-
-    def __eq__(self, other):
-        return self.__data__ == other
-
-    def __iter__(self):
-        return iter(self.__data__)
-
-    def __bool__(self):
-        return bool(self.__data__)
-
-    @classmethod
-    def fromkeys(cls, iterable, value):
-        data = dict.fromkeys(iterable, value)
-        return cls(data)
+        return self.__class__(super().copy())
 
 
-"""
-Aliases for supported types
-That can be used with Annotated, Union and T[T]
-These are defined here mainly to help with auto complete
-
-    from dynaconf.typed import types as ts
-    class Settings(Dynaconf):
-        field: ts.Str
-        # actually the same as
-        field: str
-
-"""
 Str = str
 Int = int
 Float = float
@@ -203,3 +153,15 @@ SUPPORTED_TYPES = (
     Dict,
     DataDict,
 )
+"""
+Aliases for supported types
+That can be used with Annotated, Union and T[T]
+These are defined here mainly to help with auto complete
+
+    from dynaconf.typed import types as ts
+    class Settings(Dynaconf):
+        field: ts.Str
+        # actually the same as
+        field: str
+
+"""

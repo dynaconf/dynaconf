@@ -4,9 +4,9 @@ from .exceptions import DynaconfSchemaError
 from .exceptions import ValidationError
 from .main import Dynaconf
 from .main import Options
-from .types import Annotated
-from .types import DataDict
-from .types import NotRequired
+from .type_definitions import Annotated
+from .type_definitions import DataDict
+from .type_definitions import NotRequired
 from .validators import ItemsValidator
 from .validators import Validator
 

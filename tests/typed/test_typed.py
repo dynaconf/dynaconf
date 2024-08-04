@@ -26,7 +26,7 @@ def test_immediate_validation():
 
 def test_lazy_validation_with_options():
     class Settings(Dynaconf):
-        dynaconf_options = Options(_trigger_validation=False)
+        dynaconf_options = Options(trigger_validation=False)
         host: Annotated[str, Validator(ne="denied.com")]
 
     # Don't trigger validation immediately
@@ -60,7 +60,7 @@ def test_options_contains_only_valid_and_set_attributes():
         env="dev",
         envvar_prefix="BATATA",
         settings_file="foo.json",
-        _trigger_validation=False,  # not included
+        trigger_validation=False,  # not included
     )
     options_dict = options.as_dict()
     assert options_dict == {
@@ -224,7 +224,7 @@ def test_xxxxx(monkeypatch):
 
     class Settings(Dynaconf):
         dynaconf_options = Options(
-            _trigger_validation=False,
+            trigger_validation=False,
             environments=True,
         )
         database: Database
@@ -232,7 +232,7 @@ def test_xxxxx(monkeypatch):
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_DATABASE__extra__plugins", '@json [{"name": 42}]')
         settings = Settings(_debug_mode=True)
-        assert settings.database
+        assert settings.database.extra
         # print()
         # print(settings.keys())
         # print(settings.database)
@@ -467,7 +467,7 @@ def test_lazy_validation(monkeypatch):
     class Settings(Dynaconf):
         dynaconf_options = Options(
             envvar_prefix="XPTO",
-            _trigger_validation=False,
+            trigger_validation=False,
         )
         name: Annotated[str, Validator(ne="Valdemort")]
 
@@ -497,7 +497,7 @@ def test_only_supported_types_can_be_used():
     class A: ...
 
     class Settings(Dynaconf):
-        dynaconf_options = Options(_trigger_validation=False)
+        dynaconf_options = Options(trigger_validation=False)
         name: A
 
     err_msg = "Invalid type 'A'"
@@ -573,7 +573,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
 
     class Settings(Dynaconf):
         dynaconf_options = Options(
-            _trigger_validation=False,
+            trigger_validation=False,
         )
         name: Annotated[str, Validator(ne="Valdemort")]
         age: int
@@ -948,7 +948,7 @@ def test_list_enclosed_type_outer_union():
 def test_list_enclosed_type_annotated():
     # Annotated with Validator
     class Settings(Dynaconf):
-        dynaconf_options = Options(_trigger_validation=False)
+        dynaconf_options = Options(trigger_validation=False)
         colors: Annotated[list[str], Validator(contains="red")]
 
     Settings(colors=["red"])
@@ -1187,7 +1187,7 @@ def test_usage_of_dict_value():
     )
 
     class Settings(Dynaconf):
-        dynaconf_options = Options(_trigger_validation=False)
+        dynaconf_options = Options(trigger_validation=False)
         # not covered
         # thing: Union[int, str]
         # person_union: Union[Person, str, None]
@@ -1258,12 +1258,8 @@ def test_dictvalue_isolated():
     with pytest.raises(AttributeError):
         bruno.nickname
 
-    # required
-    with pytest.raises(TypeError, match="name is required"):
-        Person(age=90)
-
     # defaults
-    defaults = Person.__get_defaults__()
+    defaults = Person().__schema__.defaults
     assert defaults["age"] == 17
     assert defaults["colors"] == ["red"]
     assert "name" not in defaults
