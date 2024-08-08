@@ -25,6 +25,26 @@ def test_deleted_raise(settings):
     assert settings.exists("TODELETE") is False
     assert settings.get("TODELETE") is None
 
+    # case: del using lowercase when original was mixed-case
+    settings.ToDelete3 = True
+    assert "ToDelete3" in settings
+    assert settings.TODELETE3 is True
+    del settings.todelete3
+    with pytest.raises(AttributeError):
+        assert settings.TODELETE3 is True
+    assert settings.exists("TODELETE3") is False
+    assert settings.get("TODELETE3") is None
+
+    # case: del nested item
+    settings.set("Abc.Xyz.Uv", 123)
+    assert settings.abc.xyz.uv == 123
+    del settings.abc.xyz.uv
+    with pytest.raises(AttributeError):
+        assert settings.abc.xyz.uv == 123
+    assert settings.exists("abc.xyz") is True
+    assert settings.exists("abc.xyz.uv") is False
+    assert settings.get("abc.xyz.uv") is None
+
 
 def test_delete_and_set_again(settings):
     """asserts variable can be deleted and set again"""

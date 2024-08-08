@@ -22,7 +22,7 @@ pytest
 pytest-cov
 pytest-mock
 commentjson
-lovely-pytest-docker
+pytest-docker
 tox
 
 # style check
