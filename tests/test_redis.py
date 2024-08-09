@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -10,8 +12,11 @@ from dynaconf.loaders.redis_loader import load
 from dynaconf.loaders.redis_loader import write
 from dynaconf.utils.inspect import get_history
 
+if TYPE_CHECKING:
+    from pytest_docker.plugin import Service
 
-def custom_checker(ip_address, port):
+
+def is_responsive(url):
     # This function should be check if the redis server is online and ready
     # write(settings, {"SECRET": "redis_works"})
     # return load(settings, key="SECRET")
@@ -28,12 +33,12 @@ if DYNACONF_TEST_REDIS_URL:
 else:
 
     @pytest.fixture(scope="module")
-    def docker_redis(docker_services):
-        docker_services.start("redis")
-        public_port = docker_services.wait_for_service(
-            "redis", 6379, check_server=custom_checker
+    def docker_redis(docker_ip: str, docker_services: Iterator[Service]):
+        port = docker_services.port_for("redis", 6379)
+        url = f"http://{docker_ip}:{port}"
+        docker_services.wait_until_responsive(
+            timeout=15.0, pause=0.1, check=lambda: is_responsive(url)
         )
-        url = f"http://{docker_services.docker_ip}:{public_port}"
         return url
 
 

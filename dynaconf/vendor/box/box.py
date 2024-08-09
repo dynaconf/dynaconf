@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Union, Tuple, List, Dict
 
 from dynaconf.vendor import box
+from dynaconf.utils import find_the_correct_casing
 from .converters import (_to_json, _from_json, _from_toml, _to_toml, _from_yaml, _to_yaml, BOX_PARAMETERS)
 from .exceptions import BoxError, BoxKeyError, BoxTypeError, BoxValueError, BoxWarning
 
@@ -402,7 +403,7 @@ class Box(dict):
                     if _camel_killer(key) == each_key:
                         key = each_key
                         break
-        super().__delitem__(key)
+        super().__delitem__(find_the_correct_casing(key, self))
 
     def __delattr__(self, item):
         if self._box_config['frozen_box']:
