@@ -559,6 +559,37 @@ def test_get_history_env_and_key_filter(tmp_path):
     assert history[1]["value"] == "from_prod_b"
 
 
+def tests_get_history_with_variable_interpolation():
+    """Variable interpolation is not evaluated.
+    https://github.com/dynaconf/dynaconf/issues/1180
+
+    The original issue was about an exception being raised when there was
+    variable interpolation involved. But in the end, the get_history shouldnt
+    evaluate the interpolations:
+
+    - History should accurately inform the order and content of what the user loaded.
+    - For a key with a interpolation value, the accurate representation is not the evaluated
+      value, but the original template string.
+    - The evaluated depends on other keys, so for
+      history inspecting it is more reliable to show what variables were used so the user
+      can verify if everything happened as expected.
+    """
+    data = {
+        "a": {
+            "b": "foo",
+            "c": "bar",
+            "d": "@format {this.a.b} {this.a.c}",
+        }
+    }
+
+    settings = Dynaconf(**data)
+
+    assert settings.a.d == "foo bar"
+    history = get_history(settings, "a.d")
+    # shows the not-evaluated (raw) value
+    assert history[0]["value"] == "@format {this.a.b} {this.a.c}"
+
+
 def test_caveat__get_history_env_true(tmp_path):
     """
     Given environments=True and sources=file
