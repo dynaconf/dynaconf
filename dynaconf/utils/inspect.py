@@ -17,6 +17,7 @@ from typing import Union
 from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.functional import empty
+from dynaconf.utils.parse_conf import Lazy
 from dynaconf.vendor.box.box_list import BoxList
 from dynaconf.vendor.ruamel.yaml import YAML
 
@@ -322,13 +323,19 @@ def _get_data_by_key(
     if sep in key_dotted_path:
         key_dotted_path = key_dotted_path.replace(sep, ".")
 
+    def handle_repr(value):
+        # lazy values shouldnt be evaluated for inspecting
+        if isinstance(value, Lazy):
+            return value._dynaconf_encode()
+        return value
+
     def traverse_data(data, path):
         # transform `a.b.c` in successive calls to `data['a']['b']['c']`
         path = path.split(".")
         root_key, nested_keys = path[0], path[1:]
-        result = data[root_key]
+        result = data._safe_get(root_key)
         for key in nested_keys:
-            result = result[key]
+            result = handle_repr(result._safe_get(key))
         return result
 
     try:

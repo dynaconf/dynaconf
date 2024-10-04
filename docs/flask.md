@@ -23,7 +23,7 @@ FlaskDynaconf(app)
 
 Dynaconf transform nested data structures to a new DynaBox instance, this is an
 object that allows dot notation access such as `app.config.key.value.other`.
-However this feature is imcompatible with some Flask extensions, for example:
+However this feature is incompatible with some Flask extensions, for example:
 `Flask-Alembic`.
 
 So in case you see a `BoxKeyError` when running your app with you can run it on
