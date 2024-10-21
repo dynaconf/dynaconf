@@ -319,6 +319,10 @@ class Settings:
         if hasattr(self, name):
             super().__delattr__(name)
 
+    def __delitem__(self, name):
+        self._deleted.add(name)
+        self.set(name, "@del")
+
     def __contains__(self, item):
         """Respond to `item in settings`"""
         return item.upper() in self.store or item.lower() in self.store
