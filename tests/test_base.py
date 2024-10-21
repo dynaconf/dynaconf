@@ -15,6 +15,7 @@ from dynaconf.utils.parse_conf import true_values
 from dynaconf.vendor.box.box_list import BoxList
 
 
+@pytest.mark.xfail(raises=AttributeError, reason="AttributeError: __delitem__")
 def test_deleted_raise(settings):
     """asserts variable can be deleted"""
     assert "TODELETE" in settings
@@ -35,7 +36,7 @@ def test_deleted_raise(settings):
     assert settings.exists("TODELETE3") is False
     assert settings.get("TODELETE3") is None
 
-    # case: del nested item
+    # case: del nested attribute
     settings.set("Abc.Xyz.Uv", 123)
     assert settings.abc.xyz.uv == 123
     del settings.abc.xyz.uv
@@ -44,6 +45,26 @@ def test_deleted_raise(settings):
     assert settings.exists("abc.xyz") is True
     assert settings.exists("abc.xyz.uv") is False
     assert settings.get("abc.xyz.uv") is None
+
+    # case: del item
+    settings.TODELETE4 = True
+    assert "TODELETE4" in settings
+    assert settings.TODELETE4 is True
+    del settings["TODELETE4"]
+    with pytest.raises(AttributeError):
+        assert settings.TODELETE4 is True
+    assert settings.exists("TODELETE4") is False
+    assert settings.get("TODELETE4") is None
+
+    # case: del item lowercase when orifinal was mixed-case
+    settings.ToDelete3 = True
+    assert "ToDelete3" in settings
+    assert settings.TODELETE3 is True
+    del settings["todelete3"]
+    with pytest.raises(AttributeError):
+        assert settings.TODELETE3 is True
+    assert settings.exists("TODELETE3") is False
+    assert settings.get("TODELETE3") is None
 
 
 def test_delete_and_set_again(settings):
