@@ -15,7 +15,6 @@ from dynaconf.utils.parse_conf import true_values
 from dynaconf.vendor.box.box_list import BoxList
 
 
-@pytest.mark.xfail(raises=AttributeError, reason="AttributeError: __delitem__")
 def test_deleted_raise(settings):
     """asserts variable can be deleted"""
     assert "TODELETE" in settings
