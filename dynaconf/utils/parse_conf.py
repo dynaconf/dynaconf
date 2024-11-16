@@ -219,8 +219,14 @@ class Lazy:
         self, value=empty, formatter=Formatters.python_formatter, casting=None
     ):
         self.value = value
-        self.formatter = formatter
         self.casting = casting
+        # Sometimes a simple function is passed to the formatter.
+        # but on evaluation-time, we may need to access `formatter.token`
+        # so we are wrapping the fn to comply with this interface.
+        if isinstance(formatter, BaseFormatter):
+            self.formatter = formatter
+        else:
+            self.formatter = BaseFormatter(formatter, "lambda")
 
     @property
     def context(self):
