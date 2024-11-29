@@ -550,6 +550,12 @@ class CombinedValidator(Validator):
             "subclasses OrValidator or AndValidator implements this method"
         )
 
+    def __repr__(self):
+        result = f"{self.__class__.__name__}("
+        result += ", ".join(repr(v) for v in self.validators)
+        result += ")"
+        return result
+
 
 class OrValidator(CombinedValidator):
     """Evaluates on Validator() | Validator()"""
