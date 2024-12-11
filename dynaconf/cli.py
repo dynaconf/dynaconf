@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import inspect as python_inspect
 import json
 import os
 import pprint
@@ -9,13 +10,13 @@ import warnings
 import webbrowser
 from contextlib import suppress
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from dynaconf import constants
 from dynaconf import default_settings
 from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf import settings as legacy_settings
+from dynaconf.base import Settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
@@ -32,9 +33,6 @@ from dynaconf.validator import Validator
 from dynaconf.vendor import click
 from dynaconf.vendor import toml
 from dynaconf.vendor import tomllib
-
-if TYPE_CHECKING:  # pragma: no cover
-    from dynaconf.base import Settings  # noqa: F401
 
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
@@ -80,6 +78,7 @@ def set_settings(ctx, instance=None):
     elif "DJANGO_SETTINGS_MODULE" in os.environ:  # pragma: no cover
         sys.path.insert(0, os.path.abspath(os.getcwd()))
         try:
+            # breakpoint()
             # Django extension v2
             from django.conf import settings  # noqa
             import dynaconf  # noqa: F401
@@ -91,7 +90,16 @@ def set_settings(ctx, instance=None):
 
             settings.DYNACONF.configure()
         except AttributeError:
-            settings = LazySettings()
+            # Try to import the settings instance from the settings module
+            settings_module = import_settings(
+                os.environ["DJANGO_SETTINGS_MODULE"]
+            )
+            for member in python_inspect.getmembers(settings_module):
+                if isinstance(member[1], (LazySettings, Settings)):
+                    settings = member[1]
+                    break
+            else:
+                settings = LazySettings()
 
         if settings is not None and _echo_enabled:
             click.echo(
@@ -130,6 +138,7 @@ def import_settings(dotted_path):
         raise click.UsageError(
             f"invalid path to settings instance: {dotted_path}"
         )
+
     try:
         module = importlib.import_module(module)
     except ImportError as e:

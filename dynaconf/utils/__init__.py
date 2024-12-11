@@ -432,13 +432,8 @@ def _recursively_evaluate_lazy_format(
         value = value(settings)
 
     if isinstance(value, list):
-        # Keep the original type, can be a BoxList
-        value = value.__class__(
-            [
-                _recursively_evaluate_lazy_format(item, settings)
-                for item in value
-            ]
-        )
+        for idx, item in enumerate(value):
+            value[idx] = _recursively_evaluate_lazy_format(item, settings)
 
     return value
 

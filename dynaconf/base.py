@@ -1227,6 +1227,7 @@ class Settings:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
 
         env = (env or self.current_env).upper()
+
         files = ensure_a_list(path)
         if files:
             already_loaded = set()
@@ -1357,15 +1358,19 @@ class Settings:
             value = self.get_fresh(key)
             return value is True or value in true_values
 
-    def populate_obj(self, obj, keys=None, ignore=None):
+    def populate_obj(self, obj, keys=None, ignore=None, internal=False):
         """Given the `obj` populate it using self.store items.
 
         :param obj: An object to be populated, a class instance.
         :param keys: A list of keys to be included.
         :param ignore: A list of keys to be excluded.
         """
+        setattr(obj, "DYNACONF", self)
         keys = keys or self.keys()
         for key in keys:
+            if not internal:
+                if key in UPPER_DEFAULT_SETTINGS:
+                    continue
             key = upperfy(key)
             if ignore and key in ignore:
                 continue
