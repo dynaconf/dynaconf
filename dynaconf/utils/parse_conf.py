@@ -141,6 +141,21 @@ class Merge(MetaValue):
         self.unique = unique
 
 
+class Insert(MetaValue):
+    """Triggers the value to be inserted into a list at specific index"""
+
+    _dynaconf_insert = True
+
+    def __init__(self, value, box_settings):
+        self.box_settings = box_settings
+        self.value = parse_conf_data(
+            value, tomlfy=True, box_settings=box_settings
+        )
+        # value will be a string like `0 foo` or `-1 foo` and needs to get split
+        self.index, self.value = self.value.split(" ", 1)
+        self.index = int(self.index)
+
+
 class BaseFormatter:
     def __init__(self, function, token):
         self.function = function
@@ -309,6 +324,7 @@ converters = {
     "@merge_unique": lambda value, box_settings: Merge(
         value, box_settings, unique=True
     ),
+    "@insert": Insert,
     "@get": lambda value: Lazy(value, formatter=Formatters.get_formatter),
     # Special markers to be used as placeholders e.g: in prefilled forms
     # will always return None when evaluated

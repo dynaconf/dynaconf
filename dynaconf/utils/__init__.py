@@ -76,7 +76,10 @@ def object_merge(
             if data.__class__.__name__ == "DynaBox":
                 return data._safe_items()
             else:
-                return data.items()
+                return data.items()  # TODO @rochacbruno: Make the above line work with 2 dynaconf_merge
+
+        # https://github.com/dynaconf/dynaconf/issues/todo
+        # {"a": ["d", "e"], "dynaconf_merge": True},
 
         # local mark may set dynaconf_merge=False
         should_merge = new.pop("dynaconf_merge", True)
@@ -142,6 +145,16 @@ def handle_metavalues(
             new[key] = object_merge(
                 old.get(key), new[key].unwrap(), unique=new[key].unique
             )
+        elif getattr(new[key], "_dynaconf_insert", False):
+            # Insert on `new` triggers insert with existing data
+            # if existing is a list it inserts at specified .index
+            # if existing is not a list it creates a new list with the value
+            existing = old.get(key)
+            if isinstance(existing, list):
+                existing.insert(new[key].index, new[key].unwrap())
+            else:
+                old[key] = [new[key].unwrap()]
+            new.pop(key, None)
 
         # Data structures containing merge tokens
         if isinstance(new.get(key), (list, tuple)):
@@ -432,8 +445,17 @@ def _recursively_evaluate_lazy_format(
         value = value(settings)
 
     if isinstance(value, list):
-        for idx, item in enumerate(value):
-            value[idx] = _recursively_evaluate_lazy_format(item, settings)
+        # This must be the right way of doing it, but breaks validators
+        # To be changed on 4.0.0
+        # for idx, item in enumerate(value):
+        #     value[idx] = _recursively_evaluate_lazy_format(item, settings)
+
+        value = value.__class__(
+            [
+                _recursively_evaluate_lazy_format(item, settings)
+                for item in value
+            ]
+        )
 
     return value
 
