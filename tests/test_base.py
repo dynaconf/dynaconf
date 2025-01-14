@@ -571,6 +571,57 @@ def test_set_new_merge_issue_241_5(tmpdir):
     }
 
 
+def test_set_insert_token(tmpdir):
+    data = {
+        "a_list": [1, 2],
+        "b_list": [1],
+        "a_dict": {"name": "Bruno", "teams": ["dev"]},
+    }
+    toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
+    settings = LazySettings(settings_file="settings.toml")
+    assert settings.A_LIST == [1, 2]
+    assert settings.B_LIST == [1]
+    assert settings.A_DICT == {"name": "Bruno", "teams": ["dev"]}
+    assert settings.A_DICT.name == "Bruno"
+    assert settings.A_DICT.teams == ["dev"]
+
+    settings.set("a_list", "@insert 0 0")
+    assert settings.A_LIST == [0, 1, 2]
+
+    settings.set("a_list", "@insert 1 1.5")
+    assert settings.A_LIST == [0, 1.5, 1, 2]
+
+    settings.set("a_list", "@insert 4 4")
+    assert settings.A_LIST == [0, 1.5, 1, 2, 4]
+
+    settings.set("b_list", "@insert 0 42")
+    assert settings.B_LIST == [42, 1]
+
+    settings.set("b_list", "@insert 1 43")
+    assert settings.B_LIST == [42, 43, 1]
+
+    settings.set("a_dict.teams", "@insert 0 'admin'")
+    assert settings.A_DICT.teams == ["admin", "dev"]
+
+    settings.set("a_dict.teams", "@insert 1 'staff'")
+    assert settings.A_DICT.teams == ["admin", "staff", "dev"]
+
+    settings.set("a_dict.teams", "@insert 3 'user'")
+    assert settings.A_DICT.teams == ["admin", "staff", "dev", "user"]
+
+    settings.set("a_dict.teams", "@insert 0 'admin'")
+    assert settings.A_DICT.teams == ["admin", "admin", "staff", "dev", "user"]
+
+    settings.set("new_key", "@insert 0 'foo'")
+    assert settings.NEW_KEY == ["foo"]
+
+    settings.set("new_key", "@insert 'bar'")
+    assert settings.NEW_KEY == ["bar", "foo"]
+
+    settings.set("new_key", "@insert 42")
+    assert settings.NEW_KEY == [42, "bar", "foo"]
+
+
 def test_set_with_non_str_types():
     """This replicates issue #1005 in a simplified setup."""
     settings = Dynaconf(merge_enabled=True)

@@ -76,8 +76,9 @@ def object_merge(
             if data.__class__.__name__ == "DynaBox":
                 return data._safe_items()
             else:
-                return data.items()  # TODO @rochacbruno: Make the above line work with 2 dynaconf_merge
+                return data.items()
 
+        # TODO @rochacbruno: Make the above line work with 2 dynaconf_merge
         # https://github.com/dynaconf/dynaconf/issues/todo
         # {"a": ["d", "e"], "dynaconf_merge": True},
 
@@ -149,12 +150,12 @@ def handle_metavalues(
             # Insert on `new` triggers insert with existing data
             # if existing is a list it inserts at specified .index
             # if existing is not a list it creates a new list with the value
-            existing = old.get(key)
-            if isinstance(existing, list):
+            existing = old.get(key)  # keep the same reference
+            if isinstance(existing, list):  # perform insert on it
                 existing.insert(new[key].index, new[key].unwrap())
+                new[key] = existing
             else:
-                old[key] = [new[key].unwrap()]
-            new.pop(key, None)
+                new[key] = [new[key].unwrap()]
 
         # Data structures containing merge tokens
         if isinstance(new.get(key), (list, tuple)):

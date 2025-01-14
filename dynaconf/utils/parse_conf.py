@@ -147,13 +147,44 @@ class Insert(MetaValue):
     _dynaconf_insert = True
 
     def __init__(self, value, box_settings):
+        """
+        normally value will be a string like
+        `0 foo` or `-1 foo` and needs to get split
+        but value can also be just a single string with or without space
+        like `foo` and in this case it will be treated as `0 foo`
+        but it can also be `foo bar` and in this case it will be treated as `0 foo bar`
+        we need to check if the first part is a number
+        if it is not a number then we will treat it as `0 value`
+        if it is a number then we will split it as `index, value`
+        this must use a regex to match value, examples:
+            -1 foo -> index = -1, value = foo
+            0 foo -> index = 0, value = foo
+            0 foo bar -> index = 0, value = foo bar
+            0 42 -> index = 0, value = 42
+            0 42 foo -> index = 0, value = 42 foo
+            foo -> index = 0, value = foo
+            foo bar -> index = 0, value = foo bar
+            42 -> index = 0, value = 42
+            42 foo -> index = 42, value = foo
+            42 foo bar -> index = 42, value = foo bar
+        """
         self.box_settings = box_settings
+
+        try:
+            if value[0].isdigit():
+                # `0 foo` or `-1 foo` or `42 foo` or `42`(raise ValueError)
+                index, value = value.split(" ", 1)
+            else:
+                # `foo` or `foo bar`
+                index, value = 0, value
+        except ValueError:
+            # `42` or any other non splitable value
+            index, value = 0, value
+
+        self.index = int(index)
         self.value = parse_conf_data(
             value, tomlfy=True, box_settings=box_settings
         )
-        # value will be a string like `0 foo` or `-1 foo` and needs to get split
-        self.index, self.value = self.value.split(" ", 1)
-        self.index = int(self.index)
 
 
 class BaseFormatter:
