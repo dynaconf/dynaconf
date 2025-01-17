@@ -13,7 +13,15 @@ except ImportError:  # pragma: no cover
     ConfigObj = None
 
 
-def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
+def load(
+    obj,
+    env=None,
+    silent=True,
+    key=None,
+    filename=None,
+    validate=False,
+    identifier="ini",
+):
     """
     Reads and loads in to "obj" a single key or all keys from source file.
 
@@ -31,7 +39,7 @@ def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
     loader = BaseLoader(
         obj=obj,
         env=env,
-        identifier="ini",
+        identifier=identifier,
         extensions=INI_EXTENSIONS,
         file_reader=lambda fileobj: ConfigObj(fileobj).dict(),
         string_reader=lambda strobj: ConfigObj(strobj.split("\n")).dict(),

@@ -53,7 +53,15 @@ class AllLoader(BaseLoader):
         return data
 
 
-def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
+def load(
+    obj,
+    env=None,
+    silent=True,
+    key=None,
+    filename=None,
+    validate=False,
+    identifier="yaml",
+):
     """
     Reads and loads in to "obj" a single key or all keys from source file.
 
@@ -85,7 +93,7 @@ def load(obj, env=None, silent=True, key=None, filename=None, validate=False):
     loader = _loader(
         obj=obj,
         env=env,
-        identifier="yaml",
+        identifier=identifier,
         extensions=YAML_EXTENSIONS,
         file_reader=yaml_reader,
         string_reader=yaml_reader,

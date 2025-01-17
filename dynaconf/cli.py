@@ -79,42 +79,13 @@ def set_settings(ctx, instance=None):
                 )
     elif "DJANGO_SETTINGS_MODULE" in os.environ:  # pragma: no cover
         sys.path.insert(0, os.path.abspath(os.getcwd()))
-        try:
-            # Django extension v2
-            from django.conf import settings  # noqa
-            import dynaconf  # noqa: F401
-            import django
-
-            # see https://docs.djangoproject.com/en/4.2/ref/applications/
-            # at #troubleshooting
-            django.setup()
-
-            # I did not wanted to explain this but heres for the future me
-            # when using django explicit mode, it is optional to bind
-            # Dynaconf() instance to DYNACONF (as a convention)
-            # but when using implicit mode the settings is already a Dynaconf instance
-            # here we attempt to call .configure()
-            # if the settings is not a Dynaconf instance it will raise AttributeError
-            # and we will fallback to the except block that will lookup for the settings
-            # instance in the settings module.
-            # if the settings is a Dynaconf instance it will just configure it
-            # and then we will check if settings is not a Dynaconf instance
-            # then we bind the DYNACONF reference to it.
-            # NOTE: implicit mode (DjangoDynaconf) must be deprecated on 4.0.0
-            settings.DYNACONF.configure()
-            if not isinstance(settings, (LazySettings, Settings)):
-                settings = settings.DYNACONF
-        except AttributeError:
-            # Try to import the settings instance from the settings module
-            settings_module = import_settings(
-                os.environ["DJANGO_SETTINGS_MODULE"]
-            )
-            for member in python_inspect.getmembers(settings_module):
-                if isinstance(member[1], (LazySettings, Settings)):
-                    settings = member[1]
-                    break
-            else:
-                settings = LazySettings()
+        settings_module = import__django_settings(
+            os.environ["DJANGO_SETTINGS_MODULE"]
+        )
+        for member in python_inspect.getmembers(settings_module):
+            if isinstance(member[1], (LazySettings, Settings)):
+                settings = member[1]
+                break
 
         if settings is not None and _echo_enabled:
             click.echo(
@@ -138,6 +109,18 @@ def set_settings(ctx, instance=None):
                 settings = LazySettings(create_new_settings=True)
         else:
             settings = LazySettings()
+
+
+def import__django_settings(django_settings_module):
+    """Import the Django settings module from the string importable path."""
+    try:
+        with redirect_stdout(None):
+            module = importlib.import_module(django_settings_module)
+    except ImportError as e:
+        raise click.UsageError(e)
+    except FileNotFoundError:
+        return
+    return module
 
 
 def import_settings(dotted_path):

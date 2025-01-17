@@ -15,10 +15,12 @@ with suppress(ImportError, FileNotFoundError):
 
     DOTENV_IMPORTED = True
 
-IDENTIFIER = "env"
+IDENTIFIER_PREFIX = "env"
 
 
-def load(obj, env=None, silent=True, key=None, validate=False):
+def load(
+    obj, env=None, silent=True, key=None, validate=False, identifier="global"
+):
     """Loads envvars with prefixes:
 
     `DYNACONF_` (default global) or `$(ENVVAR_PREFIX_FOR_DYNACONF)_`
@@ -30,7 +32,7 @@ def load(obj, env=None, silent=True, key=None, validate=False):
             "DYNACONF",
             key,
             silent,
-            IDENTIFIER + "_global",
+            f"{IDENTIFIER_PREFIX}_{identifier}",
             validate=validate,
         )
 
@@ -40,7 +42,7 @@ def load(obj, env=None, silent=True, key=None, validate=False):
         global_prefix,
         key,
         silent,
-        IDENTIFIER + "_global",
+        f"{IDENTIFIER_PREFIX}_{identifier}",
         validate=validate,
     )
 
@@ -50,7 +52,7 @@ def load_from_env(
     prefix=False,
     key=None,
     silent=False,
-    identifier=IDENTIFIER,
+    identifier=IDENTIFIER_PREFIX,
     env=False,  # backwards compatibility bc renamed param
     validate=False,
 ):

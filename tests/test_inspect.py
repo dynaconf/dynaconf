@@ -144,6 +144,7 @@ def test_get_history_general(tmp_path):
             "merged": False,
         },
     )
+
     assert is_dict_subset(
         history[3],
         {
@@ -357,8 +358,7 @@ def test_get_history_env_true__val_default_plus_file(tmp_path):
         environments=True,
     )
     history = get_history(settings)
-
-    assert len(history) == 7
+    assert len(history) == 8
     assert history[2] == {
         "loader": "toml",
         "identifier": str(file_a),
@@ -382,7 +382,8 @@ def test_get_history_env_true__val_default_plus_file(tmp_path):
     }
     # REVIEW: history[5] is not correct, validation default on other env should
     # not have side effect on current object but only on its copy/clone
-    assert history[6] == {
+    # history[6] == switching to production env, so it sets ENV_FOR_DYNACONF
+    assert history[7] == {
         "loader": "setdefault",
         "identifier": "unique",
         "env": "production",
