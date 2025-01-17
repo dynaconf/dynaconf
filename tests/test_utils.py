@@ -21,6 +21,7 @@ from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import Missing
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
+from dynaconf.utils import prepare_json
 from dynaconf.utils import trimmed_split
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
@@ -536,3 +537,20 @@ def test_get_converter_error_when_converting(settings):
 
     with pytest.raises(DynaconfFormatError):
         settings.BLA
+
+
+@pytest.mark.parametrize(
+    "input_expected",
+    [
+        ({"path": Path("foo")}, {"path": "foo"}),
+        ({1: Path("foo")}, {"1": "foo"}),
+        ({True: Path("foo")}, {"True": "foo"}),
+        ([Path("one"), Path("two"), 1, True], ["one", "two", 1, True]),
+        (1, 1),
+        (True, True),
+        ("test", "test"),
+    ],
+)
+def test_prepare_json(input_expected):
+    data, expected = input_expected
+    assert prepare_json(data) == expected

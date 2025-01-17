@@ -971,7 +971,6 @@ class Settings:
         if getattr(parsed, "_dynaconf_insert", False):
             # `@insert` calls insert in a list by index
             if existing and isinstance(existing, list):
-                # update SourceMetadata (for inspecting purposes)
                 source_metadata = source_metadata._replace(merged=True)
                 existing.insert(parsed.index, parsed.unwrap())
                 parsed = existing
@@ -1375,7 +1374,6 @@ class Settings:
         :param keys: A list of keys to be included.
         :param ignore: A list of keys to be excluded.
         """
-        setattr(obj, "DYNACONF", self)
         keys = keys or self.keys()
         for key in keys:
             if not internal:

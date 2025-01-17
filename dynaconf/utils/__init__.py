@@ -4,6 +4,7 @@ import os
 import warnings
 from collections import defaultdict
 from json import JSONDecoder
+from pathlib import Path
 from typing import Any
 from typing import Iterator
 from typing import TYPE_CHECKING
@@ -500,3 +501,23 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
         if k.replace(" ", "_").lower() == key.lower():
             return k
     return None
+
+
+def prepare_json(data: Any) -> Any:
+    """Takes a data dict and transforms unserializable values to str for JSON.
+    {1: PosixPath("/foo")} -> {"1": "/foo"}
+    """
+    unserializable_types = (Path,)
+    if isinstance(data, dict):
+        return_data = {}
+        for key, val in data.items():
+            value = str(val) if isinstance(val, unserializable_types) else val
+            return_data[str(key)] = value
+        return return_data
+    elif isinstance(data, (list, tuple)):
+        return_data = []
+        for val in data:
+            value = str(val) if isinstance(val, unserializable_types) else val
+            return_data.append(value)
+        return return_data
+    return data
