@@ -199,7 +199,7 @@ def test_get_history_env_false__file_plus_envvar(tmp_path):
         history[3],
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": False,
         },
@@ -224,7 +224,7 @@ def test_get_history_env_false__val_default_plus_envvar():
         history[0],
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": False,
         },
@@ -283,7 +283,7 @@ def test_get_history_env_false__merge_marks(tmp_path):
         history[5],
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": True,
         },
@@ -327,7 +327,7 @@ def test_get_history_env_true__file_plus_envvar(tmp_path):
     }
     assert history[4] == {
         "loader": "env_global",
-        "identifier": "unique",
+        "identifier": "DYNACONF",
         "env": "global",
         "merged": False,
         "value": {"FOO": "from_environ"},
@@ -435,7 +435,7 @@ def test_get_history_env_true__merge_marks(tmp_path):
         history[5],
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": True,
         },
@@ -704,7 +704,7 @@ def test_inspect_key_filter(tmp_path):
     assert result["history"] == [
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": False,
             "value": "from_environ",
@@ -734,7 +734,7 @@ def test_inspect_no_filter(tmp_path):
     assert result["history"][:2] == [
         {
             "env": "global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "loader": "env_global",
             "merged": False,
             "value": {"BAR": "environ_only", "FOO": "from_environ"},
@@ -803,7 +803,7 @@ def test_inspect_to_file(tmp_path):
           BAR: environ_only
         history:
         - loader: env_global
-          identifier: unique
+          identifier: DYNACONF
           env: global
           merged: false
           value:

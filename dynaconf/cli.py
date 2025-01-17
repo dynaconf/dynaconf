@@ -55,6 +55,8 @@ def set_settings(ctx, instance=None):
     settings = None
 
     _echo_enabled = ctx.invoked_subcommand not in ["get", "inspect", None]
+    if "--json" in click.get_os_args():
+        _echo_enabled = False
 
     if instance is not None:
         if ctx.invoked_subcommand in ["init"]:
@@ -642,7 +644,9 @@ def _list(
                 output, prepare_json({key: value}), env=not flat and cur_env
             )
         if _json:
-            click.echo(json.dumps(prepare_json({key: value})), nl=True)
+            click.echo(
+                json.dumps(prepare_json({key: value}), default=repr), nl=True
+            )
 
     if env:
         settings.setenv()

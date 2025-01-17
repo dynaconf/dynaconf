@@ -37,14 +37,18 @@ def load(
         )
 
     # Load the global env if exists and overwrite everything
-    load_from_env(
-        obj,
-        global_prefix,
-        key,
-        silent,
-        f"{IDENTIFIER_PREFIX}_{identifier}",
-        validate=validate,
-    )
+    # if the prefix is separated by comma then load all prefixes
+    # counting on the case where global_prefix is set to None, False or ""
+    prefixes = global_prefix.split(",") if global_prefix else [global_prefix]
+    for prefix in prefixes:
+        load_from_env(
+            obj,
+            prefix,
+            key,
+            silent,
+            f"{IDENTIFIER_PREFIX}_{identifier}",
+            validate=validate,
+        )
 
 
 def load_from_env(
@@ -68,7 +72,7 @@ def load_from_env(
         env_ = f"{prefix}_"
 
     # set source metadata
-    source_metadata = SourceMetadata(identifier, "unique", "global")
+    source_metadata = SourceMetadata(identifier, prefix, "global")
 
     # Load a single environment variable explicitly.
     if key:
