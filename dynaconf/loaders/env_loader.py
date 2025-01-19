@@ -24,8 +24,18 @@ def load(
     """Loads envvars with prefixes:
 
     `DYNACONF_` (default global) or `$(ENVVAR_PREFIX_FOR_DYNACONF)_`
+
+    if envvar_prefix is set to:
+      str: -> load {str}_*
+      str,str1 -> load [{str}_, {str1}_]
+      False -> load *
+      None -> return not loading anything
+
     """
     global_prefix = obj.get("ENVVAR_PREFIX_FOR_DYNACONF")
+    if global_prefix is None:
+        return
+
     if global_prefix is False or global_prefix.upper() != "DYNACONF":
         load_from_env(
             obj,

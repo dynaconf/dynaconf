@@ -349,14 +349,18 @@ def build_env_list(obj: Settings | LazySettings, env: str | None) -> list[str]:
     if global_env not in env_list:
         env_list.append(global_env)
 
-    # add the current env
+    # add the current env counting on the case where it is a comma separated list
     current_env = obj.current_env
-    if current_env and current_env.lower() not in env_list:
-        env_list.append(current_env.lower())
+    if current_env and isinstance(current_env, str):
+        for item in current_env.split(","):
+            if item and (_name := item.strip().lower()) not in env_list:
+                env_list.append(_name)
 
-    # add a manually set env
-    if env and env.lower() not in env_list:
-        env_list.append(env.lower())
+    # add a manually set env counting on the case where it is a comma separated list
+    if env and isinstance(env, str):
+        for item in env.split(","):
+            if item and (_name := item.strip().lower()) not in env_list:
+                env_list.append(_name)
 
     # add the [global] env
     env_list.append("global")
