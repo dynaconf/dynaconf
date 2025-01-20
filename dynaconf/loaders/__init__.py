@@ -233,6 +233,8 @@ def settings_loader(
     :param silent: Boolean to raise loading errors
     :param key: Load a single key if provided
     :param filename: optional filename to override the settings_module
+    :param validate: If True validate the loaded data
+    :param identifier: A string or SourceMetadata to identify the loader
     """
     if filename is None:
         settings_module = settings_module or obj.settings_module
@@ -297,6 +299,9 @@ def settings_loader(
                 continue
 
             if mod_file.endswith(loader["ext"]):
+                if isinstance(identifier, str):
+                    # ensure it is always loader name
+                    identifier = loader["name"].lower()
                 loader["loader"].load(
                     obj,
                     filename=mod_file,
@@ -304,6 +309,7 @@ def settings_loader(
                     silent=silent,
                     key=key,
                     validate=validate,
+                    identifier=identifier,
                 )
                 continue
 

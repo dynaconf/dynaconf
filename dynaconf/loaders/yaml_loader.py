@@ -6,6 +6,7 @@ from warnings import warn
 from dynaconf import default_settings
 from dynaconf.constants import YAML_EXTENSIONS
 from dynaconf.loaders.base import BaseLoader
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import object_merge
 from dynaconf.utils.parse_conf import try_to_encode
 from dynaconf.vendor.ruamel import yaml
@@ -89,6 +90,12 @@ def load(
     _loader = BaseLoader
     if yaml_reader.__name__.endswith("_all"):
         _loader = AllLoader
+
+    # when load_file function is called directly it comes with module and line number
+    if isinstance(identifier, SourceMetadata) and identifier.loader.startswith(
+        "load_file"
+    ):
+        identifier = identifier.loader
 
     loader = _loader(
         obj=obj,

@@ -81,6 +81,9 @@ def set_settings(ctx, instance=None):
                 )
     elif "DJANGO_SETTINGS_MODULE" in os.environ:  # pragma: no cover
         sys.path.insert(0, os.path.abspath(os.getcwd()))
+        import django  # noqa
+
+        django.setup()  # ensure django is setup to avoid AppRegistryNotReady
         settings_module = import__django_settings(
             os.environ["DJANGO_SETTINGS_MODULE"]
         )
@@ -495,7 +498,7 @@ def get(key, default, env, unparse):
         result = unparse_conf_data(result)
 
     if isinstance(result, (dict, list, tuple)):
-        result = json.dumps(prepare_json(result), sort_keys=True)
+        result = json.dumps(prepare_json(result), sort_keys=True, default=repr)
 
     click.echo(result, nl=False)
 
@@ -623,7 +626,9 @@ def _list(
         if output:
             loaders.write(output, prepare_json(data), env=not flat and cur_env)
         if _json:
-            json_data = json.dumps(prepare_json(data), sort_keys=True)
+            json_data = json.dumps(
+                prepare_json(data), sort_keys=True, default=repr
+            )
             click.echo(json_data, nl=False)
     else:
         key = upperfy(key)
