@@ -191,6 +191,16 @@ def handle_metavalues(
                 new[key].unwrap(),
                 unique=new[key].unique,
             )
+        elif getattr(new[key], "_dynaconf_insert", False):
+            # Insert on `new` triggers insert with existing data
+            # if existing is a list it inserts at specified .index
+            # if existing is not a list it creates a new list with the value
+            existing = old.get(key)  # keep the same reference
+            if isinstance(existing, list):  # perform insert on it
+                existing.insert(new[key].index, new[key].unwrap())
+                new[key] = existing
+            else:
+                new[key] = [new[key].unwrap()]
 
         # Data structures containing merge tokens
         if isinstance(new.get(key), (list, tuple)):

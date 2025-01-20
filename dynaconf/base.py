@@ -1031,6 +1031,15 @@ class Settings:
             self.store.get(key, None) if not isinstance(parsed, Lazy) else None
         )
 
+        if getattr(parsed, "_dynaconf_insert", False):
+            # `@insert` calls insert in a list by index
+            if existing and isinstance(existing, list):
+                source_metadata = source_metadata._replace(merged=True)
+                existing.insert(parsed.index, parsed.unwrap())
+                parsed = existing
+            else:
+                parsed = [parsed.unwrap()]
+
         if getattr(parsed, "_dynaconf_del", None):
             self.unset(key, force=True)  # `@del` in a first level var.
             return
