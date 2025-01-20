@@ -1315,12 +1315,24 @@ class Settings:
         env = (env or self.current_env).upper()
         files = ensure_a_list(path)
         if files:
+            # Using inspect take the filename and line number of the caller
+            # to be used in the source_metadata
+            frame = inspect.currentframe()
+            caller = inspect.getouterframes(frame)[1]
             already_loaded = set()
             for _filename in files:
                 # load_file() will handle validation later
                 with suppress(ValidationError):
+                    source_metadata = SourceMetadata(
+                        loader=f"load_file@{caller.filename}:{caller.lineno}",
+                        identifier=_filename,
+                        env=env,
+                    )
                     if py_loader.try_to_load_from_py_module_name(
-                        obj=self, name=_filename, silent=True
+                        obj=self,
+                        name=_filename,
+                        silent=True,
+                        identifier=source_metadata,
                     ):
                         # if it was possible to load from module name
                         # continue the loop.
@@ -1351,6 +1363,11 @@ class Settings:
 
                     # load_file() will handle validation later
                     with suppress(ValidationError):
+                        source_metadata = SourceMetadata(
+                            loader=f"load_file@{caller.filename}:{caller.lineno}",
+                            identifier=path,
+                            env=env,
+                        )
                         settings_loader(
                             obj=self,
                             env=env,
@@ -1358,6 +1375,7 @@ class Settings:
                             key=key,
                             filename=path,
                             validate=validate,
+                            identifier=source_metadata,
                         )
                         already_loaded.add(path)
 

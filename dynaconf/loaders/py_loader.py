@@ -37,7 +37,12 @@ def load(
         return
 
     # setup SourceMetadata (for inspecting)
-    loader_identifier = SourceMetadata(identifier, mod.__name__, "global")
+    if isinstance(identifier, SourceMetadata):
+        loader_identifier = SourceMetadata(
+            identifier.loader, mod.__name__, identifier.env
+        )
+    else:
+        loader_identifier = SourceMetadata(identifier, mod.__name__, "global")
 
     load_from_python_object(
         obj, mod, settings_module, key, loader_identifier, validate=validate
@@ -88,7 +93,10 @@ def try_to_load_from_py_module_name(
     ctx = suppress(ImportError, TypeError) if silent else suppress()
 
     # setup SourceMetadata (for inspecting)
-    loader_identifier = SourceMetadata(identifier, name, "global")
+    if isinstance(identifier, SourceMetadata):
+        loader_identifier = identifier
+    else:
+        loader_identifier = SourceMetadata(identifier, name, "global")
 
     with ctx:
         mod = importlib.import_module(str(name))
