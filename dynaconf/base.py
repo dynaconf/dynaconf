@@ -1462,7 +1462,13 @@ class Settings:
             return value is True or value in true_values
 
     def populate_obj(
-        self, obj, keys=None, ignore=None, merge=False, merge_unique=False
+        self,
+        obj,
+        keys=None,
+        ignore=None,
+        merge=False,
+        merge_unique=False,
+        internal=False,
     ):
         """Given the `obj` populate it using self.store items.
 
@@ -1473,6 +1479,9 @@ class Settings:
         merge = merge or self.get("MERGE_ENABLED_FOR_DYNACONF")
         keys = keys or self.keys()
         for key in keys:
+            if not internal:
+                if key in UPPER_DEFAULT_SETTINGS:
+                    continue
             key = upperfy(key)
             if ignore and key in ignore:
                 continue
