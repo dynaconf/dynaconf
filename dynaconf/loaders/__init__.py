@@ -12,6 +12,7 @@ from dynaconf.loaders import json_loader
 from dynaconf.loaders import py_loader
 from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import deduplicate
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils.boxing import DynaBox
@@ -222,6 +223,7 @@ def settings_loader(
     key=None,
     filename=None,
     validate=False,
+    identifier="settings_loader",
 ):
     """Loads from defined settings module
 
@@ -231,6 +233,8 @@ def settings_loader(
     :param silent: Boolean to raise loading errors
     :param key: Load a single key if provided
     :param filename: optional filename to override the settings_module
+    :param validate: Validate the loaded data
+    :param identifier: Loader identifier
     """
     if filename is None:
         settings_module = settings_module or obj.settings_module
@@ -295,6 +299,9 @@ def settings_loader(
                 continue
 
             if mod_file.endswith(loader["ext"]):
+                if isinstance(identifier, str):
+                    # ensure it is always loader name
+                    identifier = loader["name"].lower()
                 loader["loader"].load(
                     obj,
                     filename=mod_file,
@@ -302,6 +309,7 @@ def settings_loader(
                     silent=silent,
                     key=key,
                     validate=validate,
+                    identifier=identifier,
                 )
                 continue
 
@@ -314,7 +322,9 @@ def settings_loader(
 
         # must be Python file or module
         # load from default defined module settings.py or .secrets.py if exists
-        py_loader.load(obj, mod_file, key=key, validate=validate)
+        py_loader.load(
+            obj, mod_file, key=key, validate=validate, identifier=identifier
+        )
 
         # load from the current env e.g: development_settings.py
         env = env or obj.current_env
@@ -335,10 +345,15 @@ def settings_loader(
             env_mod_file = f"{env.lower()}_{mod_file}"
             global_mod_file = f"global_{mod_file}"
 
+        source_metadata = SourceMetadata(
+            loader="py",
+            identifier=identifier,
+            env=env,
+        )
         py_loader.load(
             obj,
             env_mod_file,
-            identifier=f"py_{env.upper()}",
+            identifier=source_metadata,
             silent=True,
             key=key,
             validate=validate,
