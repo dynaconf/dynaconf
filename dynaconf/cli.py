@@ -57,6 +57,8 @@ def set_settings(ctx, instance=None):
     settings = None
 
     _echo_enabled = ctx.invoked_subcommand not in ["get", "inspect", None]
+    if "--json" in click.get_os_args():
+        _echo_enabled = False
 
     if instance is not None:
         if ctx.invoked_subcommand in ["init"]:
