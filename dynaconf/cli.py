@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import inspect as python_inspect
 import json
 import os
 import pprint
@@ -17,6 +18,7 @@ from dynaconf import default_settings
 from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf import settings as legacy_settings
+from dynaconf.base import Settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import prepare_json
 from dynaconf.utils import upperfy
@@ -83,19 +85,16 @@ def set_settings(ctx, instance=None):
                 )
     elif "DJANGO_SETTINGS_MODULE" in os.environ:  # pragma: no cover
         sys.path.insert(0, os.path.abspath(os.getcwd()))
-        try:
-            # Django extension v2
-            from django.conf import settings  # noqa
-            import dynaconf  # noqa: F401
-            import django
+        import django  # noqa
 
-            # see https://docs.djangoproject.com/en/4.2/ref/applications/
-            # at #troubleshooting
-            django.setup()
-
-            settings.DYNACONF.configure()
-        except AttributeError:
-            settings = LazySettings()
+        django.setup()  # ensure django is setup to avoid AppRegistryNotReady
+        settings_module = import__django_settings(
+            os.environ["DJANGO_SETTINGS_MODULE"]
+        )
+        for member in python_inspect.getmembers(settings_module):
+            if isinstance(member[1], (LazySettings, Settings)):
+                settings = member[1]
+                break
 
         if settings is not None and _echo_enabled:
             click.echo(
@@ -119,6 +118,18 @@ def set_settings(ctx, instance=None):
                 settings = LazySettings(create_new_settings=True)
         else:
             settings = LazySettings()
+
+
+def import__django_settings(django_settings_module):
+    """Import the Django settings module from the string importable path."""
+    try:
+        with redirect_stdout(None):
+            module = importlib.import_module(django_settings_module)
+    except ImportError as e:
+        raise click.UsageError(e)
+    except FileNotFoundError:
+        return
+    return module
 
 
 def import_settings(dotted_path):
