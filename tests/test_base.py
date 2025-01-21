@@ -661,6 +661,9 @@ def test_set_insert_token(tmpdir):
     settings.set("new_key", "@insert 42")
     assert settings.NEW_KEY == [42, "bar", "foo"]
 
+    settings.set("new_key", "@insert -1 'last'")
+    assert settings.NEW_KEY == [42, "bar", "last", "foo"]
+
 
 def test_set_with_non_str_types():
     """This replicates issue #1005 in a simplified setup."""
