@@ -171,14 +171,14 @@ class Insert(MetaValue):
         self.box_settings = box_settings
 
         try:
-            if value[0].isdigit():
+            if value.lstrip("-+")[0].isdigit():
                 # `0 foo` or `-1 foo` or `42 foo` or `42`(raise ValueError)
                 index, value = value.split(" ", 1)
             else:
                 # `foo` or `foo bar`
                 index, value = 0, value
         except ValueError:
-            # `42` or any other non splitable value
+            # `42` or any other non split able value
             index, value = 0, value
 
         self.index = int(index)
