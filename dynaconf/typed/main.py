@@ -43,6 +43,7 @@ class Options:
     env: str | type = Empty
     environments: bool | type = Empty
     envvar_prefix: str | type = Empty
+    env_switcher: str | type = Empty
     root_path: str | Path | type = Empty
     settings_files: list[str] | type = Empty
     settings_file: str | type = Empty
