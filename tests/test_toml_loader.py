@@ -38,6 +38,9 @@ host = "devserver.com"
 password = "@int 11111"
 HOST = "prodserver.com"
 
+[extra]
+password = "@int 77777"
+
 [GLOBAL]
 global_value = "global"
 """
@@ -61,6 +64,15 @@ encoded_variable="This has accents like � and � � � � just to test enc
 
 
 TOMLS = [TOML, TOML2]
+
+
+def test_load_from_toml_with_multiple_envs(tmpdir):
+    """Asserts loader can read from TOML when multiple comma separated envs are provided"""
+    _settings = LazySettings(environments=True)
+    load(_settings, filename=TOML, env="DEVELOPMENT,EXTRA")
+    assert _settings.HOST == "devserver.com"  # comes from [development]
+    assert _settings.PASSWORD == 77777  # comes from [extra]
+    assert _settings.GLOBAL_VALUE == "global"  # comes from [global]
 
 
 def test_load_from_toml_with_invalid_unicode(tmpdir):

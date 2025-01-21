@@ -204,6 +204,10 @@ export MY_SETTINGS_PATH="path.to.settings"
 The prefix used by dynaconf to load values from environment variables. You might want your users
 to export values using your app name, ex: `export MYPROGRAM_DEBUG=true`
 
+**new in 3.2.7**
+
+- The prefix  can be a comma separated list of prefixes, ex: `export MYPROGRAM_DEBUG=true` and `export MYAPP_DEBUG=true` will be loaded as `settings.DEBUG` if `ENVVAR_PREFIX_FOR_DYNACONF=MYPROGRAM,MYAPP`
+
 ---
 
 ### **env**
@@ -219,6 +223,11 @@ export ENV_FOR_DYNACONF=production
 ```
 
 Or per execution: `ENV_FOR_DYNACONF=production program.py`
+
+
+**new in 3.2.7**
+
+- The `env` can be a comma separated list of envs, ex: `export ENV_FOR_DYNACONF=production,staging` will activate both `production` and `staging` environments, and variables from both layers will be loaded in the order they are defined.
 
 ---
 

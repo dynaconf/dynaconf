@@ -144,6 +144,7 @@ def test_get_history_general(tmp_path):
             "merged": False,
         },
     )
+
     assert is_dict_subset(
         history[3],
         {
@@ -198,7 +199,7 @@ def test_get_history_env_false__file_plus_envvar(tmp_path):
         history[3],
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": False,
         },
@@ -223,7 +224,7 @@ def test_get_history_env_false__val_default_plus_envvar():
         history[0],
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": False,
         },
@@ -282,7 +283,7 @@ def test_get_history_env_false__merge_marks(tmp_path):
         history[5],
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": True,
         },
@@ -326,7 +327,7 @@ def test_get_history_env_true__file_plus_envvar(tmp_path):
     }
     assert history[4] == {
         "loader": "env_global",
-        "identifier": "unique",
+        "identifier": "DYNACONF",
         "env": "global",
         "merged": False,
         "value": {"FOO": "from_environ"},
@@ -357,8 +358,7 @@ def test_get_history_env_true__val_default_plus_file(tmp_path):
         environments=True,
     )
     history = get_history(settings)
-
-    assert len(history) == 7
+    assert len(history) == 8
     assert history[2] == {
         "loader": "toml",
         "identifier": str(file_a),
@@ -382,7 +382,8 @@ def test_get_history_env_true__val_default_plus_file(tmp_path):
     }
     # REVIEW: history[5] is not correct, validation default on other env should
     # not have side effect on current object but only on its copy/clone
-    assert history[6] == {
+    # history[6] == switching to production env, so it sets ENV_FOR_DYNACONF
+    assert history[7] == {
         "loader": "setdefault",
         "identifier": "unique",
         "env": "production",
@@ -434,7 +435,7 @@ def test_get_history_env_true__merge_marks(tmp_path):
         history[5],
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": True,
         },
@@ -703,7 +704,7 @@ def test_inspect_key_filter(tmp_path):
     assert result["history"] == [
         {
             "loader": "env_global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "env": "global",
             "merged": False,
             "value": "from_environ",
@@ -733,7 +734,7 @@ def test_inspect_no_filter(tmp_path):
     assert result["history"][:2] == [
         {
             "env": "global",
-            "identifier": "unique",
+            "identifier": "DYNACONF",
             "loader": "env_global",
             "merged": False,
             "value": {"BAR": "environ_only", "FOO": "from_environ"},
@@ -802,7 +803,7 @@ def test_inspect_to_file(tmp_path):
           BAR: environ_only
         history:
         - loader: env_global
-          identifier: unique
+          identifier: DYNACONF
           env: global
           merged: false
           value:

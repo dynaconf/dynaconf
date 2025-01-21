@@ -6,13 +6,13 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [master]
+    branches: [master, "stream_*"]
     paths-ignore: # run if anything different from these is modified
       - "docs/**"
       - "mkdocs.yml"
 
   pull_request:
-    branches: [master]
+    branches: [master, "stream_*"]
     paths-ignore:
       - "docs/**"
       - "mkdocs.yml"
@@ -32,7 +32,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -50,7 +50,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.9", "3.11"]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.11"]
+        python-version: ["3.9", "3.11"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -96,20 +96,12 @@ jobs:
           files: junit/**/*.xml
           check_name: Test Results (Python ${{ matrix.python-version }})
 
-      - name: "Upload coverage to Codecov"
-        if: ${{ matrix.python-version == '3.8' }}
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.xml
-          fail_ci_if_error: true
-
   unit_tests_mac:
     needs: install_test
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.11"]
+        python-version: ["3.9", "3.11"]
         os: [macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -131,7 +123,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.11"]
+        python-version: ["3.9", "3.11"]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -151,7 +143,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.11"]
+        python-version: ["3.9", "3.11"]
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -172,7 +164,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.11"]
+        python-version: ["3.9", "3.11"]
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -193,7 +185,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.11"]
+        python-version: ["3.9", "3.11"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     services:
@@ -218,7 +210,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.10", "3.11"]
+        python-version: ["3.9", "3.11"]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     services:

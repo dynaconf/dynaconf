@@ -310,6 +310,11 @@ Once `env` is changed via `setenv|using_env`, `reload` or `configure` invocation
 will be cleaned. To persist consider using `INCLUDES_FOR_DYNACONF` variable or assuring it will
 be loaded programmatically again.
 
+**new in 3.2.7**
+
+- Calls to `load_file` will be recorded on the inspect history and include module and line number.
+
+
 ## Prefix filtering
 
 ```toml
@@ -587,6 +592,11 @@ assert obj.DEBUG is True  # ok
 assert obj.VALUE == 42.1  # AttributeError
 
 ```
+
+**new in 3.2.7**
+
+- `populate_obj` will take `internals` boolean to enable or disable populating internal settings.
+
 
 ## Exporting
 

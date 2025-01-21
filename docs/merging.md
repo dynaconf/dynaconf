@@ -536,3 +536,76 @@ The **dynaconf_merge** and **@merge** functionalities work only for the first le
 ## More examples
 
 Take a look at the [example](https://github.com/dynaconf/dynaconf/tree/master/example) folder to see some examples of use with different file formats and features.
+
+
+## Inserting values to specific positions in lists
+
+> **New in 3.2.7**
+
+If you want to insert a value in a specific position in a list you can use the `@insert` token,
+
+The `@insert` token can be used to insert a value in a specific position in a list. The first argument is the index where the value will be inserted, and the second argument is the value to be inserted. If the first argument is omitted, the value will be inserted at the index 0.
+
+The `@insert` token can also be used to insert a value in a specific position in a list of dictionaries. The value to be inserted must be a valid toml dictionary or explicitly declared with a `@json` token.
+
+The insert token also accepts signed indexes, so you can insert values at the end of the list by using a negative index.
+
+## syntax
+
+```bash
+KEY = '@insert [index] value'
+```
+
+## Example
+
+Programmatically:
+
+```python
+settings = Dynaconf(settings_files=["settings.toml"])
+```
+
+`settings.toml`
+
+```toml
+colors = ["green", "blue"]
+```
+
+Environment variable:
+
+```bash
+export DYNACONF_COLORS='@insert 0 red'
+```
+
+Result:
+
+```python
+assert settings.COLORS == ["red", "green", "blue"]
+```
+
+You can also insert a dictionary into a list of dictionaries:
+
+`settings.toml`
+
+```toml
+people = [{name="Alice"}, {name="Bob"}]
+```
+
+Environment variable:
+
+Using the TOML format:
+
+```bash
+export DYNACONF_PEOPLE='@insert 1 {name="Charlie"}'
+```
+
+You can also insert using the `@json` token:
+
+```bash
+export DYNACONF_PEOPLE='@insert 1 @json {"name": "Charlie"}'
+```
+
+Result:
+
+```python
+assert settings.PEOPLE == [{name="Alice"}, {name="Charlie"}, {name="Bob"}]
+```

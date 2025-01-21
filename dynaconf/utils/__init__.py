@@ -4,6 +4,7 @@ import os
 import warnings
 from collections import defaultdict
 from json import JSONDecoder
+from pathlib import Path
 from typing import Any
 from typing import Iterator
 from typing import TYPE_CHECKING
@@ -78,6 +79,10 @@ def object_merge(
             else:
                 return data.items()
 
+        # TODO @rochacbruno: Make the above line work with 2 dynaconf_merge
+        # https://github.com/dynaconf/dynaconf/issues/todo
+        # {"a": ["d", "e"], "dynaconf_merge": True},
+
         # local mark may set dynaconf_merge=False
         should_merge = new.pop("dynaconf_merge", True)
         if should_merge:
@@ -142,6 +147,16 @@ def handle_metavalues(
             new[key] = object_merge(
                 old.get(key), new[key].unwrap(), unique=new[key].unique
             )
+        elif getattr(new[key], "_dynaconf_insert", False):
+            # Insert on `new` triggers insert with existing data
+            # if existing is a list it inserts at specified .index
+            # if existing is not a list it creates a new list with the value
+            existing = old.get(key)  # keep the same reference
+            if isinstance(existing, list):  # perform insert on it
+                existing.insert(new[key].index, new[key].unwrap())
+                new[key] = existing
+            else:
+                new[key] = [new[key].unwrap()]
 
         # Data structures containing merge tokens
         if isinstance(new.get(key), (list, tuple)):
@@ -334,14 +349,18 @@ def build_env_list(obj: Settings | LazySettings, env: str | None) -> list[str]:
     if global_env not in env_list:
         env_list.append(global_env)
 
-    # add the current env
+    # add the current env counting on the case where it is a comma separated list
     current_env = obj.current_env
-    if current_env and current_env.lower() not in env_list:
-        env_list.append(current_env.lower())
+    if current_env and isinstance(current_env, str):
+        for item in current_env.split(","):
+            if item and (_name := item.strip().lower()) not in env_list:
+                env_list.append(_name)
 
-    # add a manually set env
-    if env and env.lower() not in env_list:
-        env_list.append(env.lower())
+    # add a manually set env counting on the case where it is a comma separated list
+    if env and isinstance(env, str):
+        for item in env.split(","):
+            if item and (_name := item.strip().lower()) not in env_list:
+                env_list.append(_name)
 
     # add the [global] env
     env_list.append("global")
@@ -432,7 +451,11 @@ def _recursively_evaluate_lazy_format(
         value = value(settings)
 
     if isinstance(value, list):
-        # Keep the original type, can be a BoxList
+        # This must be the right way of doing it, but breaks validators
+        # To be changed on 4.0.0
+        # for idx, item in enumerate(value):
+        #     value[idx] = _recursively_evaluate_lazy_format(item, settings)
+
         value = value.__class__(
             [
                 _recursively_evaluate_lazy_format(item, settings)
@@ -482,3 +505,23 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
         if k.replace(" ", "_").lower() == key.lower():
             return k
     return None
+
+
+def prepare_json(data: Any) -> Any:
+    """Takes a data dict and transforms unserializable values to str for JSON.
+    {1: PosixPath("/foo")} -> {"1": "/foo"}
+    """
+    unserializable_types = (Path,)
+    if isinstance(data, dict):
+        return_data = {}
+        for key, val in data.items():
+            value = str(val) if isinstance(val, unserializable_types) else val
+            return_data[str(key)] = value
+        return return_data
+    elif isinstance(data, (list, tuple)):
+        return_data = []
+        for val in data:
+            value = str(val) if isinstance(val, unserializable_types) else val
+            return_data.append(value)
+        return return_data
+    return data

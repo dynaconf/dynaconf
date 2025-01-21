@@ -309,7 +309,9 @@ class Validator:
             # so we call .set again
             if self.should_call_lazy:
                 value = self.cast(settings.get(name))
-            settings.set(name, value, validate=False)
+            settings.set(
+                name, value, validate=False, loader_identifier="validator"
+            )
 
             # is there a callable condition?
             if self.condition is not None:

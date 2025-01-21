@@ -231,6 +231,17 @@ def test_list_export_json(testdir):
     assert json.loads(read_file("sets.json"))["TEST_KEY"] == "test_value"
 
 
+def test_list_prints_json(testdir):
+    """Ensure output of list --json is JSON compatible"""
+    result = run(
+        ["-i", "tests.config.settings", "list", "--json"],
+        env={"ROOT_PATH_FOR_DYNACONF": testdir},
+    )
+    data = json.loads(result)
+    assert data["TEST_KEY"] == "test_value"
+    assert data["A_PATH"] == "foo"
+
+
 def test_list_with_all(testdir):
     """Test list command with --all includes interval vars"""
     result = run(
@@ -538,7 +549,7 @@ def test_inspect_no_args(tmp_path):
           "history": [
             {
               "loader": "env_global",
-              "identifier": "unique",
+              "identifier": "DYNACONF",
               "env": "global",
               "merged": false,
               "value": {
@@ -584,7 +595,7 @@ def test_inspect_yaml_format(tmp_path):
           FOO: from_environ_yaml_format
         history:
         - loader: env_global
-          identifier: unique
+          identifier: DYNACONF
           env: global
           merged: false
           value:
@@ -731,7 +742,7 @@ def test_inspect_limit(tmp_path):
           "history": [
             {
               "loader": "env_global",
-              "identifier": "unique",
+              "identifier": "DYNACONF",
               "env": "global",
               "merged": false,
               "value": {

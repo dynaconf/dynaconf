@@ -1,22 +1,25 @@
 from __future__ import annotations
 
 import importlib
+import inspect as python_inspect
 import json
 import os
 import pprint
 import sys
 import warnings
 import webbrowser
+from contextlib import redirect_stdout
 from contextlib import suppress
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from dynaconf import constants
 from dynaconf import default_settings
 from dynaconf import LazySettings
 from dynaconf import loaders
 from dynaconf import settings as legacy_settings
+from dynaconf.base import Settings
 from dynaconf.loaders.py_loader import get_module
+from dynaconf.utils import prepare_json
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
 from dynaconf.utils.functional import empty
@@ -32,9 +35,6 @@ from dynaconf.validator import Validator
 from dynaconf.vendor import click
 from dynaconf.vendor import toml
 from dynaconf.vendor import tomllib
-
-if TYPE_CHECKING:  # pragma: no cover
-    from dynaconf.base import Settings  # noqa: F401
 
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
@@ -55,6 +55,8 @@ def set_settings(ctx, instance=None):
     settings = None
 
     _echo_enabled = ctx.invoked_subcommand not in ["get", "inspect", None]
+    if "--json" in click.get_os_args():
+        _echo_enabled = False
 
     if instance is not None:
         if ctx.invoked_subcommand in ["init"]:
@@ -79,19 +81,16 @@ def set_settings(ctx, instance=None):
                 )
     elif "DJANGO_SETTINGS_MODULE" in os.environ:  # pragma: no cover
         sys.path.insert(0, os.path.abspath(os.getcwd()))
-        try:
-            # Django extension v2
-            from django.conf import settings  # noqa
-            import dynaconf  # noqa: F401
-            import django
+        import django  # noqa
 
-            # see https://docs.djangoproject.com/en/4.2/ref/applications/
-            # at #troubleshooting
-            django.setup()
-
-            settings.DYNACONF.configure()
-        except AttributeError:
-            settings = LazySettings()
+        django.setup()  # ensure django is setup to avoid AppRegistryNotReady
+        settings_module = import__django_settings(
+            os.environ["DJANGO_SETTINGS_MODULE"]
+        )
+        for member in python_inspect.getmembers(settings_module):
+            if isinstance(member[1], (LazySettings, Settings)):
+                settings = member[1]
+                break
 
         if settings is not None and _echo_enabled:
             click.echo(
@@ -117,6 +116,18 @@ def set_settings(ctx, instance=None):
             settings = LazySettings()
 
 
+def import__django_settings(django_settings_module):
+    """Import the Django settings module from the string importable path."""
+    try:
+        with redirect_stdout(None):
+            module = importlib.import_module(django_settings_module)
+    except ImportError as e:
+        raise click.UsageError(e)
+    except FileNotFoundError:
+        return
+    return module
+
+
 def import_settings(dotted_path):
     """Import settings instance from python dotted path.
 
@@ -130,8 +141,10 @@ def import_settings(dotted_path):
         raise click.UsageError(
             f"invalid path to settings instance: {dotted_path}"
         )
+
     try:
-        module = importlib.import_module(module)
+        with redirect_stdout(None):
+            module = importlib.import_module(module)
     except ImportError as e:
         raise click.UsageError(e)
     except FileNotFoundError:
@@ -485,7 +498,7 @@ def get(key, default, env, unparse):
         result = unparse_conf_data(result)
 
     if isinstance(result, (dict, list, tuple)):
-        result = json.dumps(result, sort_keys=True)
+        result = json.dumps(prepare_json(result), sort_keys=True, default=repr)
 
     click.echo(result, nl=False)
 
@@ -530,7 +543,24 @@ def get(key, default, env, unparse):
     default=False,
     help="Output file is flat (do not include [env] name)",
 )
-def _list(env, key, more, loader, _all=False, output=None, flat=False):
+@click.option(
+    "--json",
+    "_json",
+    "-j",
+    is_flag=True,
+    default=False,
+    help="Prints out data serialized as JSON",
+)
+def _list(
+    env,
+    key,
+    more,
+    loader,
+    _all=False,
+    output=None,
+    flat=False,
+    _json=False,
+):
     """
     Lists user defined settings or all (including internal configs).
 
@@ -552,14 +582,15 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
     if cur_env == "main":
         flat = True
 
-    click.echo(
-        click.style(
-            f"Working in {cur_env} environment ",
-            bold=True,
-            bg="bright_blue",
-            fg="bright_white",
+    if not _json:
+        click.echo(
+            click.style(
+                f"Working in {cur_env} environment ",
+                bold=True,
+                bg="bright_blue",
+                fg="bright_white",
+            )
         )
-    )
 
     if not loader:
         data = settings.as_dict(env=env, internal=_all)
@@ -585,14 +616,20 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
         return f"{key}{data_type} {value}"
 
     if not key:
-        datalines = "\n".join(
-            format_setting(k, v)
-            for k, v in data.items()
-            if k not in data.get("RENAMED_VARS", [])
-        )
-        (click.echo_via_pager if more else click.echo)(datalines)
+        if not _json:
+            datalines = "\n".join(
+                format_setting(k, v)
+                for k, v in data.items()
+                if k not in data.get("RENAMED_VARS", [])
+            )
+            (click.echo_via_pager if more else click.echo)(datalines)
         if output:
-            loaders.write(output, data, env=not flat and cur_env)
+            loaders.write(output, prepare_json(data), env=not flat and cur_env)
+        if _json:
+            json_data = json.dumps(
+                prepare_json(data), sort_keys=True, default=repr
+            )
+            click.echo(json_data, nl=False)
     else:
         key = upperfy(key)
 
@@ -605,9 +642,16 @@ def _list(env, key, more, loader, _all=False, output=None, flat=False):
             click.secho("Key not found", bg="red", fg="white", err=True)
             return
 
-        click.echo(format_setting(key, value))
+        if not _json:
+            click.echo(format_setting(key, value))
         if output:
-            loaders.write(output, {key: value}, env=not flat and cur_env)
+            loaders.write(
+                output, prepare_json({key: value}), env=not flat and cur_env
+            )
+        if _json:
+            click.echo(
+                json.dumps(prepare_json({key: value}), default=repr), nl=True
+            )
 
     if env:
         settings.setenv()

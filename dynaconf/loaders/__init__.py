@@ -12,6 +12,7 @@ from dynaconf.loaders import json_loader
 from dynaconf.loaders import py_loader
 from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
+from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import deduplicate
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils.boxing import DynaBox
@@ -222,6 +223,7 @@ def settings_loader(
     key=None,
     filename=None,
     validate=False,
+    identifier="settings_loader",
 ):
     """Loads from defined settings module
 
@@ -231,6 +233,8 @@ def settings_loader(
     :param silent: Boolean to raise loading errors
     :param key: Load a single key if provided
     :param filename: optional filename to override the settings_module
+    :param validate: If True validate the loaded data
+    :param identifier: A string or SourceMetadata to identify the loader
     """
     if filename is None:
         settings_module = settings_module or obj.settings_module
@@ -295,6 +299,9 @@ def settings_loader(
                 continue
 
             if mod_file.endswith(loader["ext"]):
+                if isinstance(identifier, str):
+                    # ensure it is always loader name
+                    identifier = loader["name"].lower()
                 loader["loader"].load(
                     obj,
                     filename=mod_file,
@@ -302,6 +309,7 @@ def settings_loader(
                     silent=silent,
                     key=key,
                     validate=validate,
+                    identifier=identifier,
                 )
                 continue
 
@@ -314,45 +322,73 @@ def settings_loader(
 
         # must be Python file or module
         # load from default defined module settings.py or .secrets.py if exists
-        py_loader.load(obj, mod_file, key=key, validate=validate)
+        py_loader.load(
+            obj, mod_file, key=key, validate=validate, identifier=identifier
+        )
 
         # load from the current env e.g: development_settings.py
+        # counting on the case where env is a comma separated string
         env = env or obj.current_env
-        if mod_file.endswith(".py"):
-            if ".secrets.py" == mod_file:
-                tmpl = ".{0}_{1}{2}"
-                mod_file = "secrets.py"
-            else:
-                tmpl = "{0}_{1}{2}"
+        if env and isinstance(env, str):
+            for env_name in env.split(","):
+                load_from_env_named_file(
+                    obj, env_name, key, validate, identifier, mod_file
+                )
 
-            dirname = os.path.dirname(mod_file)
-            filename, extension = os.path.splitext(os.path.basename(mod_file))
-            new_filename = tmpl.format(env.lower(), filename, extension)
-            env_mod_file = os.path.join(dirname, new_filename)
-            global_filename = tmpl.format("global", filename, extension)
-            global_mod_file = os.path.join(dirname, global_filename)
+
+def load_from_env_named_file(obj, env, key, validate, identifier, mod_file):
+    """Load from env named file e.g: development_settings.py"""
+    if mod_file.endswith(".py"):
+        if ".secrets.py" == mod_file:
+            tmpl = ".{0}_{1}{2}"
+            mod_file = "secrets.py"
         else:
-            env_mod_file = f"{env.lower()}_{mod_file}"
-            global_mod_file = f"global_{mod_file}"
+            tmpl = "{0}_{1}{2}"
 
-        py_loader.load(
-            obj,
-            env_mod_file,
-            identifier=f"py_{env.upper()}",
-            silent=True,
-            key=key,
-            validate=validate,
-        )
+        dirname = os.path.dirname(mod_file)
+        filename, extension = os.path.splitext(os.path.basename(mod_file))
+        new_filename = tmpl.format(env.lower(), filename, extension)
+        env_mod_file = os.path.join(dirname, new_filename)
+        global_filename = tmpl.format("global", filename, extension)
+        global_mod_file = os.path.join(dirname, global_filename)
+    else:
+        parts = mod_file.rsplit(".", 1)
+        if len(parts) > 1:
+            head, tail = parts
+        else:
+            head, tail = None, parts[0]
+        tail = env_mod_file = f"{env.lower()}_{tail}"
 
-        # load from global_settings.py
-        py_loader.load(
-            obj,
-            global_mod_file,
-            identifier="py_global",
-            silent=True,
-            key=key,
-            validate=validate,
-        )
+        if head:
+            env_mod_file = f"{head}.{tail}"
+            global_mod_file = f"{head}.global_{tail}"
+        else:
+            env_mod_file = tail
+            global_mod_file = f"global_{tail}"
+
+    source_metadata = SourceMetadata(
+        loader="py",
+        identifier=identifier,
+        env=env,
+    )
+    py_loader.load(
+        obj,
+        env_mod_file,
+        identifier=source_metadata,
+        silent=True,
+        key=key,
+        validate=validate,
+    )
+
+    # load from global_settings.py
+    py_loader.load(
+        obj,
+        global_mod_file,
+        identifier="py_global",
+        silent=True,
+        key=key,
+        validate=validate,
+    )
 
 
 def enable_external_loaders(obj):
