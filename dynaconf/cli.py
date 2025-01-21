@@ -501,7 +501,7 @@ def get(key, default, env, unparse):
         result = unparse_conf_data(result)
 
     if isinstance(result, (dict, list, tuple)):
-        result = json.dumps(prepare_json(result), sort_keys=True)
+        result = json.dumps(prepare_json(result), sort_keys=True, default=repr)
 
     click.echo(result, nl=False)
 
@@ -629,7 +629,9 @@ def _list(
         if output:
             loaders.write(output, prepare_json(data), env=not flat and cur_env)
         if _json:
-            json_data = json.dumps(prepare_json(data), sort_keys=True)
+            json_data = json.dumps(
+                prepare_json(data), sort_keys=True, default=repr
+            )
             click.echo(json_data, nl=False)
     else:
         key = upperfy(key)
@@ -650,7 +652,9 @@ def _list(
                 output, prepare_json({key: value}), env=not flat and cur_env
             )
         if _json:
-            click.echo(json.dumps(prepare_json({key: value})), nl=True)
+            click.echo(
+                json.dumps(prepare_json({key: value}), default=repr), nl=True
+            )
 
     if env:
         settings.setenv()

@@ -549,7 +549,7 @@ def test_inspect_no_args(tmp_path):
           "history": [
             {
               "loader": "env_global",
-              "identifier": "unique",
+              "identifier": "DYNACONF",
               "env": "global",
               "merged": false,
               "value": {
@@ -595,7 +595,7 @@ def test_inspect_yaml_format(tmp_path):
           FOO: from_environ_yaml_format
         history:
         - loader: env_global
-          identifier: unique
+          identifier: DYNACONF
           env: global
           merged: false
           value:
@@ -742,7 +742,7 @@ def test_inspect_limit(tmp_path):
           "history": [
             {
               "loader": "env_global",
-              "identifier": "unique",
+              "identifier": "DYNACONF",
               "env": "global",
               "merged": false,
               "value": {
