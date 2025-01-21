@@ -1,0 +1,50 @@
+name: Build and Deploy to Netlify
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      checkout_refspec:
+        description: "If provided, its passed to `git checkout <checkout_refspec>` before building."
+
+# https://github.com/marketplace/actions/netlify-actions#usage
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+
+      # build docs
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Customize checkout to use
+        run: |
+          checkout_refspec="${{ github.event.inputs.checkout_refspec }}"
+          if [[ -n $checkout_refspec ]]; then
+            git checkout $checkout_refspec;
+          fi
+      - name: Build documentation
+        run: |
+          make install
+          make docs
+
+      # deploy
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './site'
+          production-branch: master
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 1
