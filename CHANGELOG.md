@@ -2,6 +2,27 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.2.7](https://github.com/dynaconf/dynaconf/releases/tag/3.2.7) - 2025-01-21
+
+### Bug Fixes
+
+- lazy validator's default value would evaluate early (#1198). *By Pedro Brochado*.
+- Fixed an error that would raise when using get_history() with lazy values (#1184) (#1185). *By Pedro Brochado*.
+- Fixed Redis loader when ENV prefix is `None`.
+- Populate object method now takes `internal` attribute to filter out internal variables.
+- On CLI `json.dumps` defaults to `repr` for types that cannot be serialized.
+- Added an identifier to validator calls of `set` method
+- Fix django app discovery using DJANGO_SETTINGS_MODULE variable
+
+### Features
+
+- Added `@insert` token to call `list.insert`
+- Allow env loader to load from multiple prefixes
+- Allow multiple composable current environments
+- Track more data on `load_file` method
+- Added `--json` to dynaconf list CLI
+
+
 ## [3.2.6](https://github.com/dynaconf/dynaconf/releases/tag/3.2.6) - 2024-07-19
 
 ## [3.2.5](https://github.com/pedro-psb/dynaconf/releases/tag/3.2.5) - 2024-03-18
