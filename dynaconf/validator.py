@@ -408,7 +408,9 @@ class Validator:
                 value = self.cast(settings.get(name))
             if _set := getattr(settings, "set", None):
                 # Settings is Dynaconf
-                _set(name, value, validate=False)
+                _set(
+                    name, value, validate=False, loader_identifier="validator"
+                )
             else:
                 # settings is a dict
                 settings[name] = value
