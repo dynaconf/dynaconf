@@ -576,6 +576,7 @@ def test_set_insert_token(tmpdir):
         "a_list": [1, 2],
         "b_list": [1],
         "a_dict": {"name": "Bruno", "teams": ["dev"]},
+        "list_of_dicts": [{"number": 1}],
     }
     toml_loader.write(str(tmpdir.join("settings.toml")), data, merge=False)
     settings = LazySettings(settings_file="settings.toml")
@@ -623,6 +624,16 @@ def test_set_insert_token(tmpdir):
 
     settings.set("new_key", "@insert -1 'last'")
     assert settings.NEW_KEY == [42, "bar", "last", "foo"]
+
+    settings.set("list_of_dicts", '@insert 0 @json {"number": 0}')
+    assert settings.LIST_OF_DICTS == [{"number": 0}, {"number": 1}]
+
+    settings.set("list_of_dicts", "@insert 2 {number=2}")  # valid toml
+    assert settings.LIST_OF_DICTS == [
+        {"number": 0},
+        {"number": 1},
+        {"number": 2},
+    ]
 
 
 def test_set_with_non_str_types():
