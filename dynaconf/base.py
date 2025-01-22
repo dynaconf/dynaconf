@@ -73,7 +73,9 @@ class LazySettings(LazyObject):
         self._warn_dynaconf_global_settings = kwargs.pop(
             "warn_dynaconf_global_settings", None
         )  # in 3.0.0 global settings is deprecated
-
+        # https://github.com/dynaconf/dynaconf/issues/761
+        if "key_transform_function" not in kwargs or kwargs["key_transform_function"] is None:
+            kwargs["key_transform_function"] = upperfy
         self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
         self._kwargs = kwargs
@@ -258,6 +260,11 @@ class Settings:
         self._validate_exclude = kwargs.pop("validate_exclude", None)
         self._validate_only_current_env = kwargs.pop(
             "validate_only_current_env", False
+        )
+        # https://github.com/dynaconf/dynaconf/issues/761
+        self._key_transform_function = kwargs.pop(
+            "key_transform_function",
+            upperfy
         )
 
         self.validators = ValidatorList(
@@ -525,13 +532,13 @@ class Settings:
                     parent=parent,
                 )
 
-            key = upperfy(key)
+            key = self._key_transform_function(key)
 
         # handles system environment fallback
         if default is None:
             key_in_sysenv_fallback_list = isinstance(
                 sysenv_fallback, list
-            ) and key in [upperfy(k) for k in sysenv_fallback]
+            ) and key in [self._key_transform_function(k) for k in sysenv_fallback]
             if sysenv_fallback is True or key_in_sysenv_fallback_list:
                 default = self.get_environ(key, cast=True)
 
@@ -568,7 +575,7 @@ class Settings:
         :param fresh: if key should be taken from source directly
         :return: Boolean
         """
-        key = upperfy(key)
+        key = self._key_transform_function(key)
         if key in self._deleted:
             return False
         return self.get(key, fresh=fresh, default=missing) is not missing
@@ -593,7 +600,7 @@ class Settings:
          or cast must be true to use cast inference
         :return: The value if found, default or None
         """
-        key = upperfy(key)
+        key = self._key_transform_function(key)
         data = self.environ.get(key, default)
         if data:
             if cast in converters:
@@ -606,7 +613,7 @@ class Settings:
 
     def exists_in_environ(self, key):
         """Return True if env variable is exported"""
-        return upperfy(key) in self.environ
+        return self._key_transform_function(key) in self.environ
 
     def as_bool(self, key):
         """Partial method for get with bool cast"""
@@ -873,7 +880,7 @@ class Settings:
         :param key: The key to be unset
         :param force: Bypass default checks and force unset
         """
-        key = upperfy(key.strip())
+        key = self._key_transform_function(key.strip())
         if (
             key not in UPPER_DEFAULT_SETTINGS
             and key not in self._defaults
@@ -1022,7 +1029,7 @@ class Settings:
                     tomlfy=tomlfy,
                     validate=validate,
                 )
-            key = upperfy(key.strip())
+            key = self._key_transform_function(key.strip())
 
         parsed = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
 
@@ -1446,7 +1453,7 @@ class Settings:
         merge = merge or self.get("MERGE_ENABLED_FOR_DYNACONF")
         keys = keys or self.keys()
         for key in keys:
-            key = upperfy(key)
+            key = self._key_transform_function(key)
             if ignore and key in ignore:
                 continue
             value = self.get(key, empty)
