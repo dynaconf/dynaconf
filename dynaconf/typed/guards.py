@@ -3,7 +3,7 @@ from dynaconf.validator import Validator as BaseValidator
 from dynaconf.validator_conditions import is_type_of
 
 from . import exceptions as ex
-from . import types as ty
+from . import type_definitions as ty
 from . import utils as ut
 
 
