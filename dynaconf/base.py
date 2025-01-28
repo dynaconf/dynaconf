@@ -74,7 +74,10 @@ class LazySettings(LazyObject):
             "warn_dynaconf_global_settings", None
         )  # in 3.0.0 global settings is deprecated
         # https://github.com/dynaconf/dynaconf/issues/761
-        if "key_transform_function" not in kwargs or kwargs["key_transform_function"] is None:
+        if (
+            "key_transform_function" not in kwargs
+            or kwargs["key_transform_function"] is None
+        ):
             kwargs["key_transform_function"] = upperfy
         self.__resolve_config_aliases(kwargs)
         compat_kwargs(kwargs)
@@ -263,8 +266,7 @@ class Settings:
         )
         # https://github.com/dynaconf/dynaconf/issues/761
         self._key_transform_function = kwargs.pop(
-            "key_transform_function",
-            upperfy
+            "key_transform_function", upperfy
         )
 
         self.validators = ValidatorList(
@@ -538,7 +540,9 @@ class Settings:
         if default is None:
             key_in_sysenv_fallback_list = isinstance(
                 sysenv_fallback, list
-            ) and key in [self._key_transform_function(k) for k in sysenv_fallback]
+            ) and key in [
+                self._key_transform_function(k) for k in sysenv_fallback
+            ]
             if sysenv_fallback is True or key_in_sysenv_fallback_list:
                 default = self.get_environ(key, cast=True)
 
