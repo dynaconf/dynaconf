@@ -11,6 +11,7 @@ from dynaconf import Validator
 from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.strategies.filtering import PrefixFilter
+from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.vendor.box.box_list import BoxList
 
@@ -98,6 +99,26 @@ def test_populate_obj_with_ignore(settings):
 
     with pytest.raises(AttributeError):
         assert obj.VALUE == 42.1
+
+
+def test_populate_obj_convert_to_dict(settings):
+    class Obj:
+        pass
+
+    # first make sure regular populate brings in Box and BoxList
+    obj = Obj()
+    settings.populate_obj(obj)
+    assert isinstance(obj.ADICT, DynaBox)
+    assert isinstance(obj.ALIST, BoxList)
+    assert isinstance(obj.ADICT.to_yaml(), str)
+
+    # now make sure convert_to_dict=True brings in dict and list
+    obj = Obj()
+    settings.populate_obj(obj, convert_to_dict=True)
+    assert isinstance(obj.ADICT, dict)
+    assert isinstance(obj.ALIST, list)
+    with pytest.raises(AttributeError):
+        assert isinstance(obj.ADICT.to_yaml(), str)
 
 
 def test_call_works_as_get(settings):
