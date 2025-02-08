@@ -62,7 +62,7 @@ def get_client(obj):
             credentials.token,
             role=obj.VAULT_AUTH_ROLE_FOR_DYNACONF,
         )
-    
+
     if obj.VAULT_TOKEN_RENEW_FOR_DYNACONF:
         client.auth.token.renew_self()
 
