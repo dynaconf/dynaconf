@@ -593,6 +593,15 @@ assert obj.VALUE == 42.1  # AttributeError
 
 ```
 
+**new in 3.2.7**
+- `populate_obj` will take `internals` boolean to enable or disable populating internal settings.
+
+
+**new in 3.2.8**
+
+- `populate_obj` will take `convert_to_dict` boolean to enable or disable converting the settings object to a dict before populating the object, this makes the data structures like Box and BoxList to be converted to the raw dict/list before populating the object.
+
+
 ## Exporting
 
 You can generate a file with current configs by calling `dynaconf list -o /path/to/file.ext` see more in [cli](cli.md)
@@ -605,7 +614,7 @@ from dynaconf import settings
 from dynaconf.utils.boxing import DynaBox
 
 # generates a dict with all the keys for `development` env
-data = settings.as_dict(env='development')
+data = settings.to_dict(env='development')
 
 # writes to a file, the format is inferred by extension
 # can be .yaml, .toml, .ini, .json, .py

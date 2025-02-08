@@ -1469,24 +1469,30 @@ class Settings:
         merge=False,
         merge_unique=False,
         internal=False,
+        convert_to_dict=False,
     ):
         """Given the `obj` populate it using self.store items.
 
         :param obj: An object to be populated, a class instance.
         :param keys: A list of keys to be included.
         :param ignore: A list of keys to be excluded.
+        :param merge: Merge values with values existing in object.
+        :param merge_unique: Merge without duplication.
+        :param internal: Include internal keys.
+        :param convert_to_dict: Convert the settings to a pure dict (no Box)
+         before populating.
         """
         merge = merge or self.get("MERGE_ENABLED_FOR_DYNACONF")
+        data = self.to_dict(internal=internal) if convert_to_dict else self
         keys = keys or self.keys()
         for key in keys:
+            key = upperfy(key)
             if not internal:
                 if key in UPPER_DEFAULT_SETTINGS:
                     continue
-            key = upperfy(key)
             if ignore and key in ignore:
                 continue
-            value = self.get(key, empty)
-
+            value = data.get(key, empty)
             if isinstance(value, (list, dict)):
                 if isinstance(value, dict):
                     if "dynaconf_merge" in value:
@@ -1500,7 +1506,6 @@ class Settings:
                         merge = merge_unique = True
                 if merge and (existing := getattr(obj, key, None)):
                     value = object_merge(existing, value, merge_unique)
-
             if value is not empty:
                 setattr(obj, key, value)
 
