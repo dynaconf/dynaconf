@@ -133,7 +133,12 @@ class Merge(MetaValue):
                     }
                 elif "," in self.value:
                     # @merge foo,bar
-                    self.value = self.value.split(",")
+                    self.value = [
+                        parse_conf_data(
+                            v, tomlfy=True, box_settings=box_settings
+                        )
+                        for v in self.value.split(",")
+                    ]
                 else:
                     # @merge foo
                     self.value = [self.value]
