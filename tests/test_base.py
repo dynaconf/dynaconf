@@ -450,6 +450,43 @@ def test_set_explicit_merge_token(tmpdir):
     settings.set("b_list", "@merge zaz")
     assert settings.B_LIST == [1, 2, 3, 4, 5, 6.6, False, "foo", "bar", "zaz"]
 
+    settings.set("b_list", "@merge 7, 8, 9")
+    assert settings.B_LIST == [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6.6,
+        False,
+        "foo",
+        "bar",
+        "zaz",
+        7,
+        8,
+        9,
+    ]
+
+    settings.set("b_list", "@merge '10','11','12'")
+    assert settings.B_LIST == [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6.6,
+        False,
+        "foo",
+        "bar",
+        "zaz",
+        7,
+        8,
+        9,
+        "10",
+        "11",
+        "12",
+    ]
+
     settings.set("a_dict", "@merge {city='Guarulhos'}")
     assert settings.A_DICT.name == "Bruno"
     assert settings.A_DICT.city == "Guarulhos"
