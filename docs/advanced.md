@@ -94,8 +94,7 @@ from dynaconf import Dynaconf
 settings = Dynaconf(settings_file="settings.py")
 ```
 
-`settings.py`
-```python
+```python title="settings.py"
 from dynaconf import post_hook
 
 VARIABLE = "value"
