@@ -81,6 +81,37 @@ settings = Dynaconf(post_hooks=hook_function)
 You can also set the merging individually for each settings variable as seen on
 [merging](merging.md) documentation.
 
+
+#### Decorator approach
+
+**new in 3.2.8**
+
+When the settings file is a Python file, you can also use a decorator to define hooks.
+
+```python
+from dynaconf import Dynaconf
+
+settings = Dynaconf(settings_file="settings.py")
+```
+
+`settings.py`
+```python
+from dynaconf import post_hook
+
+VARIABLE = "value"
+# all regular settings here
+...
+
+@post_hook
+def set_debugging_database_url(settings):
+    data = {}
+    if settings.DEBUG:
+        data["DATABASE_URL"] = "sqlite://"
+    return data
+```
+
+Dynaconf will collect the decorated functions and execute them after the settings file is loaded.
+
 ## Inspecting History
 
 > **NEW** in version 3.2.0

@@ -1161,6 +1161,10 @@ class Settings:
         """Clean end Execute all loaders"""
         self.clean()
         self._loaded_hooks.clear()
+        for hook in self._post_hooks:
+            with suppress(AttributeError, TypeError):
+                hook._called = False
+
         self.execute_loaders(env, silent)
 
     def execute_loaders(
@@ -1302,6 +1306,9 @@ class Settings:
                             identifier=source_metadata,
                         )
                         already_loaded.add(path)
+
+        # this will call any collected hook that was not called yet
+        execute_instance_hooks(self, "post", self._post_hooks)
 
         # handle param `validate`
         if validate is True:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib
 import os
+from contextlib import suppress
 from typing import Callable
 from typing import TYPE_CHECKING
 
@@ -183,11 +184,27 @@ def _run_hook_function(
     It execute @hook_func, update the results into settings @obj and
     add it to _loaded_hook registry ([@hook_source][@hook_type])
     """
+    # if function has `_called` attribute it means it was already called
+    # avoid calling it again
+    if getattr(hook_func, "_called", False) is True:
+        return
+
+    # if the function has a _dynaconf_hook_source attribute set
+    # hook_source to it
+    hook_source = getattr(hook_func, "_dynaconf_hook_source", hook_source)
+
     # optional settings argument
     try:
         hook_dict = hook_func(obj.dynaconf.clone())
     except TypeError:
         hook_dict = hook_func()
+
+    # mark as called
+    with suppress(AttributeError, TypeError):
+        # callable may not be writable, the caveat is that it will be called again in case of reload
+        # however, this must not be a problem since the function should be idempotent
+        # and documentation warns about this behavior.
+        hook_func._called = True
 
     # update obj settings
     if hook_dict:
