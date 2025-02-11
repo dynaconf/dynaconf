@@ -1238,6 +1238,10 @@ class Settings:
         """Clean end Execute all loaders"""
         self.clean()
         self._loaded_hooks.clear()
+        for hook in self._post_hooks:
+            with suppress(AttributeError, TypeError):
+                hook._called = False
+
         self.execute_loaders(env, silent)
 
     def execute_loaders(
@@ -1294,7 +1298,13 @@ class Settings:
                 last_loader.load(self, env, silent, key)
 
     def load_file(
-        self, path=None, env=None, silent=True, key=None, validate=empty
+        self,
+        path=None,
+        env=None,
+        silent=True,
+        key=None,
+        validate=empty,
+        run_hooks=True,
     ):
         """Programmatically load files from ``path``.
 
@@ -1303,81 +1313,95 @@ class Settings:
         - Directory of the last loaded file
         - CWD
 
-        :param path: A single filename or a file list
+        :param path: A single filename, a glob or a file list
         :param env: Which env to load from file (default current_env)
         :param silent: Should raise errors?
         :param key: Load a single key?
         :param validate: Should trigger validation?
+        :param run_hooks: Should run collected hooks?
         """
+        files = ensure_a_list(path)
+        if not files:  # a glob pattern may return empty
+            return
+
         if validate is empty:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
 
         env = (env or self.current_env).upper()
-        files = ensure_a_list(path)
-        if files:
-            # Using inspect take the filename and line number of the caller
-            # to be used in the source_metadata
-            frame = inspect.currentframe()
-            caller = inspect.getouterframes(frame)[1]
-            already_loaded = set()
-            for _filename in files:
+
+        # Using inspect take the filename and line number of the caller
+        # to be used in the source_metadata
+        frame = inspect.currentframe()
+        caller = inspect.getouterframes(frame)[1]
+
+        already_loaded = set()
+        for _filename in files:
+            # load_file() will handle validation later
+            with suppress(ValidationError):
+                source_metadata = SourceMetadata(
+                    loader=f"load_file@{caller.filename}:{caller.lineno}",
+                    identifier=_filename,
+                    env=env,
+                )
+                if py_loader.try_to_load_from_py_module_name(
+                    obj=self,
+                    name=_filename,
+                    silent=True,
+                    identifier=source_metadata,
+                ):
+                    # if it was possible to load from module name
+                    # continue the loop.
+                    continue
+
+            root_dir = str(self._root_path or os.getcwd())
+
+            # Issue #494
+            if (
+                isinstance(_filename, Path)
+                and str(_filename.parent) in root_dir
+            ):  # pragma: no cover
+                filepath = str(_filename)
+            else:
+                filepath = os.path.join(root_dir, str(_filename))
+
+            paths = [p for p in sorted(glob(filepath)) if ".local." not in p]
+            local_paths = [p for p in sorted(glob(filepath)) if ".local." in p]
+
+            # Handle possible *.globs sorted alphanumeric
+            for path in paths + local_paths:
+                if path in already_loaded:  # pragma: no cover
+                    continue
+
                 # load_file() will handle validation later
                 with suppress(ValidationError):
                     source_metadata = SourceMetadata(
                         loader=f"load_file@{caller.filename}:{caller.lineno}",
-                        identifier=_filename,
+                        identifier=path,
                         env=env,
                     )
-                    if py_loader.try_to_load_from_py_module_name(
+                    settings_loader(
                         obj=self,
-                        name=_filename,
-                        silent=True,
+                        env=env,
+                        silent=silent,
+                        key=key,
+                        filename=path,
+                        validate=validate,
                         identifier=source_metadata,
-                    ):
-                        # if it was possible to load from module name
-                        # continue the loop.
-                        continue
+                    )
+                    already_loaded.add(path)
 
-                root_dir = str(self._root_path or os.getcwd())
-
-                # Issue #494
-                if (
-                    isinstance(_filename, Path)
-                    and str(_filename.parent) in root_dir
-                ):  # pragma: no cover
-                    filepath = str(_filename)
-                else:
-                    filepath = os.path.join(root_dir, str(_filename))
-
-                paths = [
-                    p for p in sorted(glob(filepath)) if ".local." not in p
-                ]
-                local_paths = [
-                    p for p in sorted(glob(filepath)) if ".local." in p
-                ]
-
-                # Handle possible *.globs sorted alphanumeric
-                for path in paths + local_paths:
-                    if path in already_loaded:  # pragma: no cover
-                        continue
-
-                    # load_file() will handle validation later
-                    with suppress(ValidationError):
-                        source_metadata = SourceMetadata(
-                            loader=f"load_file@{caller.filename}:{caller.lineno}",
-                            identifier=path,
-                            env=env,
-                        )
-                        settings_loader(
-                            obj=self,
-                            env=env,
-                            silent=silent,
-                            key=key,
-                            filename=path,
-                            validate=validate,
-                            identifier=source_metadata,
-                        )
-                        already_loaded.add(path)
+        if run_hooks:
+            # this will call any collected hook that was not called yet
+            execute_instance_hooks(
+                self,
+                "post",
+                [
+                    _hook
+                    for _hook in self._post_hooks
+                    if getattr(_hook, "_dynaconf_hook", False) is True
+                    and not getattr(_hook, "_called", False)
+                ],
+            )
 
         # handle param `validate`
         if validate is True:
