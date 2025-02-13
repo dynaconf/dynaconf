@@ -28,6 +28,7 @@ from dynaconf.utils.inspect import EnvNotFoundError
 from dynaconf.utils.inspect import inspect_settings
 from dynaconf.utils.inspect import KeyNotFoundError
 from dynaconf.utils.inspect import OutputFormatError
+from dynaconf.utils.inspect import print_debug_info
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import unparse_conf_data
 from dynaconf.validator import ValidationError
@@ -54,7 +55,12 @@ def set_settings(ctx, instance=None):
 
     settings = None
 
-    _echo_enabled = ctx.invoked_subcommand not in ["get", "inspect", None]
+    _echo_enabled = ctx.invoked_subcommand not in [
+        "get",
+        "inspect",
+        "debug-info",
+        None,
+    ]
     if "--json" in click.get_os_args():
         _echo_enabled = False
 
@@ -913,6 +919,27 @@ def inspect(
     except (KeyNotFoundError, EnvNotFoundError, OutputFormatError) as err:
         click.echo(err)
         sys.exit(1)
+
+
+@main.command()
+@click.option("--key", "-k", help="Filters result by key.")
+@click.option(
+    "-v",
+    "--verbose",
+    count=True,
+    help="Increase verbosity of the output.",
+)
+@click.option(
+    "--format",
+    "-f",
+    help="The output format.",
+    default="json",
+    type=click.Choice(INSPECT_FORMATS),
+)
+def debug_info(key, verbose, format):
+    """Prints debug information about the settings instance."""
+    print_debug_info(settings, dumper=format, verbosity=verbose, key=key)
+    click.echo()
 
 
 if __name__ == "__main__":  # pragma: no cover

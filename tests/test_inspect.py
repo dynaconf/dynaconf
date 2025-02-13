@@ -14,6 +14,7 @@ from dynaconf import Dynaconf
 from dynaconf.utils.inspect import _ensure_serializable
 from dynaconf.utils.inspect import _get_data_by_key
 from dynaconf.utils.inspect import EnvNotFoundError
+from dynaconf.utils.inspect import get_debug_info
 from dynaconf.utils.inspect import get_history
 from dynaconf.utils.inspect import inspect_settings
 from dynaconf.utils.inspect import KeyNotFoundError
@@ -853,3 +854,156 @@ def test_inspect_exception_invalid_format():
     settings = Dynaconf()
     with pytest.raises(OutputFormatError):
         inspect_settings(settings, dumper="invalid_format")
+
+
+def test_get_debug_info(tmp_path):
+    file_a = tmp_path / "a.yml"
+    file_b = tmp_path / "b.yml"
+    file_c = tmp_path / "c.py"
+    create_file(
+        file_a,
+        """\
+        dicty:
+          a: A
+          b:
+            - 1
+            - c: C
+              d: D
+        """,
+    )
+    create_file(
+        file_b,
+        """\
+        listy:
+          - 1
+          - a: A
+            b: B
+            c:
+              - 1
+              - 2
+        """,
+    )
+    create_file(
+        file_c,
+        """\
+        from dynaconf import post_hook
+
+        FRUIT = "tomato"
+
+        @post_hook
+        def set_name_to_foo2(settings):
+            return {"name": "foo2"}
+        """,
+    )
+
+    def set_name_to_foo(settings):
+        return {"name": "foo"}
+
+    settings = Dynaconf(
+        settings_file=[file_a, file_b],
+        post_hooks=[
+            set_name_to_foo,
+            lambda settings: {"bar": "baz"},
+        ],
+        hello="world",
+        validators=[Validator("name", required=True)],
+    )
+
+    settings.load_file(file_c)
+
+    debug_info = get_debug_info(settings)
+    assert "dynaconf" in debug_info["versions"]
+    assert debug_info["root_path"] == str(tmp_path)
+    assert len(debug_info["validators"]) == 1
+    assert len(debug_info["post_hooks"]) == 3
+    assert len(debug_info["loaded_hooks"]) == 3
+    assert len(debug_info["loaded_files"]) == 3
+    assert len(debug_info["history"]) == 11
+
+    # Now including keys
+    debug_info = get_debug_info(settings, verbosity=1)
+    assert debug_info["history"][0]["data"] == [
+        "POST_HOOKS",
+        "HELLO",
+        "SETTINGS_FILE_FOR_DYNACONF",
+    ]
+    assert debug_info["history"][0]["identifier"] == "init_kwargs"
+    assert len(debug_info["history"][1]["data"]) > 1
+    assert debug_info["history"][1]["identifier"] == "default_settings"
+    assert debug_info["history"][2]["data"] == ["SETTINGS_MODULE"]
+    assert debug_info["history"][2]["identifier"] == "settings_module_method"
+    assert debug_info["history"][3]["data"] == ["DICTY"]
+    assert debug_info["history"][3]["identifier"] == str(file_a)
+    assert debug_info["history"][4]["data"] == ["LISTY"]
+    assert debug_info["history"][4]["identifier"] == str(file_b)
+    assert debug_info["history"][5]["data"] == ["NAME"]
+    assert debug_info["history"][5]["identifier"] == "set_name_to_foo@instance"
+    assert debug_info["history"][6]["data"] == ["BAR"]
+    assert "lambda_" in debug_info["history"][6]["identifier"]
+    assert debug_info["history"][9]["data"] == ["FRUIT"]
+
+    c_identifier = str(file_c).rstrip(".py")
+
+    assert debug_info["history"][9]["identifier"] == c_identifier
+    assert debug_info["history"][10]["data"] == ["NAME"]
+    assert (
+        debug_info["history"][10]["identifier"]
+        == f"set_name_to_foo2@{c_identifier}"
+    )
+    assert debug_info["loaded_files"] == [
+        str(file_a),
+        str(file_b),
+        str(file_c),
+    ]
+    assert debug_info["loaded_hooks"][0]["data"] == ["name"]
+    assert debug_info["loaded_hooks"][0]["hook"] == "set_name_to_foo@instance"
+    assert debug_info["loaded_hooks"][1]["data"] == ["bar"]
+    assert "lambda_" in debug_info["loaded_hooks"][1]["hook"]
+    assert debug_info["loaded_hooks"][2]["data"] == ["name"]
+    assert (
+        debug_info["loaded_hooks"][2]["hook"]
+        == f"set_name_to_foo2@{c_identifier}"
+    )
+    assert "set_name_to_foo" in debug_info["post_hooks"][0]
+    assert "lambda" in debug_info["post_hooks"][1]
+    assert "set_name_to_foo2" in debug_info["post_hooks"][2]
+
+    # Now including keys and values
+    debug_info = get_debug_info(settings, verbosity=2)
+    assert debug_info["history"][0]["data"]["HELLO"] == "world"
+    assert debug_info["history"][3]["data"]["DICTY"] == {
+        "a": "A",
+        "b": [1, {"c": "C", "d": "D"}],
+    }
+    assert debug_info["history"][4]["data"]["LISTY"] == [
+        1,
+        {"a": "A", "b": "B", "c": [1, 2]},
+    ]
+    assert debug_info["history"][5]["data"]["NAME"] == "foo"
+    assert debug_info["history"][6]["data"]["BAR"] == "baz"
+    assert debug_info["history"][9]["data"]["FRUIT"] == "tomato"
+    assert debug_info["history"][10]["data"]["NAME"] == "foo2"
+    assert debug_info["loaded_hooks"][0]["data"]["name"] == "foo"
+    assert debug_info["loaded_hooks"][1]["data"]["bar"] == "baz"
+    assert debug_info["loaded_hooks"][2]["data"]["name"] == "foo2"
+
+    # Now passing a specific key
+    debug_info = get_debug_info(settings, key="DICTY")
+    # assert the passed key is present on its own entry
+    # assert other keys are not present
+    assert debug_info["history"][0]["data"] == {}
+    assert debug_info["history"][1]["data"] == {}
+    assert debug_info["history"][2]["data"] == {}
+    assert debug_info["history"][3]["data"]["DICTY"] == {
+        "a": "A",
+        "b": [1, {"c": "C", "d": "D"}],
+    }
+    assert debug_info["history"][4]["data"] == {}
+    assert debug_info["history"][5]["data"] == {}
+    assert debug_info["history"][6]["data"] == {}
+    assert debug_info["history"][7]["data"] == {}
+    assert debug_info["history"][8]["data"] == {}
+    assert debug_info["history"][9]["data"] == {}
+    assert debug_info["history"][10]["data"] == {}
+    assert debug_info["loaded_hooks"][0]["data"] == {}
+    assert debug_info["loaded_hooks"][1]["data"] == {}
