@@ -57,13 +57,13 @@ def load_from_python_object(
         file_merge = getattr(mod, "DYNACONF_MERGE", empty)
 
     for setting in dir(mod):
+        setting_value = getattr(mod, setting)
         # A setting var in a Python file should start with upper case
         # valid: A_value=1, ABC_value=3 A_BBB__default=1
         # invalid: a_value=1, MyValue=3
         # This is to avoid loading functions, classes and built-ins
         if setting.split("__")[0].isupper():
             if key is None or key == setting:
-                setting_value = getattr(mod, setting)
                 obj.set(
                     setting,
                     setting_value,
@@ -71,6 +71,14 @@ def load_from_python_object(
                     merge=file_merge,
                     validate=validate,
                 )
+        # if setting is a post_hook function it will be a callable with
+        # the _dynaconf_hook attribute set to True
+        # then we want to add it to the post_hooks list on the obj.
+        elif callable(setting_value) and getattr(
+            setting_value, "_dynaconf_hook", False
+        ):
+            if setting_value not in obj._post_hooks:
+                obj._post_hooks.append(setting_value)
 
     obj._loaded_py_modules.append(mod.__name__)
     obj._loaded_files.append(mod.__file__)

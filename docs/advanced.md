@@ -81,6 +81,46 @@ settings = Dynaconf(post_hooks=hook_function)
 You can also set the merging individually for each settings variable as seen on
 [merging](merging.md) documentation.
 
+
+#### Decorator approach
+
+**new in 3.2.8**
+
+When the settings file is a Python file, you can also use a decorator to define hooks.
+
+```python
+from dynaconf import Dynaconf
+
+settings = Dynaconf(settings_file="settings.py")
+```
+
+```python title="settings.py"
+from dynaconf import post_hook
+
+VARIABLE = "value"
+# all regular settings here
+...
+
+@post_hook
+def set_debugging_database_url(settings):
+    data = {}
+    if settings.DEBUG:
+        data["DATABASE_URL"] = "sqlite://"
+    return data
+```
+
+Dynaconf will collect the decorated functions and execute them after the settings file is loaded.
+
+The hook decorator can only be applied to functions that are defined withing the same settings file, in the
+need to use external functions, wrap it in a local decorated function.
+
+When using `load_file` to load a python file, hooks will also be collected and immediately executed after the file is loaded, unless the `run_hooks` argument is set to `False`, this is useful when calling `load_file` multiple times and have the hooks to be all executed together at a certain point later.
+
+`execute_instance_hooks` helper method is also available to trigger execution of collected hooks, but usually not
+needed because a common pattern is to call the latest `load_file` with `run_hooks=True` to trigger all hooks at once.
+
+Notice that load_file will execute all collected hooks that have not been called yet, it does not execute hooks that have already been called (unless the hook itself is marked as `_called=False`). This is useful when you want to reload a file and re-execute hooks.
+
 ## Inspecting History
 
 > **NEW** in version 3.2.0
