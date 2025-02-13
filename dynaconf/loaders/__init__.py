@@ -147,6 +147,22 @@ def execute_module_hooks(
 execute_hooks = execute_module_hooks
 
 
+def _get_unique_hook_id(hook_func, hook_source):
+    """get unique identifier for a hook function.
+    in most of cases this will be the function name@source_file
+    however, if the function is a lambda, it will be a hash of the code object.
+    because lambda functions are not hashable itself and we can't rely on its id.
+    """
+    hook_unique_id = hook_func.__name__
+    if hook_unique_id == "<lambda>":
+        frame_info = getattr(hook_func, "__code__", None)
+        if frame_info:
+            hook_unique_id = f"lambda_{hash(frame_info.co_code)}"
+        else:
+            hook_unique_id = f"lambda_{id(hook_func)}"
+    return f"{hook_unique_id}@{hook_source}"
+
+
 def _run_hook_module(hook_type, hook_module, obj, key=""):
     """
     Run a hook function from hook_module.
@@ -154,11 +170,6 @@ def _run_hook_module(hook_type, hook_module, obj, key=""):
     Given a @hook_type, a @hook_module and a settings @obj, load the function
     and execute it if found.
     """
-    hook_source = hook_module.__file__
-
-    # check if already loaded
-    if hook_type in obj._loaded_hooks.get(hook_source, {}):
-        return
 
     # check errors
     if hook_module and getattr(hook_module, "_error", False):
@@ -166,9 +177,12 @@ def _run_hook_module(hook_type, hook_module, obj, key=""):
             raise hook_module._error
 
     # execute hook
+    hook_source = hook_module.__file__
     hook_func = getattr(hook_module, hook_type, None)
     if hook_func:
-        _run_hook_function(obj, hook_type, hook_func, hook_source, key)
+        identifier = _get_unique_hook_id(hook_func, hook_source)
+        if hook_type not in obj._loaded_hooks.get(identifier, {}):
+            _run_hook_function(obj, hook_type, hook_func, hook_source, key)
 
 
 def _run_hook_function(
@@ -201,9 +215,10 @@ def _run_hook_function(
         # and documentation warns about this behavior.
         hook_func._called = True
 
-    # update obj settings
+    identifier = _get_unique_hook_id(hook_func, hook_source)
+
     if hook_dict:
-        identifier = f"{hook_func.__name__}@{hook_source}"
+        # update obj settings
         merge = hook_dict.pop(
             "dynaconf_merge", hook_dict.pop("DYNACONF_MERGE", False)
         )
@@ -224,7 +239,7 @@ def _run_hook_function(
             )
 
     # add to registry
-    obj._loaded_hooks[hook_source][hook_type] = hook_dict
+    obj._loaded_hooks[identifier][hook_type] = hook_dict
 
 
 def settings_loader(

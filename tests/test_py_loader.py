@@ -256,7 +256,9 @@ def test_post_load_hooks(clean_env, tmpdir):
     assert settings.DATABASES.default.VERSION == 42
     assert settings.DATABASES.default.FORCED_INT == 12
     assert settings.BANDS == ["Rush", "Yes", "Anathema"]
-    assert settings._loaded_hooks[str(plugin_hook)] == {
+
+    plugin_hook, settings_hook = list(settings._loaded_hooks.keys())
+    assert settings._loaded_hooks[plugin_hook] == {
         "post": {
             "PLUGIN_NAME": "dummyplugin",
             "COLORS": "@merge blue",
@@ -266,7 +268,7 @@ def test_post_load_hooks(clean_env, tmpdir):
             "BANDS": ["Anathema", "dynaconf_merge"],
         }
     }
-    assert settings._loaded_hooks[str(settings_hook)] == {
+    assert settings._loaded_hooks[settings_hook] == {
         "post": {
             "INSTALLED_APPS": ["dummyplugin"],
         }

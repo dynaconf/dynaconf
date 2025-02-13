@@ -193,6 +193,77 @@ export FOO=$(dynaconf get DATABASE_NAME -d 'default')
 
 If the key doesn't exist and no default is provided it will exit with code 1.
 
+### dynaconf debug-info
+
+Prints debug information about the current settings instance
+
+```bash
+dynaconf debug-info --help
+Usage: dynaconf debug-info [OPTIONS]
+
+  Prints debug information about the settings instance.
+
+Options:
+  -k, --key TEXT                  Filters result by key.
+  -v, --verbose                   Increase verbosity of the output.
+  -f, --format [yaml|json|json-compact]
+                                  The output format.
+  --help                          Show this message and exit.
+```
+
+The default format is JSON, and the verbosity levels are
+
+- 0 (default): Include only the count of keys loaded by each loader
+- 1: Include the keys loaded by each loader
+- 2: Include the keys loaded by each loader and the values of each key
+
+
+Sample output in YAML format:
+
+**TIP**: adding `-v` will list the keys and `-vv` will list the keys and values. 
+
+```yaml
+# dynaconf debug-info --format=yaml
+versions:
+  dynaconf: 3.2.8
+  django: 4.2.16
+root_path: /app/settings
+validators: ["Validator("FOO", must_exist=True, eq="bar")"]
+core_loaders: ["dynaconf.loaders.env_loader"]
+loaded_files:
+- /app/settings/defaults.py
+- /app/settings/development_defaults.py
+- /etc/app/settings.yaml
+history:
+- loader: set_method
+  identifier: init_kwargs
+  data: 13
+- loader: set_method
+  identifier: default_settings
+  data: 56
+- loader: settings_loader
+  identifier: /app/settings/defaults
+  data: 256
+- loader: py
+  identifier: /app/settings/development_defaults
+  data: 16
+- loader: set_method
+  identifier: lambda_1933577857047901425@instance
+  data: 2
+- loader: standard_settings_loader
+  identifier: /etc/app/settings.yaml
+  data: 1
+post_hooks:
+- <function <lambda> at 0x716a7b89c900>
+loaded_hooks:
+- hook: lambda_1933577857047901425@instance
+  data: 1
+environments:
+- development
+- production
+loaded_envs: ['development']
+```
+
 ### dynaconf list
 
 List all defined parameters and optionally export to a json file.
