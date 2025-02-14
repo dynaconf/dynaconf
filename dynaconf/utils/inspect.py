@@ -457,6 +457,9 @@ def get_debug_info(
     if settings.get("ENVIRONMENTS_FOR_DYNACONF"):
         data["environments"] = list(settings.get("ENVIRONMENTS_FOR_DYNACONF"))
         data["loaded_envs"] = settings._loaded_envs
+
+    if key:
+        data["current"] = {key: settings.get(key)}
     return data
 
 

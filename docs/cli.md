@@ -124,15 +124,25 @@ Usage: dynaconf inspect [OPTIONS]
 
 Options:
   -k, --key TEXT                  Filters result by key.
-  -e, --env TEXT                  Filters result by environment.
+  -e, --env TEXT                  Filters result by environment on --report-
+                                  mode=inspect.
+
   -f, --format [yaml|json|json-compact]
                                   The output format.
-  -s, --old-first                 Invert history sorting to 'old-first'
-  -n, --limit INTEGER             Limits how many history entries are shown.
-  -a, --all                       Show dynaconf internal settings?
-  --help                          Show this message and exit.
-```
+  -s, --old-first                 Invert history sorting to 'old-first' on
+                                  --report-mode=inspect.
 
+  -n, --limit INTEGER             Limits how many history entries are shown on
+                                  --report-mode=inspect.
+
+  -a, --all                       Show dynaconf internal settings?
+  -m, --report-mode [inspect|debug]
+  -v, --verbose                   Increase verbosity of the output on
+                                  --report-mode=debug.
+
+  --help                          Show this message and exit.
+                    Show this message and exit.
+```
 
 Sample usage:
 
@@ -167,55 +177,24 @@ To save to a file, use regular stream redirect methods:
 $ dynaconf -i app.settings inspect -k foo -f yaml > dump.yaml
 ```
 
-### Dynaconf get
+#### Inspect Debug Info
 
-Get raw value for a single key
-
-```bash
-Usage: dynaconf get [OPTIONS] KEY
-
-  Returns the raw value for a settings key.
-
-  If result is a dict, list or tuple it is printed as a valid json string.
-
-Options:
-  -d, --default TEXT  Default value if settings doesn't exist
-  -e, --env TEXT      Filters the env to get the values
-  -u, --unparse       Unparse data by adding markers such as @none, @int etc..
-  --help              Show this message and exit.
-```
-
-Example:
-
-```bash
-export FOO=$(dynaconf get DATABASE_NAME -d 'default')
-```
-
-If the key doesn't exist and no default is provided it will exit with code 1.
-
-### dynaconf debug-info
+> **NEW** in version 3.2.8
 
 Prints debug information about the current settings instance
 
 ```bash
-dynaconf debug-info --help
-Usage: dynaconf debug-info [OPTIONS]
-
-  Prints debug information about the settings instance.
-
-Options:
-  -k, --key TEXT                  Filters result by key.
-  -v, --verbose                   Increase verbosity of the output.
-  -f, --format [yaml|json|json-compact]
-                                  The output format.
-  --help                          Show this message and exit.
+dynaconf inspect -m debug -vv
 ```
 
-The default format is JSON, and the verbosity levels are
+Verbosity levels are
 
 - 0 (default): Include only the count of keys loaded by each loader
 - 1: Include the keys loaded by each loader
 - 2: Include the keys loaded by each loader and the values of each key
+
+
+Debug mode also accepts the `-k key` to filter the output by a specific key.
 
 
 Sample output in YAML format:
@@ -223,7 +202,7 @@ Sample output in YAML format:
 **TIP**: adding `-v` will list the keys and `-vv` will list the keys and values. 
 
 ```yaml
-# dynaconf debug-info --format=yaml
+# dynaconf inspect -m debug --format=yaml
 versions:
   dynaconf: 3.2.8
   django: 4.2.16
@@ -263,6 +242,32 @@ environments:
 - production
 loaded_envs: ['development']
 ```
+
+### Dynaconf get
+
+Get raw value for a single key
+
+```bash
+Usage: dynaconf get [OPTIONS] KEY
+
+  Returns the raw value for a settings key.
+
+  If result is a dict, list or tuple it is printed as a valid json string.
+
+Options:
+  -d, --default TEXT  Default value if settings doesn't exist
+  -e, --env TEXT      Filters the env to get the values
+  -u, --unparse       Unparse data by adding markers such as @none, @int etc..
+  --help              Show this message and exit.
+```
+
+Example:
+
+```bash
+export FOO=$(dynaconf get DATABASE_NAME -d 'default')
+```
+
+If the key doesn't exist and no default is provided it will exit with code 1.
 
 ### dynaconf list
 
