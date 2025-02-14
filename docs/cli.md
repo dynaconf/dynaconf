@@ -124,15 +124,25 @@ Usage: dynaconf inspect [OPTIONS]
 
 Options:
   -k, --key TEXT                  Filters result by key.
-  -e, --env TEXT                  Filters result by environment.
+  -e, --env TEXT                  Filters result by environment on --report-
+                                  mode=inspect.
+
   -f, --format [yaml|json|json-compact]
                                   The output format.
-  -s, --old-first                 Invert history sorting to 'old-first'
-  -n, --limit INTEGER             Limits how many history entries are shown.
-  -a, --all                       Show dynaconf internal settings?
-  --help                          Show this message and exit.
-```
+  -s, --old-first                 Invert history sorting to 'old-first' on
+                                  --report-mode=inspect.
 
+  -n, --limit INTEGER             Limits how many history entries are shown on
+                                  --report-mode=inspect.
+
+  -a, --all                       Show dynaconf internal settings?
+  -m, --report-mode [inspect|debug]
+  -v, --verbose                   Increase verbosity of the output on
+                                  --report-mode=debug.
+
+  --help                          Show this message and exit.
+                    Show this message and exit.
+```
 
 Sample usage:
 
@@ -165,6 +175,72 @@ To save to a file, use regular stream redirect methods:
 
 ```bash
 $ dynaconf -i app.settings inspect -k foo -f yaml > dump.yaml
+```
+
+#### Inspect Debug Info
+
+> **NEW** in version 3.2.8
+
+Prints debug information about the current settings instance
+
+```bash
+dynaconf inspect -m debug -vv
+```
+
+Verbosity levels are
+
+- 0 (default): Include only the count of keys loaded by each loader
+- 1: Include the keys loaded by each loader
+- 2: Include the keys loaded by each loader and the values of each key
+
+
+Debug mode also accepts the `-k key` to filter the output by a specific key.
+
+
+Sample output in YAML format:
+
+**TIP**: adding `-v` will list the keys and `-vv` will list the keys and values. 
+
+```yaml
+# dynaconf inspect -m debug --format=yaml
+versions:
+  dynaconf: 3.2.8
+  django: 4.2.16
+root_path: /app/settings
+validators: ["Validator("FOO", must_exist=True, eq="bar")"]
+core_loaders: ["dynaconf.loaders.env_loader"]
+loaded_files:
+- /app/settings/defaults.py
+- /app/settings/development_defaults.py
+- /etc/app/settings.yaml
+history:
+- loader: set_method
+  identifier: init_kwargs
+  data: 13
+- loader: set_method
+  identifier: default_settings
+  data: 56
+- loader: settings_loader
+  identifier: /app/settings/defaults
+  data: 256
+- loader: py
+  identifier: /app/settings/development_defaults
+  data: 16
+- loader: set_method
+  identifier: lambda_1933577857047901425@instance
+  data: 2
+- loader: standard_settings_loader
+  identifier: /etc/app/settings.yaml
+  data: 1
+post_hooks:
+- <function <lambda> at 0x716a7b89c900>
+loaded_hooks:
+- hook: lambda_1933577857047901425@instance
+  data: 1
+environments:
+- development
+- production
+loaded_envs: ['development']
 ```
 
 ### Dynaconf get

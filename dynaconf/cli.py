@@ -29,6 +29,7 @@ from dynaconf.utils.inspect import EnvNotFoundError
 from dynaconf.utils.inspect import inspect_settings
 from dynaconf.utils.inspect import KeyNotFoundError
 from dynaconf.utils.inspect import OutputFormatError
+from dynaconf.utils.inspect import print_debug_info
 from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import unparse_conf_data
 from dynaconf.validator import ValidationError
@@ -58,7 +59,12 @@ def set_settings(ctx, instance=None):
 
     settings = None
 
-    _echo_enabled = ctx.invoked_subcommand not in ["get", "inspect", None]
+    _echo_enabled = ctx.invoked_subcommand not in [
+        "get",
+        "inspect",
+        "debug-info",
+        None,
+    ]
     if "--json" in click.get_os_args():
         _echo_enabled = False
 
@@ -860,7 +866,10 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
 @main.command()
 @click.option("--key", "-k", help="Filters result by key.")
 @click.option(
-    "--env", "-e", help="Filters result by environment.", default=None
+    "--env",
+    "-e",
+    help="Filters result by environment on --report-mode=inspect.",
+    default=None,
 )
 @click.option(
     "--format",
@@ -873,7 +882,7 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
     "--old-first",
     "new_first",
     "-s",
-    help="Invert history sorting to 'old-first'",
+    help="Invert history sorting to 'old-first' on --report-mode=inspect.",
     default=True,
     is_flag=True,
 )
@@ -883,7 +892,7 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
     "-n",
     default=None,
     type=int,
-    help="Limits how many history entries are shown.",
+    help="Limits how many history entries are shown on --report-mode=inspect.",
 )
 @click.option(
     "--all",
@@ -893,28 +902,54 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
     is_flag=True,
     help="Show dynaconf internal settings?",
 )
+@click.option(
+    "--report-mode",
+    "report_mode",
+    "-m",
+    default="inspect",
+    type=click.Choice(["inspect", "debug"]),
+)
+@click.option(
+    "-v",
+    "--verbose",
+    count=True,
+    help="Increase verbosity of the output on --report-mode=debug.",
+)
 def inspect(
-    key, env, format, new_first, history_limit, _all
+    key, env, format, new_first, history_limit, _all, report_mode, verbose
 ):  # pragma: no cover
     """
     Inspect the loading history of the given settings instance.
 
     Filters by key and environment, otherwise shows all.
     """
-    try:
-        inspect_settings(
+
+    if report_mode == "debug":
+        print_debug_info(
             settings,
-            key=key,
-            env=env or None,
             dumper=format,
-            new_first=new_first,
-            include_internal=_all,
-            history_limit=history_limit,
-            print_report=True,
+            verbosity=verbose,
+            key=key,
         )
         click.echo()
-    except (KeyNotFoundError, EnvNotFoundError, OutputFormatError) as err:
-        click.echo(err)
+    elif report_mode == "inspect":
+        try:
+            inspect_settings(
+                settings,
+                key=key,
+                env=env or None,
+                dumper=format,
+                new_first=new_first,
+                include_internal=_all,
+                history_limit=history_limit,
+                print_report=True,
+            )
+            click.echo()
+        except (KeyNotFoundError, EnvNotFoundError, OutputFormatError) as err:
+            click.echo(err)
+            sys.exit(1)
+    else:
+        click.echo("Invalid report mode")
         sys.exit(1)
 
 

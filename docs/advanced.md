@@ -221,6 +221,44 @@ Kwargs-only:
 
 Returns a list of history-records (the same as in the `history` key of `inspect_settings` records. In fact, `inspect_settings` uses `get_history`, so this is just available if your main goal is to use the data directly. It offer some basic filtering capabilities, but it is assumed that if you choose to use this you'll probably want to process and filter the data by your own.
 
+
+### `get_debug_info`
+
+Returns a dictionary containing debug information about the settings object. This information includes the current environment, the settings file, the loaders, and the history of the settings object.
+
+```python
+from dynaconf.utils.inspect_settings import get_debug_info
+get_debug_info(settings.DYNACONF, verbosity=0, key="data")
+# result
+{'core_loaders': [],
+ 'environments': ['development', 'production'],
+ 'history': [{'data': {}, 'identifier': 'init_kwargs', 'loader': 'set_method'},
+             {'data': {},
+              'identifier': 'default_settings',
+              'loader': 'set_method'},
+             {'data': {},
+              'identifier': 'envvars_first_load',
+              'loader': 'set_method'},
+             {'data': {},
+              'identifier': 'settings_module_method',
+              'loader': 'set_method'},
+             {'data': {'data': [0]},
+              'identifier': '/etc/app/defaults.py',
+              'loader': 'py'},
+             {'data': {'data': '@merge 7,8,9'},
+              'identifier': '/etc/app/settings.yaml',
+              'loader': 'yaml'},
+ 'loaded_envs': ["development"],
+ 'loaded_files': ['/etc/app/defaults.py',
+                  '/etc/app/settings.yaml'],
+ 'loaded_hooks': [],
+ 'post_hooks': [],
+ 'root_path': '/run/app',
+ 'validators': [],
+ 'versions': {'django': '4.2.16', 'dynaconf': '3.2.8.dev0'}}
+```
+
+
 ## Update dynaconf settings using command-line arguments (cli)
 
 Dynaconf is designed to load the settings file and, when applicable, prioritize overrides from envvar.
