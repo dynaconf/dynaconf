@@ -5,6 +5,7 @@
 set -euo pipefail
 
 echo '[BUILD] Building new package distribution.'
+
 make dist
 
 # Create a venv, and schedule it for deletion.
@@ -14,7 +15,12 @@ trap cleanup EXIT  # bash pseudo signal
 trap 'cleanup ; trap - SIGINT ; kill -s SIGINT $$' SIGINT
 trap 'cleanup ; trap - SIGTERM ; kill -s SIGTERM $$' SIGTERM
 venv="$(mktemp --directory)"
-python3 -m venv "${venv}"
+# ensure the running version of Python is < 3.12 (for compatibility)
+# else exit with an error message.
+# The reason is that pyminify generates minified code that is compatible only with the 
+# running Python version. So, if the code is minified with Python 3.12, it will not be
+# compatible with Python <3.12.
+python3.11 -m venv "${venv}"
 
 # Sanity check the new packages.
 set +u
