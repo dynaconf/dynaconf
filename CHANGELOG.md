@@ -2,6 +2,20 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.2.8](https://github.com/dynaconf/dynaconf/releases/tag/3.2.8) - 2025-02-16
+
+### Bug Fixes
+
+- Parse data type on merge with comma separated value. *By Bruno Rocha*.
+
+### Features
+
+- Add CLI command `debug-info` (#1251). *By Bruno Rocha*.
+- Add support for decorated hooks on settings files (#1246). *By Bruno Rocha*.
+- Add VAULT_TOKEN_RENEW_FOR_DYNACONF config/code (#1094) (#1242). *By Pedro Brochado*.
+- populate_obj takes convert_to_dict (#1237). *By Bruno Rocha*.
+- add VAULT_TOKEN_RENEW. *By Bruno Rocha*.
+
 ## [3.2.7](https://github.com/dynaconf/dynaconf/releases/tag/3.2.7) - 2025-01-21
 
 ### Bug Fixes
