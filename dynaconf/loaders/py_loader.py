@@ -71,12 +71,12 @@ def load_from_python_object(
                     merge=file_merge,
                     validate=validate,
                 )
-        # if setting is a post_hook function it will be a callable with
-        # the _dynaconf_hook attribute set to True
-        # then we want to add it to the post_hooks list on the obj.
-        elif callable(setting_value) and getattr(
-            setting_value, "_dynaconf_hook", False
-        ):
+        # if setting (name) starts with _dynaconf_hook
+        # and the value is a callable
+        # then we want to add it to the post_hooks list on the obj
+        # we use the name instead checking on an attribute to avoid
+        # loading a lazy object early in the process
+        elif setting.startswith("_dynaconf_hook") and callable(setting_value):
             if setting_value not in obj._post_hooks:
                 obj._post_hooks.append(setting_value)
 

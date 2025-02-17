@@ -368,4 +368,11 @@ def post_hook(function: Callable) -> Callable:
         raise TypeError(
             "post_hook decorator must be applied to a function or method."
         )
+    else:
+        # On the same scope where the decorated function is defined we
+        # add a variable with the same name as the function but prefixed
+        # with _dynaconf_hook_ this variable will be used by the loader
+        # to register the function as a post_hook
+        function.__globals__[f"_dynaconf_hook_{function.__name__}"] = function
+
     return function
