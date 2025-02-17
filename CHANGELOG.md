@@ -2,6 +2,12 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.2.10](https://github.com/dynaconf/dynaconf/releases/tag/3.2.10) - 2025-02-17
+
+### Bug Fixes
+
+- Hotfix hook collector to avoid eager evaluation. (#1255). *By Bruno Rocha*.
+
 ## [3.2.9](https://github.com/dynaconf/dynaconf/releases/tag/3.2.9) - 2025-02-16
 
 ## [3.2.8](https://github.com/dynaconf/dynaconf/releases/tag/3.2.8) - 2025-02-16
