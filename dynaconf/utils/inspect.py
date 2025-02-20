@@ -371,7 +371,7 @@ def get_debug_info(
 
     def filter_by_key(data: dict) -> dict:
         """If key is not None, filter dict keeping only the key"""
-        if key:
+        if key and data:
             try:
                 return {key: _get_data_by_key(data, key)}
             except KeyError:
@@ -414,7 +414,7 @@ def get_debug_info(
     def build_loaded_hooks():
         _data = []
         for hook, hook_data in settings._loaded_hooks.items():
-            _real_data = filter_by_key(hook_data.get("post", {}))
+            _real_data = filter_by_key(hook_data.get("post", {})) or {}
             if verbosity == 0:
                 _data.append(
                     {
@@ -455,7 +455,11 @@ def get_debug_info(
             data["versions"][name] = version(name)
 
     if settings.get("ENVIRONMENTS_FOR_DYNACONF"):
-        data["environments"] = list(settings.get("ENVIRONMENTS_FOR_DYNACONF"))
+        environments = settings.get("ENVIRONMENTS_FOR_DYNACONF")
+        if isinstance(environments, (list, tuple)):
+            data["environments"] = list(environments)
+        else:
+            data["environments"] = environments
         data["loaded_envs"] = settings._loaded_envs
 
     if key:
