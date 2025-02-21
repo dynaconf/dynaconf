@@ -97,11 +97,12 @@ def set_settings(ctx, instance=None):
         settings_module = import__django_settings(
             os.environ["DJANGO_SETTINGS_MODULE"]
         )
-        for member in python_inspect.getmembers(settings_module):
-            if isinstance(member[1], (LazySettings, Settings)):
-                settings = member[1]
-                break
-
+        found_settings = python_inspect.getmembers(
+            settings_module,
+            lambda item: isinstance(item, (LazySettings, Settings)),
+        )
+        if found_settings:
+            settings = found_settings[0][1]
         if settings is not None and _echo_enabled:
             click.echo(
                 click.style(
