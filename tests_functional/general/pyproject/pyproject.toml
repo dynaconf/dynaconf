@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "your_project_name"
+version = "0.1.0"
+description = "A short description of your project"
+readme = "README.md"
+requires-python = ">=3.6"
+license = { text = "MIT" }
+
+[project.urls]
+homepage = "https://your.project.homepage"
+repository = "https://your.project.repository"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.pp_settings]
+key = "value"
+colors = "@merge blue"
+person__country = "Netherlands"
