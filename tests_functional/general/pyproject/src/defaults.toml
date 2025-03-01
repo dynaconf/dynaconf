@@ -1,0 +1,8 @@
+DEBUG = true
+COLORS = ["red"]
+
+[person]
+name = "Guido"
+
+[person.work]
+company = "PSF"
