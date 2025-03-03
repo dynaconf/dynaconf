@@ -164,7 +164,7 @@ REDIS_USERNAME_FOR_DYNACONF=<ACL username>(optional)
 REDIS_PASSWORD_FOR_DYNACONF=<password>(optional)
 ```
 
-You can now write variables direct in to a redis hash named `DYNACONF_< env >` for example:
+You can now write variables direct in to a redis hash named `< ENVVAR_PREFIX_FOR_DYNACONF >_< env >`. For example, when using the default `DYNACONF` envvar prefix:
 
 - `DYNACONF_DEFAULT`: default values
 - `DYNACONF_DEVELOPMENT`: loaded only when `ENV_FOR_DYNACONF=development` (default)
