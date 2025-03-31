@@ -58,16 +58,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade PIP
-        continue-on-error: true
-        run: pip install --user --upgrade pip
-      # NOTE: Remove setuptools install below when project moves to pyproject!
-      - name: Install setuptools for Python 3.12
-        if: ${{ matrix.python-version == '3.12' }}
-        run: pip install --user --upgrade setuptools
+      - name: Install project
+        run: make ciinstall
       - name: Install project and test cli
         run: |
-          python setup.py install
           dynaconf init -v FOO=running_on_ci -y
           dynaconf -i config.settings write toml -v OTHERVALUE=Hello_CI -y
           dynaconf -i config.settings list | grep -c running_on_ci

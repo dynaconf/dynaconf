@@ -1,8 +1,0 @@
-[files]
-extend-exclude = ["*.svg", "pt-br", "dynaconf/vendor/*", ".github/*"]
-
-[default.extend-words]
-Fo = "Fo"
-portugues = "portugues"
-hashi = "hashi"
-ba = "ba"

@@ -1,0 +1,328 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dynaconf"
+dynamic = ["version"]
+description = "The dynamic configurator for your Python Project"
+readme = "README.md"
+authors = [
+    {name = "Bruno Rocha", email = "rochacbruno@gmail.com"},
+]
+license = {text = "MIT"}
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Django",
+    "Framework :: Flask",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/dynaconf/dynaconf"
+
+[project.optional-dependencies]
+
+# User Optional
+all = ["dynaconf[redis,vault,yaml,toml,ini]"]
+
+redis = ["redis"]
+vault = ["hvac"]
+yaml = ["ruamel.yaml"]
+toml = ["toml"]
+ini = ["configobj"]
+configobj = ["configobj"]
+
+# Development Optional
+dev = ["dynaconf[test,lint,misc,release,docs]"]
+
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-xdist",
+    "pytest-mock",
+    "radon",
+    "flask>=1.0",
+    "django",
+    "python-dotenv",
+    "toml",
+    "redis",
+    "hvac>=1.1.0",
+    "configobj",
+    "commentjson",
+    "pytest-docker",
+    "tox",
+    "django-debug-toolbar~=4.3.0",
+    "boto3",
+]
+
+lint = [
+    "pre-commit",
+    "mypy",
+    "ruff",
+    "typos",
+    "radon",
+]
+
+release = [
+    "wheel",
+    "twine",
+    "git-changelog",
+    "bump-my-version",
+]
+
+misc = [
+    "ipython<=8.12.1",
+    "ipdb",
+    "pdbr[ipython]",
+]
+
+docs = [
+    "mkdocs>=1.1.2",
+    "mkdocstrings[python]",
+    "mkdocs-material>=5.3.2",
+    "mkdocs-material-extensions>=1.0",
+    "mkdocs-git-revision-date-plugin",
+    "mkdocs-autorefs",
+    "pymdown-extensions",
+    "Jinja2>3.0.0",
+]
+
+[project.scripts]
+dynaconf = "dynaconf.cli:main"
+
+# SETUPTOOLS
+# ==========
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+platforms = ["any"]
+license-files = ["LICENSE", "vendor_licenses/*"]
+
+[tool.setuptools.dynamic]
+version = {file = "dynaconf/VERSION"}
+
+[tool.setuptools.packages.find]
+exclude = [
+    "tests",
+    "tests.*",
+    "tests_functional",
+    "tests_functional.*",
+    "docs",
+    "legacy_docs",
+    "legacy_docs.*",
+    "docs.*",
+    "build",
+    "build.*",
+    "dynaconf.vendor_src",
+    "dynaconf/vendor_src",
+    "dynaconf.vendor_src.*",
+    "dynaconf/vendor_src/*",
+]
+
+# TYPOS
+# =====
+
+[tool.typos]
+[tool.typos.files]
+extend-exclude = ["*.svg", "pt-br", "dynaconf/vendor/*", ".github/*"]
+
+[tool.typos.default.extend-words]
+Fo = "Fo"
+portugues = "portugues"
+hashi = "hashi"
+ba = "ba"
+
+# RUFF
+# ====
+
+[tool.ruff]
+target-version = "py39"
+line-length = 79
+exclude = ["dynaconf/vendor*"]
+
+[tool.ruff.lint]
+extend-select = [
+    "T100",
+    "T2",
+    "TD",
+    "UP",
+    "I",
+    "N",
+]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"*/__init__.py" = [
+    "F401",
+    "F403",
+]
+"tests/*" = [
+    "N806",
+    "N802",
+]
+"tests_functional/*" = [
+    "T2",
+    "TD",
+    "N806",
+    "E402",
+    "F401",
+]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+order-by-type = false
+known-first-party = ["dynaconf"]
+
+# COVERAGE
+# ========
+
+[tool.coverage.run]
+source = ["dynaconf"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 95
+omit = [
+    "*/python?.??/*",
+    "*/site-packages/*",
+    "dynaconf/default_settings.py",
+    "dynaconf/test_settings.py",
+    "dynaconf/utils/functional.py",
+    "dynaconf/loaders/redis_loader.py",
+    "dynaconf/loaders/vault_loader.py",
+    "dynaconf/loaders/__init__.py",
+    "dynaconf/tests_functional/*",
+    "dynaconf/vendor/*",
+    "dynaconf/vendor_src/*",
+    "dynaconf/contrib/django_dynaconf/*",
+]
+
+# PYTEST
+# ======
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration (deselect with '-m \"not integration\"')",
+]
+
+# MYPY
+# ======
+
+[tool.mypy]
+ignore_missing_imports = true
+
+    [[tool.mypy.overrides]]
+    module = "*.vendor.*"
+    ignore_errors = true
+
+    [[tool.mypy.overrides]]
+    module = "tests.*"
+    ignore_errors = true
+
+    [[tool.mypy.overrides]]
+    module = "example.*"
+    ignore_errors = true
+
+    [[tool.mypy.overrides]]
+    module = "*.contrib.*"
+    ignore_errors = true
+
+    [[tool.mypy.overrides]]
+    module = "*.utils.*"
+    ignore_errors = true
+
+    [[tool.mypy.overrides]]
+    module = "*.loaders.*"
+    ignore_errors = true
+
+# BUMP2VERSION
+# ===========
+
+[tool.bumpversion]
+current_version = "3.3.0-dev0"
+parse = """(?x)
+    (?P<major>0|[1-9]\\d*)\\.
+    (?P<minor>0|[1-9]\\d*)\\.
+    (?P<patch>0|[1-9]\\d*)
+    (?:
+        -                             # dash separator for pre-release section
+        (?P<pre>[a-zA-Z-]+)           # pre-release label
+        (?P<pre_n>0|[1-9]\\d*)        # pre-release version number
+    )?                                # pre-release section is optional
+"""
+serialize = [
+    "{major}.{minor}.{patch}-{pre}{pre_n}",
+    "{major}.{minor}.{patch}",
+]
+search = "{current_version}"
+replace = "{new_version}"
+regex = false
+ignore_missing_version = false
+ignore_missing_files = false
+allow_dirty = true
+
+tag = false
+sign_tags = false
+tag_name = "v{new_version}"
+tag_message = "Bump version: {current_version} → {new_version}"
+commit = false
+message = "Bump to version {new_version}"
+commit_args = ""
+
+[tool.bumpversion.parts.pre]
+values = ["dev","final"]
+optional_value = "final"
+
+    [[tool.bumpversion.files]]
+    filename = "dynaconf/VERSION"
+    search = "{current_version}"
+
+    [[tool.bumpversion.files]]
+    filename = "mkdocs.yml"
+    search = "site_name: Dynaconf - {current_version}"
+    replace = "site_name: Dynaconf - {new_version}"
+
+# TOX
+# ===
+
+[tool.tox]
+envlist = ["py38", "py39", "py310", "py311"]
+whitelist_externals = ["make"]
+
+[tool.tox.testenv]
+deps = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "django",
+    "flask",
+    "redis",
+    "hvac",
+    "configobj",
+    "."
+]
+whitelist_externals = [
+    "make",
+    "cd",
+    "python"
+]
+commands = [
+    "py.test -m \"not integration\" -v -l --tb=short --maxfail=1 tests/ {posargs}"
+]
