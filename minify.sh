@@ -1,6 +1,36 @@
 #!/bin/bash
+
+set -euo pipefail
+
+# Ensure we are using a python lowerbound version
+PYTHON_LOWERBOUND=$(python -c \
+   'import toml; \
+   data=toml.load("pyproject.toml"); \
+   version=data["project"]["requires-python"].split("=")[-1]; \
+   print(version)' \
+)
+
+PYTHON_ERR_MSG="$(cat <<EOF
+ERROR: Must use python ${PYTHON_LOWERBOUND}
+Minification creates code compatible with the current python version in use.
+For greater compatibility, the build should be done with the lower python we support.\n
+EOF
+)"
+
+if ! python --version | grep $PYTHON_LOWERBOUND; then
+   printf "$PYTHON_ERR_MSG"
+   exit 1
+fi
+
+# Ensure vendor is source and cleanup vendor_src backup folder
+ls dynaconf/vendor/source && rm -rf dynaconf/vendor_src
+
+# Backup dynaconf/vendor folder as dynaconf/vendor_src
+mv dynaconf/vendor dynaconf/vendor_src
+
 # Ensure main vendor directory exists
 mkdir -p dynaconf/vendor
+
 # Ensure there is an __init__.py file in the vendor directory
 touch dynaconf/vendor/__init__.py
 

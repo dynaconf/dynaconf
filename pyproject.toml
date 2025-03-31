@@ -84,6 +84,7 @@ release = [
     "twine",
     "git-changelog",
     "bump-my-version",
+    "python-minifier",
 ]
 
 misc = [
