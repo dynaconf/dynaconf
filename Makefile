@@ -29,11 +29,11 @@ watch_coverage:
 	ls {**/**.py,~/.virtualenvs/dynaconf/**/**.py} | entr -s "make test;coverage html"
 
 test_only:
-	py.test -m "not integration" -v --cov-config .coveragerc --cov=dynaconf -l --tb=short --maxfail=1 tests/
+	py.test -m "not integration" -v --cov-config pyproject.toml --cov=dynaconf -l --tb=short --maxfail=1 tests/
 	coverage xml
 
 test_integration:
-	py.test -m integration -v --cov-config .coveragerc --cov=dynaconf --cov-append -l --tb=short --maxfail=1 tests/
+	py.test -m integration -v --cov-config pyproject.toml --cov=dynaconf --cov-append -l --tb=short --maxfail=1 tests/
 	coverage xml
 
 coverage-report:
@@ -45,20 +45,20 @@ mypy:
 test: mypy test_only
 
 citest:
-	py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml
+	py.test -v --cov-config pyproject.toml --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml
 	coverage xml
 	make coverage-report
 
 ciinstall:
 	python -m pip install --upgrade pip
-	python -m pip install -r requirements_dev.txt
+	python -m pip install .[dev]
 
 test_all: test_functional test_integration test_redis test_vault test
 	@coverage html
 
 install:
-	pip install --upgrade pip
-	pip install -r requirements_dev.txt
+	python -m pip install --upgrade pip
+	python -m pip install -e .[dev]
 
 run-pre-commit:
 	rm -rf .tox/
@@ -67,7 +67,7 @@ run-pre-commit:
 
 dist: clean
 	@make minify_vendor
-	@python setup.py sdist bdist_wheel
+	@python -m build
 	@make source_vendor
 
 # Bump
