@@ -62,15 +62,24 @@ def object_merge(
         if "dynaconf_merge_unique" in new:
             new.remove("dynaconf_merge_unique")
             unique = True
+        element_wise_merge = len(full_path) > 0
 
         if list_merge == "merge" or unique:
-            for item in old[::-1]:
-                if unique and item in new:
-                    continue
-                new.insert(0, item)
-        # replace mode
-        # elif list_merge == "replace": pass
-        elif len(full_path) > 0:  # element-wise merge
+            # https://github.com/dynaconf/dynaconf/issues/1167
+            # object_merge() semantics want to merge the old into new, but
+            # we want to keep the old ordering and add new on top of it.
+            # Maybe we want to invert that in the future so the implementation
+            # feels more natural
+            to_merge = new
+            if unique:
+                to_merge = [n for n in new if n not in old]
+            old.extend(to_merge)
+            # just assigning new=old won't mutate 'new's reference
+            new.clear()
+            new.extend(old)
+        elif list_merge == "replace":
+            pass
+        elif element_wise_merge:
             new.extend([[]] * max(len(old) - len(new), 0))
             for ii, item in enumerate(old):
                 # replace at corresponding positions
