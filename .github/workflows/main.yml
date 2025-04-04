@@ -29,24 +29,42 @@ concurrency:
 
 jobs:
   linter:
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.9"]
-        os: [ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.9"
       - name: Upgrade PIP
         run: pip install --user --upgrade pip
       - name: Install and lint
         run: make clean install run-pre-commit
 
-  install_test:
+  build:
     needs: linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: Upgrade PIP
+        run: pip install --user --upgrade pip
+      - name: Install build dependencies
+        run: pip install --user .[release]
+      - name: Build wheel
+        run: make dist
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dynaconf_dist
+          path: dist/
+          if-no-files-found: "error"
+          overwrite: true
+          retention-days: 1
+
+  install_test:
+    needs: build
     strategy:
       fail-fast: false
       matrix:
@@ -55,11 +73,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install project
-        run: make ciinstall
+          os: ${{ runner.os }}
       - name: Install project and test cli
         run: |
           dynaconf init -v FOO=running_on_ci -y
@@ -78,13 +96,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade PIP
-        run: pip install --user --upgrade pip
-      - name: Install project
-        run: make ciinstall
+          dependencies: test
+          os: linux
       - name: Run tests
         run: make citest
       - name: Publish Junit Test Results
@@ -115,13 +132,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade PIP
-        run: pip install --user --upgrade pip
-      - name: Install project
-        run: make ciinstall
+          dependencies: test
+          os: macos
       - name: Run tests
         run: py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml -m "not integration"
 
@@ -137,13 +153,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade PIP
-        run: pip install --user --upgrade pip
-      - name: Install project
-        run: make ciinstall
+          dependencies: test
+          os: linux
       - name: Run functional tests
         run: make test_functional
 
@@ -157,14 +172,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Pip
-        run: pip install --user --upgrade pip
-        continue-on-error: true
-      - name: Install project
-        run: pip install --use-deprecated=legacy-resolver .[test]
+          dependencies: test
+          os: windows
       - name: run tests
         run: py.test -v -l tests --junitxml=junit/test-results.xml -m "not integration"
 
@@ -178,14 +191,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Pip
-        continue-on-error: true
-        run: pip install --user --upgrade pip
-      - name: Install project
-        run: pip install --use-deprecated=legacy-resolver .[test]
+          dependencies: test
+          os: windows
       - name: run tests
         run: python tests_functional/runtests.py
 
@@ -204,13 +215,12 @@ jobs:
           - 6379:6379
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade PIP
-        run: pip install --user --upgrade pip
-      - name: Install project
-        run: make ciinstall
+          dependencies: test
+          os: linux
       - name: Run functional tests
         run: make test_redis
 
@@ -235,10 +245,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Upgrade PIP
-        run: pip install --user --upgrade pip
-      - name: Install project
-        run: make ciinstall
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
+        with:
+          python-version: ${{ matrix.python-version }}
+          dependencies: test
+          os: linux
       - name: Run functional tests
         run: make test_vault
 

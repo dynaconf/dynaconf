@@ -109,12 +109,6 @@ run-tox:
 	rm -rf .tox
 
 minify_vendor:
-	# Ensure vendor is source and cleanup vendor_src backup folder
-	ls dynaconf/vendor/source && rm -rf dynaconf/vendor_src
-
-	# Backup dynaconf/vendor folder as dynaconf/vendor_src
-	mv dynaconf/vendor dynaconf/vendor_src
-
 	# create a new dynaconf/vendor folder with minified files
 	./minify.sh
 
