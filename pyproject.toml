@@ -69,6 +69,7 @@ test = [
     "tox",
     "django-debug-toolbar~=4.3.0",
     "boto3",
+    "ipython",
 ]
 
 lint = [
@@ -80,7 +81,8 @@ lint = [
 ]
 
 release = [
-    "wheel",
+    "build",
+    "toml",
     "twine",
     "git-changelog",
     "bump-my-version",
