@@ -1,0 +1,55 @@
+name: 'Install from wheel'
+description: 'Setup Python and install Dynaconf wheel with optional dependencies'
+
+inputs:
+  dependencies:
+    description: 'Optional dependencies to install with the wheel'
+    required: false
+    default: ''
+  os:
+    description: 'Operating system (Windows, Linux, macOS)'
+    required: false
+    default: 'Linux'
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.9'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Upgrade PIP
+      shell: bash
+      run: pip install --user --upgrade pip
+      continue-on-error: ${{ inputs.os == 'Windows' }}
+
+    - name: Download wheel
+      uses: actions/download-artifact@v4
+      with:
+        name: dynaconf_dist
+        path: dist/
+
+    - name: Install from wheel (Unix)
+      if: inputs.os != 'Windows'
+      shell: bash
+      run: |
+        PACKAGE=$(ls dist/*.whl)
+        if [ -n "${{ inputs.dependencies }}" ]; then
+          pip install "$PACKAGE[${{ inputs.dependencies }}]"
+        else
+          pip install "$PACKAGE"
+        fi
+
+    - name: Install from wheel (Windows)
+      if: inputs.os == 'Windows'
+      shell: pwsh
+      run: |
+        $PACKAGE = (Get-ChildItem dist/*.whl).FullName
+        if ("${{ inputs.dependencies }}" -ne "") {
+          pip install --use-deprecated=legacy-resolver "$PACKAGE[${{ inputs.dependencies }}]"
+        } else {
+          pip install --use-deprecated=legacy-resolver "$PACKAGE"
+        }
