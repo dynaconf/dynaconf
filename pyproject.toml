@@ -11,7 +11,7 @@ authors = [
     {name = "Bruno Rocha", email = "rochacbruno@gmail.com"},
 ]
 license = {text = "MIT"}
-requires-python = ">=3.9"
+requires-python = ">=3.9,<3.14"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Django",
@@ -27,6 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Utilities",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -306,7 +307,7 @@ optional_value = "final"
 # ===
 
 [tool.tox]
-envlist = ["py38", "py39", "py310", "py311"]
+envlist = ["py39", "py310", "py311", "py312", "py313"]
 whitelist_externals = ["make"]
 
 [tool.tox.testenv]
