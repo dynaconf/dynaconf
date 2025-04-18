@@ -6,7 +6,7 @@ set -euo pipefail
 PYTHON_LOWERBOUND=$(python -c \
    'import toml; \
    data=toml.load("pyproject.toml"); \
-   version=data["project"]["requires-python"].split("=")[-1]; \
+   version=data["project"]["requires-python"].split(",")[0].split("=")[-1]; \
    print(version)' \
 )
 

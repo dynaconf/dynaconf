@@ -1,0 +1,211 @@
+name: Tests
+
+on:
+  workflow_call:
+    inputs:
+      python_minimal:
+        description: 'Minimal set of Python versions to test'
+        required: false
+        type: string
+        default: '["3.9", "3.13"]'
+      python_full:
+        description: 'Full set of Python versions to test'
+        required: false
+        type: string
+        default: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
+      python_latest:
+        description: 'Latest Python version'
+        required: false
+        type: string
+        default: '3.13'
+
+jobs:
+  install_test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.python_full) }}
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ runner.os }}
+      - name: Install project and test cli
+        run: |
+          dynaconf init -v FOO=running_on_ci -y
+          dynaconf -i config.settings write toml -v OTHERVALUE=Hello_CI -y
+          dynaconf -i config.settings list | grep -c running_on_ci
+          dynaconf -i config.settings list | grep -c Hello_CI
+          dynaconf --version
+
+  unit_tests_linux:
+    needs: install_test
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.python_minimal) }}
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
+        with:
+          python-version: ${{ matrix.python-version }}
+          dependencies: test
+          os: linux
+      - name: Run tests
+        run: make citest
+      - name: Publish Junit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        continue-on-error: true
+        if: always()
+        with:
+          files: junit/**/*.xml
+          check_name: Test Results (Python ${{ matrix.python-version }})
+
+      - name: "Upload coverage to Codecov"
+        if: ${{ matrix.python-version == inputs.python_latest }}
+        uses: codecov/codecov-action@v4
+        continue-on-error: true
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        with:
+          files: coverage.xml
+          fail_ci_if_error: true
+
+  unit_tests_mac:
+    needs: install_test
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.python_minimal) }}
+        os: [macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
+        with:
+          python-version: ${{ matrix.python-version }}
+          dependencies: test
+          os: macos
+      - name: Run tests
+        run: py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml -m "not integration"
+
+  functional_tests_linux_mac:
+    needs:
+      - unit_tests_linux
+      - unit_tests_mac
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.python_minimal) }}
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
+        with:
+          python-version: ${{ matrix.python-version }}
+          dependencies: test
+          os: linux
+      - name: Run functional tests
+        run: make test_functional
+
+  unit_tests_windows:
+    needs: install_test
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.python_minimal) }}
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
+        with:
+          python-version: ${{ matrix.python-version }}
+          dependencies: test
+          os: windows
+      - name: run tests
+        run: py.test -v -l tests --junitxml=junit/test-results.xml -m "not integration"
+
+  functional_tests_windows:
+    needs: unit_tests_windows
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.python_minimal) }}
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
+        with:
+          python-version: ${{ matrix.python-version }}
+          dependencies: test
+          os: windows
+      - name: run tests
+        run: python tests_functional/runtests.py
+
+  redis:
+    needs: functional_tests_linux_mac
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.python_minimal) }}
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
+        with:
+          python-version: ${{ matrix.python-version }}
+          dependencies: test
+          os: linux
+      - name: Run functional tests
+        run: make test_redis
+
+  vault:
+    needs: functional_tests_linux_mac
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ${{ fromJSON(inputs.python_minimal) }}
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    services:
+      vault:
+        image: hashicorp/vault:latest
+        ports:
+          - 8200:8200
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: myroot
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install from wheel
+        uses: ./.github/actions/install-from-wheel
+        with:
+          python-version: ${{ matrix.python-version }}
+          dependencies: test
+          os: linux
+      - name: Run functional tests
+        run: make test_vault
