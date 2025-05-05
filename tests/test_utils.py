@@ -13,6 +13,7 @@ from dynaconf import add_converter
 from dynaconf import default_settings
 from dynaconf import Dynaconf
 from dynaconf import DynaconfFormatError
+from dynaconf import DynaconfParseError
 from dynaconf.loaders.json_loader import DynaconfEncoder
 from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
@@ -544,6 +545,14 @@ def test_get_converter_error_when_converting(settings):
         settings.BLA
 
 
+def test_get_converter_error_when_not_found(settings):
+    """Malformed declaration errors"""
+    settings.set("BLA", "@get BATATA123")
+
+    with pytest.raises(DynaconfParseError):
+        settings.BLA
+
+
 @pytest.mark.parametrize(
     "input_expected",
     [
@@ -559,3 +568,210 @@ def test_get_converter_error_when_converting(settings):
 def test_prepare_json(input_expected):
     data, expected = input_expected
     assert prepare_json(data) == expected
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_converter(tmp_path):
+    """Assert read_file converter works"""
+    # 1. Create a temp file with FOOBAR as content
+    filename = tmp_path / "SECRET_KEY"
+    create_file(filename, "FOOBAR")
+    # 2. Create a settings file with the read_file converter
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_KEY = "@read_file {filename}"
+        """,
+    )
+    # 3. Load the settings
+    settings = Dynaconf(
+        settings_file=settings_file,
+    )
+    # 4. Assert the SECRET_KEY is the content of the file
+    assert settings.SECRET_KEY == "FOOBAR"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_notfound_error(tmp_path):
+    """Assert read_file converter raises error on invalid file"""
+    # 1. Create a settings file with the read_file converter
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_KEY = "@read_file {tmp_path}/non_existent_file"
+        """,
+    )
+    # 2. Load the settings
+    with pytest.raises(FileNotFoundError):
+        settings = Dynaconf(
+            settings_file=settings_file,
+        )
+        assert settings.SECRET_KEY == "FOOBAR"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_notfound_error_with_default(tmp_path):
+    """Assert read_file converter uses default on invalid file"""
+    # 1. Create a settings file with the read_file converter
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_KEY = "@read_file {tmp_path}/non_existent_file DEFAULT_VALUE"
+        """,
+    )
+    # 2. Load the settings
+    settings = Dynaconf(
+        settings_file=settings_file,
+    )
+    assert settings.SECRET_KEY == "DEFAULT_VALUE"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_syntax_error(tmp_path):
+    """Assert read_file converter raises error on invalid syntax"""
+    # 1. Create a settings file with the read_file converter
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        """\
+        SECRET_KEY = "@read_file "
+        """,
+    )
+    # 2. Load the settings
+    with pytest.raises(DynaconfFormatError):
+        settings = Dynaconf(
+            settings_file=settings_file,
+        )
+        assert settings.SECRET_KEY == "FOOBAR"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_with_format(tmp_path):
+    """Assert read_file converter works with format"""
+    # 1. Create a temp file with FOOBAR as content
+    filename = tmp_path / "SECRET_KEY"
+    create_file(filename, "BATATA")
+    # 2. Create a settings file with the read_file converter
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        FILENAME = "{filename}"
+        SECRET_KEY = "@read_file @format {{this.FILENAME}}"
+        """,
+    )
+    # 3. Load the settings
+    settings = Dynaconf(
+        settings_file=settings_file,
+    )
+    # 4. Assert the SECRET_KEY is the content of the file
+    assert settings.SECRET_KEY == "BATATA"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_with_jinja(tmp_path):
+    """Assert read_file converter works with format"""
+    # 1. Create a temp file with FOOBAR as content
+    filename = tmp_path / "SECRET_KEY"
+    create_file(filename, "POTATO")
+    # 2. Create a settings file with the read_file converter
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        FILENAME = "{filename}"
+        SECRET_KEY = "@read_file @jinja {{{{this.FILENAME}}}}"
+        """,
+    )
+    # 3. Load the settings
+    settings = Dynaconf(
+        settings_file=settings_file,
+    )
+    # 4. Assert the SECRET_KEY is the content of the file
+    assert settings.SECRET_KEY == "POTATO"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_with_get(tmp_path):
+    """Assert read_file converter works with format"""
+    # 1. Create a temp file with FOOBAR as content
+    filename = tmp_path / "SECRET_KEY"
+    create_file(filename, "POMME")
+    # 2. Create a settings file with the read_file converter
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_FILENAME = "{filename}"
+        SECRET_KEY = "@read_file @get SECRET_FILENAME"
+        """,
+    )
+    # 3. Load the settings
+    settings = Dynaconf(
+        settings_file=settings_file,
+    )
+    # 4. Assert the SECRET_KEY is the content of the file
+    assert settings.SECRET_KEY == "POMME"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_converter_with_strip(tmp_path):
+    """Assert read_file converter works"""
+    # 1. Create a temp file with FOOBAR as content
+    filename = tmp_path / "SECRET_KEY"
+    create_file(filename, "FOOBAR \n")
+    # 2. Create a settings file with the read_file converter
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_KEY = "@strip @read_file {filename}"
+        """,
+    )
+    # 3. Load the settings
+    settings = Dynaconf(
+        settings_file=settings_file,
+    )
+    # 4. Assert the SECRET_KEY is the content of the file
+    assert settings.SECRET_KEY == "FOOBAR"
+
+
+def test_string_utils():
+    """Test string utils"""
+    assert parse_conf_data("@upper foo") == "FOO"
+    assert parse_conf_data("@lower FOO") == "foo"
+    assert parse_conf_data("@title foo bar") == "Foo Bar"
+    assert parse_conf_data("@capitalize foo bar") == "Foo bar"
+    assert parse_conf_data("@strip foo bar \n") == "foo bar"
+    assert parse_conf_data("@lstrip foo bar \n") == "foo bar \n"
+    assert parse_conf_data("@rstrip foo bar \n") == "foo bar"
+    assert parse_conf_data("@split foo bar") == ["foo", "bar"]
+    assert parse_conf_data("@casefold Foo BAR") == "foo bar"
+    assert parse_conf_data("@swapcase Foo BAR") == "fOO bar"

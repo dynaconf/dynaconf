@@ -166,6 +166,81 @@ other_number = "@get number @int 12"
 The `@get` is lazily evaluated and subject to `DynaconfFormatError` in case of
 malformed expression, it is recommended to add validators.
 
+## Reading from files
+
+You can read from text files using the `@read_file` token. This token will read the file
+and return its content as a string. The file path can be absolute or relative to the current working directory.
+
+Example:
+
+```toml
+SECRET_KEY = "@read_file /path/to/secret_key"
+```
+```bash
+echo "my_secret_key" > /path/to/secret_key
+```
+
+```py
+from dynaconf import Dynaconf
+settings = Dynaconf(settings_files=["settings.toml"])
+assert settings.SECRET_KEY == "my_secret_key"
+```
+
+### Combining with other tokens
+
+You can combine the `@read_file` with other interpolation tokens like `@format` or `@jinja` and `@get` to read files with dynamic paths or content.
+
+Example:
+
+```toml
+FILENAME = "secret_key"
+DIRECTORY = "/path/to"
+
+
+SECRET_KEY = "@read_file @format {this.DIRECTORY}/{this.FILENAME}"
+SECRET_KEY = "@read_file @jinja {{ this.DIRECTORY }}/{{ this.FILENAME }}"
+
+
+COMPLETE_PATH = "@format {this.DIRECTORY}/{this.FILENAME}"
+SECRET_KEY = "@read_file @get COMPLETE_PATH"
+```
+
+### Combining with string utils
+
+If the file needs stripping or other string manipulations, you can combine the `@read_file` with the string utils tokens
+
+```toml
+SECRET_KEY = "@strip @read_file /path/to/secret_key"
+```
+
+## String utils
+
+Dynaconf provides some string utils to manipulate strings. The following utils are available:
+
+```py
+"@upper foo" == "FOO"
+"@lower FOO" == "foo"
+"@title foo bar" == "Foo Bar"
+"@capitalize foo bar" == "Foo bar"
+"@strip foo bar \n" == "foo bar"
+"@lstrip foo bar \n" == "foo bar \n"
+"@rstrip foo bar \n" == " foo bar"
+"@split foo bar" == ["foo", "bar"]
+"@casefold Foo BAR" == "foo bar"
+"@swapcase Foo BAR" == "fOO bar"
+```
+
+- `@upper`: Converts the string to uppercase.
+- `@lower`: Converts the string to lowercase.
+- `@title`: Converts the string to title case.
+- `@capitalize`: Capitalizes the first character of the string.
+- `@strip`: Removes leading and trailing whitespace from the string.
+- `@lstrip`: Removes leading whitespace from the string.
+- `@rstrip`: Removes trailing whitespace from the string.
+- `@split`: Splits the string into a list of words.
+- `@casefold`: Converts the string to casefolded form (for case-insensitive comparisons).
+- `@swapcase`: Swaps the case of all characters in the string.
+
 
 ## Access Hooks
 
