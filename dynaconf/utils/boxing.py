@@ -19,7 +19,7 @@ def evaluate_lazy_format(f):
         settings = dynabox._box_config["box_settings"]
 
         if getattr(value, "_dynaconf_lazy_format", None):
-            dynabox._box_config[f"raw_{item.lower()}"] = (
+            dynabox._box_config[f"__raw_{item.lower()}"] = (
                 f"@{value.formatter.token} {value.value}"
             )
 
