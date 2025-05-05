@@ -38,9 +38,9 @@ runs:
       run: |
         PACKAGE=$(ls dist/*.whl)
         if [ -n "${{ inputs.dependencies }}" ]; then
-          pip install --user "$PACKAGE[${{ inputs.dependencies }}]"
+          pip install "$PACKAGE[${{ inputs.dependencies }}]"
         else
-          pip install --user "$PACKAGE"
+          pip install "$PACKAGE"
         fi
 
     - name: Install from wheel (Windows)
