@@ -152,10 +152,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Pip
-        run: pip install --user --upgrade pip
+        run: python.exe -m pip install --user --upgrade pip
         continue-on-error: true
       - name: Install project
-        run: pip install --use-deprecated=legacy-resolver .[test]
+        run: pip install --use-deprecated=legacy-resolver --user .[test]
       - name: run tests
         run: py.test -v -l tests --junitxml=junit/test-results.xml -m "not integration"
 
@@ -174,9 +174,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Pip
         continue-on-error: true
-        run: pip install --user --upgrade pip
+        run: python.exe -m pip install --user --upgrade pip
       - name: Install project
-        run: pip install --use-deprecated=legacy-resolver .[test]
+        run: pip install --use-deprecated=legacy-resolver --user .[test]
       - name: run tests
         run: python tests_functional/runtests.py
 
