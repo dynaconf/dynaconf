@@ -38,9 +38,9 @@ runs:
       run: |
         PACKAGE=$(ls dist/*.whl)
         if [ -n "${{ inputs.dependencies }}" ]; then
-          pip install "$PACKAGE[${{ inputs.dependencies }}]"
+          pip install --user "$PACKAGE[${{ inputs.dependencies }}]"
         else
-          pip install "$PACKAGE"
+          pip install --user "$PACKAGE"
         fi
 
     - name: Install from wheel (Windows)
@@ -49,7 +49,7 @@ runs:
       run: |
         $PACKAGE = (Get-ChildItem dist/*.whl).FullName
         if ("${{ inputs.dependencies }}" -ne "") {
-          pip install --use-deprecated=legacy-resolver "$PACKAGE[${{ inputs.dependencies }}]"
+          pip install --use-deprecated=legacy-resolver --user "$PACKAGE[${{ inputs.dependencies }}]"
         } else {
-          pip install --use-deprecated=legacy-resolver "$PACKAGE"
+          pip install --use-deprecated=legacy-resolver --user "$PACKAGE"
         }
