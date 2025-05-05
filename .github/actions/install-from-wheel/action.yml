@@ -21,10 +21,16 @@ runs:
     - uses: actions/setup-python@v5
       with:
         python-version: ${{ inputs.python-version }}
+
     - name: Upgrade PIP
+      if: inputs.os != 'Windows'
       shell: bash
       run: pip install --user --upgrade pip
-      continue-on-error: ${{ inputs.os == 'Windows' }}
+
+    - name: Upgrade PIP (Windows)
+      if: inputs.os == 'Windows'
+      shell: bash
+      run: python.exe -m pip install --user --upgrade pip
 
     - name: Download wheel
       uses: actions/download-artifact@v4
@@ -49,7 +55,7 @@ runs:
       run: |
         $PACKAGE = (Get-ChildItem dist/*.whl).FullName
         if ("${{ inputs.dependencies }}" -ne "") {
-          pip install --use-deprecated=legacy-resolver "$PACKAGE[${{ inputs.dependencies }}]"
+          pip install --use-deprecated=legacy-resolver --user "$PACKAGE[${{ inputs.dependencies }}]"
         } else {
-          pip install --use-deprecated=legacy-resolver "$PACKAGE"
+          pip install --use-deprecated=legacy-resolver --user "$PACKAGE"
         }
