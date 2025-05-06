@@ -61,7 +61,7 @@ def set_settings(ctx, instance=None):
         "debug-info",
         None,
     ]
-    if "--json" in click.get_os_args():
+    if "--json" in sys.argv:
         _echo_enabled = False
 
     if instance is not None:
@@ -107,7 +107,7 @@ def set_settings(ctx, instance=None):
             )
 
     if settings is None:
-        if instance is None and "--help" not in click.get_os_args():
+        if instance is None and "--help" not in sys.argv:
             if ctx.invoked_subcommand and ctx.invoked_subcommand not in [
                 "init",
             ]:
