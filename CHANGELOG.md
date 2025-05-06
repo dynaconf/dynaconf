@@ -2,6 +2,27 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.2.11](https://github.com/dynaconf/dynaconf/releases/tag/3.2.11) - 2025-05-06
+
+### Bug Fixes
+
+- add correct supported python version to 3.2.x. *By Bruno Rocha*.
+- `-k` must exit code 1 when key do not exist (#1293). *By Bruno Rocha*.
+- use sys.argv instead of click.get_os_args (#1292). *By Bruno Rocha*.
+- windows CI. *By Bruno Rocha*.
+- make raw variables private (#1287). *By Fabricio Aguiar*.
+- Better way for CLI to find the Django Settings. *By Bruno Rocha*.
+- handle empty hooks and boolean environments.. *By Bruno Rocha*.
+
+### Features
+
+- envless load file (#1295). *By Bruno Rocha*.
+- Run CLI as module with `python -m dynaconf` (#1290). *By Bruno Rocha*.
+
+### Docs
+
+- clarification on redis hash title when using custom envvar prefixes (#1273). *By Pedro Brochado*.
+
 ## [3.2.10](https://github.com/dynaconf/dynaconf/releases/tag/3.2.10) - 2025-02-17
 
 ### Bug Fixes
