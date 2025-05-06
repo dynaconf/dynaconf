@@ -320,7 +320,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
             "app = Flask(__name__)\n"
             "FlaskDynaconf(app)\n"
         )
-        exit(1)
+        sys.exit(1)
 
     path = Path(path)
 
@@ -650,7 +650,7 @@ def _list(
 
         if value is empty:
             click.secho("Key not found", bg="red", fg="white", err=True)
-            return
+            sys.exit(1)
 
         if not _json:
             click.echo(format_setting(key, value))
