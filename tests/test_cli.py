@@ -115,6 +115,25 @@ def test_list(testdir):
     assert "TEST_KEY<str> 'test_value'" in result
 
 
+@pytest.mark.parametrize("cmd", ["list", "inspect", "get"])
+def test_not_found_key_exit_error(cmd, testdir):
+    """Test error code when key not found"""
+    if cmd == "get":
+        command = [cmd, "DONTEXIST"]
+    else:
+        command = [cmd, "-k", "DONTEXIST"]
+
+    result = run(
+        command,
+        env={
+            "ROOT_PATH_FOR_DYNACONF": testdir,
+            "INSTANCE_FOR_DYNACONF": "tests.config.settings",
+        },
+        attr="exit_code",
+    )
+    assert result == 1
+
+
 def test_get(testdir):
     """Tests get command"""
     result = run(
