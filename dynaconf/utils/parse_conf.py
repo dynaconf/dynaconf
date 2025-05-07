@@ -40,6 +40,10 @@ class DynaconfParseError(Exception):
     """Error to raise when parsing @casts"""
 
 
+class DynaconfFileNotFoundError(FileNotFoundError):
+    """Error to raise when a file is not found"""
+
+
 class MetaValue:
     """A Marker to trigger specific actions on `set` and `object_merge`"""
 
@@ -244,11 +248,69 @@ def _get_formatter(value, **context):
     )
     if match := pattern.match(value.strip()):
         data = match.groupdict()
-        return context["this"].get(
-            key=data["key"],
-            default=data["default"],
-            cast=data["cast"],
-        )
+        key = data["key"]
+        default = data["default"]
+        cast = data["cast"]
+
+        params = {"key": key}
+        if default:
+            params["default"] = default
+        if cast:
+            params["cast"] = cast
+
+        if not default and key not in context["this"]:
+            raise DynaconfParseError(
+                f"Key {key} not found in settings and no default value provided."
+            )
+        return context["this"].get(**params)
+    else:
+        raise DynaconfFormatError(f"Error parsing {value} malformed syntax.")
+
+
+def _read_file_formatter(value, **context):
+    """Reads a file and returns its content.
+    takes a file path, reads the content and returns it.
+
+    @read_file /abspath/path/to/file
+    @read_file relative/path/to/file
+    @read_file file
+    @read_file file default_value
+
+    @marker FILEPATH OPTIONAL_DEFAULT_VALUE
+
+    The path can be absolute or relative to the current working directory,
+    default_value can be set to return if the file does not exist.
+    Raises error if file cannot be read.
+    Sets empty string if file is empty.
+
+    Can be composed with @get, @jinja and @format
+
+    @read_file @jinja /path/to/{{this.FILENAME}}
+    @read_file @format /path/to/{this.FILENAME}
+    @read_file @get FILENAME
+    """
+    pattern = re.compile(
+        r"(?P<path>[^ ]+)\s*"
+        r'(?P<quote>["\']?)'
+        r'\s*(?P<default>[^"\']*)\s*(?P=quote)?'
+    )
+
+    if isinstance(value, Lazy):
+        value = value(context["this"], context["env"])
+
+    if match := pattern.match(value.strip()):
+        data = match.groupdict()
+        path = data["path"]
+        default = data["default"]
+        if os.path.exists(path):
+            with open(path) as file:
+                return file.read()
+        elif default:
+            return default
+        else:
+            raise DynaconfFileNotFoundError(
+                f"File {path} does not exist and no default value provided."
+            )
     else:
         raise DynaconfFormatError(f"Error parsing {value} malformed syntax.")
 
@@ -259,6 +321,7 @@ class Formatters:
     python_formatter = BaseFormatter(str.format, "format")
     jinja_formatter = BaseFormatter(_jinja_formatter, "jinja")
     get_formatter = BaseFormatter(_get_formatter, "get")
+    read_file_formatter = BaseFormatter(_read_file_formatter, "read_file")
 
 
 class Lazy:
@@ -331,29 +394,51 @@ def evaluate_lazy_format(f):
     return evaluate
 
 
+def lazy_casting(value, cast_func):
+    """Helper function to handle Lazy casting."""
+    return (
+        value.set_casting(cast_func)
+        if isinstance(value, Lazy)
+        else cast_func(value)
+    )
+
+
+def json_casting(value):
+    """Helper function to handle JSON casting."""
+    return (
+        value.set_casting(lambda x: json.loads(x.replace("'", '"')))
+        if isinstance(value, Lazy)
+        else json.loads(value)
+    )
+
+
+def bool_casting(value):
+    """Helper function to handle boolean casting."""
+    return (
+        value.set_casting(lambda x: str(x).lower() in true_values)
+        if isinstance(value, Lazy)
+        else str(value).lower() in true_values
+    )
+
+
+def string_casting(value, str_func):
+    """Helper function to handle string transformations."""
+    return (
+        value.set_casting(str_func)
+        if isinstance(value, Lazy)
+        else str_func(str(value))
+    )
+
+
 converters = {
-    "@str": lambda value: value.set_casting(str)
-    if isinstance(value, Lazy)
-    else str(value),
-    "@int": lambda value: value.set_casting(int)
-    if isinstance(value, Lazy)
-    else int(value),
-    "@float": lambda value: value.set_casting(float)
-    if isinstance(value, Lazy)
-    else float(value),
-    "@bool": lambda value: value.set_casting(
-        lambda x: str(x).lower() in true_values
-    )
-    if isinstance(value, Lazy)
-    else str(value).lower() in true_values,
-    "@json": lambda value: value.set_casting(
-        lambda x: json.loads(x.replace("'", '"'))
-    )
-    if isinstance(value, Lazy)
-    else json.loads(value),
+    "@str": lambda value: lazy_casting(value, str),
+    "@int": lambda value: lazy_casting(value, int),
+    "@float": lambda value: lazy_casting(value, float),
+    "@bool": bool_casting,
+    "@json": json_casting,
     "@format": lambda value: Lazy(value),
     "@jinja": lambda value: Lazy(value, formatter=Formatters.jinja_formatter),
-    # Meta Values to trigger pre assignment actions
+    # Meta Values to trigger pre-assignment actions
     "@reset": Reset,  # @reset is DEPRECATED on v3.0.0
     "@del": Del,
     "@merge": Merge,
@@ -362,7 +447,21 @@ converters = {
     ),
     "@insert": Insert,
     "@get": lambda value: Lazy(value, formatter=Formatters.get_formatter),
-    # Special markers to be used as placeholders e.g: in prefilled forms
+    "@read_file": lambda value: Lazy(
+        value, formatter=Formatters.read_file_formatter
+    ),
+    # String utilities
+    "@upper": lambda value: string_casting(value, str.upper),
+    "@lower": lambda value: string_casting(value, str.lower),
+    "@title": lambda value: string_casting(value, str.title),
+    "@capitalize": lambda value: string_casting(value, str.capitalize),
+    "@strip": lambda value: string_casting(value, str.strip),
+    "@lstrip": lambda value: string_casting(value, str.lstrip),
+    "@rstrip": lambda value: string_casting(value, str.rstrip),
+    "@split": lambda value: string_casting(value, str.split),
+    "@casefold": lambda value: string_casting(value, str.casefold),
+    "@swapcase": lambda value: string_casting(value, str.swapcase),
+    # Special markers to be used as placeholders e.g., in prefilled forms
     # will always return None when evaluated
     "@note": lambda value: None,
     "@comment": lambda value: None,
@@ -452,7 +551,7 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
     ):
         # Check combination token is used
         comb_token = re.match(
-            f"^({'|'.join(converters.keys())}) @(jinja|format)",
+            f"^({'|'.join(converters.keys())}) @(jinja|format|read_file|get)",
             data,
         )
         if comb_token:
