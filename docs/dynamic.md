@@ -186,6 +186,17 @@ settings = Dynaconf(settings_files=["settings.toml"])
 assert settings.SECRET_KEY == "my_secret_key"
 ```
 
+You can also specify a default value in case the file does not exist or isn't readable.
+
+Example:
+
+```toml
+SECRET_KEY = "@read_file /path/to/secret_key default_value"
+```
+
+If the file does not exist and there is no default value, a `FileNotFoundError` will be raised upon access.
+
+
 ### Combining with other tokens
 
 You can combine the `@read_file` with other interpolation tokens like `@format` or `@jinja` and `@get` to read files with dynamic paths or content.

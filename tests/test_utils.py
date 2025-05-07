@@ -614,7 +614,7 @@ def test_read_file_notfound_error(tmp_path):
         settings = Dynaconf(
             settings_file=settings_file,
         )
-        assert settings.SECRET_KEY == "FOOBAR"
+        settings.SECRET_KEY
 
 
 @pytest.mark.skipif(
@@ -657,7 +657,7 @@ def test_read_file_syntax_error(tmp_path):
         settings = Dynaconf(
             settings_file=settings_file,
         )
-        assert settings.SECRET_KEY == "FOOBAR"
+        settings.SECRET_KEY
 
 
 @pytest.mark.skipif(
