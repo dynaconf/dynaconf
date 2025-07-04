@@ -143,8 +143,6 @@ class LazySettings(LazyObject):
         ):
             return self._wrapped.get_fresh(name)
         value = getattr(self._wrapped, name)
-        if name not in RESERVED_ATTRS:
-            return recursively_evaluate_lazy_format(value, self)
         return value
 
     def __call__(self, *args, **kwargs):
