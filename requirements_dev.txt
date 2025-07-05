@@ -24,6 +24,7 @@ pytest-mock
 commentjson
 lovely-pytest-docker
 tox
+pyinstrument
 
 # style check
 radon
