@@ -18,6 +18,7 @@ ignore = [
     # https://github.com/astral-sh/ruff/issues/4125
     # "W504", # (line break after binary operator, I prefer to put `and|or` at the end)
     # "W503", # (line break before binary operator, black prefer to put `and|or` at the end)
+    "UP007", # Use `X | Y` for type annotations
 ]
 
 [lint.per-file-ignores]

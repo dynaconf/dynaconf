@@ -8,11 +8,13 @@ from pathlib import Path
 from typing import Any
 from typing import Iterator
 from typing import TYPE_CHECKING
+from typing import TypedDict
 from typing import TypeVar
 
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings
     from dynaconf.base import Settings
+    from dynaconf.data_nodes import DataNode
     from dynaconf.utils.boxing import DynaBox
 
 
@@ -126,6 +128,55 @@ def recursive_get(
     if not tail:
         return result
     return recursive_get(result, tail)
+
+
+def container_items(container: dict | list):
+    if isinstance(container, dict):
+        return container.items()
+    elif isinstance(container, list):
+        return enumerate(container)
+    else:
+        raise TypeError(f"Unsupported container type: {type(container)}")
+
+
+def data_print(data: DataNode, format="json", debug=False):
+    """Data print utilities.
+
+    Params:
+        data: The data to be displayed.
+        format: The dumper used to print the data
+        debug: Whether internal info should be displayed for debugging
+    """
+    import json
+
+    import rich
+
+    if not debug:
+        rich.print_json(json.dumps(data, indent=4))
+        return
+
+    class Node(TypedDict):
+        metadata: dict
+        children: list
+
+    def walk(data):
+        children = []
+        for k, v in container_items(data):
+            if isinstance(v, (dict, list)):
+                node = Node(
+                    metadata=v.__meta__.__dict__,
+                    children=walk(v),
+                )
+                children.append({k: node})
+            else:
+                children.append({k: v})
+        return children
+
+    root = Node(
+        metadata=data.__meta__.__dict__,
+        children=walk(data),
+    )
+    rich.print_json(json.dumps(root, indent=4))
 
 
 def handle_metavalues(
