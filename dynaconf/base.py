@@ -27,7 +27,6 @@ from dynaconf.utils import compat_kwargs
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import missing
 from dynaconf.utils import object_merge
-from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
 from dynaconf.utils.boxing import DynaBox

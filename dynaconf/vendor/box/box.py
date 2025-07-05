@@ -258,12 +258,10 @@ class Box(dict):
     def values(self):
         return [self[x] for x in self.keys()]
 
-    def items(self):
-        return [(x, self[x]) for x in self.keys()]
-
-    def _safe_items(self):
-        """Get items list without triggering recursive evaluation"""
-        return [(x, self._safe_get(x)) for x in self.keys()]
+    def items(self, bypass_eval=False):
+        if not bypass_eval:
+            return [(x, self[x]) for x in self.keys()]
+        return [(x, self.get(x, bypass_eval=True)) for x in self.keys()]
 
     def __get_default(self, item):
         default_value = self._box_config['default_box_attr']

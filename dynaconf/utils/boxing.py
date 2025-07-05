@@ -28,30 +28,22 @@ class DynaBox(Box):
             result = super().__getitem__(n_item, *args, **kwargs)
         return self.__evaluate_lazy__(result)
 
-    def get(self, item, default=None, *args, **kwargs):
-        n_item = find_the_correct_casing(item, self) or item
-        result = super().get(n_item, empty, *args, **kwargs)
-        result = result if result is not empty else default
-        return self.__evaluate_lazy__(result)
-
-    def __evaluate_lazy__(self, result):
-        settings = self._box_config["box_settings"]
-        return recursively_evaluate_lazy_format(result, settings)
-
-    def _safe_get(self, item, *args, **kwargs):
-        """Get item bypassing recursive evaluation"""
+    def get(self, item, default=None, bypass_eval=False, *args, **kwargs):
+        # _TODO(pbrochad): refactor all these getter methods to make consistency easier
+        if not bypass_eval:
+            n_item = find_the_correct_casing(item, self) or item
+            result = super().get(n_item, empty, *args, **kwargs)
+            result = result if result is not empty else default
+            return self.__evaluate_lazy__(result)
         try:
             return super().__getitem__(item, *args, **kwargs)
         except (AttributeError, KeyError):
             n_item = find_the_correct_casing(item, self) or item
             return super().__getitem__(n_item, *args, **kwargs)
 
-    def _safe_copy(self):
-        """Copy bypassing lazy evaluation"""
-        return self.__class__(
-            {k: self._safe_get(k) for k in self.keys()},
-            box_settings=self._box_config.get("box_settings"),
-        )
+    def __evaluate_lazy__(self, result):
+        settings = self._box_config["box_settings"]
+        return recursively_evaluate_lazy_format(result, settings)
 
     def __copy__(self):
         return self.__class__(
@@ -59,9 +51,14 @@ class DynaBox(Box):
             box_settings=self._box_config.get("box_settings"),
         )
 
-    def copy(self):
+    def copy(self, bypass_eval=False):
+        if not bypass_eval:
+            return self.__class__(
+                super(Box, self).copy(),
+                box_settings=self._box_config.get("box_settings"),
+            )
         return self.__class__(
-            super(Box, self).copy(),
+            {k: self.get(k, bypass_eval=True) for k in self.keys()},
             box_settings=self._box_config.get("box_settings"),
         )
 
