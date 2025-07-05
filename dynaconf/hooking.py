@@ -314,7 +314,7 @@ class TempSettingsHolder:
             self._temp_settings = Settings(
                 dynaconf_skip_loaders=True,
                 dynaconf_skip_validators=True,
-                _store=self._original_settings._store._safe_copy(),
+                _store=self._original_settings._store.copy(bypass_eval=True),
             )
         return self._temp_settings
 

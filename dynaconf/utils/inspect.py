@@ -346,9 +346,9 @@ def _get_data_by_key(
         # transform `a.b.c` in successive calls to `data['a']['b']['c']`
         path = path.split(".")
         root_key, nested_keys = path[0], path[1:]
-        result = data._safe_get(root_key)
+        result = data.get(root_key, bypass_eval=True)
         for key in nested_keys:
-            result = handle_repr(result._safe_get(key))
+            result = handle_repr(result.get(key, bypass_eval=True))
         return result
 
     try:

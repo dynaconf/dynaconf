@@ -104,7 +104,7 @@ def object_merge(
             Get items from DynaBox without triggering recursive evaluation
             """
             if data.__class__.__name__ == "DynaBox":
-                return data._safe_items()
+                return data.items(bypass_eval=True)
             else:
                 return data.items()
 
@@ -491,13 +491,6 @@ def recursively_evaluate_lazy_format(
 
     For example: Evaluate values inside lists and dicts
     """
-    return _recursively_evaluate_lazy_format(value, settings)
-
-
-def _recursively_evaluate_lazy_format(
-    value: Any, settings: Settings | LazySettings
-) -> Any:
-    """Recursive implementation. Separate for easier debugging."""
     if getattr(value, "_dynaconf_lazy_format", None):
         value = value(settings)
 
@@ -510,7 +503,7 @@ def _recursively_evaluate_lazy_format(
         # Keep the original type, can be a BoxList
         value = value.__class__(
             [
-                _recursively_evaluate_lazy_format(item, settings)
+                recursively_evaluate_lazy_format(item, settings)
                 for item in value
             ]
         )
