@@ -501,7 +501,7 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
         # recursively parse inner dict items
         # It is important to keep the same object id because
         # of mutability
-        for k, v in data._safe_items():
+        for k, v in data.items(bypass_eval=True):
             data[k] = parse_conf_data(
                 v, tomlfy=tomlfy, box_settings=box_settings
             )
