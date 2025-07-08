@@ -149,10 +149,8 @@ def data_print(data: DataNode, format="json", debug=False):
     """
     import json
 
-    import rich
-
     if not debug:
-        rich.print_json(json.dumps(data, indent=4))
+        print(json.dumps(data, indent=4))  # noqa
         return
 
     class Node(TypedDict):
@@ -176,7 +174,7 @@ def data_print(data: DataNode, format="json", debug=False):
         metadata=data.__meta__.__dict__,
         children=walk(data),
     )
-    rich.print_json(json.dumps(root, indent=4))
+    print(json.dumps(root, indent=4))  # noqa
 
 
 def handle_metavalues(
