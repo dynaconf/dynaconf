@@ -113,26 +113,30 @@ class DataDict(dict):
         """Convert to regular dict"""
         pass
 
-    def merge_update(self, *args, **kwargs):
+    def merge_update(self, __m=None, **kwargs):
         """Merge update with another dict"""
-        if args:
-            other = args[0]
-            if hasattr(other, "keys"):
-                for key in other:
-                    if key in self:
-                        self[key] = ut.object_merge(self[key], other[key])
+        def convert_and_set(k, v):
+            if isinstance(v, dict):
+                v = self.__class__(v, core=self.__meta__.core)
+                if k in self and isinstance(self[k], dict):
+                    if isinstance(self[k], DataDict):
+                        self[k].merge_update(v)
                     else:
-                        self[key] = other[key]
-            else:
-                raise TypeError(
-                    "merge_update expected at most 1 arguments, got more"
-                )
+                        self[k].update(v)
+                    return
+            if isinstance(v, list):
+                v = DataList(v, core=self.__meta__.core)
+            self.__setitem__(k, v)
 
-        for key, value in kwargs.items():
-            if key in self:
-                self[key] = ut.object_merge(self[key], value)
+        if __m:
+            if hasattr(__m, 'keys'):
+                for key in __m:
+                    convert_and_set(key, __m[key])
             else:
-                self[key] = value
+                for key, value in __m:
+                    convert_and_set(key, value)
+        for key in kwargs:
+            convert_and_set(key, kwargs[key])
 
     def to_json(self, *args, **kwargs):
         """Convert to JSON string"""
