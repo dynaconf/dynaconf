@@ -232,22 +232,118 @@ class DataDict(dict):
         )
 
     @classmethod
-    def from_json(cls, json_str, *args, **kwargs):
-        """Create from JSON string"""
+    def from_json(
+        cls,
+        json_string=None,
+        filename=None,
+        encoding="utf-8",
+        errors="strict",
+        **kwargs,
+    ):
+        """
+        Transform a json object string into a DataDict object. If the incoming
+        json is a list, you must use DataList.from_json.
+
+        :param json_string: string to pass to `json.loads`
+        :param filename: filename to open and pass to `json.load`
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param kwargs: parameters to pass to `DataDict()` or `json.loads`
+        :return: DataDict object from json data
+        """
         box_deprecation_warning("from_json", "DataDict")
-        pass
+
+        data_args = {}
+        for arg in kwargs.copy():
+            if arg in ("core", "box_settings"):
+                data_args[arg] = kwargs.pop(arg)
+
+        data = converters._from_json(
+            json_string,
+            filename=filename,
+            encoding=encoding,
+            errors=errors,
+            **kwargs,
+        )
+
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"json data not returned as a dictionary, but rather a {type(data).__name__}"
+            )
+        return cls(data, **data_args)
 
     @classmethod
-    def from_yaml(cls, yaml_str, *args, **kwargs):
-        """Create from YAML string"""
+    def from_yaml(
+        cls,
+        yaml_string=None,
+        filename=None,
+        encoding="utf-8",
+        errors="strict",
+        **kwargs,
+    ):
+        """
+        Transform a yaml object string into a DataDict object. By default will use SafeLoader.
+
+        :param yaml_string: string to pass to `yaml.load`
+        :param filename: filename to open and pass to `yaml.load`
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param kwargs: parameters to pass to `DataDict()` or `yaml.load`
+        :return: DataDict object from yaml data
+        """
         box_deprecation_warning("from_yaml", "DataDict")
-        pass
+
+        data_args = {}
+        for arg in kwargs.copy():
+            if arg in ("core", "box_settings"):
+                data_args[arg] = kwargs.pop(arg)
+
+        data = converters._from_yaml(
+            yaml_string=yaml_string,
+            filename=filename,
+            encoding=encoding,
+            errors=errors,
+            **kwargs,
+        )
+        if not isinstance(data, dict):
+            raise ValueError(
+                f"yaml data not returned as a dictionary but rather a {type(data).__name__}"
+            )
+        return cls(data, **data_args)
 
     @classmethod
-    def from_toml(cls, toml_str, *args, **kwargs):
-        """Create from TOML string"""
+    def from_toml(
+        cls,
+        toml_string=None,
+        filename=None,
+        encoding="utf-8",
+        errors="strict",
+        **kwargs,
+    ):
+        """
+        Transforms a toml string or file into a DataDict object
+
+        :param toml_string: string to pass to `toml.load`
+        :param filename: filename to open and pass to `toml.load`
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param kwargs: parameters to pass to `DataDict()`
+        :return: DataDict object from toml data
+        """
         box_deprecation_warning("from_toml", "DataDict")
-        pass
+
+        data_args = {}
+        for arg in kwargs.copy():
+            if arg in ("core", "box_settings"):
+                data_args[arg] = kwargs.pop(arg)
+
+        data = converters._from_toml(
+            toml_string=toml_string,
+            filename=filename,
+            encoding=encoding,
+            errors=errors,
+        )
+        return cls(data, **data_args)
 
 
 class DataList(list):
@@ -422,22 +518,126 @@ class DataList(list):
         )
 
     @classmethod
-    def from_json(cls, json_str, *args, **kwargs):
-        """Create from JSON string"""
+    def from_json(
+        cls,
+        json_string=None,
+        filename=None,
+        encoding="utf-8",
+        errors="strict",
+        multiline=False,
+        **kwargs,
+    ):
+        """
+        Transform a json object string into a DataList object. If the incoming
+        json is a dict, you must use DataDict.from_json.
+
+        :param json_string: string to pass to `json.loads`
+        :param filename: filename to open and pass to `json.load`
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param multiline: One object per line
+        :param kwargs: parameters to pass to `DataList()` or `json.loads`
+        :return: DataList object from json data
+        """
         box_deprecation_warning("from_json", "DataList")
-        pass
+
+        data_args = {}
+        for arg in kwargs.copy():
+            if arg in ("core", "box_settings"):
+                data_args[arg] = kwargs.pop(arg)
+
+        data = converters._from_json(
+            json_string,
+            filename=filename,
+            encoding=encoding,
+            errors=errors,
+            multiline=multiline,
+            **kwargs,
+        )
+
+        if not isinstance(data, list):
+            raise ValueError(
+                f"json data not returned as a list, but rather a {type(data).__name__}"
+            )
+        return cls(data, **data_args)
 
     @classmethod
-    def from_yaml(cls, yaml_str, *args, **kwargs):
-        """Create from YAML string"""
+    def from_yaml(
+        cls,
+        yaml_string=None,
+        filename=None,
+        encoding="utf-8",
+        errors="strict",
+        **kwargs,
+    ):
+        """
+        Transform a yaml object string into a DataList object.
+
+        :param yaml_string: string to pass to `yaml.load`
+        :param filename: filename to open and pass to `yaml.load`
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param kwargs: parameters to pass to `DataList()` or `yaml.load`
+        :return: DataList object from yaml data
+        """
         box_deprecation_warning("from_yaml", "DataList")
-        pass
+
+        data_args = {}
+        for arg in kwargs.copy():
+            if arg in ("core", "box_settings"):
+                data_args[arg] = kwargs.pop(arg)
+
+        data = converters._from_yaml(
+            yaml_string=yaml_string,
+            filename=filename,
+            encoding=encoding,
+            errors=errors,
+            **kwargs,
+        )
+        if not isinstance(data, list):
+            raise ValueError(
+                f"yaml data not returned as a list but rather a {type(data).__name__}"
+            )
+        return cls(data, **data_args)
 
     @classmethod
-    def from_toml(cls, toml_str, *args, **kwargs):
-        """Create from TOML string"""
+    def from_toml(
+        cls,
+        toml_string=None,
+        filename=None,
+        key_name="toml",
+        encoding="utf-8",
+        errors="strict",
+        **kwargs,
+    ):
+        """
+        Transforms a toml string or file into a DataList object
+
+        :param toml_string: string to pass to `toml.load`
+        :param filename: filename to open and pass to `toml.load`
+        :param key_name: Specify the name of the key to pull the list from
+            (cannot directly convert from toml)
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param kwargs: parameters to pass to `DataList()`
+        :return: DataList object from toml data
+        """
         box_deprecation_warning("from_toml", "DataList")
-        pass
+
+        data_args = {}
+        for arg in kwargs.copy():
+            if arg in ("core", "box_settings"):
+                data_args[arg] = kwargs.pop(arg)
+
+        data = converters._from_toml(
+            toml_string=toml_string,
+            filename=filename,
+            encoding=encoding,
+            errors=errors,
+        )
+        if key_name not in data:
+            raise ValueError(f"{key_name} was not found.")
+        return cls(data[key_name], **data_args)
 
     @classmethod
     def from_csv(cls, filename, encoding="utf-8", errors="strict"):
