@@ -277,3 +277,111 @@ def test_mutable_operations():
     # Test multiply
     li = DataList([{"x": 1}]) * 2
     assert isinstance(li[0], DataDict) and isinstance(li[1], DataDict)
+
+
+class TestBoxCompatibility:
+    """Test compatibility with Box library API. Remove in v3.3.0."""
+
+    def test_interface(self):
+        data_dict_dir = DataDict().__dir__()
+        data_list_dir = DataList().__dir__()
+        expected_dynabox_methods = [
+            "to_dict",
+            "merge_update",
+            "to_json",
+            "to_yaml",
+            "to_toml",
+            "from_json",
+            "from_yaml",
+            "from_toml",
+        ]
+        expected_box_list_methods = [
+            "__copy__",
+            "__deepcopy__",
+            "to_list",
+            "to_json",
+            "to_yaml",
+            "to_toml",
+            "to_csv",
+            "from_json",
+            "from_yaml",
+            "from_toml",
+            "from_csv",
+        ]
+
+        for method in expected_dynabox_methods:
+            assert method in data_dict_dir
+
+        for method in expected_box_list_methods:
+            assert method in data_list_dir
+
+    def test_dynabox(self):
+        """
+        Test that DataDict keeps compatibility with Box public API.
+        """
+        from dynaconf.utils.boxing import DynaBox
+
+        test_data = {"name": "test", "nested": {"value": 42}}
+        data_dict = DataDict(test_data.copy())
+        dyna_box = DynaBox(test_data.copy())
+
+        # Test merge_update method works the same
+        data_dict.merge_update({"new_key": "new_value"})
+        dyna_box.merge_update({"new_key": "new_value"})
+        assert data_dict == dyna_box
+
+        # Test serialization methods produce same output
+        for method_name in ("to_dict", "to_json", "to_yaml", "to_toml"):
+            datadict_method = getattr(data_dict, method_name)
+            dynabox_method = getattr(dyna_box, method_name)
+            assert datadict_method() == dynabox_method()
+
+    def test_box_list(self):
+        """
+        Test that DataList keeps compatibility with BoxList API.
+        """
+        from dynaconf.vendor.box.box_list import BoxList
+
+        test_data = [{"name": "item1"}, {"name": "item2"}]
+        data_list = DataList(test_data.copy())
+        box_list = BoxList(test_data.copy())
+        # Test to_list method produces same output
+        list_result = data_list.to_list()
+        box_result = box_list.to_list()
+        assert isinstance(list_result, list)
+        assert isinstance(box_result, list)
+        assert list_result == box_result
+
+        # Test copy functionality produces equivalent results
+        import copy
+
+        data_shallow = copy.copy(data_list)
+        box_shallow = copy.copy(box_list)
+        assert isinstance(data_shallow, DataList)
+        assert isinstance(box_shallow, BoxList)
+        assert data_shallow == data_list
+        assert box_shallow == box_list
+        assert data_shallow is not data_list
+        assert box_shallow is not box_list
+
+        data_deep = copy.deepcopy(data_list)
+        box_deep = copy.deepcopy(box_list)
+        assert isinstance(data_deep, DataList)
+        assert isinstance(box_deep, BoxList)
+        assert data_deep == data_list
+        assert box_deep == box_list
+        assert data_deep is not data_list
+        assert box_deep is not box_list
+
+        # Test serialization methods produce same output
+        import json
+
+        data_json = data_list.to_json()
+        box_json = box_list.to_json()
+        assert isinstance(data_json, str)
+        assert isinstance(box_json, str)
+
+        # Parse both JSON strings and compare
+        parsed_data = json.loads(data_json)
+        parsed_box = json.loads(box_json)
+        assert parsed_data == parsed_box

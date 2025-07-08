@@ -108,6 +108,59 @@ class DataDict(dict):
     def __repr__(self):
         return f"{self.__class__.__name__}({dict(self)})"
 
+    # Box compatibility. Remove in 3.3.0
+    def to_dict(self):
+        """Convert to regular dict"""
+        pass
+
+    def merge_update(self, *args, **kwargs):
+        """Merge update with another dict"""
+        if args:
+            other = args[0]
+            if hasattr(other, "keys"):
+                for key in other:
+                    if key in self:
+                        self[key] = ut.object_merge(self[key], other[key])
+                    else:
+                        self[key] = other[key]
+            else:
+                raise TypeError(
+                    "merge_update expected at most 1 arguments, got more"
+                )
+
+        for key, value in kwargs.items():
+            if key in self:
+                self[key] = ut.object_merge(self[key], value)
+            else:
+                self[key] = value
+
+    def to_json(self, *args, **kwargs):
+        """Convert to JSON string"""
+        pass
+
+    def to_yaml(self, *args, **kwargs):
+        """Convert to YAML string"""
+        pass
+
+    def to_toml(self, *args, **kwargs):
+        """Convert to TOML string"""
+        pass
+
+    @classmethod
+    def from_json(cls, json_str, *args, **kwargs):
+        """Create from JSON string"""
+        pass
+
+    @classmethod
+    def from_yaml(cls, yaml_str, *args, **kwargs):
+        """Create from YAML string"""
+        pass
+
+    @classmethod
+    def from_toml(cls, toml_str, *args, **kwargs):
+        """Create from TOML string"""
+        pass
+
 
 class DataList(list):
     __slots__ = ("__meta__",)
@@ -141,6 +194,55 @@ class DataList(list):
 
     def __repr__(self):
         return f"{self.__class__.__name__}({list(self)!r})"
+
+    # Box compatibility. Remove in 3.3.0
+    def __copy__(self, memo):
+        """Copy support"""
+        pass
+
+    def __deepcopy__(self, memo):
+        """Deep copy support"""
+        pass
+
+    def to_list(self):
+        """Convert to regular list"""
+        pass
+
+    def to_json(self, *args, **kwargs):
+        """Convert to JSON string"""
+        pass
+
+    def to_yaml(self, *args, **kwargs):
+        """Convert to YAML string"""
+        pass
+
+    def to_toml(self, *args, **kwargs):
+        """Convert to TOML string"""
+        pass
+
+    def to_csv(self, *args, **kwargs):
+        """Convert to CSV string"""
+        pass
+
+    @classmethod
+    def from_json(cls, json_str, *args, **kwargs):
+        """Create from JSON string"""
+        pass
+
+    @classmethod
+    def from_yaml(cls, yaml_str, *args, **kwargs):
+        """Create from YAML string"""
+        pass
+
+    @classmethod
+    def from_toml(cls, toml_str, *args, **kwargs):
+        """Create from TOML string"""
+        pass
+
+    @classmethod
+    def from_csv(cls, csv_str, *args, **kwargs):
+        """Create from CSV string"""
+        pass
 
 
 DataNode = Union[DataDict, DataList]
