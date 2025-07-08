@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from collections import namedtuple
 
 import pytest
@@ -12,6 +13,8 @@ from dynaconf.data_nodes import get_core
 from dynaconf.data_nodes import init_core
 from dynaconf.utils import container_items
 from dynaconf.utils import data_print
+from dynaconf.utils.boxing import DynaBox
+from dynaconf.vendor.box import BoxList
 
 # DynaBox compatibility tests
 
@@ -286,8 +289,8 @@ class TestBoxCompatibility:
         data_dict_dir = DataDict().__dir__()
         data_list_dir = DataList().__dir__()
         expected_dynabox_methods = [
-            "to_dict",
             "merge_update",
+            "to_dict",
             "to_json",
             "to_yaml",
             "to_toml",
@@ -319,8 +322,6 @@ class TestBoxCompatibility:
         """
         Test that DataDict keeps compatibility with Box public API.
         """
-        from dynaconf.utils.boxing import DynaBox
-
         test_data = {"name": "test", "nested": {"value": 42}}
         data_dict = DataDict(test_data.copy())
         dyna_box = DynaBox(test_data.copy())
@@ -340,8 +341,6 @@ class TestBoxCompatibility:
         """
         Test that DataList keeps compatibility with BoxList API.
         """
-        from dynaconf.vendor.box.box_list import BoxList
-
         test_data = [{"name": "item1"}, {"name": "item2"}]
         data_list = DataList(test_data.copy())
         box_list = BoxList(test_data.copy())
@@ -357,43 +356,31 @@ class TestBoxCompatibility:
             boxlist_method = getattr(box_list, method_name)
             assert datadict_method() == boxlist_method()
 
-        filename = tmp_path / "file.csv"  # to_csv requires filename :(
+        filename = (
+            tmp_path / "file.csv"
+        )  # unlike the others, to_csv requires filename...
         assert data_list.to_csv(str(filename)) == box_list.to_csv(
             str(filename)
         )
 
-        return
+    def test_box_list_copying(self):
+        test_data = [{"a": [1, 2, 3]}, {"a": [4, 5, 6]}]
+        datalist_origin = DataList(test_data)
+        boxlist_origin = BoxList(test_data)
 
-        # Test copy functionality produces equivalent results
-        import copy
+        datalist_shallow = copy.copy(datalist_origin)
+        boxlist_shallow = copy.copy(boxlist_origin)
+        assert datalist_shallow == datalist_origin
+        assert datalist_shallow is not datalist_origin
 
-        data_shallow = copy.copy(data_list)
-        box_shallow = copy.copy(box_list)
-        assert isinstance(data_shallow, DataList)
-        assert isinstance(box_shallow, BoxList)
-        assert data_shallow == data_list
-        assert box_shallow == box_list
-        assert data_shallow is not data_list
-        assert box_shallow is not box_list
+        assert boxlist_shallow == boxlist_origin
+        assert boxlist_shallow is not boxlist_origin
 
-        data_deep = copy.deepcopy(data_list)
-        box_deep = copy.deepcopy(box_list)
+        data_deep = copy.deepcopy(datalist_origin)
+        box_deep = copy.deepcopy(boxlist_origin)
         assert isinstance(data_deep, DataList)
         assert isinstance(box_deep, BoxList)
-        assert data_deep == data_list
-        assert box_deep == box_list
-        assert data_deep is not data_list
-        assert box_deep is not box_list
-
-        # Test serialization methods produce same output
-        import json
-
-        data_json = data_list.to_json()
-        box_json = box_list.to_json()
-        assert isinstance(data_json, str)
-        assert isinstance(box_json, str)
-
-        # Parse both JSON strings and compare
-        parsed_data = json.loads(data_json)
-        parsed_box = json.loads(box_json)
-        assert parsed_data == parsed_box
+        assert data_deep == datalist_origin
+        assert box_deep == boxlist_origin
+        assert data_deep is not datalist_origin
+        assert box_deep is not boxlist_origin

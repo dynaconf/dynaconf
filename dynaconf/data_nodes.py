@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass
 from typing import Optional
 from typing import Union
@@ -267,13 +268,16 @@ class DataList(list):
         return f"{self.__class__.__name__}({list(self)!r})"
 
     # Box compatibility. Remove in 3.3.0
-    def __copy__(self, memo):
-        """Copy support"""
-        pass
+    def __copy__(self):
+        return DataList((x for x in self), core=self.__meta__.core)
 
-    def __deepcopy__(self, memo):
-        """Deep copy support"""
-        pass
+    def __deepcopy__(self, memo=None):
+        out = self.__class__(core=self.__meta__.core)
+        memo = memo or {}
+        memo[id(self)] = out
+        for k in self:
+            out.append(copy.deepcopy(k, memo=memo))
+        return out
 
     def to_list(self):
         """
