@@ -110,11 +110,24 @@ class DataDict(dict):
 
     # Box compatibility. Remove in 3.3.0
     def to_dict(self):
-        """Convert to regular dict"""
-        pass
+        """
+        Turn the DataDict and sub DataDicts back into a native python dictionary.
+
+        :return: python dictionary of this DataDict
+        """
+        out_dict = dict(self)
+        for k, v in out_dict.items():
+            if v is self:
+                out_dict[k] = out_dict
+            elif isinstance(v, DataDict):
+                out_dict[k] = v.to_dict()
+            elif isinstance(v, DataList):
+                out_dict[k] = v.to_list()
+        return out_dict
 
     def merge_update(self, __m=None, **kwargs):
         """Merge update with another dict"""
+
         def convert_and_set(k, v):
             if isinstance(v, dict):
                 v = self.__class__(v, core=self.__meta__.core)
@@ -129,7 +142,7 @@ class DataDict(dict):
             self.__setitem__(k, v)
 
         if __m:
-            if hasattr(__m, 'keys'):
+            if hasattr(__m, "keys"):
                 for key in __m:
                     convert_and_set(key, __m[key])
             else:
@@ -138,17 +151,71 @@ class DataDict(dict):
         for key in kwargs:
             convert_and_set(key, kwargs[key])
 
-    def to_json(self, *args, **kwargs):
-        """Convert to JSON string"""
-        pass
+    def to_json(
+        self, filename=None, encoding="utf-8", errors="strict", **json_kwargs
+    ):
+        """
+        Transform the DataDict object into a JSON string.
 
-    def to_yaml(self, *args, **kwargs):
-        """Convert to YAML string"""
-        pass
+        :param filename: If provided will save to file
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param json_kwargs: additional arguments to pass to json.dump(s)
+        :return: string of JSON (if no filename provided)
+        """
+        from dynaconf.vendor.box.converters import _to_json
 
-    def to_toml(self, *args, **kwargs):
-        """Convert to TOML string"""
-        pass
+        return _to_json(
+            self.to_dict(),
+            filename=filename,
+            encoding=encoding,
+            errors=errors,
+            **json_kwargs,
+        )
+
+    def to_yaml(
+        self,
+        filename=None,
+        default_flow_style=False,
+        encoding="utf-8",
+        errors="strict",
+        **yaml_kwargs,
+    ):
+        """
+        Transform the DataDict object into a YAML string.
+
+        :param filename:  If provided will save to file
+        :param default_flow_style: False will recursively dump dicts
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param yaml_kwargs: additional arguments to pass to yaml.dump
+        :return: string of YAML (if no filename provided)
+        """
+        from dynaconf.vendor.box.converters import _to_yaml
+
+        return _to_yaml(
+            self.to_dict(),
+            filename=filename,
+            default_flow_style=default_flow_style,
+            encoding=encoding,
+            errors=errors,
+            **yaml_kwargs,
+        )
+
+    def to_toml(self, filename=None, encoding="utf-8", errors="strict"):
+        """
+        Transform the DataDict object into a toml string.
+
+        :param filename: File to write toml object too
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :return: string of TOML (if no filename provided)
+        """
+        from dynaconf.vendor.box.converters import _to_toml
+
+        return _to_toml(
+            self.to_dict(), filename=filename, encoding=encoding, errors=errors
+        )
 
     @classmethod
     def from_json(cls, json_str, *args, **kwargs):
@@ -209,24 +276,127 @@ class DataList(list):
         pass
 
     def to_list(self):
-        """Convert to regular list"""
-        pass
+        """
+        Turn the DataList and sub DataLists back into a native python list.
 
-    def to_json(self, *args, **kwargs):
-        """Convert to JSON string"""
-        pass
+        :return: python list of this DataList
+        """
+        new_list = []
+        for x in self:
+            if x is self:
+                new_list.append(new_list)
+            elif isinstance(x, DataDict):
+                new_list.append(x.to_dict())
+            elif isinstance(x, DataList):
+                new_list.append(x.to_list())
+            else:
+                new_list.append(x)
+        return new_list
 
-    def to_yaml(self, *args, **kwargs):
-        """Convert to YAML string"""
-        pass
+    def to_json(
+        self,
+        filename=None,
+        encoding="utf-8",
+        errors="strict",
+        multiline=False,
+        **json_kwargs,
+    ):
+        """
+        Transform the DataList object into a JSON string.
 
-    def to_toml(self, *args, **kwargs):
-        """Convert to TOML string"""
-        pass
+        :param filename: If provided will save to file
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param multiline: Put each item in list onto it's own line
+        :param json_kwargs: additional arguments to pass to json.dump(s)
+        :return: string of JSON or return of `json.dump`
+        """
+        from dynaconf.vendor.box.converters import _to_json
 
-    def to_csv(self, *args, **kwargs):
-        """Convert to CSV string"""
-        pass
+        if filename and multiline:
+            lines = [
+                _to_json(
+                    item,
+                    filename=False,
+                    encoding=encoding,
+                    errors=errors,
+                    **json_kwargs,
+                )
+                for item in self
+            ]
+            with open(filename, "w", encoding=encoding, errors=errors) as f:
+                f.write("\n".join(lines))
+        else:
+            return _to_json(
+                self.to_list(),
+                filename=filename,
+                encoding=encoding,
+                errors=errors,
+                **json_kwargs,
+            )
+
+    def to_yaml(
+        self,
+        filename=None,
+        default_flow_style=False,
+        encoding="utf-8",
+        errors="strict",
+        **yaml_kwargs,
+    ):
+        """
+        Transform the DataList object into a YAML string.
+
+        :param filename:  If provided will save to file
+        :param default_flow_style: False will recursively dump dicts
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :param yaml_kwargs: additional arguments to pass to yaml.dump
+        :return: string of YAML or return of `yaml.dump`
+        """
+        from dynaconf.vendor.box.converters import _to_yaml
+
+        return _to_yaml(
+            self.to_list(),
+            filename=filename,
+            default_flow_style=default_flow_style,
+            encoding=encoding,
+            errors=errors,
+            **yaml_kwargs,
+        )
+
+    def to_toml(
+        self, filename=None, key_name="toml", encoding="utf-8", errors="strict"
+    ):
+        """
+        Transform the DataList object into a toml string.
+
+        :param filename: File to write toml object too
+        :param key_name: Specify the name of the key to store the string under
+            (cannot directly convert to toml)
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :return: string of TOML (if no filename provided)
+        """
+        from dynaconf.vendor.box.converters import _to_toml
+
+        return _to_toml(
+            {key_name: self.to_list()},
+            filename=filename,
+            encoding=encoding,
+            errors=errors,
+        )
+
+    def to_csv(self, filename, encoding="utf-8", errors="strict"):
+        """
+        Transform the DataList object into a CSV file.
+
+        :param filename: File to write CSV data to
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        """
+        from dynaconf.vendor.box.converters import _to_csv
+
+        _to_csv(self, filename=filename, encoding=encoding, errors=errors)
 
     @classmethod
     def from_json(cls, json_str, *args, **kwargs):
@@ -244,9 +414,20 @@ class DataList(list):
         pass
 
     @classmethod
-    def from_csv(cls, csv_str, *args, **kwargs):
-        """Create from CSV string"""
-        pass
+    def from_csv(cls, filename, encoding="utf-8", errors="strict"):
+        """
+        Transform a CSV file into a DataList object.
+
+        :param filename: CSV file to read from
+        :param encoding: File encoding
+        :param errors: How to handle encoding errors
+        :return: DataList object from CSV data
+        """
+        from dynaconf.vendor.box.converters import _from_csv
+
+        return cls(
+            _from_csv(filename=filename, encoding=encoding, errors=errors)
+        )
 
 
 DataNode = Union[DataDict, DataList]

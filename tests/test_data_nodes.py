@@ -336,7 +336,7 @@ class TestBoxCompatibility:
             dynabox_method = getattr(dyna_box, method_name)
             assert datadict_method() == dynabox_method()
 
-    def test_box_list(self):
+    def test_box_list(self, tmp_path):
         """
         Test that DataList keeps compatibility with BoxList API.
         """
@@ -345,12 +345,24 @@ class TestBoxCompatibility:
         test_data = [{"name": "item1"}, {"name": "item2"}]
         data_list = DataList(test_data.copy())
         box_list = BoxList(test_data.copy())
-        # Test to_list method produces same output
-        list_result = data_list.to_list()
-        box_result = box_list.to_list()
-        assert isinstance(list_result, list)
-        assert isinstance(box_result, list)
-        assert list_result == box_result
+
+        # Test serialization methods produce same output
+        for method_name in (
+            "to_list",
+            "to_json",
+            "to_yaml",
+            "to_toml",
+        ):
+            datadict_method = getattr(data_list, method_name)
+            boxlist_method = getattr(box_list, method_name)
+            assert datadict_method() == boxlist_method()
+
+        filename = tmp_path / "file.csv"  # to_csv requires filename :(
+        assert data_list.to_csv(str(filename)) == box_list.to_csv(
+            str(filename)
+        )
+
+        return
 
         # Test copy functionality produces equivalent results
         import copy
