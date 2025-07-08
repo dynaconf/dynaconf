@@ -282,6 +282,13 @@ def test_mutable_operations():
     assert isinstance(li[0], DataDict) and isinstance(li[1], DataDict)
 
 
+@pytest.fixture
+def deprecated_context():
+    msg = "is deprecated and will be removed in v4.0"
+    with pytest.warns(DeprecationWarning, match=msg):
+        yield
+
+
 class TestBoxCompatibility:
     """Test compatibility with Box library API. Remove in v3.3.0."""
 
@@ -318,7 +325,7 @@ class TestBoxCompatibility:
         for method in expected_box_list_methods:
             assert method in data_list_dir
 
-    def test_dynabox(self):
+    def test_dynabox(self, deprecated_context):
         """
         Test that DataDict keeps compatibility with Box public API.
         """
@@ -337,7 +344,7 @@ class TestBoxCompatibility:
             dynabox_method = getattr(dyna_box, method_name)
             assert datadict_method() == dynabox_method()
 
-    def test_box_list(self, tmp_path):
+    def test_box_list(self, tmp_path, deprecated_context):
         """
         Test that DataList keeps compatibility with BoxList API.
         """
@@ -363,7 +370,7 @@ class TestBoxCompatibility:
             str(filename)
         )
 
-    def test_box_list_copying(self):
+    def test_box_list_copying(self, deprecated_context):
         test_data = [{"a": [1, 2, 3]}, {"a": [4, 5, 6]}]
         datalist_origin = DataList(test_data)
         boxlist_origin = BoxList(test_data)

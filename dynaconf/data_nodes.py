@@ -1,14 +1,26 @@
 from __future__ import annotations
 
 import copy
+import warnings
 from dataclasses import dataclass
 from typing import Optional
 from typing import Union
 
 import dynaconf.utils as ut
+from dynaconf.vendor.box import converters
 
 
 class DynaconfNotInitialized(BaseException): ...
+
+
+def box_deprecation_warning(
+    method_name: str, class_name: str, alternative: str = None
+):
+    """Issue a deprecation warning for Box compatibility methods."""
+    message = f"{class_name}.{method_name}() is deprecated and will be removed in v4.0."
+    if alternative:
+        message += f" {alternative}"
+    warnings.warn(message, DeprecationWarning, stacklevel=3)
 
 
 class DynaconfCore:
@@ -116,6 +128,9 @@ class DataDict(dict):
 
         :return: python dictionary of this DataDict
         """
+        box_deprecation_warning(
+            "to_dict", "DataDict", "Use dict(data_dict) instead."
+        )
         out_dict = dict(self)
         for k, v in out_dict.items():
             if v is self:
@@ -128,6 +143,7 @@ class DataDict(dict):
 
     def merge_update(self, __m=None, **kwargs):
         """Merge update with another dict"""
+        box_deprecation_warning("merge_update", "DataDict")
 
         def convert_and_set(k, v):
             if isinstance(v, dict):
@@ -164,9 +180,8 @@ class DataDict(dict):
         :param json_kwargs: additional arguments to pass to json.dump(s)
         :return: string of JSON (if no filename provided)
         """
-        from dynaconf.vendor.box.converters import _to_json
-
-        return _to_json(
+        box_deprecation_warning("to_json", "DataDict")
+        return converters._to_json(
             self.to_dict(),
             filename=filename,
             encoding=encoding,
@@ -192,9 +207,8 @@ class DataDict(dict):
         :param yaml_kwargs: additional arguments to pass to yaml.dump
         :return: string of YAML (if no filename provided)
         """
-        from dynaconf.vendor.box.converters import _to_yaml
-
-        return _to_yaml(
+        box_deprecation_warning("to_yaml", "DataDict")
+        return converters._to_yaml(
             self.to_dict(),
             filename=filename,
             default_flow_style=default_flow_style,
@@ -212,25 +226,27 @@ class DataDict(dict):
         :param errors: How to handle encoding errors
         :return: string of TOML (if no filename provided)
         """
-        from dynaconf.vendor.box.converters import _to_toml
-
-        return _to_toml(
+        box_deprecation_warning("to_toml", "DataDict")
+        return converters._to_toml(
             self.to_dict(), filename=filename, encoding=encoding, errors=errors
         )
 
     @classmethod
     def from_json(cls, json_str, *args, **kwargs):
         """Create from JSON string"""
+        box_deprecation_warning("from_json", "DataDict")
         pass
 
     @classmethod
     def from_yaml(cls, yaml_str, *args, **kwargs):
         """Create from YAML string"""
+        box_deprecation_warning("from_yaml", "DataDict")
         pass
 
     @classmethod
     def from_toml(cls, toml_str, *args, **kwargs):
         """Create from TOML string"""
+        box_deprecation_warning("from_toml", "DataDict")
         pass
 
 
@@ -269,9 +285,11 @@ class DataList(list):
 
     # Box compatibility. Remove in 3.3.0
     def __copy__(self):
+        box_deprecation_warning("__copy__", "DataList")
         return DataList((x for x in self), core=self.__meta__.core)
 
     def __deepcopy__(self, memo=None):
+        box_deprecation_warning("__deepcopy__", "DataList")
         out = self.__class__(core=self.__meta__.core)
         memo = memo or {}
         memo[id(self)] = out
@@ -285,6 +303,9 @@ class DataList(list):
 
         :return: python list of this DataList
         """
+        box_deprecation_warning(
+            "to_list", "DataList", "Use list(data_list) instead."
+        )
         new_list = []
         for x in self:
             if x is self:
@@ -315,11 +336,10 @@ class DataList(list):
         :param json_kwargs: additional arguments to pass to json.dump(s)
         :return: string of JSON or return of `json.dump`
         """
-        from dynaconf.vendor.box.converters import _to_json
-
+        box_deprecation_warning("to_json", "DataList")
         if filename and multiline:
             lines = [
-                _to_json(
+                converters._to_json(
                     item,
                     filename=False,
                     encoding=encoding,
@@ -331,7 +351,7 @@ class DataList(list):
             with open(filename, "w", encoding=encoding, errors=errors) as f:
                 f.write("\n".join(lines))
         else:
-            return _to_json(
+            return converters._to_json(
                 self.to_list(),
                 filename=filename,
                 encoding=encoding,
@@ -357,9 +377,8 @@ class DataList(list):
         :param yaml_kwargs: additional arguments to pass to yaml.dump
         :return: string of YAML or return of `yaml.dump`
         """
-        from dynaconf.vendor.box.converters import _to_yaml
-
-        return _to_yaml(
+        box_deprecation_warning("to_yaml", "DataList")
+        return converters._to_yaml(
             self.to_list(),
             filename=filename,
             default_flow_style=default_flow_style,
@@ -381,9 +400,8 @@ class DataList(list):
         :param errors: How to handle encoding errors
         :return: string of TOML (if no filename provided)
         """
-        from dynaconf.vendor.box.converters import _to_toml
-
-        return _to_toml(
+        box_deprecation_warning("to_toml", "DataList")
+        return converters._to_toml(
             {key_name: self.to_list()},
             filename=filename,
             encoding=encoding,
@@ -398,23 +416,27 @@ class DataList(list):
         :param encoding: File encoding
         :param errors: How to handle encoding errors
         """
-        from dynaconf.vendor.box.converters import _to_csv
-
-        _to_csv(self, filename=filename, encoding=encoding, errors=errors)
+        box_deprecation_warning("to_csv", "DataList")
+        converters._to_csv(
+            self, filename=filename, encoding=encoding, errors=errors
+        )
 
     @classmethod
     def from_json(cls, json_str, *args, **kwargs):
         """Create from JSON string"""
+        box_deprecation_warning("from_json", "DataList")
         pass
 
     @classmethod
     def from_yaml(cls, yaml_str, *args, **kwargs):
         """Create from YAML string"""
+        box_deprecation_warning("from_yaml", "DataList")
         pass
 
     @classmethod
     def from_toml(cls, toml_str, *args, **kwargs):
         """Create from TOML string"""
+        box_deprecation_warning("from_toml", "DataList")
         pass
 
     @classmethod
@@ -427,10 +449,11 @@ class DataList(list):
         :param errors: How to handle encoding errors
         :return: DataList object from CSV data
         """
-        from dynaconf.vendor.box.converters import _from_csv
-
+        box_deprecation_warning("from_csv", "DataList")
         return cls(
-            _from_csv(filename=filename, encoding=encoding, errors=errors)
+            converters._from_csv(
+                filename=filename, encoding=encoding, errors=errors
+            )
         )
 
 
