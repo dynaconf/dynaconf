@@ -177,7 +177,7 @@ class DataDict(dict):
         :param json_kwargs: additional arguments to pass to json.dump(s)
         :return: string of JSON (if no filename provided)
         """
-        box_deprecation_warning("to_json", "DataDict")
+        box_deprecation_warning("to_json", "DataDict", "Use json.dumps(dict(data_dict))")
         return converters._to_json(
             self.to_dict(),
             filename=filename,
