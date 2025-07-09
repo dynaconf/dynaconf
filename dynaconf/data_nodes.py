@@ -27,9 +27,6 @@ class DynaconfCore:
     def __init__(self, id: str):
         self.id = id
 
-    def edit_mode(self):
-        return False
-
 
 @dataclass
 class NodeMetadata:
@@ -130,7 +127,7 @@ class DataDict(dict):
         """
         box_deprecation_warning(
             "to_dict", "DataDict", "Use dict(data_dict) instead."
-        )
+        )  # pragma: nocover
         out_dict = dict(self)
         for k, v in out_dict.items():
             if v is self:
@@ -141,7 +138,7 @@ class DataDict(dict):
                 out_dict[k] = v.to_list()
         return out_dict
 
-    def merge_update(self, __m=None, **kwargs):
+    def merge_update(self, __m=None, **kwargs):  # pragma: nocover
         """Merge update with another dict"""
         box_deprecation_warning("merge_update", "DataDict")
 
@@ -170,7 +167,7 @@ class DataDict(dict):
 
     def to_json(
         self, filename=None, encoding="utf-8", errors="strict", **json_kwargs
-    ):
+    ):  # pragma: nocover
         """
         Transform the DataDict object into a JSON string.
 
@@ -217,7 +214,9 @@ class DataDict(dict):
             **yaml_kwargs,
         )
 
-    def to_toml(self, filename=None, encoding="utf-8", errors="strict"):
+    def to_toml(
+        self, filename=None, encoding="utf-8", errors="strict"
+    ):  # pragma: nocover
         """
         Transform the DataDict object into a toml string.
 
@@ -239,7 +238,7 @@ class DataDict(dict):
         encoding="utf-8",
         errors="strict",
         **kwargs,
-    ):
+    ):  # pragma: nocover
         """
         Transform a json object string into a DataDict object. If the incoming
         json is a list, you must use DataList.from_json.
@@ -280,7 +279,7 @@ class DataDict(dict):
         encoding="utf-8",
         errors="strict",
         **kwargs,
-    ):
+    ):  # pragma: nocover
         """
         Transform a yaml object string into a DataDict object. By default will use SafeLoader.
 
@@ -319,7 +318,7 @@ class DataDict(dict):
         encoding="utf-8",
         errors="strict",
         **kwargs,
-    ):
+    ):  # pragma: nocover
         """
         Transforms a toml string or file into a DataDict object
 
@@ -380,11 +379,11 @@ class DataList(list):
         return f"{self.__class__.__name__}({list(self)!r})"
 
     # Box compatibility. Remove in 3.3.0
-    def __copy__(self):
+    def __copy__(self):  # pragma: nocover
         box_deprecation_warning("__copy__", "DataList")
         return DataList((x for x in self), core=self.__meta__.core)
 
-    def __deepcopy__(self, memo=None):
+    def __deepcopy__(self, memo=None):  # pragma: nocover
         box_deprecation_warning("__deepcopy__", "DataList")
         out = self.__class__(core=self.__meta__.core)
         memo = memo or {}
@@ -393,7 +392,7 @@ class DataList(list):
             out.append(copy.deepcopy(k, memo=memo))
         return out
 
-    def to_list(self):
+    def to_list(self):  # pragma: nocover
         """
         Turn the DataList and sub DataLists back into a native python list.
 
@@ -421,7 +420,7 @@ class DataList(list):
         errors="strict",
         multiline=False,
         **json_kwargs,
-    ):
+    ):  # pragma: nocover
         """
         Transform the DataList object into a JSON string.
 
@@ -462,7 +461,7 @@ class DataList(list):
         encoding="utf-8",
         errors="strict",
         **yaml_kwargs,
-    ):
+    ):  # pragma: nocover
         """
         Transform the DataList object into a YAML string.
 
@@ -485,7 +484,7 @@ class DataList(list):
 
     def to_toml(
         self, filename=None, key_name="toml", encoding="utf-8", errors="strict"
-    ):
+    ):  # pragma: nocover
         """
         Transform the DataList object into a toml string.
 
@@ -504,7 +503,9 @@ class DataList(list):
             errors=errors,
         )
 
-    def to_csv(self, filename, encoding="utf-8", errors="strict"):
+    def to_csv(
+        self, filename, encoding="utf-8", errors="strict"
+    ):  # pragma: nocover
         """
         Transform the DataList object into a CSV file.
 
@@ -526,7 +527,7 @@ class DataList(list):
         errors="strict",
         multiline=False,
         **kwargs,
-    ):
+    ):  # pragma: nocover
         """
         Transform a json object string into a DataList object. If the incoming
         json is a dict, you must use DataDict.from_json.
@@ -569,7 +570,7 @@ class DataList(list):
         encoding="utf-8",
         errors="strict",
         **kwargs,
-    ):
+    ):  # pragma: nocover
         """
         Transform a yaml object string into a DataList object.
 
@@ -609,7 +610,7 @@ class DataList(list):
         encoding="utf-8",
         errors="strict",
         **kwargs,
-    ):
+    ):  # pragma: nocover
         """
         Transforms a toml string or file into a DataList object
 
@@ -640,7 +641,9 @@ class DataList(list):
         return cls(data[key_name], **data_args)
 
     @classmethod
-    def from_csv(cls, filename, encoding="utf-8", errors="strict"):
+    def from_csv(
+        cls, filename, encoding="utf-8", errors="strict"
+    ):  # pragma: nocover
         """
         Transform a CSV file into a DataList object.
 

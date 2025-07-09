@@ -282,6 +282,14 @@ def test_mutable_operations():
     assert isinstance(li[0], DataDict) and isinstance(li[1], DataDict)
 
 
+def test_repr():
+    """Test that no unexpected internal attributes shows up."""
+    di = DataDict({"foo": 123})
+    dl = DataList([1, 2, 3])
+    assert repr(di) == "DataDict({'foo': 123})"
+    assert repr(dl) == "DataList([1, 2, 3])"
+
+
 @pytest.fixture
 def deprecated_context():
     msg = "is deprecated and will be removed in v4.0"
