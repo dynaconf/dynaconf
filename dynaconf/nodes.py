@@ -58,9 +58,9 @@ def get_core(node, raises=True) -> DynaconfCore:
 
 def convert_containers(data: dict | list | DataNode, iter, core):
     for key, value in iter:
-        if isinstance(value, dict):
+        if value.__class__ is dict:
             data[key] = DataDict(value, core=core)
-        elif isinstance(value, list):
+        if value.__class__ is list:
             data[key] = DataList(value, core=core)
 
 
