@@ -163,7 +163,7 @@ def recursive_get(
 
 
 def handle_metavalues(
-    old: DataDict  | dict[str, int] | dict[str, str | int],
+    old: DataDict | dict[str, int] | dict[str, str | int],
     new: Any,
     list_merge: Literal["merge", "shallow", "deep"] = "merge",
 ) -> None:

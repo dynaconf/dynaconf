@@ -18,7 +18,34 @@ from typing import Optional
 from typing import Union
 
 import dynaconf.utils as ut
+from dynaconf.utils.functional import empty
 from dynaconf.vendor.box import converters
+
+
+# Moved here due to circular imports. Will sort it out later
+def recursively_evaluate_lazy_format(value, settings):
+    """Given a value as a data structure, traverse all its members
+    to find Lazy values and evaluate it.
+
+    For example: Evaluate values inside lists and dicts
+    """
+    if getattr(value, "_dynaconf_lazy_format", None):
+        value = value(settings)
+
+    if isinstance(value, list):
+        # This must be the right way of doing it, but breaks validators
+        # To be changed on 4.0.0
+        # for idx, item in enumerate(value):
+        #     value[idx] = _recursively_evaluate_lazy_format(item, settings)
+
+        value = value.__class__(
+            [
+                recursively_evaluate_lazy_format(item, settings)
+                for item in value
+            ]
+        )
+
+    return value
 
 
 class DynaconfNotInitialized(BaseException): ...
@@ -68,6 +95,7 @@ def get_core(node, raises=True) -> DynaconfCore:
 
 
 def convert_containers(data: dict | list | DataNode, iter, core):
+    # return
     for key, value in iter:
         if value.__class__ is dict:
             data[key] = DataDict(value, core=core)
@@ -76,6 +104,7 @@ def convert_containers(data: dict | list | DataNode, iter, core):
 
 
 def ensure_containers(data, core):
+    return data
     if data.__class__ is dict:
         return DataDict(data, core=core)
     elif data.__class__ is list:
@@ -83,9 +112,10 @@ def ensure_containers(data, core):
     return data
 
 
-class DataDict(dict):
-    __slots__ = ("__meta__",)
+class AccessError(KeyError, AttributeError): ...
 
+
+class DataDict(dict):
     def __init__(self, *args, **kwargs):
         core = kwargs.pop("box_settings", kwargs.pop("core", None))
         super().__init__(*args, **kwargs)
@@ -98,39 +128,73 @@ class DataDict(dict):
     def setdefault(self, k, v):
         return super().setdefault(k, ensure_containers(v, self.__meta__.core))
 
-    def copy(self):
-        return self.__class__(super().copy())
+    def copy(self, bypass_eval=False):
+        if not bypass_eval:
+            return self.__class__(
+                super().copy(),
+                box_settings=self.__meta__.core,
+            )
+        return self.__class__(
+            {k: self.get(k, bypass_eval=True) for k in self.keys()},
+            box_settings=self.__meta__.core,
+        )
 
-    def get(self, k, default=None):
-        resolved = ut.find_the_correct_casing(key=k, data=self)
-        return super().get(resolved, default)
+    def get(self, item, default=None, bypass_eval=False):
+        resolved = ut.find_the_correct_casing(key=item, data=self) or item
+        result = super().get(resolved, default)
+        # result = super().get(resolved, empty)
+        # result = result if result is not empty else default
+        if resolved is empty:
+            raise RuntimeError("Something wrong is not right")
+        if bypass_eval:
+            return result
+        return recursively_evaluate_lazy_format(result, self.__meta__.core)
 
     def __copy__(self):
-        return self.__class__(super().copy())
+        return self.copy()
 
-    def __getitem__(self, k):
-        resolved = ut.find_the_correct_casing(key=k, data=self)
-        return super().__getitem__(resolved)
+    def __getitem__(self, item):
+        try:
+            result = super().__getitem__(item)
+        except (AttributeError, KeyError):
+            n_item = ut.find_the_correct_casing(item, self) or item
+            result = super().__getitem__(n_item)
+        return recursively_evaluate_lazy_format(result, self.__meta__.core)
 
     def __getattr__(self, attr):
         try:
             return self[attr]
         except KeyError:
-            raise AttributeError(attr) from None
+            raise AccessError(attr)
 
     def items(self, bypass_eval=False):
-        yield from super().items()
+        if not bypass_eval:
+            yield from super().items()
+        yield from ((k, self.get(k, bypass_eval=True)) for k in self.keys())
 
     def __setitem__(self, k, v):
-        super().__setitem__(k, ensure_containers(v, self.__meta__.core))
+        result = ensure_containers(v, self.__meta__.core)
+        super().__setitem__(k, result)
+        if isinstance(k, str) and k.lower() not in ("items", "get"):
+            super().__setattr__(k.upper(), result)
+            # super().__setattr__(k.lower(), result)
+            super().__setattr__(k, result)
 
     def __setattr__(self, k, v):
         if k == "__meta__":
             return super().__setattr__(k, v)
         self[k] = v
 
+    def __delitem__(self, k):
+        resolved = ut.find_the_correct_casing(k, self) or k
+        super().__delitem__(resolved)
+
+    def __delattr__(self, name):
+        self.__delitem__(name)
+
     def __repr__(self):
-        return f"{self.__class__.__name__}({dict(self)})"
+        return f"{dict(self)}"
+        # return f"{self.__class__.__name__}({dict(self)})"
 
     # Box compatibility. Remove in 3.3.0
     def to_dict(self):
@@ -362,8 +426,6 @@ class DataDict(dict):
 
 
 class DataList(list):
-    __slots__ = ("__meta__",)
-
     def __init__(self, *args, **kwargs):
         core = kwargs.pop("box_settings", kwargs.pop("core", None))
         super().__init__(*args, **kwargs)
@@ -371,7 +433,7 @@ class DataList(list):
         convert_containers(self, enumerate(self), core)
 
     def copy(self):
-        return self.__class__(super().copy())
+        return DataList((x for x in self), core=self.__meta__.core)
 
     def append(self, v):
         super().append(ensure_containers(v, self.__meta__.core))
@@ -392,12 +454,13 @@ class DataList(list):
         return super().__iadd__(ensure_containers(v, self.__meta__.core))
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({list(self)!r})"
+        return f"{list(self)!r}"
+        # return f"{self.__class__.__name__}({list(self)!r})"
 
     # Box compatibility. Remove in 3.3.0
     def __copy__(self):  # pragma: nocover
         box_deprecation_warning("__copy__", "DataList")
-        return DataList((x for x in self), core=self.__meta__.core)
+        return self.copy()
 
     def __deepcopy__(self, memo=None):  # pragma: nocover
         box_deprecation_warning("__deepcopy__", "DataList")

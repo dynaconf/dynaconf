@@ -933,8 +933,15 @@ class Settings:
                 "]"
             ):  # accessing index of a list
                 index = int(k.replace("[", "").replace("]", ""))
+                # if 'id(tree) == id(next_default)' we may get an infinite recursive list. Try:
+                # >>> li=[]
+                # >>> li.extend([li])
+                # >>> li[0][0]...[0]
+                # TODO @pbrochad: refactor this implementation, it's really cumbersome in general
+                # https://github.com/dynaconf/dynaconf/issues/todo
+                extended_list = [next_default.copy() for _ in range(index + 1)]
                 # This makes sure we can assign any arbitrary index
-                tree.extend([next_default] * (index + 1))
+                tree.extend(extended_list)
                 if is_not_end:
                     tree = tree[index]  # get at index
                 else:
@@ -1088,6 +1095,9 @@ class Settings:
             and not isinstance(parsed, DataDict)
         ):
             parsed = DataDict(parsed, box_settings=self)
+
+        if isinstance(parsed, list) and not isinstance(parsed, DataList):
+            parsed = DataList(parsed, box_settings=self)
 
         # Set the parsed value
         self.store[key] = parsed
