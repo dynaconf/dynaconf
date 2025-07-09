@@ -5,12 +5,12 @@ from collections import namedtuple
 
 import pytest
 
-from dynaconf.data_nodes import DataDict
-from dynaconf.data_nodes import DataList
-from dynaconf.data_nodes import DynaconfCore
-from dynaconf.data_nodes import DynaconfNotInitialized
-from dynaconf.data_nodes import get_core
-from dynaconf.data_nodes import init_core
+from dynaconf.nodes import DataDict
+from dynaconf.nodes import DataList
+from dynaconf.nodes import DynaconfCore
+from dynaconf.nodes import DynaconfNotInitialized
+from dynaconf.nodes import get_core
+from dynaconf.nodes import init_core
 from dynaconf.utils import container_items
 from dynaconf.utils import data_print
 from dynaconf.utils.boxing import DynaBox
