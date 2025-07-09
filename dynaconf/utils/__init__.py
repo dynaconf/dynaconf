@@ -14,7 +14,7 @@ from typing import TypeVar
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings
     from dynaconf.base import Settings
-    from dynaconf.data_nodes import DataNode
+    from dynaconf.nodes import DataNode
     from dynaconf.utils.boxing import DynaBox
 
 
