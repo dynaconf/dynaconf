@@ -17,6 +17,7 @@ from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.box import BoxList
 
 # DynaBox compatibility tests
+# Copied from tests/test_dynabox.py
 
 DBDATA = namedtuple("DbData", ["server", "port"])
 

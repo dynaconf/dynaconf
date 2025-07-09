@@ -1,3 +1,14 @@
+"""The nodes model for dynaconf.
+
+Internally, the user facing settings data are special data nodes that can store
+metadata about itself. They are designed to have compatible API's with it's corresponding
+data type (E.g, dict, list).
+
+Besides storing it's own internal state (e.g, it's schema, hooks, lazy values),
+the nodes also store a shared state which is called `DynaconfCore`.
+This is designed to store legacy `Settings` attributes such as `._fresh, ._store, ._deleted, etc`.
+"""
+
 from __future__ import annotations
 
 import copy
