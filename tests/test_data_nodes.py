@@ -325,7 +325,20 @@ class TestBoxCompatibility:
         for method in expected_box_list_methods:
             assert method in data_list_dir
 
-    def test_dynabox(self, deprecated_context):
+    def test_dynabox_merge_update(self, deprecated_context, tmp_path):
+        """
+        Test that DataDict keeps compatibility with Box public API.
+        """
+        test_data = {"name": "test", "nested": {"value": 42}}
+        data_dict = DataDict(test_data.copy())
+
+        dyna_box = DynaBox(test_data.copy())
+        # Test merge_update method works the same
+        data_dict.merge_update({"new_key": "new_value"})
+        dyna_box.merge_update({"new_key": "new_value"})
+        assert data_dict == dyna_box
+
+    def test_dynabox(self, deprecated_context, tmp_path):
         """
         Test that DataDict keeps compatibility with Box public API.
         """
@@ -333,16 +346,29 @@ class TestBoxCompatibility:
         data_dict = DataDict(test_data.copy())
         dyna_box = DynaBox(test_data.copy())
 
-        # Test merge_update method works the same
-        data_dict.merge_update({"new_key": "new_value"})
-        dyna_box.merge_update({"new_key": "new_value"})
-        assert data_dict == dyna_box
-
-        # Test serialization methods produce same output
+        # Test to_yaml, to_json, etc
+        contents_of = {}
         for method_name in ("to_dict", "to_json", "to_yaml", "to_toml"):
             datadict_method = getattr(data_dict, method_name)
             dynabox_method = getattr(dyna_box, method_name)
-            assert datadict_method() == dynabox_method()
+            result = datadict_method()
+            assert result == dynabox_method()
+            contents_of[method_name] = result
+
+        # Test from_yaml, json, etc
+        for method_name_to, content in contents_of.items():
+            method_name = method_name_to.replace("to_", "from_")
+            if method_name in ("from_dict", "from_toml"):
+                # vendored toml breaks with Box too
+                continue
+            file = tmp_path / method_name.replace("_", ".")
+            assert isinstance(content, str)
+            file.write_text(content)
+            filename = str(file.absolute())
+            box_method = getattr(DynaBox, method_name)
+            assert box_method(filename=filename) == test_data
+            method = getattr(DataDict, method_name)
+            assert method(filename=filename) == test_data
 
     def test_box_list(self, tmp_path, deprecated_context):
         """
@@ -352,7 +378,8 @@ class TestBoxCompatibility:
         data_list = DataList(test_data.copy())
         box_list = BoxList(test_data.copy())
 
-        # Test serialization methods produce same output
+        # Test to_yaml, to_json, etc
+        contents_of = {}
         for method_name in (
             "to_list",
             "to_json",
@@ -361,14 +388,32 @@ class TestBoxCompatibility:
         ):
             datadict_method = getattr(data_list, method_name)
             boxlist_method = getattr(box_list, method_name)
-            assert datadict_method() == boxlist_method()
+            result = datadict_method()
+            assert result == boxlist_method()
+            contents_of[method_name] = result
 
-        filename = (
-            tmp_path / "file.csv"
-        )  # unlike the others, to_csv requires filename...
-        assert data_list.to_csv(str(filename)) == box_list.to_csv(
-            str(filename)
-        )
+        # unlike the others, to_csv requires filename...
+        box_file = tmp_path / "box.csv"
+        box_list.to_csv(str(box_file))
+        datalist_file = tmp_path / "datalist.csv"
+        data_list.to_csv(str(datalist_file))
+        assert box_file.read_text() == datalist_file.read_text()
+        contents_of["to_csv"] = datalist_file.read_text()
+
+        # Test from_yaml, json, etc
+        for method_name_to, content in contents_of.items():
+            method_name = method_name_to.replace("to_", "from_")
+            if method_name in ("from_list", "from_toml"):
+                # vendored toml breaks with Box too
+                continue
+            file = tmp_path / method_name.replace("_", ".")
+            assert isinstance(content, str)
+            file.write_text(content)
+            filename = str(file.absolute())
+            box_method = getattr(BoxList, method_name)
+            assert box_method(filename=filename) == test_data
+            method = getattr(DataList, method_name)
+            assert method(filename=filename) == test_data
 
     def test_box_list_copying(self, deprecated_context):
         test_data = [{"a": [1, 2, 3]}, {"a": [4, 5, 6]}]
