@@ -372,7 +372,8 @@ class Validator:
             if getattr(settings, "_store", None):
                 try:
                     # settings is a Dynaconf instance
-                    value = getattr(settings, "setdefault")(  #  cheat mypy
+                    _setdefault = getattr(settings, "setdefault")
+                    value = _setdefault(  #  cheat mypy
                         name,
                         default_value,
                         apply_default_on_none=self.apply_default_on_none,

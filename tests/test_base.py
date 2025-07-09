@@ -145,7 +145,7 @@ def test_populate_obj_convert_to_dict(settings):
     class Obj:
         pass
 
-    # first make sure regular populate brings in Box and DataList
+    # first make sure regular populate brings in DataDict and DataList
     obj = Obj()
     settings.populate_obj(obj)
     assert isinstance(obj.ADICT, DataDict)
@@ -1259,11 +1259,13 @@ def test_lowercase_read_mode(tmpdir):
     assert "FOO" in settings
 
     # test __dir__
+    # TODO @pbrochad: do we really need to have those on the dir?
+    # https://github.com/dynaconf/dynaconf/issues/todo
     results = dir(settings)
     assert "foo" in results
     assert "FOO" in results
 
-    results = dir(settings.databases)
+    results = settings.databases
     assert "default" in results
     assert "DEFAULT" in results
 

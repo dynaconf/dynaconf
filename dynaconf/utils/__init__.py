@@ -71,8 +71,6 @@ def object_merge(
                 if unique and item in new:
                     continue
                 new.insert(0, item)
-        # replace mode
-        # elif list_merge == "replace": pass
         elif len(full_path) > 0:  # element-wise merge
             new.extend([[]] * max(len(old) - len(new), 0))
             for ii, item in enumerate(old):
@@ -163,7 +161,7 @@ def recursive_get(
 
 
 def handle_metavalues(
-    old: DataDict  | dict[str, int] | dict[str, str | int],
+    old: DataDict | dict[str, int] | dict[str, str | int],
     new: Any,
     list_merge: Literal["merge", "shallow", "deep"] = "merge",
 ) -> None:
@@ -545,7 +543,7 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
     Returns:
         str -- The proper casing of the key in data
     """
-    if not isinstance(key, str) or key in data:
+    if not isinstance(key, str) or key in data.keys():
         return key
     for k in data.keys():
         if not isinstance(k, str):

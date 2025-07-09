@@ -1,12 +1,14 @@
 """The nodes model for dynaconf.
 
-Internally, the user facing settings data are special data nodes that can store
-metadata about itself. They are designed to have compatible API's with it's corresponding
-data type (E.g, dict, list).
+Internally, the user facing settings object are special data nodes that can store metadata about themselves.
+These data nodes are DataDict and DataList, which replaces the Box-based objects of dynaconf<3.3.0.
+In general, they behave like their dict and list counterparts, but they contain a single private
+entrypoint for that special metadata at `<node>.__meta__`.
 
-Besides storing it's own internal state (e.g, it's schema, hooks, lazy values),
-the nodes also store a shared state which is called `DynaconfCore`.
-This is designed to store legacy `Settings` attributes such as `._fresh, ._store, ._deleted, etc`.
+The metadata stores the node's internal state and the global app state, which is a shared object called
+`DynaconfCore`. The internal/individual node state may be values like it's schema, associated hooks and
+lazy values. This global state is responsible for managing internal configurations and functionality, like
+the legacy `Settings` attributes `._fresh, ._store, ._deleted, etc`.
 """
 
 from __future__ import annotations
@@ -18,24 +20,21 @@ from typing import Optional
 from typing import Union
 
 import dynaconf.utils as ut
+from dynaconf.utils.functional import empty
 from dynaconf.vendor.box import converters
 
 
 class DynaconfNotInitialized(BaseException): ...
 
 
-def box_deprecation_warning(
-    method_name: str, class_name: str, alternative: Optional[str] = None
-):
-    """Issue a deprecation warning for Box compatibility methods."""
-    message = f"{class_name}.{method_name}() is deprecated and will be removed in v4.0."
-    if alternative:
-        message += f" {alternative}"
-    warnings.warn(message, DeprecationWarning, stacklevel=3)
+class AccessError(KeyError, AttributeError): ...
 
 
 class DynaconfCore:
     def __init__(self, id: str):
+        # NOTE: this is where all Dynaconf settings, hooks, validators and internal
+        # data should live. This is a proper 'isolated' object of users and it's safe
+        # to access internally without unwanted side-effects
         self.id = id
 
 
@@ -49,43 +48,7 @@ class NodeMetadata:
     data_env: str = "default"
 
 
-# Utilities for manipulating Data nodes.
-
-# Adding those directly to the data nodes causes some overhead and clutters
-# the class namespace. It should be as close as possible to 'dict'.
-
-
-def init_core(node, dynaconf_core: DynaconfCore):
-    if not node.__meta__.core:
-        node.__meta__.core = dynaconf_core
-
-
-def get_core(node, raises=True) -> DynaconfCore:
-    dynaconf_core = node.__meta__.core
-    if not dynaconf_core and raises is True:
-        raise DynaconfNotInitialized("Dynaconf not initialized.")
-    return dynaconf_core
-
-
-def convert_containers(data: dict | list | DataNode, iter, core):
-    for key, value in iter:
-        if value.__class__ is dict:
-            data[key] = DataDict(value, core=core)
-        if value.__class__ is list:
-            data[key] = DataList(value, core=core)
-
-
-def ensure_containers(data, core):
-    if data.__class__ is dict:
-        return DataDict(data, core=core)
-    elif data.__class__ is list:
-        return DataList(data, core=core)
-    return data
-
-
 class DataDict(dict):
-    __slots__ = ("__meta__",)
-
     def __init__(self, *args, **kwargs):
         core = kwargs.pop("box_settings", kwargs.pop("core", None))
         super().__init__(*args, **kwargs)
@@ -98,39 +61,91 @@ class DataDict(dict):
     def setdefault(self, k, v):
         return super().setdefault(k, ensure_containers(v, self.__meta__.core))
 
-    def copy(self):
-        return self.__class__(super().copy())
+    def copy(self, bypass_eval=False):
+        if not bypass_eval:
+            return self.__class__(
+                super().copy(),
+                box_settings=self.__meta__.core,
+            )
+        return self.__class__(
+            {k: self.get(k, bypass_eval=True) for k in self.keys()},
+            box_settings=self.__meta__.core,
+        )
 
-    def get(self, k, default=None):
-        resolved = ut.find_the_correct_casing(key=k, data=self)
-        return super().get(resolved, default)
+    def get(self, item, default=None, bypass_eval=False):
+        if not bypass_eval:
+            n_item = (
+                ut.find_the_correct_casing(item, self) or item
+            )
+            result = super().get(n_item, empty)
+            result = result if result is not empty else default
+            return recursively_evaluate_lazy_format(result, self.__meta__.core)
+        try:
+            return super().__getitem__(item)
+        except (AttributeError, KeyError):
+            n_item = (
+                ut.find_the_correct_casing(item, self) or item
+            )
+            return super().__getitem__(n_item)
 
     def __copy__(self):
-        return self.__class__(super().copy())
+        return self.copy()
 
-    def __getitem__(self, k):
-        resolved = ut.find_the_correct_casing(key=k, data=self)
-        return super().__getitem__(resolved)
+    def __getitem__(self, item):
+        try:
+            result = super().__getitem__(item)
+        except (AttributeError, KeyError):
+            n_item = ut.find_the_correct_casing(item, self) or item
+            result = super().__getitem__(n_item)
+        return recursively_evaluate_lazy_format(result, self.__meta__.core)
 
     def __getattr__(self, attr):
         try:
-            return self[attr]
+            return self.__getitem__(attr)
         except KeyError:
-            raise AttributeError(attr) from None
+            # NOTE: this is required by some tests, but we should simply raise
+            # AttributeError(attr,self) here
+            raise AccessError(attr)
 
     def items(self, bypass_eval=False):
-        yield from super().items()
+        if not bypass_eval:
+            yield from super().items()
+        yield from ((k, self.get(k, bypass_eval=True)) for k in self.keys())
 
     def __setitem__(self, k, v):
-        super().__setitem__(k, ensure_containers(v, self.__meta__.core))
+        result = ensure_containers(v, self.__meta__.core)
+        super().__setitem__(k, result)
 
     def __setattr__(self, k, v):
+        # NOTE: We shouldnt use setattr to store items. If an item was assigned with setatttr
+        # and it's lazy, we won't be able to intercept the call in getitem/getattr, which
+        # is required to trigger it's evaluation and not return an actual Lazy object.
+        # __getattr__ is not called because __getattribute__ find the key with the Lazy object,
+        # and really like avoiding overriding __getattribute__ here.
         if k == "__meta__":
             return super().__setattr__(k, v)
         self[k] = v
 
+    def __delitem__(self, k):
+        resolved = ut.find_the_correct_casing(k, self) or k
+        super().__delitem__(resolved)
+
+    def __delattr__(self, name):
+        self.__delitem__(name)
+
     def __repr__(self):
-        return f"{self.__class__.__name__}({dict(self)})"
+        # NOTE: debatable choice: same representation of dict
+        return f"{dict(self)}"
+
+    def __iter__(self):
+        # WARNING: this has some side-effect that triggerse lazy evaluation
+        # when calling dict(DataDict). If absence, it won't trigger, which
+        # is actually expected, as the output should be evaluated
+        yield from self.keys()
+
+    def __contains__(self, key):
+        resolved = ut.find_the_correct_casing(key, self) or key
+        return super().__contains__(resolved)
 
     # Box compatibility. Remove in 3.3.0
     def to_dict(self):
@@ -362,8 +377,6 @@ class DataDict(dict):
 
 
 class DataList(list):
-    __slots__ = ("__meta__",)
-
     def __init__(self, *args, **kwargs):
         core = kwargs.pop("box_settings", kwargs.pop("core", None))
         super().__init__(*args, **kwargs)
@@ -371,7 +384,7 @@ class DataList(list):
         convert_containers(self, enumerate(self), core)
 
     def copy(self):
-        return self.__class__(super().copy())
+        return DataList((x for x in self), core=self.__meta__.core)
 
     def append(self, v):
         super().append(ensure_containers(v, self.__meta__.core))
@@ -381,6 +394,10 @@ class DataList(list):
 
     def extend(self, data):
         super().extend(ensure_containers(data, self.__meta__.core))
+
+    def __getitem__(self, index):
+        result = super().__getitem__(index)
+        return recursively_evaluate_lazy_format(result, self.__meta__.core)
 
     def __setitem__(self, k, v):
         super().__setitem__(k, ensure_containers(v, self.__meta__.core))
@@ -392,12 +409,13 @@ class DataList(list):
         return super().__iadd__(ensure_containers(v, self.__meta__.core))
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({list(self)!r})"
+        # NOTE: debatable choice: same representation of list
+        return f"{list(self)!r}"
 
     # Box compatibility. Remove in 3.3.0
     def __copy__(self):  # pragma: nocover
         box_deprecation_warning("__copy__", "DataList")
-        return DataList((x for x in self), core=self.__meta__.core)
+        return self.copy()
 
     def __deepcopy__(self, memo=None):  # pragma: nocover
         box_deprecation_warning("__deepcopy__", "DataList")
@@ -676,4 +694,80 @@ class DataList(list):
         )
 
 
+################
+## NODE UTILS ##
+################
+
+# Utilities for manipulating Data nodes.
+# Adding those directly to the data nodes causes some overhead and clutters
+# the class namespace. It should be as close as possible to 'dict'.
+
 DataNode = Union[DataDict, DataList]
+
+
+def init_core(node, dynaconf_core: DynaconfCore):
+    if not node.__meta__.core:
+        node.__meta__.core = dynaconf_core
+
+
+def get_core(node, raises=True) -> DynaconfCore:
+    dynaconf_core = node.__meta__.core
+    if not dynaconf_core and raises is True:
+        raise DynaconfNotInitialized("Dynaconf not initialized.")
+    return dynaconf_core
+
+
+def convert_containers(data: dict | list | DataNode, iter, core):
+    for key, value in iter:
+        if value.__class__ is dict:
+            data[key] = DataDict(value, core=core)
+        if value.__class__ is list:
+            data[key] = DataList(value, core=core)
+
+
+# NOTE: Moved here due to circular imports. Will sort it out later
+def recursively_evaluate_lazy_format(value, settings):
+    """Given a value as a data structure, traverse all its members
+    to find Lazy values and evaluate it.
+
+    For example: Evaluate values inside lists and dicts
+    """
+    if getattr(value, "_dynaconf_lazy_format", None):
+        value = value(settings)
+
+    if isinstance(value, list):
+        # This must be the right way of doing it, but breaks validators
+        # To be changed on 4.0.0
+        # for idx, item in enumerate(value):
+        #     value[idx] = _recursively_evaluate_lazy_format(item, settings)
+
+        value = value.__class__(
+            [
+                recursively_evaluate_lazy_format(item, settings)
+                for item in value
+            ]
+        )
+
+    return value
+
+
+def ensure_containers(data, core):
+    # NOTE: this is to ensure that the nodes nested dict and lists are always
+    # converted to DataDict and DataList. However, that change is not compatible
+    # with what we had with DynaBox/BoxList. Leaving here for awarenes.
+    #
+    # if data.__class__ is dict:
+    #     return DataDict(data, core=core)
+    # elif data.__class__ is list:
+    #     return DataList(data, core=core)
+    return data
+
+
+def box_deprecation_warning(
+    method_name: str, class_name: str, alternative: Optional[str] = None
+):
+    """Issue a deprecation warning for Box compatibility methods."""
+    message = f"{class_name}.{method_name}() is deprecated and will be removed in v4.0."
+    if alternative:
+        message += f" {alternative}"
+    warnings.warn(message, DeprecationWarning, stacklevel=3)
