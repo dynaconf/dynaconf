@@ -18,10 +18,10 @@ from typing import TYPE_CHECKING
 from typing import Union
 
 from dynaconf.loaders.base import SourceMetadata
-from dynaconf.utils.boxing import DynaBox
+from dynaconf.nodes import DataDict
+from dynaconf.nodes import DataList
 from dynaconf.utils.functional import empty
 from dynaconf.utils.parse_conf import Lazy
-from dynaconf.vendor.box.box_list import BoxList
 from dynaconf.vendor.ruamel.yaml import YAML
 
 if TYPE_CHECKING:  # pragma: no cover
@@ -300,7 +300,7 @@ def get_history(
     return result
 
 
-def _ensure_serializable(data: BoxList | DynaBox) -> dict | list:
+def _ensure_serializable(data: DataList | DataDict) -> dict | list:
     """
     Converts box dict or list types to regular python dict or list
     Bypasses other values.
@@ -309,9 +309,9 @@ def _ensure_serializable(data: BoxList | DynaBox) -> dict | list:
         "bar": {"a": "A", "b": [1,2,3]},
     }
     """
-    if isinstance(data, (BoxList, list)):
+    if isinstance(data, (DataList, list)):
         return [_ensure_serializable(v) for v in data]
-    elif isinstance(data, (DynaBox, dict)):
+    elif isinstance(data, (DataDict, dict)):
         return {
             k: _ensure_serializable(v)
             for k, v in data.items()  # type: ignore
@@ -330,8 +330,8 @@ def _get_data_by_key(
     Returns value found in data[key] using dot-path str (e.g, "path.to.key").
     Raises KeyError if not found
     """
-    if not isinstance(data, DynaBox):
-        data = DynaBox(data)  # DynaBox can handle insensitive keys
+    if not isinstance(data, DataDict):
+        data = DataDict(data)  # DataDict can handle insensitive keys
 
     if sep in key_dotted_path:
         key_dotted_path = key_dotted_path.replace(sep, ".")

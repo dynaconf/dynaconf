@@ -23,6 +23,8 @@ from dynaconf.loaders import py_loader
 from dynaconf.loaders import settings_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.loaders.base import SourceMetadata
+from dynaconf.nodes import DataDict
+from dynaconf.nodes import DataList
 from dynaconf.utils import BANNER
 from dynaconf.utils import compat_kwargs
 from dynaconf.utils import ensure_a_list
@@ -31,7 +33,6 @@ from dynaconf.utils import missing
 from dynaconf.utils import object_merge
 from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
-from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import glob
 from dynaconf.utils.functional import empty
@@ -44,7 +45,6 @@ from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
-from dynaconf.vendor.box.box_list import BoxList
 
 
 class LazySettings(LazyObject):
@@ -215,7 +215,7 @@ class Settings:
     """
 
     dynaconf_banner = BANNER
-    _store = DynaBox()
+    _store = DataDict()
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         """Execute loaders and custom initialization
@@ -236,9 +236,8 @@ class Settings:
         self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
-
         if kwargs.get("DYNABOXIFY", True):
-            default_store = DynaBox(box_settings=self)
+            default_store = DataDict(box_settings=self)
         else:
             default_store = {}  # Disabled dot access
         self._store = kwargs.pop("_store", default_store)
@@ -246,7 +245,7 @@ class Settings:
         self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []
-        self._defaults = DynaBox(box_settings=self)
+        self._defaults = DataDict(box_settings=self)
         self.environ = os.environ
         self.SETTINGS_MODULE = None
         self.filter_strategy = kwargs.get("filter_strategy", None)
@@ -535,9 +534,9 @@ class Settings:
         # default values should behave exactly Dynaconf parsed values
         if default is not None and self._store.get("DYNABOXIFY", True):
             if isinstance(default, list):
-                default = BoxList(default)
+                default = DataList(default)
             elif isinstance(default, dict):
-                default = DynaBox(default)
+                default = DataDict(default)
 
         if key in self._deleted:
             return default
@@ -915,7 +914,7 @@ class Settings:
         split_keys = dotted_key.replace("[", ".[").split(".")
         existing_data = self.get(split_keys[0], {})
         if self.get("DYNABOXIFY", True):
-            new_data = tree = DynaBox(box_settings=self)
+            new_data = tree = DataDict(box_settings=self)
         else:
             new_data = tree = {}
         value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
@@ -945,7 +944,7 @@ class Settings:
 
         if existing_data:
             if self.get("DYNABOXIFY", True):
-                old_data = DynaBox(
+                old_data = DataDict(
                     {split_keys[0]: existing_data}, box_settings=self
                 )
             else:
@@ -1086,9 +1085,9 @@ class Settings:
         if (
             self.get("DYNABOXIFY", True)
             and isinstance(parsed, dict)
-            and not isinstance(parsed, DynaBox)
+            and not isinstance(parsed, DataDict)
         ):
-            parsed = DynaBox(parsed, box_settings=self)
+            parsed = DataDict(parsed, box_settings=self)
 
         # Set the parsed value
         self.store[key] = parsed

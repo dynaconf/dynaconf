@@ -16,8 +16,8 @@ from typing import TypeVar
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings
     from dynaconf.base import Settings
+    from dynaconf.nodes import DataDict
     from dynaconf.nodes import DataNode
-    from dynaconf.utils.boxing import DynaBox
 
 
 BANNER = """
@@ -104,9 +104,9 @@ def object_merge(
 
         def safe_items(data):
             """
-            Get items from DynaBox without triggering recursive evaluation
+            Get items from DataDict without triggering recursive evaluation
             """
-            if data.__class__.__name__ == "DynaBox":
+            if data.__class__.__name__ == "DataDict":
                 return data.items(bypass_eval=True)
             else:
                 return data.items()
@@ -141,7 +141,7 @@ def object_merge(
 
 
 def recursive_get(
-    obj: DynaBox | dict[str, int] | dict[str, str | int],
+    obj: DataDict | dict[str, int] | dict[str, str | int],
     names: list[str] | None,
 ) -> Any:
     """Given a dot accessible object and a list of names `foo.bar.[1].zaz`
@@ -163,7 +163,7 @@ def recursive_get(
 
 
 def handle_metavalues(
-    old: DynaBox | dict[str, int] | dict[str, str | int],
+    old: DataDict  | dict[str, int] | dict[str, str | int],
     new: Any,
     list_merge: Literal["merge", "shallow", "deep"] = "merge",
 ) -> None:
@@ -314,7 +314,7 @@ class Missing:
         """Respond to boolean duck-typing."""
         return False
 
-    def __eq__(self, other: DynaBox | Missing) -> bool:
+    def __eq__(self, other: DataDict | Missing) -> bool:
         """Equality check for a singleton."""
 
         return isinstance(other, self.__class__)

@@ -6,11 +6,11 @@ import re
 import warnings
 from functools import wraps
 
+from dynaconf.nodes import DataDict
 from dynaconf.utils import extract_json_objects
 from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import multi_replace
 from dynaconf.utils import recursively_evaluate_lazy_format
-from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.functional import empty
 from dynaconf.vendor import toml
 from dynaconf.vendor import tomllib
@@ -570,7 +570,7 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
         value = parse_with_toml(data) if tomlfy else data
 
     if isinstance(value, dict) and box_settings.get("DYNABOXIFY", True):
-        value = DynaBox(value, box_settings=box_settings)
+        value = DataDict(value, box_settings=box_settings)
 
     return value
 
@@ -596,7 +596,7 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
             for item in data
         ]
 
-    if isinstance(data, DynaBox):
+    if isinstance(data, DataDict):
         # recursively parse inner dict items
         # It is important to keep the same object id because
         # of mutability

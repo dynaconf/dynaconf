@@ -118,6 +118,9 @@ class DataDict(dict):
         except KeyError:
             raise AttributeError(attr) from None
 
+    def items(self, bypass_eval=False):
+        yield from super().items()
+
     def __setitem__(self, k, v):
         super().__setitem__(k, ensure_containers(v, self.__meta__.core))
 
