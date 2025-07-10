@@ -170,7 +170,9 @@ extend-select = [
     "I",
     "N",
 ]
-ignore = []
+ignore = [
+    "UP007", # Use `X | Y` for type annotations
+]
 
 [tool.ruff.lint.per-file-ignores]
 "*/__init__.py" = [

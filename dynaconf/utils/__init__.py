@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+import json
 import os
 import warnings
 from collections import defaultdict
 from collections.abc import Iterator
-from json import JSONDecoder
 from pathlib import Path
 from typing import Any
 from typing import Literal
 from typing import TYPE_CHECKING
+from typing import TypedDict
 from typing import TypeVar
 
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings
     from dynaconf.base import Settings
+    from dynaconf.nodes import DataNode
     from dynaconf.utils.boxing import DynaBox
 
 
@@ -462,7 +464,7 @@ def multi_replace(text: str, patterns: dict[str, str]) -> str:
 
 
 def extract_json_objects(
-    text: str, decoder: JSONDecoder = JSONDecoder()
+    text: str, decoder=json.JSONDecoder()
 ) -> Iterator[dict[str, int | dict[Any, Any]]]:
     """Find JSON objects in text, and yield the decoded JSON data
 
@@ -570,3 +572,48 @@ def prepare_json(data: Any) -> Any:
             return_data.append(value)
         return return_data
     return data
+
+
+def container_items(container: dict | list):
+    if isinstance(container, dict):
+        return container.items()
+    elif isinstance(container, list):
+        return enumerate(container)
+    else:
+        raise TypeError(f"Unsupported container type: {type(container)}")
+
+
+def data_print(data: DataNode, debug=False):
+    """Data print utilities.
+
+    Params:
+        data: The data to be displayed.
+        debug: Whether internal info should be displayed for debugging
+    """
+
+    if not debug:
+        print(json.dumps(data, indent=4))  # noqa
+        return
+
+    class Node(TypedDict):
+        metadata: dict
+        children: list
+
+    def walk(data):
+        children = []
+        for k, v in container_items(data):
+            if isinstance(v, (dict, list)):
+                node = Node(
+                    metadata=v.__meta__.__dict__,
+                    children=walk(v),
+                )
+                children.append({k: node})
+            else:
+                children.append({k: v})
+        return children
+
+    root = Node(
+        metadata=data.__meta__.__dict__,
+        children=walk(data),
+    )
+    print(json.dumps(root, indent=4))  # noqa
