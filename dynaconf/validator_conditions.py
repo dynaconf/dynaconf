@@ -94,7 +94,7 @@ def is_type_of(value, other) -> bool:
                 for k, v in value.items()
             )
 
-    if getattr(other, "_dynaconf_dictvalue", None):
+    if getattr(other, "_dynaconf_datadict", None):
         other = dict
 
     return isinstance(value, other)

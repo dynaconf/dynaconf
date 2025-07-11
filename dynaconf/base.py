@@ -246,7 +246,12 @@ class Settings:
         self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []
-        self._defaults = DynaBox(box_settings=self)
+
+        if kwargs.get("DYNABOXIFY", True):
+            self._defaults = DynaBox(box_settings=self)
+        else:
+            self._defaults = {}
+
         self.environ = os.environ
         self.SETTINGS_MODULE = None
         self.filter_strategy = kwargs.get("filter_strategy", None)
