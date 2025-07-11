@@ -140,7 +140,7 @@ class DataDict(dict):
         )
 
     def get(self, item, default=None, bypass_eval=False):
-        resolved = ut.find_the_correct_casing(key=item, data=self) or item
+        resolved = ut.find_the_correct_casing(item, tuple(self.keys())) or item
         result = super().get(resolved, default)
         # result = super().get(resolved, empty)
         # result = result if result is not empty else default
@@ -157,7 +157,9 @@ class DataDict(dict):
         try:
             result = super().__getitem__(item)
         except (AttributeError, KeyError):
-            n_item = ut.find_the_correct_casing(item, self) or item
+            n_item = (
+                ut.find_the_correct_casing(item, tuple(self.keys())) or item
+            )
             result = super().__getitem__(n_item)
         return recursively_evaluate_lazy_format(result, self.__meta__.core)
 
@@ -186,7 +188,7 @@ class DataDict(dict):
         self[k] = v
 
     def __delitem__(self, k):
-        resolved = ut.find_the_correct_casing(k, self) or k
+        resolved = ut.find_the_correct_casing(k, tuple(self.keys())) or k
         super().__delitem__(resolved)
 
     def __delattr__(self, name):
