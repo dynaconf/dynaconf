@@ -22,6 +22,7 @@ from dynaconf.base import Settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import prepare_json
 from dynaconf.utils import upperfy
+from dynaconf.utils.docgen import generate_docs
 from dynaconf.utils.files import read_file
 from dynaconf.utils.functional import empty
 from dynaconf.utils.inspect import builtin_dumpers
@@ -49,6 +50,7 @@ with suppress(FileNotFoundError):
 
 EXTS = ["ini", "toml", "yaml", "json", "py", "env"]
 WRITERS = ["ini", "toml", "yaml", "json", "py", "redis", "vault", "env"]
+GENERATE_FORMATS = ["python", "json", "toml", "markdown", "yaml"]
 
 ENC = default_settings.ENCODING_FOR_DYNACONF
 
@@ -951,6 +953,48 @@ def inspect(
             sys.exit(1)
     else:
         click.echo("Invalid report mode")
+        sys.exit(1)
+
+
+@main.command()
+@click.option(
+    "--format",
+    "-f",
+    default="json",
+    type=click.Choice(GENERATE_FORMATS),
+    help="Output format for the generated documentation",
+)
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(writable=True, dir_okay=False),
+    default=None,
+    help="Output file path. If not provided, prints to stdout",
+)
+def generate(format, output):
+    """
+    Generate documentation from settings schema.
+
+    Extracts type annotations from Python settings files and generates
+    documentation in the specified format. Supports Python, JSON, TOML,
+    Markdown, and YAML output formats.
+
+    Examples:
+        dynaconf -i config.settings generate -f python
+        dynaconf -i config.settings generate -f json -o schema.json
+        dynaconf -i config.settings generate -f markdown -o README.md
+    """
+    try:
+        docs = generate_docs(settings, format)
+
+        if output:
+            with open(output, "w", encoding="utf-8") as f:
+                f.write(docs)
+            click.echo(f"Documentation generated and saved to: {output}")
+        else:
+            click.echo(docs)
+    except Exception as e:
+        click.echo(f"Error generating documentation: {e}", err=True)
         sys.exit(1)
 
 
