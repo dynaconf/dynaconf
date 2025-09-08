@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+from typing import Any
 
 from dynaconf.utils import find_the_correct_casing
 from dynaconf.utils import recursively_evaluate_lazy_format
@@ -28,7 +29,9 @@ class DynaBox(Box):
             result = super().__getitem__(n_item, *args, **kwargs)
         return self.__evaluate_lazy__(result)
 
-    def get(self, item, default=None, bypass_eval=False, *args, **kwargs):
+    def get(
+        self, item, default=None, bypass_eval=False, *args, **kwargs
+    ) -> Any:
         # _TODO(pbrochad): refactor all these getter methods to make consistency easier
         if not bypass_eval:
             n_item = find_the_correct_casing(item, self) or item
