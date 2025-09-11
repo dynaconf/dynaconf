@@ -753,7 +753,7 @@ Then your `program.py` will print `"On Testing"`, read from `[testing]` environm
 For pytest it is common to create fixtures to provide pre-configured settings objects or to configure the settings before
 all the tests are collected.
 
-Examples are available on [https://github.com/dynaconf/dynaconf/tree/master/tests_functional/pytest_example](https://github.com/dynaconf/dynaconf/tree/master/tests_functional/pytest_example)
+Examples are available [here](https://github.com/dynaconf/dynaconf/tree/master/tests_functional/legacy/pytest_example_app).
 
 With `pytest` fixtures it is recommended to use the `FORCE_ENV_FOR_DYNACONF` instead of just `ENV_FOR_DYNACONF` because it has precedence.
 
