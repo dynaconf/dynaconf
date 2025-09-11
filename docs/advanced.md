@@ -723,7 +723,7 @@ settings = Dynaconf(
 
 ## Testing
 
-For testing it is recommended to just switch to `testing` environment and read the same config files.
+For testing it is recommended to just switch to the `testing` environment and read the same config files.
 
 `settings.toml`
 ```toml
@@ -745,15 +745,15 @@ print(settings.VALUE)
 ENV_FOR_DYNACONF=testing python program.py
 ```
 
-Then your `program.py` will print `"On Testing"` red from `[testing]` environment.
+Then your `program.py` will print `"On Testing"`, read from `[testing]` environment.
 
 
 ### Pytest
 
-For pytest it is common to create fixtures to provide pre-configured settings object or to configure the settings before
+For pytest it is common to create fixtures to provide pre-configured settings objects or to configure the settings before
 all the tests are collected.
 
-Examples available on [https://github.com/dynaconf/dynaconf/tree/master/tests_functional/pytest_example](https://github.com/dynaconf/dynaconf/tree/master/tests_functional/pytest_example)
+Examples are available [here](https://github.com/dynaconf/dynaconf/tree/master/tests_functional/legacy/pytest_example_app).
 
 With `pytest` fixtures it is recommended to use the `FORCE_ENV_FOR_DYNACONF` instead of just `ENV_FOR_DYNACONF` because it has precedence.
 
@@ -777,7 +777,7 @@ settings = Dynaconf(
 
 #### A python program
 
-`settings.toml` with the `[testing]` environment.
+`settings.toml` with the `[testing]` environment:
 
 ```toml
 [default]
@@ -787,7 +787,7 @@ VALUE = "On Default"
 VALUE = "On Testing"
 ```
 
-`app.py` that reads that value from current environment.
+`app.py` that reads that value from current environment:
 ```py
 from dynaconf import settings
 
@@ -796,7 +796,7 @@ def return_a_value():
     return settings.VALUE
 ```
 
-`tests/conftest.py` with a fixture to force `settings` to run pointing to `[testing]` environment.
+`tests/conftest.py` with a fixture to force `settings` to run pointing to `[testing]` environment:
 
 ```py
 import pytest
@@ -808,7 +808,7 @@ def set_test_settings():
     settings.configure(FORCE_ENV_FOR_DYNACONF="testing")
 ```
 
-`tests/test_dynaconf.py` to assert that the correct environment is loaded
+`tests/test_dynaconf.py` to assert that the correct environment is loaded:
 
 ```py
 from app import return_a_value
@@ -820,7 +820,7 @@ def test_dynaconf_is_in_testing_env():
 
 #### A Flask program
 
-`settings.toml` with the `[testing]` environment.
+`settings.toml` with the `[testing]` environment:
 
 ```toml
 [default]
@@ -830,7 +830,7 @@ VALUE = "On Default"
 VALUE = "On Testing"
 ```
 
-`src.py` that has a Flask application factory
+`src.py` that has a Flask application factory:
 
 ```py
 from flask import Flask
@@ -845,7 +845,7 @@ def create_app(**config):
 ```
 
 `tests/conftest.py` with a fixture to provide `app` dependency injection to all the tests,
-And force this `app` to point to `[testing]` config environment.
+and force this `app` to point to `[testing]` config environment:
 
 ```py
 import pytest
@@ -858,7 +858,7 @@ def app():
     return app
 ```
 
-`tests/test_flask_dynaconf.py` to assert that the correct environment is loaded
+`tests/test_flask_dynaconf.py` to assert that the correct environment is loaded:
 
 ```py
 def test_dynaconf_is_on_testing_env(app):
@@ -868,7 +868,7 @@ def test_dynaconf_is_on_testing_env(app):
 
 ### Mocking
 
-But it is common in unit tests to `mock` some objects and you may need in rare cases to mock the `dynaconf.settings` when running your tests.
+It is common in unit tests to `mock` some objects, and you may need in rare cases to mock the `dynaconf.settings` when running your tests:
 
 ```python
 from dynaconf.utils import DynaconfDict
