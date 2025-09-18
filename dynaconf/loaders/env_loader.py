@@ -18,9 +18,7 @@ with suppress(ImportError, FileNotFoundError):
 IDENTIFIER_PREFIX = "env"
 
 
-def load(
-    obj, env=None, silent=True, key=None, validate=False, identifier="global"
-):
+def load(obj, env=None, silent=True, key=None, validate=False, identifier="global"):
     """Loads envvars with prefixes:
 
     `DYNACONF_` (default global) or `$(ENVVAR_PREFIX_FOR_DYNACONF)_`
@@ -117,8 +115,7 @@ def load_from_env(
             and not (
                 # Ignore environment variables that haven't been
                 # pre-defined in settings space.
-                ignore_unknown
-                and obj.get(key[trim_len:], default=missing) is missing
+                ignore_unknown and obj.get(key[trim_len:], default=missing) is missing
             )
         }
         # Update the settings space based on gathered data from environment.
@@ -126,9 +123,7 @@ def load_from_env(
             filter_strategy = obj.get("FILTER_STRATEGY")
             if filter_strategy:
                 data = filter_strategy(data)
-            obj.update(
-                data, loader_identifier=source_metadata, validate=validate
-            )
+            obj.update(data, loader_identifier=source_metadata, validate=validate)
 
 
 def write(settings_path, settings_data, **kwargs):
@@ -137,8 +132,7 @@ def write(settings_path, settings_data, **kwargs):
         return
     for key, value in settings_data.items():
         quote_mode = (
-            isinstance(value, str)
-            and (value.startswith("'") or value.startswith('"'))
+            isinstance(value, str) and (value.startswith("'") or value.startswith('"'))
         ) or isinstance(value, (list, dict))
         dotenv_cli.set_key(
             str(settings_path),

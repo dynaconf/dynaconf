@@ -106,8 +106,7 @@ class Validator:
             "must_exist_false": "{name} cannot exists in env {env}",
             "condition": "{name} invalid for {function}({value}) in env {env}",
             "operations": (
-                "{name} must {operation} {op_value} "
-                "but it is {value} in env {env}"
+                "{name} must {operation} {op_value} but it is {value} in env {env}"
             ),
             "combined": "combined validators failed {errors}",
         }
@@ -194,9 +193,7 @@ class Validator:
             _elements.append(f"type={type_name}")
         if self.must_exist is not None:
             _elements.append(f"required={self.must_exist}")
-        operations = {
-            k: v for k, v in self.operations.items() if k != "is_type_of"
-        }
+        operations = {k: v for k, v in self.operations.items() if k != "is_type_of"}
         if operations:
             _elements.append(f"operations={self.operations}")
         if self.cast is not DEFAULT_CAST:
@@ -244,8 +241,7 @@ class Validator:
             return False
 
         identical_attrs = (
-            getattr(self, attr) == getattr(other, attr)
-            for attr in EQUALITY_ATTRS
+            getattr(self, attr) == getattr(other, attr) for attr in EQUALITY_ATTRS
         )
         if all(identical_attrs):
             return True
@@ -334,9 +330,7 @@ class Validator:
         exclude: str | Sequence | None = None,
         variable_path: tuple | None = None,
     ) -> None:
-        if env is None and (
-            current_env := getattr(settings, "current_env", None)
-        ):
+        if env is None and (current_env := getattr(settings, "current_env", None)):
             env = current_env
 
         for name in self.names:
@@ -385,15 +379,11 @@ class Validator:
 
             # is name required but not exists?
             if self.must_exist is True and value is empty:
-                _message = self.messages["must_exist_true"].format(
-                    name=name, env=env
-                )
+                _message = self.messages["must_exist_true"].format(name=name, env=env)
                 raise ValidationError(_message, details=[(self, _message)])
 
             if self.must_exist is False and value is not empty:
-                _message = self.messages["must_exist_false"].format(
-                    name=name, env=env
-                )
+                _message = self.messages["must_exist_false"].format(name=name, env=env)
                 raise ValidationError(_message, details=[(self, _message)])
 
             if self.must_exist in (False, None) and value is empty:
@@ -408,9 +398,7 @@ class Validator:
                 value = self.cast(settings.get(name))
             if _set := getattr(settings, "set", None):
                 # Settings is Dynaconf
-                _set(
-                    name, value, validate=False, loader_identifier="validator"
-                )
+                _set(name, value, validate=False, loader_identifier="validator")
             else:
                 # settings is a dict
                 settings[name] = value
@@ -535,9 +523,7 @@ class CombinedValidator(Validator):
         super().__init__(*args, **kwargs)
         for attr in EQUALITY_ATTRS:
             if not getattr(self, attr, None):
-                value = tuple(
-                    getattr(validator, attr) for validator in self.validators
-                )
+                value = tuple(getattr(validator, attr) for validator in self.validators)
                 setattr(self, attr, value)
 
     def validate(
@@ -589,8 +575,7 @@ class OrValidator(CombinedValidator):
 
         _message = self.messages["combined"].format(
             errors=" or ".join(
-                str(e).replace("combined validators failed ", "")
-                for e in errors
+                str(e).replace("combined validators failed ", "") for e in errors
             )
         )
         raise ValidationError(_message, details=[(self, _message)])
@@ -625,8 +610,7 @@ class AndValidator(CombinedValidator):
         if errors:
             _message = self.messages["combined"].format(
                 errors=" and ".join(
-                    str(e).replace("combined validators failed ", "")
-                    for e in errors
+                    str(e).replace("combined validators failed ", "") for e in errors
                 )
             )
             raise ValidationError(_message, details=[(self, _message)])
@@ -711,7 +695,5 @@ class ValidatorList(list):
                 continue
 
         if errors and raise_error:
-            raise ValidationError(
-                "; ".join(str(e) for e in errors), details=details
-            )
+            raise ValidationError("; ".join(str(e) for e in errors), details=details)
         return errors

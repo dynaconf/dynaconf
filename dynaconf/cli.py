@@ -85,18 +85,14 @@ def set_settings(ctx, instance=None):
             settings = FlaskDynaconf(flask_app, **flask_app.config).settings
             if _echo_enabled:
                 click.echo(
-                    click.style(
-                        "Flask app detected", fg="white", bg="bright_black"
-                    )
+                    click.style("Flask app detected", fg="white", bg="bright_black")
                 )
     elif "DJANGO_SETTINGS_MODULE" in os.environ:  # pragma: no cover
         sys.path.insert(0, os.path.abspath(os.getcwd()))
         import django  # noqa
 
         django.setup()  # ensure django is setup to avoid AppRegistryNotReady
-        settings_module = import__django_settings(
-            os.environ["DJANGO_SETTINGS_MODULE"]
-        )
+        settings_module = import__django_settings(os.environ["DJANGO_SETTINGS_MODULE"])
         found_settings = python_inspect.getmembers(
             settings_module,
             lambda item: isinstance(item, (LazySettings, Settings)),
@@ -105,9 +101,7 @@ def set_settings(ctx, instance=None):
             settings = found_settings[0][1]
         if settings is not None and _echo_enabled:
             click.echo(
-                click.style(
-                    "Django app detected", fg="white", bg="bright_black"
-                )
+                click.style("Django app detected", fg="white", bg="bright_black")
             )
 
     if settings is None:
@@ -149,9 +143,7 @@ def import_settings(dotted_path):
     if "." in dotted_path:
         module, name = dotted_path.rsplit(".", 1)
     else:
-        raise click.UsageError(
-            f"invalid path to settings instance: {dotted_path}"
-        )
+        raise click.UsageError(f"invalid path to settings instance: {dotted_path}")
     try:
         with redirect_stdout(None):
             module = importlib.import_module(module)
@@ -254,12 +246,8 @@ def main(ctx, instance):
 
 
 @main.command()
-@click.option(
-    "--format", "fileformat", "-f", default="toml", type=click.Choice(EXTS)
-)
-@click.option(
-    "--path", "-p", default=CWD, help="defaults to current directory"
-)
+@click.option("--format", "fileformat", "-f", default="toml", type=click.Choice(EXTS))
+@click.option("--path", "-p", default=CWD, help="defaults to current directory")
 @click.option(
     "--env",
     "-e",
@@ -273,8 +261,7 @@ def main(ctx, instance):
     multiple=True,
     default=None,
     help=(
-        "extra values to write to settings file "
-        "e.g: `dynaconf init -v NAME=foo -v X=2`"
+        "extra values to write to settings file e.g: `dynaconf init -v NAME=foo -v X=2`"
     ),
 )
 @click.option(
@@ -431,9 +418,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
             with open(str(gitignore_path), "w", encoding=ENC) as f:
                 f.writelines([comment, ignore_line, "\n"])
         else:
-            existing = (
-                ignore_line in open(str(gitignore_path), encoding=ENC).read()
-            )
+            existing = ignore_line in open(str(gitignore_path), encoding=ENC).read()
             if not existing:  # pragma: no cover
                 with open(str(gitignore_path), "a+", encoding=ENC) as f:
                     f.writelines([comment, ignore_line, "\n"])
@@ -472,9 +457,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
     default=empty,
     help="Default value if settings doesn't exist",
 )
-@click.option(
-    "--env", "-e", default=None, help="Filters the env to get the values"
-)
+@click.option("--env", "-e", default=None, help="Filters the env to get the values")
 @click.option(
     "--unparse",
     "-u",
@@ -514,9 +497,7 @@ def get(key, default, env, unparse):
 
 
 @main.command(name="list")
-@click.option(
-    "--env", "-e", default=None, help="Filters the env to get the values"
-)
+@click.option("--env", "-e", default=None, help="Filters the env to get the values")
 @click.option("--key", "-k", default=None, help="Filters a single key")
 @click.option(
     "--more",
@@ -636,9 +617,7 @@ def _list(
         if output:
             loaders.write(output, prepare_json(data), env=not flat and cur_env)
         if _json:
-            json_data = json.dumps(
-                prepare_json(data), sort_keys=True, default=repr
-            )
+            json_data = json.dumps(prepare_json(data), sort_keys=True, default=repr)
             click.echo(json_data, nl=False)
     else:
         key = upperfy(key)
@@ -655,13 +634,9 @@ def _list(
         if not _json:
             click.echo(format_setting(key, value))
         if output:
-            loaders.write(
-                output, prepare_json({key: value}), env=not flat and cur_env
-            )
+            loaders.write(output, prepare_json({key: value}), env=not flat and cur_env)
         if _json:
-            click.echo(
-                json.dumps(prepare_json({key: value}), default=repr), nl=True
-            )
+            click.echo(json.dumps(prepare_json({key: value}), default=repr), nl=True)
 
     if env:
         settings.setenv()
@@ -675,10 +650,7 @@ def _list(
     "-v",
     multiple=True,
     default=None,
-    help=(
-        "key values to be written "
-        "e.g: `dynaconf write toml -e NAME=foo -e X=2`"
-    ),
+    help=("key values to be written e.g: `dynaconf write toml -e NAME=foo -e X=2`"),
 )
 @click.option(
     "--secrets",
@@ -778,9 +750,7 @@ def write(to, _vars, _secrets, path, env, y):
 
 
 @main.command()
-@click.option(
-    "--path", "-p", default=CWD, help="defaults to current directory"
-)
+@click.option("--path", "-p", default=CWD, help="defaults to current directory")
 def validate(path):  # pragma: no cover
     """
     Validates Dynaconf settings based on provided rules.
@@ -831,8 +801,7 @@ def validate(path):  # pragma: no cover
             if not isinstance(data, dict):  # pragma: no cover
                 click.echo(
                     click.style(
-                        f"Invalid rule for parameter '{name}'"
-                        "(this will be skipped)",
+                        f"Invalid rule for parameter '{name}'(this will be skipped)",
                         fg="white",
                         bg="yellow",
                     )
@@ -849,9 +818,7 @@ def validate(path):  # pragma: no cover
                 try:
                     Validator(name, **data).validate(settings)
                 except ValidationError as e:
-                    click.echo(
-                        click.style(f"Error: {e}", fg="white", bg="red")
-                    )
+                    click.echo(click.style(f"Error: {e}", fg="white", bg="red"))
                     success = False
 
     if success:

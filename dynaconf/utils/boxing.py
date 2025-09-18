@@ -69,9 +69,4 @@ class DynaBox(Box):
             for item in inspect.getmembers(DynaBox)
             if not item[0].startswith("__")
         ]
-        return (
-            keys
-            + [k.lower() for k in keys]
-            + [k.upper() for k in keys]
-            + reserved
-        )
+        return keys + [k.lower() for k in keys] + [k.upper() for k in keys] + reserved

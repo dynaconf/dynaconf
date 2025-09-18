@@ -80,9 +80,7 @@ class Validator:
     ):
         kwargs = locals()
         kwargs.pop("cls")
-        return BaseValidator(
-            **{k: v for k, v in kwargs.items() if v is not empty}
-        )
+        return BaseValidator(**{k: v for k, v in kwargs.items() if v is not empty})
 
 
 class ItemsValidator:
@@ -265,8 +263,7 @@ class GenericValidator:
         params = cls.args + list(params)
         if len(cls.operations) != len(params):
             raise TypeError(
-                f"{cls.__name__} takes "
-                f"{len(cls.operations)} positional arguments"
+                f"{cls.__name__} takes {len(cls.operations)} positional arguments"
             )
         return Validator(**dict(zip(cls.operations, params)))
 

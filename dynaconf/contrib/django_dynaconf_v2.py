@@ -67,9 +67,7 @@ def fix_absolute_urls(_settings):
 
 
 def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
-    converters_before_loading = set(
-        dynaconf.utils.parse_conf.converters.keys()
-    )
+    converters_before_loading = set(dynaconf.utils.parse_conf.converters.keys())
     if not django_installed:
         raise RuntimeError(
             "To use this extension django must be installed "
@@ -79,9 +77,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     try:
         django_settings_module = sys.modules[django_settings_module_name]
     except KeyError:
-        django_settings_module = sys.modules[
-            os.environ["DJANGO_SETTINGS_MODULE"]
-        ]
+        django_settings_module = sys.modules[os.environ["DJANGO_SETTINGS_MODULE"]]
 
     settings_module_name = django_settings_module.__name__
     settings_file = os.path.abspath(django_settings_module.__file__)
@@ -89,22 +85,16 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
 
     # 1) Create the lazy settings object reusing settings_module consts
     options = {
-        k: v
-        for k, v in inspect.getmembers(django_settings_module)
-        if k.isupper()
+        k: v for k, v in inspect.getmembers(django_settings_module) if k.isupper()
     }
     options.update(kwargs)
-    options.setdefault(
-        "SKIP_FILES_FOR_DYNACONF", [settings_file, "dynaconf_merge"]
-    )
+    options.setdefault("SKIP_FILES_FOR_DYNACONF", [settings_file, "dynaconf_merge"])
     options.setdefault("ROOT_PATH_FOR_DYNACONF", _root_path)
     options.setdefault("ENVVAR_PREFIX_FOR_DYNACONF", "DJANGO")
     options.setdefault("ENV_SWITCHER_FOR_DYNACONF", "DJANGO_ENV")
     options.setdefault("ENVIRONMENTS_FOR_DYNACONF", True)
     options.setdefault("load_dotenv", True)
-    options.setdefault(
-        "default_settings_paths", dynaconf.DEFAULT_SETTINGS_FILES
-    )
+    options.setdefault("default_settings_paths", dynaconf.DEFAULT_SETTINGS_FILES)
     options.setdefault("_wrapper_class", HookableSettings)
 
     class UserSettingsHolder(dynaconf.LazySettings):
@@ -165,14 +155,10 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     # This is for when `django.conf.settings` is imported directly
     # on external `scripts` (out of Django's lifetime)
     for stack_item in reversed(inspect.stack()):
-        if isinstance(
-            stack_item.frame.f_globals.get("settings"), conf.LazySettings
-        ):
+        if isinstance(stack_item.frame.f_globals.get("settings"), conf.LazySettings):
             stack_item.frame.f_globals["settings"] = lazy_settings
 
-    if converters_before_loading != set(
-        dynaconf.utils.parse_conf.converters.keys()
-    ):
+    if converters_before_loading != set(dynaconf.utils.parse_conf.converters.keys()):
         # When new converter keys are added after settings initialization
         # it is required to reload the settings so values a re-evaluated
         # with the new converters.

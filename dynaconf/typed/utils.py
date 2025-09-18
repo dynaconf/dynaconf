@@ -51,9 +51,7 @@ def is_annotated(annotation):
 
 
 def is_dict_value(annotation):
-    return isinstance(annotation, type) and issubclass(
-        annotation, ty.DictValue
-    )
+    return isinstance(annotation, type) and issubclass(annotation, ty.DictValue)
 
 
 def is_enclosed_list(_type, _type_args):
@@ -100,9 +98,7 @@ def condition_factory_for_list_items(validators, prefix, _type) -> Callable:
                     is_type_of=_type,
                 )
                 for k, v in _validator.messages.items():
-                    _validator.messages[k] = v.replace(
-                        "{name}", "{name}" + f"[{i}]"
-                    )
+                    _validator.messages[k] = v.replace("{name}", "{name}" + f"[{i}]")
                 _validator.validate(_settings)
 
         # No validation error
@@ -127,11 +123,7 @@ def dict_merge(d1: dict, d2: dict) -> dict:
     merged = d1.copy()
 
     for key, value in d2.items():
-        if (
-            key in merged
-            and isinstance(merged[key], dict)
-            and isinstance(value, dict)
-        ):
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
             merged[key] = dict_merge(merged[key], value)
         else:
             merged[key] = value

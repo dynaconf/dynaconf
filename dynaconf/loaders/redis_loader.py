@@ -48,9 +48,7 @@ def load(obj, env=None, silent=True, key=None, validate=False):
             if key:
                 value = redis.hget(holder.upper(), key)
                 if value:
-                    parsed_value = parse_conf_data(
-                        value, tomlfy=True, box_settings=obj
-                    )
+                    parsed_value = parse_conf_data(value, tomlfy=True, box_settings=obj)
                     if parsed_value:
                         obj.set(
                             key,
@@ -98,9 +96,7 @@ def write(obj, data=None, **kwargs):
     data.update(kwargs)
     if not data:
         raise AttributeError("Data must be provided")
-    redis_data = {
-        upperfy(key): unparse_conf_data(value) for key, value in data.items()
-    }
+    redis_data = {upperfy(key): unparse_conf_data(value) for key, value in data.items()}
     client.hset(holder.upper(), mapping=redis_data)
     load(obj)
 

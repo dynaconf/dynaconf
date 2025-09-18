@@ -411,9 +411,7 @@ class DataList(list):
 
         :return: python list of this DataList
         """
-        box_deprecation_warning(
-            "to_list", "DataList", "Use list(data_list) instead."
-        )
+        box_deprecation_warning("to_list", "DataList", "Use list(data_list) instead.")
         new_list = []
         for x in self:
             if x is self:
@@ -516,9 +514,7 @@ class DataList(list):
             errors=errors,
         )
 
-    def to_csv(
-        self, filename, encoding="utf-8", errors="strict"
-    ):  # pragma: nocover
+    def to_csv(self, filename, encoding="utf-8", errors="strict"):  # pragma: nocover
         """
         Transform the DataList object into a CSV file.
 
@@ -527,9 +523,7 @@ class DataList(list):
         :param errors: How to handle encoding errors
         """
         box_deprecation_warning("to_csv", "DataList")
-        converters._to_csv(
-            self, filename=filename, encoding=encoding, errors=errors
-        )
+        converters._to_csv(self, filename=filename, encoding=encoding, errors=errors)
 
     @classmethod
     def from_json(
@@ -654,9 +648,7 @@ class DataList(list):
         return cls(data[key_name], **data_args)
 
     @classmethod
-    def from_csv(
-        cls, filename, encoding="utf-8", errors="strict"
-    ):  # pragma: nocover
+    def from_csv(cls, filename, encoding="utf-8", errors="strict"):  # pragma: nocover
         """
         Transform a CSV file into a DataList object.
 
@@ -667,9 +659,7 @@ class DataList(list):
         """
         box_deprecation_warning("from_csv", "DataList")
         return cls(
-            converters._from_csv(
-                filename=filename, encoding=encoding, errors=errors
-            )
+            converters._from_csv(filename=filename, encoding=encoding, errors=errors)
         )
 
 

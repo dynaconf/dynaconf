@@ -42,9 +42,7 @@ def default_loader(obj, defaults=None):
         if key.isupper()
     }
 
-    all_keys = deduplicate(
-        list(defaults.keys()) + list(default_settings_values.keys())
-    )
+    all_keys = deduplicate(list(defaults.keys()) + list(default_settings_values.keys()))
 
     for key in all_keys:
         if not obj.exists(key):
@@ -65,9 +63,7 @@ def default_loader(obj, defaults=None):
 
     # Deal with cases where a custom ENV_SWITCHER_IS_PROVIDED
     # Example: Flask and Django Extensions
-    env_switcher = defaults.get(
-        "ENV_SWITCHER_FOR_DYNACONF", "ENV_FOR_DYNACONF"
-    )
+    env_switcher = defaults.get("ENV_SWITCHER_FOR_DYNACONF", "ENV_FOR_DYNACONF")
 
     for key in all_keys:
         if key not in default_settings_values.keys():
@@ -106,9 +102,7 @@ def execute_module_hooks(
     # try to load hooks using python module __name__
     modules = modules or obj._loaded_py_modules
     for loaded_module in modules:
-        hook_module_name = ".".join(
-            loaded_module.split(".")[:-1] + ["dynaconf_hooks"]
-        )
+        hook_module_name = ".".join(loaded_module.split(".")[:-1] + ["dynaconf_hooks"])
         try:
             hook_module = importlib.import_module(hook_module_name)
         except (ImportError, TypeError):
@@ -125,16 +119,12 @@ def execute_module_hooks(
     # Try to load from python filename path
     files = files or obj._loaded_files
     for loaded_file in files:
-        hook_file = os.path.join(
-            os.path.dirname(loaded_file), "dynaconf_hooks.py"
-        )
+        hook_file = os.path.join(os.path.dirname(loaded_file), "dynaconf_hooks.py")
         if not os.path.exists(hook_file):
             # Return early if file doesn't exist.
             # Faster than attempting to import.
             continue
-        hook_module = py_loader.import_from_filename(
-            obj, hook_file, silent=silent
-        )
+        hook_module = py_loader.import_from_filename(obj, hook_file, silent=silent)
         _run_hook_module(
             hook_type=hook,
             hook_module=hook_module,
@@ -219,9 +209,7 @@ def _run_hook_function(
 
     if hook_dict:
         # update obj settings
-        merge = hook_dict.pop(
-            "dynaconf_merge", hook_dict.pop("DYNACONF_MERGE", False)
-        )
+        merge = hook_dict.pop("dynaconf_merge", hook_dict.pop("DYNACONF_MERGE", False))
         if key and key in hook_dict:
             obj.set(
                 key,
@@ -303,11 +291,7 @@ def settings_loader(
 
     # add `.local.` to found_files list to search for local files.
     found_files.extend(
-        [
-            get_local_filename(item)
-            for item in found_files
-            if ".local." not in str(item)
-        ]
+        [get_local_filename(item) for item in found_files if ".local." not in str(item)]
     )
 
     for mod_file in modules_names + found_files:
@@ -349,9 +333,7 @@ def settings_loader(
 
         # must be Python file or module
         # load from default defined module settings.py or .secrets.py if exists
-        py_loader.load(
-            obj, mod_file, key=key, validate=validate, identifier=identifier
-        )
+        py_loader.load(obj, mod_file, key=key, validate=validate, identifier=identifier)
 
         # load from the current env e.g: development_settings.py
         # counting on the case where env is a comma separated string

@@ -54,9 +54,7 @@ def raise_for_unsupported_type(full_name, _type, _type_args, annotation):
         _type_origin = ut.get_origin(_type) or _type
         _type_args = ut.get_args(_type)
         if _type_args:  # Union[] or list[] or tuple[]
-            raise_for_unsupported_type(
-                full_name, _type, _type_args, annotation
-            )
+            raise_for_unsupported_type(full_name, _type, _type_args, annotation)
 
         unsupported = isinstance(_type, type) and not issubclass(
             _type_origin, ty.SUPPORTED_TYPES
@@ -89,10 +87,7 @@ def raise_for_optional_without_none(
 def raise_for_invalid_class_variable(cls):
     """typed.Dynaconf only allows typed variables or dynaconf_options attr"""
     for name, value in vars(cls).items():
-        if (
-            name.startswith(("_", "dynaconf_options"))
-            or name in cls.__annotations__
-        ):
+        if name.startswith(("_", "dynaconf_options")) or name in cls.__annotations__:
             continue
         msg = (
             f"Invalid assignment on `{ut.get_type_name(cls)}:"

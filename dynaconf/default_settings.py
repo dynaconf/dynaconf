@@ -45,9 +45,7 @@ def start_dotenv(obj=None, root_path=None):
     obj = obj or {}
     _find_file = getattr(obj, "find_file", find_file)
     root_path = (
-        root_path
-        or getattr(obj, "_root_path", None)
-        or get("ROOT_PATH_FOR_DYNACONF")
+        root_path or getattr(obj, "_root_path", None) or get("ROOT_PATH_FOR_DYNACONF")
     )
 
     dotenv_path = (
@@ -95,9 +93,7 @@ MAIN_ENV_FOR_DYNACONF = get("MAIN_ENV_FOR_DYNACONF", "MAIN")
 LOWERCASE_READ_FOR_DYNACONF = get("LOWERCASE_READ_FOR_DYNACONF", True)
 
 # The environment variable to switch current env
-ENV_SWITCHER_FOR_DYNACONF = get(
-    "ENV_SWITCHER_FOR_DYNACONF", "ENV_FOR_DYNACONF"
-)
+ENV_SWITCHER_FOR_DYNACONF = get("ENV_SWITCHER_FOR_DYNACONF", "ENV_FOR_DYNACONF")
 
 # The current env by default is DEVELOPMENT
 # to switch is needed to `export ENV_FOR_DYNACONF=PRODUCTION`
@@ -122,9 +118,7 @@ ENVVAR_PREFIX_FOR_DYNACONF = get("ENVVAR_PREFIX_FOR_DYNACONF", "DYNACONF")
 # setting this flag to `True` will change this behaviour.
 # Only "known" variables will be considered -- that is variables defined before
 # in settings files (or includes/preloads).
-IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF = get(
-    "IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF", False
-)
+IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF = get("IGNORE_UNKNOWN_ENVVARS_FOR_DYNACONF", False)
 
 AUTO_CAST_FOR_DYNACONF = get("AUTO_CAST_FOR_DYNACONF", True)
 
@@ -175,9 +169,7 @@ vault_scheme = get("VAULT_SCHEME_FOR_DYNACONF", "http")
 vault_host = get("VAULT_HOST_FOR_DYNACONF", "localhost")
 vault_port = get("VAULT_PORT_FOR_DYNACONF", "8200")
 default_vault = {
-    "url": get(
-        "VAULT_URL_FOR_DYNACONF", f"{vault_scheme}://{vault_host}:{vault_port}"
-    ),
+    "url": get("VAULT_URL_FOR_DYNACONF", f"{vault_scheme}://{vault_host}:{vault_port}"),
     "token": get("VAULT_TOKEN_FOR_DYNACONF", None),
     "cert": get("VAULT_CERT_FOR_DYNACONF", None),
     "verify": get("VAULT_VERIFY_FOR_DYNACONF", None),
@@ -189,14 +181,10 @@ default_vault = {
 VAULT_FOR_DYNACONF = get("VAULT_FOR_DYNACONF", default_vault)
 VAULT_ENABLED_FOR_DYNACONF = get("VAULT_ENABLED_FOR_DYNACONF", False)
 VAULT_PATH_FOR_DYNACONF = get("VAULT_PATH_FOR_DYNACONF", "dynaconf")
-VAULT_MOUNT_POINT_FOR_DYNACONF = get(
-    "VAULT_MOUNT_POINT_FOR_DYNACONF", "secret"
-)
+VAULT_MOUNT_POINT_FOR_DYNACONF = get("VAULT_MOUNT_POINT_FOR_DYNACONF", "secret")
 VAULT_ROOT_TOKEN_FOR_DYNACONF = get("VAULT_ROOT_TOKEN_FOR_DYNACONF", None)
 VAULT_KV_VERSION_FOR_DYNACONF = get("VAULT_KV_VERSION_FOR_DYNACONF", 1)
-VAULT_AUTH_WITH_IAM_FOR_DYNACONF = get(
-    "VAULT_AUTH_WITH_IAM_FOR_DYNACONF", False
-)
+VAULT_AUTH_WITH_IAM_FOR_DYNACONF = get("VAULT_AUTH_WITH_IAM_FOR_DYNACONF", False)
 VAULT_AUTH_ROLE_FOR_DYNACONF = get("VAULT_AUTH_ROLE_FOR_DYNACONF", None)
 VAULT_ROLE_ID_FOR_DYNACONF = get("VAULT_ROLE_ID_FOR_DYNACONF", None)
 VAULT_SECRET_ID_FOR_DYNACONF = get("VAULT_SECRET_ID_FOR_DYNACONF", None)
@@ -235,9 +223,7 @@ INSTANCE_FOR_DYNACONF = get("INSTANCE_FOR_DYNACONF", None)
 YAML_LOADER_FOR_DYNACONF = get("YAML_LOADER_FOR_DYNACONF", "safe_load")
 
 # Use commentjson? https://commentjson.readthedocs.io/en/latest/
-COMMENTJSON_ENABLED_FOR_DYNACONF = get(
-    "COMMENTJSON_ENABLED_FOR_DYNACONF", False
-)
+COMMENTJSON_ENABLED_FOR_DYNACONF = get("COMMENTJSON_ENABLED_FOR_DYNACONF", False)
 
 # Extra file, or list of files where to look for secrets
 # useful for CI environment like jenkins
@@ -257,9 +243,7 @@ SKIP_FILES_FOR_DYNACONF = get("SKIP_FILES_FOR_DYNACONF", [])
 # YAML reads empty vars as None, should dynaconf apply validator defaults?
 # this is set to None, then evaluated on base.Settings.setdefault
 # possible values are True/False
-APPLY_DEFAULT_ON_NONE_FOR_DYNACONF = get(
-    "APPLY_DEFAULT_ON_NONE_FOR_DYNACONF", None
-)
+APPLY_DEFAULT_ON_NONE_FOR_DYNACONF = get("APPLY_DEFAULT_ON_NONE_FOR_DYNACONF", None)
 
 # Auto trigger validation when Settings update methods are called directly
 # (set, update, load_file)

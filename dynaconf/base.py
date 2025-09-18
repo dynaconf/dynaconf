@@ -102,9 +102,7 @@ class LazySettings(LazyObject):
                 kwargs[correct] = kwargs.pop(misspell)
 
         for_dynaconf_keys = {
-            key
-            for key in UPPER_DEFAULT_SETTINGS
-            if key.endswith("_FOR_DYNACONF")
+            key for key in UPPER_DEFAULT_SETTINGS if key.endswith("_FOR_DYNACONF")
         }
         aliases = {
             key.upper()
@@ -123,7 +121,7 @@ class LazySettings(LazyObject):
             self._setup()
         if name in self._wrapped._deleted:  # noqa
             raise AttributeError(
-                f"Attribute {name} was deleted, " "or belongs to different env"
+                f"Attribute {name} was deleted, or belongs to different env"
             )
 
         if name not in RESERVED_ATTRS:
@@ -138,8 +136,7 @@ class LazySettings(LazyObject):
             name.isupper()
             and (
                 self._wrapped._fresh
-                or name
-                in ensure_upperfied_list(self._wrapped.FRESH_VARS_FOR_DYNACONF)
+                or name in ensure_upperfied_list(self._wrapped.FRESH_VARS_FOR_DYNACONF)
             )
             and name not in UPPER_DEFAULT_SETTINGS
         ):
@@ -199,9 +196,7 @@ class LazySettings(LazyObject):
         settings_module = settings_module or os.environ.get(environment_var)
         compat_kwargs(kwargs)
         kwargs.update(self._kwargs)
-        self._wrapped = self._wrapper_class(
-            settings_module=settings_module, **kwargs
-        )
+        self._wrapped = self._wrapper_class(settings_module=settings_module, **kwargs)
 
     @property
     def configured(self):
@@ -253,16 +248,10 @@ class Settings:
         self._not_installed_warnings = []
         self._validate_only = kwargs.pop("validate_only", None)
         self._validate_exclude = kwargs.pop("validate_exclude", None)
-        self._validate_only_current_env = kwargs.pop(
-            "validate_only_current_env", False
-        )
+        self._validate_only_current_env = kwargs.pop("validate_only_current_env", False)
 
-        self.validators = ValidatorList(
-            self, validators=kwargs.pop("validators", None)
-        )
-        self._post_hooks: list[Callable] = ensure_a_list(
-            kwargs.get("post_hooks", [])
-        )
+        self.validators = ValidatorList(self, validators=kwargs.pop("validators", None))
+        self._post_hooks: list[Callable] = ensure_a_list(kwargs.get("post_hooks", []))
 
         compat_kwargs(kwargs)
         if settings_module:
@@ -325,10 +314,7 @@ class Settings:
         return item.upper() in self.store or item.lower() in self.store
 
     def __getattribute__(self, name):
-        if (
-            name.startswith("__")
-            or name in RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS
-        ):
+        if name.startswith("__") or name in RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS:
             return super().__getattribute__(name)
 
         # This is to keep the only upper case mode working
@@ -368,11 +354,7 @@ class Settings:
 
     def __dir__(self):
         """Enable auto-complete for code editors"""
-        return (
-            RESERVED_ATTRS
-            + [k.lower() for k in self.keys()]
-            + list(self.keys())
-        )
+        return RESERVED_ATTRS + [k.lower() for k in self.keys()] + list(self.keys())
 
     def __iter__(self):
         """Redirects to store object"""
@@ -408,10 +390,7 @@ class Settings:
             value is empty
             or (
                 value is None
-                and (
-                    apply_default_on_none is True
-                    or global_apply_default is True
-                )
+                and (apply_default_on_none is True or global_apply_default is True)
             )
         )
         loader_identifier = SourceMetadata("setdefault", "unique", env.lower())
@@ -444,9 +423,7 @@ class Settings:
 
     to_dict = as_dict  # backwards compatibility
 
-    def _dotted_get(
-        self, dotted_key, default=None, parent=None, cast=None, **kwargs
-    ):
+    def _dotted_get(self, dotted_key, default=None, parent=None, cast=None, **kwargs):
         """
         Perform dotted key lookups and keep track of where we are.
         :param key: The name of the setting value, will always be upper case
@@ -526,9 +503,9 @@ class Settings:
 
         # handles system environment fallback
         if default is None:
-            key_in_sysenv_fallback_list = isinstance(
-                sysenv_fallback, list
-            ) and key in [upperfy(k) for k in sysenv_fallback]
+            key_in_sysenv_fallback_list = isinstance(sysenv_fallback, list) and key in [
+                upperfy(k) for k in sysenv_fallback
+            ]
             if sysenv_fallback is True or key_in_sysenv_fallback_list:
                 default = self.get_environ(key, cast=True)
 
@@ -546,9 +523,7 @@ class Settings:
             fresh
             or self._fresh
             or key
-            in ensure_upperfied_list(
-                getattr(self, "FRESH_VARS_FOR_DYNACONF", ())
-            )
+            in ensure_upperfied_list(getattr(self, "FRESH_VARS_FOR_DYNACONF", ()))
         ) and key not in UPPER_DEFAULT_SETTINGS:
             self.unset(key)
             self.execute_loaders(key=key)
@@ -794,9 +769,7 @@ class Settings:
     def settings_module(self):
         """Gets SETTINGS_MODULE variable"""
         settings_module = parse_conf_data(
-            os.environ.get(
-                self.ENVVAR_FOR_DYNACONF, self.SETTINGS_FILE_FOR_DYNACONF
-            ),
+            os.environ.get(self.ENVVAR_FOR_DYNACONF, self.SETTINGS_FILE_FOR_DYNACONF),
             tomlfy=True,
             box_settings=self,
         )
@@ -871,11 +844,7 @@ class Settings:
         :param force: Bypass default checks and force unset
         """
         key = upperfy(key.strip())
-        if (
-            key not in UPPER_DEFAULT_SETTINGS
-            and key not in self._defaults
-            or force
-        ):
+        if key not in UPPER_DEFAULT_SETTINGS and key not in self._defaults or force:
             with suppress(KeyError, AttributeError):
                 # AttributeError can happen when a LazyValue consumes
                 # a previously deleted key
@@ -891,9 +860,7 @@ class Settings:
         for key in keys:
             self.unset(key, force=force)
 
-    def _dotted_set(
-        self, dotted_key, value, tomlfy=False, validate=empty, **kwargs
-    ):
+    def _dotted_set(self, dotted_key, value, tomlfy=False, validate=empty, **kwargs):
         """Sets dotted keys as nested dictionaries.
 
         Dotted set will always reassign the value, to merge use `@merge` token
@@ -907,9 +874,7 @@ class Settings:
             validate {bool} --
         """
         if validate is empty:
-            validate = self.get(
-                "VALIDATE_ON_UPDATE_FOR_DYNACONF"
-            )  # pragma: nocover
+            validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")  # pragma: nocover
 
         # Add a "." before "[" to help splitting
         split_keys = dotted_key.replace("[", ".[").split(".")
@@ -930,9 +895,7 @@ class Settings:
                     tree = tree.setdefault(k, next_default)  # get next
                 else:
                     tree[k] = value  # assign value
-            elif k.startswith("[") and k.endswith(
-                "]"
-            ):  # accessing index of a list
+            elif k.startswith("[") and k.endswith("]"):  # accessing index of a list
                 index = int(k.replace("[", "").replace("]", ""))
                 # This makes sure we can assign any arbitrary index
                 tree.extend([next_default] * (index + 1))
@@ -945,9 +908,7 @@ class Settings:
 
         if existing_data:
             if self.get("DYNABOXIFY", True):
-                old_data = DynaBox(
-                    {split_keys[0]: existing_data}, box_settings=self
-                )
+                old_data = DynaBox({split_keys[0]: existing_data}, box_settings=self)
             else:
                 old_data = {split_keys[0]: existing_data}
 
@@ -1024,9 +985,7 @@ class Settings:
         parsed = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
 
         # Fix for #869 - The call to getattr trigger early evaluation
-        existing = (
-            self.store.get(key, None) if not isinstance(parsed, Lazy) else None
-        )
+        existing = self.store.get(key, None) if not isinstance(parsed, Lazy) else None
 
         if getattr(parsed, "_dynaconf_insert", False):
             # `@insert` calls insert in a list by index
@@ -1196,9 +1155,7 @@ class Settings:
                 value = local_merge
 
             if local_merge or (context_merge and local_merge is not False):
-                identifier = (
-                    identifier._replace(merged=True) if identifier else None
-                )
+                identifier = identifier._replace(merged=True) if identifier else None
                 value = object_merge(existing, value, list_merge=list_merge)
 
         if isinstance(value, (list, tuple)):
@@ -1214,9 +1171,7 @@ class Settings:
                 unique = True
 
             if local_merge or (context_merge and local_merge is not False):
-                identifier = (
-                    identifier._replace(merged=True) if identifier else None
-                )
+                identifier = identifier._replace(merged=True) if identifier else None
                 value = object_merge(existing, value, unique=unique)
         return value, identifier
 
@@ -1260,9 +1215,7 @@ class Settings:
 
         if loaders is None:
             self.pre_load(env, silent=silent, key=key)
-            settings_loader(
-                self, env=env, silent=silent, key=key, filename=filename
-            )
+            settings_loader(self, env=env, silent=silent, key=key, filename=filename)
             self.load_extra_yaml(env, silent, key)  # DEPRECATED
             enable_external_loaders(self)
 
@@ -1354,8 +1307,7 @@ class Settings:
 
             # Issue #494
             if (
-                isinstance(_filename, Path)
-                and str(_filename.parent) in root_dir
+                isinstance(_filename, Path) and str(_filename.parent) in root_dir
             ):  # pragma: no cover
                 filepath = str(_filename)
             else:
@@ -1452,9 +1404,7 @@ class Settings:
 
     def find_file(self, *args, **kwargs):
         kwargs.setdefault("project_root", self._root_path)
-        kwargs.setdefault(
-            "skip_files", self.get("SKIP_FILES_FOR_DYNACONF", [])
-        )
+        kwargs.setdefault("skip_files", self.get("SKIP_FILES_FOR_DYNACONF", []))
         return find_file(*args, **kwargs)
 
     def flag(self, key, env=None):
@@ -1567,9 +1517,7 @@ class Settings:
         """backwards compatibility with pre 3.0 loaders
         In dynaconf 3.0.0 logger and debug messages has been removed.
         """
-        warnings.warn(
-            "logger and DEBUG messages has been removed on dynaconf 3.0.0"
-        )
+        warnings.warn("logger and DEBUG messages has been removed on dynaconf 3.0.0")
         import logging  # noqa
 
         return logging.getLogger("dynaconf")
@@ -1589,11 +1537,7 @@ RESERVED_ATTRS = (
         for item in inspect.getmembers(LazySettings)
         if not item[0].startswith("__")
     ]
-    + [
-        item[0]
-        for item in inspect.getmembers(Settings)
-        if not item[0].startswith("__")
-    ]
+    + [item[0] for item in inspect.getmembers(Settings) if not item[0].startswith("__")]
     + [
         "_defaults",
         "_deleted",

@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "dynaconf"
@@ -158,20 +158,26 @@ ba = "ba"
 
 [tool.ruff]
 target-version = "py39"
-line-length = 79
+line-length = 88
 exclude = ["dynaconf/vendor*"]
 
 [tool.ruff.lint]
-extend-select = [
-    "T100",
-    "T2",
-    "TD",
-    "UP",
-    "I",
-    "N",
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "T100", # flake8-debugger
+    "T2",  # flake8-print
+    "TD",  # flake8-todos
 ]
 ignore = [
-    "UP007", # Use `X | Y` for type annotations
+    "UP007", # Use `X | Y` for type annotations (Python 3.10+)
+    "E501",  # Line too long (handled by formatter)
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -205,6 +211,14 @@ source = ["dynaconf"]
 [tool.coverage.report]
 show_missing = true
 fail_under = 95
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
 omit = [
     "*/python?.??/*",
     "*/site-packages/*",
@@ -224,8 +238,19 @@ omit = [
 # ======
 
 [tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--verbose",
+    "--tb=short",
+]
 markers = [
     "integration: marks tests as integration (deselect with '-m \"not integration\"')",
+    "slow: marks tests as slow",
 ]
 
 # MYPY
