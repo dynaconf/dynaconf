@@ -51,9 +51,7 @@ class MetaValue:
 
     def __init__(self, value, box_settings):
         self.box_settings = box_settings
-        self.value = parse_conf_data(
-            value, tomlfy=True, box_settings=box_settings
-        )
+        self.value = parse_conf_data(value, tomlfy=True, box_settings=box_settings)
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}) on {id(self)}"
@@ -71,9 +69,7 @@ class Reset(MetaValue):
 
     def __init__(self, value, box_settings):
         self.box_settings = box_settings
-        self.value = parse_conf_data(
-            value, tomlfy=True, box_settings=self.box_settings
-        )
+        self.value = parse_conf_data(value, tomlfy=True, box_settings=self.box_settings)
         warnings.warn(f"{self.value} does not need `@reset` anymore.")
 
 
@@ -97,9 +93,7 @@ class Merge(MetaValue):
 
         self.box_settings = box_settings
 
-        self.value = parse_conf_data(
-            value, tomlfy=True, box_settings=box_settings
-        )
+        self.value = parse_conf_data(value, tomlfy=True, box_settings=box_settings)
 
         if isinstance(self.value, (int, float, bool)):
             # @merge 1, @merge 1.1, @merge False
@@ -131,16 +125,12 @@ class Merge(MetaValue):
                         k.strip(): parse_conf_data(
                             v, tomlfy=True, box_settings=box_settings
                         )
-                        for k, v in (
-                            match.strip().split("=") for match in matches
-                        )
+                        for k, v in (match.strip().split("=") for match in matches)
                     }
                 elif "," in self.value:
                     # @merge foo,bar
                     self.value = [
-                        parse_conf_data(
-                            v, tomlfy=True, box_settings=box_settings
-                        )
+                        parse_conf_data(v, tomlfy=True, box_settings=box_settings)
                         for v in self.value.split(",")
                     ]
                 else:
@@ -191,9 +181,7 @@ class Insert(MetaValue):
             index, value = 0, value
 
         self.index = int(index)
-        self.value = parse_conf_data(
-            value, tomlfy=True, box_settings=box_settings
-        )
+        self.value = parse_conf_data(value, tomlfy=True, box_settings=box_settings)
 
 
 class BaseFormatter:
@@ -396,11 +384,7 @@ def evaluate_lazy_format(f):
 
 def lazy_casting(value, cast_func):
     """Helper function to handle Lazy casting."""
-    return (
-        value.set_casting(cast_func)
-        if isinstance(value, Lazy)
-        else cast_func(value)
-    )
+    return value.set_casting(cast_func) if isinstance(value, Lazy) else cast_func(value)
 
 
 def json_casting(value):
@@ -424,9 +408,7 @@ def bool_casting(value):
 def string_casting(value, str_func):
     """Helper function to handle string transformations."""
     return (
-        value.set_casting(str_func)
-        if isinstance(value, Lazy)
-        else str_func(str(value))
+        value.set_casting(str_func) if isinstance(value, Lazy) else str_func(str(value))
     )
 
 
@@ -447,9 +429,7 @@ converters = {
     ),
     "@insert": Insert,
     "@get": lambda value: Lazy(value, formatter=Formatters.get_formatter),
-    "@read_file": lambda value: Lazy(
-        value, formatter=Formatters.read_file_formatter
-    ),
+    "@read_file": lambda value: Lazy(value, formatter=Formatters.read_file_formatter),
     # String utilities
     "@upper": lambda value: string_casting(value, str.upper),
     "@lower": lambda value: string_casting(value, str.lower),
@@ -539,8 +519,7 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
     castenabled = box_settings.get("AUTO_CAST_FOR_DYNACONF", empty)
     if castenabled is empty:
         castenabled = (
-            os.environ.get("AUTO_CAST_FOR_DYNACONF", "true").lower()
-            not in false_values
+            os.environ.get("AUTO_CAST_FOR_DYNACONF", "true").lower() not in false_values
         )
 
     if (
@@ -601,9 +580,7 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
         # It is important to keep the same object id because
         # of mutability
         for k, v in data.items(bypass_eval=True):
-            data[k] = parse_conf_data(
-                v, tomlfy=tomlfy, box_settings=box_settings
-            )
+            data[k] = parse_conf_data(v, tomlfy=tomlfy, box_settings=box_settings)
         return data
 
     if isinstance(data, dict):
@@ -611,9 +588,7 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
         # It is important to keep the same object id because
         # of mutability
         for k, v in data.items():
-            data[k] = parse_conf_data(
-                v, tomlfy=tomlfy, box_settings=box_settings
-            )
+            data[k] = parse_conf_data(v, tomlfy=tomlfy, box_settings=box_settings)
         return data
 
     # return parsed string value

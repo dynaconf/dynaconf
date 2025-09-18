@@ -160,9 +160,7 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
         ) as config_file:
             exec(compile(config_file.read(), filename, "exec"), mod.__dict__)
     except OSError as e:
-        e.strerror = (
-            f"py_loader: error loading file " f"({e.strerror} {filename})\n"
-        )
+        e.strerror = f"py_loader: error loading file ({e.strerror} {filename})\n"
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return
         mod._is_error = True
@@ -187,6 +185,4 @@ def write(settings_path, settings_data, merge=True):
         "w",
         encoding=default_settings.ENCODING_FOR_DYNACONF,
     ) as f:
-        f.writelines(
-            [f"{upperfy(k)} = {repr(v)}\n" for k, v in settings_data.items()]
-        )
+        f.writelines([f"{upperfy(k)} = {repr(v)}\n" for k, v in settings_data.items()])

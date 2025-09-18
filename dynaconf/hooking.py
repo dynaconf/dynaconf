@@ -365,9 +365,7 @@ def post_hook(function: Callable) -> Callable:
         function._called = False  # type: ignore
         function._dynaconf_hook_source = function.__module__  # type: ignore
     except (AttributeError, TypeError):
-        raise TypeError(
-            "post_hook decorator must be applied to a function or method."
-        )
+        raise TypeError("post_hook decorator must be applied to a function or method.")
     else:
         # On the same scope where the decorated function is defined we
         # add a variable with the same name as the function but prefixed

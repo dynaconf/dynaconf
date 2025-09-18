@@ -234,9 +234,7 @@ def handle_metavalues(
                 new[key] = local_merge
 
             if local_merge:
-                new[key] = object_merge(
-                    old.get(key), new[key], list_merge=list_merge
-                )
+                new[key] = object_merge(old.get(key), new[key], list_merge=list_merge)
 
 
 class DynaconfDict(dict):
@@ -351,9 +349,7 @@ def warn_deprecations(data: Any) -> None:
             )
 
 
-def trimmed_split(
-    s: str, seps: str | tuple[str, str] = (";", ",")
-) -> list[str]:
+def trimmed_split(s: str, seps: str | tuple[str, str] = (";", ",")) -> list[str]:
     """Given a string s, split is by one of one of the seps."""
     for sep in seps:
         if sep not in s:
@@ -504,10 +500,7 @@ def recursively_evaluate_lazy_format(
 
         # Keep the original type, can be a BoxList
         value = value.__class__(
-            [
-                recursively_evaluate_lazy_format(item, settings)
-                for item in value
-            ]
+            [recursively_evaluate_lazy_format(item, settings) for item in value]
         )
 
     return value

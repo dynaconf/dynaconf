@@ -74,9 +74,7 @@ class Dynaconf(BaseDynaconfSettings):
         gu.raise_for_invalid_class_variable(cls)
         options = getattr(cls, "dynaconf_options", Options())
         if not isinstance(options, Options):
-            raise TypeError(
-                "dynaconf_options must be an instance of `Options`"
-            )
+            raise TypeError("dynaconf_options must be an instance of `Options`")
         defaults, validators = extract_defaults_and_validators_from_typing(cls)
         passed_in_validators = kwargs.pop("validators", [])
         validators += passed_in_validators
@@ -135,13 +133,9 @@ def extract_defaults_and_validators_from_typing(
 
         # field: DictValue
         if ut.is_dict_value(annotation):
-            gu.raise_for_invalid_default_type(
-                full_name, default_value, annotation
-            )
+            gu.raise_for_invalid_default_type(full_name, default_value, annotation)
             items_defaults, items_validators = (
-                extract_defaults_and_validators_from_typing(
-                    annotation, full_path
-                )
+                extract_defaults_and_validators_from_typing(annotation, full_path)
             )
             validator.items_validators = items_validators
             if items_defaults and not isinstance(default_value, Empty):
@@ -165,9 +159,7 @@ def extract_defaults_and_validators_from_typing(
 
             if ut.is_dict_value(_type):
                 items_defaults, items_validators = (
-                    extract_defaults_and_validators_from_typing(
-                        _type, full_path
-                    )
+                    extract_defaults_and_validators_from_typing(_type, full_path)
                 )
                 validator.items_validators = items_validators
                 if not marked_not_required:
@@ -176,9 +168,7 @@ def extract_defaults_and_validators_from_typing(
                     if isinstance(default_value, dict) and isinstance(
                         items_defaults, dict
                     ):
-                        default_value = ut.dict_merge(
-                            items_defaults, default_value
-                        )
+                        default_value = ut.dict_merge(items_defaults, default_value)
 
         # field: list[T]
         elif ut.is_enclosed_list(_type, _type_args):
@@ -187,34 +177,24 @@ def extract_defaults_and_validators_from_typing(
             gu.raise_for_invalid_amount_of_enclosed_types(
                 full_name, _type, inner_type, more_types
             )
-            gu.raise_for_invalid_default_type(
-                full_name, default_value, annotation
-            )
+            gu.raise_for_invalid_default_type(full_name, default_value, annotation)
             if ut.is_dict_value(inner_type):
                 items_defaults, items_validators = (
-                    extract_defaults_and_validators_from_typing(
-                        inner_type, full_path
-                    )
+                    extract_defaults_and_validators_from_typing(inner_type, full_path)
                 )
                 if isinstance(default_value, list):
                     inner_defaults = []
                     for item in default_value:
-                        inner_defaults.append(
-                            ut.dict_merge(items_defaults, item)
-                        )
+                        inner_defaults.append(ut.dict_merge(items_defaults, item))
                     default_value = inner_defaults
                 validator.items_validators = items_validators
 
         # field: Optional[T]
         elif ut.is_optional(annotation):
             if ut.is_dict_value(_type_args[0]):
-                gu.raise_for_invalid_default_type(
-                    full_name, default_value, annotation
-                )
-                _, items_validators = (
-                    extract_defaults_and_validators_from_typing(
-                        _type_args[0], full_path
-                    )
+                gu.raise_for_invalid_default_type(full_name, default_value, annotation)
+                _, items_validators = extract_defaults_and_validators_from_typing(
+                    _type_args[0], full_path
                 )
                 extra_validator = BaseValidator(
                     name,

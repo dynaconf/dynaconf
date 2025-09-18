@@ -115,9 +115,7 @@ class FlaskDynaconf:
             kwargs["DYNABOXIFY"] = False
 
         self.kwargs.update(kwargs)
-        self.settings = self.dynaconf_instance or dynaconf.LazySettings(
-            **self.kwargs
-        )
+        self.settings = self.dynaconf_instance or dynaconf.LazySettings(**self.kwargs)
         dynaconf.settings = self.settings  # rebind customized settings
         app.config = self.make_config(app)
         app.dynaconf = self.settings
@@ -225,9 +223,7 @@ class DynaconfConfig(Config):
 
         for object_reference in app.config[key]:
             # parse the entry point specification
-            entry_point = EntryPoint(
-                name=None, group=None, value=object_reference
-            )
+            entry_point = EntryPoint(name=None, group=None, value=object_reference)
             # dynamically resolve the entry point
             initializer = entry_point.load()
             # Invoke extension initializer

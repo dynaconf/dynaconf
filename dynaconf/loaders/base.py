@@ -78,10 +78,7 @@ class BaseLoader:
 
         source_data = self.get_source_data(files)
 
-        if (
-            self.env == "_envless"
-            or self.obj.get("ENVIRONMENTS_FOR_DYNACONF") is False
-        ):
+        if self.env == "_envless" or self.obj.get("ENVIRONMENTS_FOR_DYNACONF") is False:
             self._envless_load(source_data, silent, key)
         else:
             self._load_all_envs(source_data, silent, key)
@@ -102,8 +99,7 @@ class BaseLoader:
                 except OSError as e:
                     if ".local." not in source_file:
                         warnings.warn(
-                            f"{self.identifier}_loader: {source_file} "
-                            f":{str(e)}"
+                            f"{self.identifier}_loader: {source_file} :{str(e)}"
                         )
             else:
                 # for tests it is possible to pass string
@@ -119,9 +115,7 @@ class BaseLoader:
             file_merge = file_data.get("dynaconf_merge", empty)
 
             # set source metadata
-            source_metadata = SourceMetadata(
-                self.identifier, file_name, "default"
-            )
+            source_metadata = SourceMetadata(self.identifier, file_name, "default")
 
             self._set_data_to_obj(
                 file_data,
@@ -156,9 +150,7 @@ class BaseLoader:
                 # print(self.env, file_data)
 
                 # set source metadata
-                source_metadata = SourceMetadata(
-                    self.identifier, file_name, env
-                )
+                source_metadata = SourceMetadata(self.identifier, file_name, env)
 
                 try:
                     data = file_data[env] or {}

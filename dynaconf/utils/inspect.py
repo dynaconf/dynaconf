@@ -54,9 +54,7 @@ DumperPreset = Union[Literal["yaml"], Literal["json"], Literal["json-compact"]]
 
 
 class DumperType(Protocol):
-    def __call__(
-        self, data: dict, text_stream: TextIO
-    ) -> None:  # pragma: no cover
+    def __call__(self, data: dict, text_stream: TextIO) -> None:  # pragma: no cover
         ...
 
 
@@ -128,9 +126,7 @@ def inspect_settings(
     elif isinstance(dumper, str):
         _dumper = builtin_dumpers.get(dumper)
         if _dumper is None:
-            raise OutputFormatError(
-                f"The desired format is not available: {dumper!r}"
-            )
+            raise OutputFormatError(f"The desired format is not available: {dumper!r}")
     else:
         _dumper = dumper
 
@@ -479,9 +475,7 @@ def print_debug_info(
     if isinstance(dumper, str):
         dumper = builtin_dumpers.get(dumper)
         if dumper is None:
-            raise OutputFormatError(
-                f"The desired format is not available: {dumper!r}"
-            )
+            raise OutputFormatError(f"The desired format is not available: {dumper!r}")
 
     data = get_debug_info(settings, verbosity, key)
     dumper(data, sys.stdout)

@@ -141,9 +141,7 @@ def load(obj, env=None, silent=None, key=None, validate=False):
             ):
                 data = data.get("data", {})
             if data and key:
-                value = parse_conf_data(
-                    data.get(key), tomlfy=True, box_settings=obj
-                )
+                value = parse_conf_data(data.get(key), tomlfy=True, box_settings=obj)
                 if value:
                     obj.set(
                         key,
