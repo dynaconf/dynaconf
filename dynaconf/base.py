@@ -485,7 +485,7 @@ class Settings:
         dotted_lookup=empty,
         parent=None,
         sysenv_fallback=None,
-    ):
+    ) -> Any:
         """
         Get a value from settings store, this is the preferred way to access::
 

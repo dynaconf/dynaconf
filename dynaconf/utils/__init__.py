@@ -5,6 +5,7 @@ import os
 import warnings
 from collections import defaultdict
 from collections.abc import Iterator
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 from typing import Literal
@@ -378,9 +379,11 @@ def ensure_a_list(data: T | list[T]) -> list[T]:
     return [data]
 
 
-def ensure_upperfied_list(data: list) -> list:
+def ensure_upperfied_list(sequence: Sequence) -> list:
     """Ensure list of strings contains upperfied items."""
-    return [upperfy(item) if isinstance(item, str) else item for item in data]
+    return [
+        upperfy(item) if isinstance(item, str) else item for item in sequence
+    ]
 
 
 def build_env_list(obj: Settings | LazySettings, env: str | None) -> list[str]:
