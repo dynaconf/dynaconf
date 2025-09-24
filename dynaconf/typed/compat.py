@@ -13,12 +13,11 @@ if sys.version_info < (3, 10):
 
     UnionType = Union
     get_annotations = _get_annotations_for_python_39
+    from typing_extensions import Self
 else:
     from inspect import get_annotations
     from types import UnionType
+    from typing import Self
 
 
-__all__ = [
-    "get_annotations",
-    "UnionType",
-]
+__all__ = ["get_annotations", "UnionType", "Self"]

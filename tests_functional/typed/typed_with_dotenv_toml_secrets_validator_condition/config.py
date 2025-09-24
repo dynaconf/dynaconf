@@ -1,7 +1,7 @@
 from typing import Optional
 
 from dynaconf.typed import Annotated
-from dynaconf.typed import DictValue
+from dynaconf.typed import DataDict
 from dynaconf.typed import Dynaconf
 from dynaconf.typed import ItemsValidator
 from dynaconf.typed import NotRequired
@@ -18,13 +18,13 @@ from dynaconf.typed.validators import Not
 from dynaconf.typed.validators import Regex
 
 
-class Database(DictValue):
+class Database(DataDict):
     host: str
     port: int = 5432
     conn: NotRequired[Annotated[str, is_connection_string]]
 
 
-class Plugin(DictValue):
+class Plugin(DataDict):
     name: str
     version: str = "latest"
 
@@ -50,7 +50,7 @@ class Settings(Dynaconf):
     # not_a_url: Annotated[str, Not(IsUrl)] = "https://foo.bar"  # fails validation
     not_a_url: Annotated[str, Not(is_url)] = "batatinha 123"  # passes!
     version: Annotated[str, Regex(r"^(\d+)\.(\d+)\.(\d+)$")] = "3.1.9"
-    database: Database = Database()
+    database: Database
     flags: NotRequired[dict[str, bool]]
     plugins: list[Plugin] = []
     token: str

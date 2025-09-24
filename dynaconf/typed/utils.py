@@ -1,15 +1,14 @@
 from __future__ import annotations  # WARNING: remove this when debugging
 
+import json
+from functools import reduce
 from typing import Annotated
-from typing import Callable
 from typing import get_args
 from typing import get_origin
 from typing import Union
 
-from dynaconf.base import Settings as BaseDynaconfSettings
-from dynaconf.validator import Validator as BaseValidator
+from dynaconf.utils.functional import empty
 
-from . import types as ty
 from .compat import UnionType
 
 
@@ -42,7 +41,8 @@ def get_type_and_args(annotation) -> tuple:
 
 def is_notrequired(annotation):
     return is_annotated(annotation) and any(
-        isinstance(item, ty.NotRequiredMarker) for item in get_args(annotation)
+        getattr(item, "_dynaconf_notrequired", None)
+        for item in get_args(annotation)
     )
 
 
@@ -50,10 +50,8 @@ def is_annotated(annotation):
     return get_origin(annotation) is Annotated
 
 
-def is_dict_value(annotation):
-    return isinstance(annotation, type) and issubclass(
-        annotation, ty.DictValue
-    )
+def is_datadict(annotation):
+    return getattr(annotation, "_dynaconf_datadict", None)
 
 
 def is_enclosed_list(_type, _type_args):
@@ -65,6 +63,24 @@ def is_union(annotation) -> bool:
     return get_origin(annotation) in [Union, UnionType]
 
 
+def maybe_datadict(annotation):
+    return is_union(annotation) and any(
+        is_datadict(item) for item in get_args(annotation)
+    )
+
+
+def get_class_from_type_args(type_args):
+    for arg in type_args:
+        if is_datadict(arg):
+            return arg
+
+
+def is_datadict_in_a_dict(annotation):
+    origin = get_origin(annotation)
+    args = get_args(annotation)
+    return origin is dict and len(args) == 2 and is_datadict(args[1])
+
+
 def is_optional(annotation) -> bool:
     """Tell if an annotation is strictly typing.Optional or Union[**, None]"""
     return is_union(annotation) and get_args(annotation)[1] == type(None)
@@ -73,42 +89,6 @@ def is_optional(annotation) -> bool:
 def is_type(value) -> bool:
     _type = get_origin(value) or value
     return isinstance(_type, type) or is_union(value) or is_optional(value)
-
-
-def condition_factory_for_list_items(validators, prefix, _type) -> Callable:
-    """takes _type: T, generates a function to validate a value against it"""
-    # IDEA:
-    # Evaluate the possibility to replace this with a new attribute on a
-    # validator that will validate against each internal item of a list
-    # Validator("X", is_type_of=list, items=[Validator(is_type_of=int)])
-
-    def validator_condition(values):
-        if isinstance(_type, type) and issubclass(_type, ty.DictValue):
-            for i, value in enumerate(values):
-                for _validator in validators:
-                    for k, v in _validator.messages.items():
-                        _validator.messages[k] = v.replace(
-                            "{name}", prefix + f"[{i}]." + "{name}"
-                        )
-                    _validator.validate(BaseDynaconfSettings(**value))
-        else:
-            for i, value in enumerate(values):
-                _settings = BaseDynaconfSettings()
-                _settings.set(prefix, value)
-                _validator = BaseValidator(
-                    prefix,
-                    is_type_of=_type,
-                )
-                for k, v in _validator.messages.items():
-                    _validator.messages[k] = v.replace(
-                        "{name}", "{name}" + f"[{i}]"
-                    )
-                _validator.validate(_settings)
-
-        # No validation error
-        return True
-
-    return validator_condition
 
 
 def dict_merge(d1: dict, d2: dict) -> dict:
@@ -139,24 +119,56 @@ def dict_merge(d1: dict, d2: dict) -> dict:
     return merged
 
 
-def dump_debug_info(init_options, validators):
+def multi_dict_merge(*dicts) -> dict:
+    """Reduces merge of a list of dicts."""
+    return reduce(dict_merge, dicts)
+
+
+def dump_debug_info(init_options, validators, schema):
     """Debug utility to be removed later"""
     dump = __builtins__["print"]  # cheat the linter
 
-    dump("\n----- INIT DEFAULTS -----")
-    __import__("pprint").pprint(init_options)
-    dump("\n----- VALIDATORS -----")
+    # pdump = __import__("pprint").pp
+    def jdump(v):
+        return dump(json.dumps(v, indent=2, sort_keys=True, default=str))
+
+    def tdump(text, char="*", offset=0, s=""):
+        return dump(
+            "{s}{o}{:{c}^80}".format(f" {text} ", c=char, o=" " * offset, s=s)
+        )
+
+    tdump("INIT DEFAULTS", s="\n")
+    jdump(init_options)
+
+    tdump("VALIDATORS", s="\n")
     for i, validator in enumerate(validators, 1):
-        dump("#" * 80)
-        dump(validator.names[0].upper())
+        tdump(validator.names[0].upper(), "#")
         dump(i, validator)
 
         def print_all_validators(v, prefix):
             if v.items_validators:
-                dump(" " * len(prefix) + v.names[0].upper())
-                dump(" " * len(prefix) + ("-" * 80))
-            for n, item_v in enumerate(v.items_validators, 1):
-                dump(" " * len(prefix), f"{prefix}.{n}", item_v)
-                print_all_validators(item_v, f"{prefix}.{n}")
+                tdump(v.names[0].upper(), "-", len(prefix))
+                for n, item_v in enumerate(v.items_validators, 1):
+                    tdump(f"{prefix}.{n}", "_", len(prefix))
+                    dump(" " * len(prefix), item_v)
+                    print_all_validators(item_v, f"{prefix}.{n}")
 
         print_all_validators(validator, prefix=str(i))
+
+    tdump("SCHEMA", s="\n")
+    jdump(schema.as_dict())
+
+    tdump("END", s="\n")
+
+
+def aggregate_dict_schema_defaults(dict_schema, data):
+    """Aggregated defaults from data on top of dict_schema defaults"""
+    # merge default with default from type
+    # NOTE: What to do in case of Lazy data?
+    #       @json @format {....}
+    dict_schema_defaults = dict_schema.__get_defaults__()
+    if isinstance(data, dict) and dict_schema_defaults:
+        data = dict_merge(dict_schema_defaults, data)
+    elif data is empty and dict_schema_defaults:
+        data = dict_schema_defaults
+    return data
