@@ -19,7 +19,7 @@
 - Built-in support for Hashicorp Vault and Redis as settings and secrets storage.
 - Built-in extensions for **Django** and **Flask** web frameworks.
 - CLI for common operations such as `init, list, write, validate, export`.
-- full docs on https://dynaconf.com
+- Full docs on https://dynaconf.com
 
 ### Install
 
@@ -70,7 +70,7 @@ settings = Dynaconf(
 )
 ```
 
-> **TIP:** You can create the files yourself instead of using the `init` command as shown above and you can give any name you want instead of the default `config.py` (the file must be in your importable python path) - See more options that you can pass to `Dynaconf` class initializer on https://dynaconf.com
+> **TIP:** You can create the files yourself instead of using the `init` command as shown above and you can give any name you want instead of the default `config.py` (the file must be in your importable Python path) - See more options that you can pass to `Dynaconf` class initializer on https://dynaconf.com
 
 
 #### Using Dynaconf
