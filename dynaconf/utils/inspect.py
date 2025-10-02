@@ -353,7 +353,7 @@ def _get_data_by_key(
 
     try:
         return traverse_data(data, key_dotted_path)
-    except KeyError:
+    except (KeyError, AttributeError):
         if not default:
             raise KeyError(f"Path not found in data: {key_dotted_path!r}")
         return default

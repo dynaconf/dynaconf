@@ -140,15 +140,20 @@ class DataDict(dict):
         )
 
     def get(self, item, default=None, bypass_eval=False):
-        resolved = ut.find_the_correct_casing(item, tuple(self.keys())) or item
-        result = super().get(resolved, default)
-        # result = super().get(resolved, empty)
-        # result = result if result is not empty else default
-        if resolved is empty:
-            raise RuntimeError("Something wrong is not right")
-        if bypass_eval:
-            return result
-        return recursively_evaluate_lazy_format(result, self.__meta__.core)
+        if not bypass_eval:
+            n_item = (
+                ut.find_the_correct_casing(item, tuple(self.keys())) or item
+            )
+            result = super().get(n_item, empty)
+            result = result if result is not empty else default
+            return recursively_evaluate_lazy_format(result, self.__meta__.core)
+        try:
+            return super().__getitem__(item)
+        except (AttributeError, KeyError):
+            n_item = (
+                ut.find_the_correct_casing(item, tuple(self.keys())) or item
+            )
+            return super().__getitem__(n_item)
 
     def __copy__(self):
         return self.copy()
