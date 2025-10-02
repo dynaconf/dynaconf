@@ -3,26 +3,35 @@ on:
   schedule:
     - cron: "0 0 1 * *"
   workflow_dispatch:
+
 jobs:
   main:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: minicli/action-contributors@v3.3
-        name: "Update a projects CONTRIBUTORS file"
+
+      - name: "Update a projects CONTRIBUTORS file"
+        uses: minicli/action-contributors@v3.3
         env:
           CONTRIB_REPOSITORY: 'dynaconf/dynaconf'
           CONTRIB_OUTPUT_FILE: 'CONTRIBUTORS.md'
+
+      - name: Check if changes are minimal
+        id: check_diff
+        run: |
+          DIFF_STAT=$(git diff --stat | tail -1 | xargs)  # xargs trims leading spaces
+          EXPECTED="1 file changed, 1 insertion(+), 1 deletion(-)"
+          if [ "$DIFF_STAT" = "$EXPECTED" ]; then
+            echo "skip_pr=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip_pr=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create a PR
+        if: steps.check_diff.outputs.skip_pr == 'false'
         uses: peter-evans/create-pull-request@v3
         with:
           commit-message: Update Contributors
           title: "[automated] Update Contributors File"
           token: ${{ secrets.GITHUB_TOKEN }}
 
-#       - name: Update resources
-#         uses: test-room-7/action-update-file@v1
-#         with:
-#           file-path: 'CONTRIBUTORS.md'
-#           commit-msg: Update Contributors
-#           github-token: ${{ secrets.GITHUB_TOKEN }}
