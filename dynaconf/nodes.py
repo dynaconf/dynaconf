@@ -1,12 +1,13 @@
 """The nodes model for dynaconf.
 
-Internally, the user facing settings data are special data nodes that can store
-metadata about itself. They are designed to have compatible API's with it's corresponding
-data type (E.g, dict, list).
+Internally, the user facing settings object are special data nodes that can store metadata about themselves.
+In general, they behave like their dict and list counterparts, but they contain a single private
+entrypoint for that special metadata at `<node>.__meta__`.
 
-Besides storing it's own internal state (e.g, it's schema, hooks, lazy values),
-the nodes also store a shared state which is called `DynaconfCore`.
-This is designed to store legacy `Settings` attributes such as `._fresh, ._store, ._deleted, etc`.
+The metadata stores the node's internal state and the global app state, which is a shared object called
+`DynaconfCore`. The internal/individual node state may be values like it's schema, associated hooks and
+lazy values. This global state is responsible for managing internal configurations and functionality, like
+the legacy `Settings` attributes `._fresh, ._store, ._deleted, etc`.
 """
 
 from __future__ import annotations
