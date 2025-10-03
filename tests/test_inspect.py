@@ -86,7 +86,7 @@ def test_get_history_general(tmp_path):
     Should return
         - list of length 2
         - per-file metadata containing: loader, identifier, env and value.
-        - correct types: dicts and lists, not DynaBox and BoxList
+        - correct types: dicts and lists, not DataDict and DataList
     """
     file_a = tmp_path / "a.yml"
     file_b = tmp_path / "b.yml"

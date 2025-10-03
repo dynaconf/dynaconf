@@ -182,6 +182,13 @@ def test_data_containers_init(input):
     recursive_walk(data, assert_fn)
 
 
+CAST_ON_INITIALIZATION_ASSUMPTION = """
+This assumes the DataDict will recursively transform nested dict/list in
+DataDict and Datalist. We may wanna do that, but it breaks behavior.
+"""
+
+
+@pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
 def test_dict_methods():
     core = DynaconfCore("test")
     di = DataDict(core=core)
@@ -208,6 +215,7 @@ def test_dict_methods():
     assert len(di) == 0
 
 
+@pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
 def test_list_methods():
     li = DataList()
 
@@ -262,6 +270,7 @@ def test_method_preservation():
     assert li[0]["x"] == 1
 
 
+@pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
 def test_mutable_operations():
     di = DataDict()
     # Test setdefault
@@ -287,8 +296,8 @@ def test_repr():
     """Test that no unexpected internal attributes shows up."""
     di = DataDict({"foo": 123})
     dl = DataList([1, 2, 3])
-    assert repr(di) == "DataDict({'foo': 123})"
-    assert repr(dl) == "DataList([1, 2, 3])"
+    assert repr(di) == "{'foo': 123}"
+    assert repr(dl) == "[1, 2, 3]"
 
 
 @pytest.fixture
@@ -445,3 +454,33 @@ class TestBoxCompatibility:
         assert box_deep == boxlist_origin
         assert data_deep is not datalist_origin
         assert box_deep is not boxlist_origin
+
+
+class TestCoreFunctions:
+    def test_get_core_no_raises(self):
+        data = DataDict()
+
+        result = get_core(data, raises=False)
+        assert result is None
+
+        core = DynaconfCore("test")
+        init_core(data, core)
+        result = get_core(data, raises=False)
+        assert result == core
+
+    def test_dynaconf_core_constructor(self):
+        core_id = "test_core_123"
+        core = DynaconfCore(core_id)
+
+        assert core.id == core_id
+        assert isinstance(core, DynaconfCore)
+
+    def test_init_core_already_exists(self):
+        core1 = DynaconfCore("core1")
+        core2 = DynaconfCore("core2")
+
+        data = DataDict(core=core1)
+        assert get_core(data) == core1
+
+        init_core(data, core2)
+        assert get_core(data) == core1

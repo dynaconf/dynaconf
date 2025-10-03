@@ -65,3 +65,34 @@ def test_boxed_data_call(settings):
     assert settings("boxed_data").params.password == "secret"
     assert settings("boxed_data").params.token.type == 1
     assert settings("boxed_data").params.token.value == 2
+
+
+def test_359_jinja_interpolation():
+    from dynaconf import Dynaconf
+
+    data = {
+        "template": "hello",
+        "a": {
+            "main": "@jinja {{this.template}} world",
+        },
+    }
+    settings = Dynaconf(**data)
+
+    expected = {"main": "hello world"}
+    assert settings.get("a.main") == "hello world"
+    assert settings.get("a").to_dict() == expected
+
+
+def test_392_interpolation_inside_list():
+    from dynaconf import Dynaconf
+
+    data = {
+        "myvalue": "hello",
+        "a": {
+            "listy": ["@format {this.myvalue} world"],
+        },
+    }
+    settings = Dynaconf(**data)
+
+    assert settings.a.listy[0] == "hello world"
+    assert settings.a.listy == ["hello world"]

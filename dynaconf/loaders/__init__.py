@@ -14,9 +14,9 @@ from dynaconf.loaders import py_loader
 from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.loaders.base import SourceMetadata
+from dynaconf.nodes import DataDict
 from dynaconf.utils import deduplicate
 from dynaconf.utils import ensure_a_list
-from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import get_local_filename
 from dynaconf.utils.files import glob
 from dynaconf.utils.files import has_magic
@@ -439,7 +439,7 @@ def write(filename, data, env=None, merge=False):
     if not loader:
         raise OSError(f"{loader_name} cannot be found.")
 
-    data = DynaBox(data, box_settings={}).to_dict()
+    data = DataDict(data, box_settings={}).to_dict()
     if loader is not py_loader and env and env not in data:
         data = {env: data}
 
