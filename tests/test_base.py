@@ -1265,7 +1265,7 @@ def test_lowercase_read_mode(tmpdir):
     assert "foo" in results
     assert "FOO" in results
 
-    results = dir(settings.databases)
+    results = settings.databases
     assert "default" in results
     assert "DEFAULT" in results
 

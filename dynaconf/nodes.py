@@ -171,7 +171,7 @@ class DataDict(dict):
 
     def __getattr__(self, attr):
         try:
-            return self[attr]
+            return self.__getitem__(attr)
         except KeyError:
             raise AccessError(attr)
 
@@ -183,12 +183,13 @@ class DataDict(dict):
     def __setitem__(self, k, v):
         result = ensure_containers(v, self.__meta__.core)
         super().__setitem__(k, result)
-        if isinstance(k, str) and k.lower() not in ("items", "get"):
-            super().__setattr__(k.upper(), result)
-            # super().__setattr__(k.lower(), result)
-            super().__setattr__(k, result)
 
     def __setattr__(self, k, v):
+        # We shouldnt use setattr to store items. If an item was assigned with setatttr
+        # and it's lazy, we won't be able to intercept the call in getitem/getattr, which
+        # is required to trigger it's evaluation and not return an actual Lazy object.
+        # __getattr__ is not called because __getattribute__ find the key with the Lazy object,
+        # and really like avoiding overriding __getattribute__ here.
         if k == "__meta__":
             return super().__setattr__(k, v)
         self[k] = v
@@ -209,6 +210,10 @@ class DataDict(dict):
         # when calling dict(DataDict). If absence, it won't trigger, which
         # is actually expected, as the output should be evaluated
         yield from self.keys()
+
+    def __contains__(self, key):
+        resolved = ut.find_the_correct_casing(key, tuple(self.keys())) or key
+        return super().__contains__(resolved)
 
     # Box compatibility. Remove in 3.3.0
     def to_dict(self):
@@ -457,6 +462,10 @@ class DataList(list):
 
     def extend(self, data):
         super().extend(ensure_containers(data, self.__meta__.core))
+
+    def __getitem__(self, index):
+        result = super().__getitem__(index)
+        return recursively_evaluate_lazy_format(result, self.__meta__.core)
 
     def __setitem__(self, k, v):
         super().__setitem__(k, ensure_containers(v, self.__meta__.core))

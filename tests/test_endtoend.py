@@ -76,8 +76,23 @@ def test_359_jinja_interpolation():
             "main": "@jinja {{this.template}} world",
         },
     }
-    settings = Dynaconf(**data, environments=True)
+    settings = Dynaconf(**data)
 
     expected = {"main": "hello world"}
     assert settings.get("a.main") == "hello world"
     assert settings.get("a").to_dict() == expected
+
+
+def test_392_interpolation_inside_list():
+    from dynaconf import Dynaconf
+
+    data = {
+        "myvalue": "hello",
+        "a": {
+            "listy": ["@format {this.myvalue} world"],
+        },
+    }
+    settings = Dynaconf(**data)
+
+    assert settings.a.listy[0] == "hello world"
+    assert settings.a.listy == ["hello world"]
