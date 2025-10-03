@@ -230,6 +230,7 @@ class Settings:
                 RuntimeWarning,
             )
 
+        self._block_eval = False
         self._fresh = False
         self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)
@@ -553,6 +554,8 @@ class Settings:
             self.execute_loaders(key=key)
 
         data = (parent or self.store).get(key, default)
+        # if "a" == key.lower():
+        #     breakpoint()
         if cast:
             data = apply_converter(cast, data, box_settings=self)
         return data
@@ -1610,6 +1613,7 @@ RESERVED_ATTRS = (
         "_fresh",
         "_kwargs",
         "_loaded_by_loaders",
+        "_block_eval",
         "_loaded_envs",
         "_loaded_hooks",
         "_loaded_py_modules",

@@ -350,10 +350,15 @@ class Lazy:
     def __call__(self, settings, validator_object=None):
         """LazyValue triggers format lazily."""
         self.settings = settings
+        print(f">>> lazy: {self.value}")
+        if getattr(settings, "_block_eval", empty) is not empty:
+            self.settings._block_eval = True
         self.context["_validator_object"] = validator_object
         result = self.formatter(self.value, **self.context)
         if self.casting is not None:
             result = self.casting(result)
+        if getattr(settings, "_block_eval", empty) is not empty:
+            self.settings._block_eval = False
         return result
 
     def __str__(self):
