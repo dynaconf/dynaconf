@@ -80,4 +80,4 @@ def test_359_jinja_interpolation():
 
     expected = {"main": "hello world"}
     assert settings.get("a.main") == "hello world"
-    assert settings.get("a") == expected
+    assert settings.get("a").to_dict() == expected

@@ -204,6 +204,12 @@ class DataDict(dict):
         return f"{dict(self)}"
         # return f"{self.__class__.__name__}({dict(self)})"
 
+    def __iter__(self):
+        # WARNING: this has some side-effect that triggerse lazy evaluation
+        # when calling dict(DataDict). If absence, it won't trigger, which
+        # is actually expected, as the output should be evaluated
+        yield from self.keys()
+
     # Box compatibility. Remove in 3.3.0
     def to_dict(self):
         """
