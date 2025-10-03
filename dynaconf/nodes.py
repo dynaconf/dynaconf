@@ -30,21 +30,8 @@ def recursively_evaluate_lazy_format(value, settings):
 
     For example: Evaluate values inside lists and dicts
     """
-    from dynaconf.utils.parse_conf import Lazy
-
-    if isinstance(value, (dict, Lazy)) or (
-        isinstance(value, str) and not value.startswith("__")
-    ):
-        print(f">>> recursive_eval: {repr(value)}")
     if getattr(value, "_dynaconf_lazy_format", None):
         value = value(settings)
-
-    if getattr(value, "_dynaconf_lazy_format", None):
-        value = value(settings)
-
-    # block_eval = getattr(settings, "_block_eval", False)
-    # if block_eval is True:
-    #     return value
 
     if isinstance(value, list):
         # This must be the right way of doing it, but breaks validators
@@ -58,10 +45,6 @@ def recursively_evaluate_lazy_format(value, settings):
                 for item in value
             ]
         )
-    if isinstance(value, dict):
-        for k, v in value.items():
-            ...
-            # value[k] = recursively_evaluate_lazy_format(v, settings)
 
     return value
 
