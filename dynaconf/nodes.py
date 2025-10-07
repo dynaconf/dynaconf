@@ -75,7 +75,7 @@ class DataDict(dict):
     def get(self, item, default=None, bypass_eval=False):
         if not bypass_eval:
             n_item = (
-                ut.find_the_correct_casing(item, self) or item
+                ut.find_the_correct_casing(item, tuple(self.keys())) or item
             )
             result = super().get(n_item, empty)
             result = result if result is not empty else default
@@ -84,7 +84,7 @@ class DataDict(dict):
             return super().__getitem__(item)
         except (AttributeError, KeyError):
             n_item = (
-                ut.find_the_correct_casing(item, self) or item
+                ut.find_the_correct_casing(item, tuple(self.keys())) or item
             )
             return super().__getitem__(n_item)
 
@@ -95,7 +95,9 @@ class DataDict(dict):
         try:
             result = super().__getitem__(item)
         except (AttributeError, KeyError):
-            n_item = ut.find_the_correct_casing(item, self) or item
+            n_item = (
+                ut.find_the_correct_casing(item, tuple(self.keys())) or item
+            )
             result = super().__getitem__(n_item)
         return recursively_evaluate_lazy_format(result, self.__meta__.core)
 
@@ -127,7 +129,7 @@ class DataDict(dict):
         self[k] = v
 
     def __delitem__(self, k):
-        resolved = ut.find_the_correct_casing(k, self) or k
+        resolved = ut.find_the_correct_casing(k, tuple(self.keys())) or k
         super().__delitem__(resolved)
 
     def __delattr__(self, name):
@@ -144,7 +146,7 @@ class DataDict(dict):
         yield from self.keys()
 
     def __contains__(self, key):
-        resolved = ut.find_the_correct_casing(key, self) or key
+        resolved = ut.find_the_correct_casing(key, tuple(self.keys())) or key
         return super().__contains__(resolved)
 
     # Box compatibility. Remove in 3.3.0

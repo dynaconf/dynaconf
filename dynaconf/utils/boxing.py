@@ -17,7 +17,7 @@ class DynaBox(Box):
         try:
             result = super().__getattr__(item, *args, **kwargs)
         except (AttributeError, KeyError):
-            n_item = find_the_correct_casing(item, self) or item
+            n_item = find_the_correct_casing(item, tuple(self.keys())) or item
             result = super().__getattr__(n_item, *args, **kwargs)
         return self.__evaluate_lazy__(result)
 
@@ -25,7 +25,7 @@ class DynaBox(Box):
         try:
             result = super().__getitem__(item, *args, **kwargs)
         except (AttributeError, KeyError):
-            n_item = find_the_correct_casing(item, self) or item
+            n_item = find_the_correct_casing(item, tuple(self.keys())) or item
             result = super().__getitem__(n_item, *args, **kwargs)
         return self.__evaluate_lazy__(result)
 
@@ -34,14 +34,14 @@ class DynaBox(Box):
     ) -> Any:
         # _TODO(pbrochad): refactor all these getter methods to make consistency easier
         if not bypass_eval:
-            n_item = find_the_correct_casing(item, self) or item
+            n_item = find_the_correct_casing(item, tuple(self.keys())) or item
             result = super().get(n_item, empty, *args, **kwargs)
             result = result if result is not empty else default
             return self.__evaluate_lazy__(result)
         try:
             return super().__getitem__(item, *args, **kwargs)
         except (AttributeError, KeyError):
-            n_item = find_the_correct_casing(item, self) or item
+            n_item = find_the_correct_casing(item, tuple(self.keys())) or item
             return super().__getitem__(n_item, *args, **kwargs)
 
     def __evaluate_lazy__(self, result):

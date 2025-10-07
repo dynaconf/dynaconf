@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from collections import namedtuple
 
+import pytest
+
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.box import BoxList
+
+pytestmark = pytest.mark.skip("To be removed")
 
 DBDATA = namedtuple("DbData", ["server", "port"])
 

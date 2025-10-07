@@ -401,7 +401,7 @@ class Box(dict):
                     if _camel_killer(key) == each_key:
                         key = each_key
                         break
-        super().__delitem__(find_the_correct_casing(key, self))
+        super().__delitem__(find_the_correct_casing(key, tuple(self.keys())))
 
     def __delattr__(self, item):
         if self._box_config['frozen_box']:

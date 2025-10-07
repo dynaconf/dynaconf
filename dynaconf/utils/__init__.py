@@ -6,6 +6,7 @@ import warnings
 from collections import defaultdict
 from collections.abc import Iterator
 from collections.abc import Sequence
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from typing import Literal
@@ -96,7 +97,9 @@ def object_merge(
         # data existing on `old` object has the correct case: key4|KEY4|Key4
         # So we need to ensure that new keys matches the existing keys
         for new_key in list(new.keys()):
-            correct_case_key = find_the_correct_casing(new_key, old)
+            correct_case_key = find_the_correct_casing(
+                new_key, tuple(old.keys())
+            )
             if correct_case_key:
                 new[correct_case_key] = new.pop(new_key)
 
@@ -531,7 +534,10 @@ def isnamedtupleinstance(value):
     return all(isinstance(n, str) for n in f)
 
 
-def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
+@lru_cache
+def find_the_correct_casing(
+    key: str, data_keys: tuple[Any, ...]
+) -> str | None:
     """Given a key, find the proper casing in data.
 
     Return 'None' for non-str key types.
@@ -543,9 +549,9 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
     Returns:
         str -- The proper casing of the key in data
     """
-    if not isinstance(key, str) or key in data.keys():
+    if not isinstance(key, str) or key in data_keys:
         return key
-    for k in data.keys():
+    for k in data_keys:
         if not isinstance(k, str):
             return None
         if k.lower() == key.lower():
