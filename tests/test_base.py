@@ -1259,13 +1259,11 @@ def test_lowercase_read_mode(tmpdir):
     assert "FOO" in settings
 
     # test __dir__
-    # TODO @pbrochad: do we really need to have those on the dir?
-    # https://github.com/dynaconf/dynaconf/issues/todo
     results = dir(settings)
     assert "foo" in results
     assert "FOO" in results
 
-    results = settings.databases
+    results = dir(settings.databases)
     assert "default" in results
     assert "DEFAULT" in results
 
