@@ -18,7 +18,7 @@ settings.validators.register(
 
 settings.validators.validate()
 
-assert settings.group.test_list == ["1", "2"], settings.group.test_list
+assert settings.group.test_list == ["'1'", "'2'"], settings.group.test_list
 assert settings.group.something_new == 5
 assert settings.group.another_setting == "ciao"
 assert settings.group.another == 45

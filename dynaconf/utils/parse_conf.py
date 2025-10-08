@@ -6,11 +6,11 @@ import re
 import warnings
 from functools import wraps
 
+from dynaconf.nodes import DataDict
 from dynaconf.utils import extract_json_objects
 from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import multi_replace
 from dynaconf.utils import recursively_evaluate_lazy_format
-from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.functional import empty
 from dynaconf.vendor import toml
 from dynaconf.vendor import tomllib
@@ -570,17 +570,29 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
         value = parse_with_toml(data) if tomlfy else data
 
     if isinstance(value, dict) and box_settings.get("DYNABOXIFY", True):
-        value = DynaBox(value, box_settings=box_settings)
+        value = DataDict(value, box_settings=box_settings)
 
     return value
 
 
-def parse_conf_data(data, tomlfy=False, box_settings=None):
+def parse_conf_data(data, tomlfy=False, box_settings=None, tomlfy_filter=None):
     """
     Apply parsing tokens recursively and return transformed data.
 
     Strings with lazy parser (e.g, @format) will become Lazy objects.
     """
+
+    def in_tomlfy_filter(key):
+        if not tomlfy_filter:
+            return False
+        for k in tomlfy_filter:
+            if isinstance(k, str):  # dotted-path aware comparison for str
+                _, _, k_leaf = k.partition(".")
+                if key.lower() == k_leaf.lower():
+                    return True
+            elif k == key:  # it may no be a string, so just compare
+                return True
+        return False
 
     # fix for https://github.com/dynaconf/dynaconf/issues/595
     if isnamedtupleinstance(data):
@@ -592,17 +604,25 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
     if isinstance(data, (tuple, list)):
         # recursively parse each sequence item
         return [
-            parse_conf_data(item, tomlfy=tomlfy, box_settings=box_settings)
+            parse_conf_data(
+                item,
+                tomlfy=tomlfy,
+                box_settings=box_settings,
+                tomlfy_filter=tomlfy_filter,
+            )
             for item in data
         ]
 
-    if isinstance(data, DynaBox):
+    if isinstance(data, DataDict):
         # recursively parse inner dict items
         # It is important to keep the same object id because
         # of mutability
         for k, v in data.items(bypass_eval=True):
             data[k] = parse_conf_data(
-                v, tomlfy=tomlfy, box_settings=box_settings
+                v,
+                tomlfy=tomlfy,
+                box_settings=box_settings,
+                tomlfy_filter=tomlfy_filter,
             )
         return data
 
@@ -611,8 +631,14 @@ def parse_conf_data(data, tomlfy=False, box_settings=None):
         # It is important to keep the same object id because
         # of mutability
         for k, v in data.items():
+            should_tomlfy = tomlfy and (
+                not tomlfy_filter or in_tomlfy_filter(k)
+            )
             data[k] = parse_conf_data(
-                v, tomlfy=tomlfy, box_settings=box_settings
+                v,
+                tomlfy=should_tomlfy,
+                box_settings=box_settings,
+                tomlfy_filter=tomlfy_filter,
             )
         return data
 

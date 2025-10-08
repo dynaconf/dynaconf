@@ -10,7 +10,7 @@ import click
 setup_code = """\
 from dynaconf import Dynaconf
 from dynaconf.utils.boxing import DynaBox
-from dynaconf.data_nodes import DataDict
+from dynaconf.nodes import DataDict
 
 data = {"common": {"mode": 123}}
 settings = Dynaconf(

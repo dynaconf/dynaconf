@@ -93,3 +93,5 @@ dynaconf/vendor/source
 
 # pyenv
 .python-version
+
+*.dat

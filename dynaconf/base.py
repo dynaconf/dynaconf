@@ -23,6 +23,8 @@ from dynaconf.loaders import py_loader
 from dynaconf.loaders import settings_loader
 from dynaconf.loaders import yaml_loader
 from dynaconf.loaders.base import SourceMetadata
+from dynaconf.nodes import DataDict
+from dynaconf.nodes import DataList
 from dynaconf.utils import BANNER
 from dynaconf.utils import compat_kwargs
 from dynaconf.utils import ensure_a_list
@@ -31,7 +33,6 @@ from dynaconf.utils import missing
 from dynaconf.utils import object_merge
 from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
-from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import glob
 from dynaconf.utils.functional import empty
@@ -44,7 +45,6 @@ from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
-from dynaconf.vendor.box.box_list import BoxList
 
 
 class LazySettings(LazyObject):
@@ -215,7 +215,7 @@ class Settings:
     """
 
     dynaconf_banner = BANNER
-    _store = DynaBox()
+    _store = DataDict()
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         """Execute loaders and custom initialization
@@ -236,9 +236,8 @@ class Settings:
         self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
-
         if kwargs.get("DYNABOXIFY", True):
-            default_store = DynaBox(box_settings=self)
+            default_store = DataDict(box_settings=self)
         else:
             default_store = {}  # Disabled dot access
         self._store = kwargs.pop("_store", default_store)
@@ -246,7 +245,7 @@ class Settings:
         self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []
-        self._defaults = DynaBox(box_settings=self)
+        self._defaults = DataDict(box_settings=self)
         self.environ = os.environ
         self.SETTINGS_MODULE = None
         self.filter_strategy = kwargs.get("filter_strategy", None)
@@ -417,11 +416,14 @@ class Settings:
         loader_identifier = SourceMetadata("setdefault", "unique", env.lower())
 
         if apply_default:
+            # Passing tomlfy_filter prevents side-effects of tomlfy on sibling items.
+            # See: https://github.com/dynaconf/dynaconf/issues/905
             self.set(
                 item,
                 default,
                 loader_identifier=loader_identifier,
                 tomlfy=True,
+                tomlfy_filter=(item,),
             )
             return default
 
@@ -445,7 +447,13 @@ class Settings:
     to_dict = as_dict  # backwards compatibility
 
     def _dotted_get(
-        self, dotted_key, default=None, parent=None, cast=None, **kwargs
+        self,
+        dotted_key,
+        default=None,
+        parent=None,
+        cast=None,
+        tomlfy_filter=None,
+        **kwargs,
     ):
         """
         Perform dotted key lookups and keep track of where we are.
@@ -468,12 +476,22 @@ class Settings:
             if cast and cast in converters:
                 return apply_converter(cast, result, box_settings=self)
             elif cast is True:
-                return parse_conf_data(result, tomlfy=True, box_settings=self)
+                return parse_conf_data(
+                    result,
+                    tomlfy=True,
+                    box_settings=self,
+                    tomlfy_filter=tomlfy_filter,
+                )
             return result
 
         # If we've still got key elements to traverse, let's do that.
         return self._dotted_get(
-            ".".join(keys), default=default, parent=result, cast=cast, **kwargs
+            ".".join(keys),
+            default=default,
+            parent=result,
+            cast=cast,
+            tomlfy_filter=tomlfy_filter,
+            **kwargs,
         )
 
     def get(
@@ -535,9 +553,9 @@ class Settings:
         # default values should behave exactly Dynaconf parsed values
         if default is not None and self._store.get("DYNABOXIFY", True):
             if isinstance(default, list):
-                default = BoxList(default)
+                default = DataList(default)
             elif isinstance(default, dict):
-                default = DynaBox(default)
+                default = DataDict(default)
 
         if key in self._deleted:
             return default
@@ -597,7 +615,10 @@ class Settings:
                 data = apply_converter(cast, data, box_settings=self)
             elif cast is True:
                 data = parse_conf_data(
-                    boolean_fix(data), tomlfy=True, box_settings=self
+                    boolean_fix(data),
+                    tomlfy=True,
+                    box_settings=self,
+                    tomlfy_filter=(key,),
                 )
         return data
 
@@ -892,7 +913,13 @@ class Settings:
             self.unset(key, force=force)
 
     def _dotted_set(
-        self, dotted_key, value, tomlfy=False, validate=empty, **kwargs
+        self,
+        dotted_key,
+        value,
+        tomlfy=False,
+        validate=empty,
+        tomlfy_filter=None,
+        **kwargs,
     ):
         """Sets dotted keys as nested dictionaries.
 
@@ -915,10 +942,15 @@ class Settings:
         split_keys = dotted_key.replace("[", ".[").split(".")
         existing_data = self.get(split_keys[0], {})
         if self.get("DYNABOXIFY", True):
-            new_data = tree = DynaBox(box_settings=self)
+            new_data = tree = DataDict(box_settings=self)
         else:
             new_data = tree = {}
-        value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
+        value = parse_conf_data(
+            value,
+            tomlfy=tomlfy,
+            box_settings=self,
+            tomlfy_filter=tomlfy_filter,
+        )
 
         for n, k in enumerate(split_keys):
             is_not_end = n < (len(split_keys) - 1)
@@ -934,8 +966,15 @@ class Settings:
                 "]"
             ):  # accessing index of a list
                 index = int(k.replace("[", "").replace("]", ""))
+                # if 'id(tree) == id(next_default)' we may get an infinite recursive list. Try:
+                # >>> li=[]
+                # >>> li.extend([li])
+                # >>> li[0][0]...[0]
+                # TODO @pbrochad: refactor this implementation, it's really cumbersome in general
+                # https://github.com/dynaconf/dynaconf/issues/todo
+                extended_list = [next_default.copy() for _ in range(index + 1)]
                 # This makes sure we can assign any arbitrary index
-                tree.extend([next_default] * (index + 1))
+                tree.extend(extended_list)
                 if is_not_end:
                     tree = tree[index]  # get at index
                 else:
@@ -945,7 +984,7 @@ class Settings:
 
         if existing_data:
             if self.get("DYNABOXIFY", True):
-                old_data = DynaBox(
+                old_data = DataDict(
                     {split_keys[0]: existing_data}, box_settings=self
                 )
             else:
@@ -957,7 +996,13 @@ class Settings:
                 full_path=split_keys,
                 list_merge="deep",  # when to use deep / shallow replace?
             )
-        self.update(data=new_data, tomlfy=tomlfy, validate=validate, **kwargs)
+        self.update(
+            data=new_data,
+            tomlfy=tomlfy,
+            validate=validate,
+            tomlfy_filter=tomlfy_filter,
+            **kwargs,
+        )
 
     def set(
         self,
@@ -969,6 +1014,7 @@ class Settings:
         is_secret="DeprecatedArgument",  # noqa
         validate=empty,
         merge=empty,
+        tomlfy_filter: tuple[str, ...] | None = None,
     ):
         """Set a value storing references for the loader
 
@@ -979,6 +1025,7 @@ class Settings:
         :param tomlfy: Bool define if value is parsed by toml (defaults False)
         :param merge: Bool define if existing nested data will be merged.
         :param validate: Bool define if validation will be triggered
+        :param tomlfy_filter: Optional tuple with the keys where tomlfy should apply
         """
 
         # Ensure source_metadata always is set even if set is called
@@ -1018,10 +1065,16 @@ class Settings:
                     loader_identifier=source_metadata,
                     tomlfy=tomlfy,
                     validate=validate,
+                    tomlfy_filter=tomlfy_filter,
                 )
             key = upperfy(key.strip())
 
-        parsed = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
+        parsed = parse_conf_data(
+            value,
+            tomlfy=tomlfy,
+            box_settings=self,
+            tomlfy_filter=tomlfy_filter,
+        )
 
         # Fix for #869 - The call to getattr trigger early evaluation
         existing = (
@@ -1076,19 +1129,17 @@ class Settings:
                     parsed,
                     source_metadata,
                     context_merge=merge,
-                    list_merge="replace"
-                    if source_metadata
-                    and source_metadata.loader == "setdefault"
-                    and source_metadata.env == "development"
-                    else "merge",  # fix 905
                 )
 
         if (
             self.get("DYNABOXIFY", True)
             and isinstance(parsed, dict)
-            and not isinstance(parsed, DynaBox)
+            and not isinstance(parsed, DataDict)
         ):
-            parsed = DynaBox(parsed, box_settings=self)
+            parsed = DataDict(parsed, box_settings=self)
+
+        if isinstance(parsed, list) and not isinstance(parsed, DataList):
+            parsed = DataList(parsed, box_settings=self)
 
         # Set the parsed value
         self.store[key] = parsed
@@ -1123,6 +1174,7 @@ class Settings:
         is_secret="DeprecatedArgument",  # noqa
         dotted_lookup=empty,
         validate=empty,
+        tomlfy_filter=None,
         **kwargs,
     ):
         """
@@ -1163,6 +1215,7 @@ class Settings:
                     merge=merge,
                     dotted_lookup=dotted_lookup,
                     validate=validate,
+                    tomlfy_filter=tomlfy_filter,
                 )
 
         # handle param `validate`

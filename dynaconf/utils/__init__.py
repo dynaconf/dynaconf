@@ -6,6 +6,7 @@ import warnings
 from collections import defaultdict
 from collections.abc import Iterator
 from collections.abc import Sequence
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from typing import Literal
@@ -16,8 +17,8 @@ from typing import TypeVar
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings
     from dynaconf.base import Settings
+    from dynaconf.nodes import DataDict
     from dynaconf.nodes import DataNode
-    from dynaconf.utils.boxing import DynaBox
 
 
 BANNER = """
@@ -71,8 +72,6 @@ def object_merge(
                 if unique and item in new:
                     continue
                 new.insert(0, item)
-        # replace mode
-        # elif list_merge == "replace": pass
         elif len(full_path) > 0:  # element-wise merge
             new.extend([[]] * max(len(old) - len(new), 0))
             for ii, item in enumerate(old):
@@ -98,15 +97,17 @@ def object_merge(
         # data existing on `old` object has the correct case: key4|KEY4|Key4
         # So we need to ensure that new keys matches the existing keys
         for new_key in list(new.keys()):
-            correct_case_key = find_the_correct_casing(new_key, old)
+            correct_case_key = find_the_correct_casing(
+                new_key, tuple(old.keys())
+            )
             if correct_case_key:
                 new[correct_case_key] = new.pop(new_key)
 
         def safe_items(data):
             """
-            Get items from DynaBox without triggering recursive evaluation
+            Get items from DataDict without triggering recursive evaluation
             """
-            if data.__class__.__name__ == "DynaBox":
+            if data.__class__.__name__ == "DataDict":
                 return data.items(bypass_eval=True)
             else:
                 return data.items()
@@ -141,7 +142,7 @@ def object_merge(
 
 
 def recursive_get(
-    obj: DynaBox | dict[str, int] | dict[str, str | int],
+    obj: DataDict | dict[str, int] | dict[str, str | int],
     names: list[str] | None,
 ) -> Any:
     """Given a dot accessible object and a list of names `foo.bar.[1].zaz`
@@ -163,7 +164,7 @@ def recursive_get(
 
 
 def handle_metavalues(
-    old: DynaBox | dict[str, int] | dict[str, str | int],
+    old: DataDict | dict[str, int] | dict[str, str | int],
     new: Any,
     list_merge: Literal["merge", "shallow", "deep"] = "merge",
 ) -> None:
@@ -314,7 +315,7 @@ class Missing:
         """Respond to boolean duck-typing."""
         return False
 
-    def __eq__(self, other: DynaBox | Missing) -> bool:
+    def __eq__(self, other: DataDict | Missing) -> bool:
         """Equality check for a singleton."""
 
         return isinstance(other, self.__class__)
@@ -533,7 +534,10 @@ def isnamedtupleinstance(value):
     return all(isinstance(n, str) for n in f)
 
 
-def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
+@lru_cache
+def find_the_correct_casing(
+    key: str, data_keys: tuple[Any, ...]
+) -> str | None:
     """Given a key, find the proper casing in data.
 
     Return 'None' for non-str key types.
@@ -545,9 +549,9 @@ def find_the_correct_casing(key: str, data: dict[str, Any]) -> str | None:
     Returns:
         str -- The proper casing of the key in data
     """
-    if not isinstance(key, str) or key in data:
+    if not isinstance(key, str) or key in data_keys:
         return key
-    for k in data.keys():
+    for k in data_keys:
         if not isinstance(k, str):
             return None
         if k.lower() == key.lower():

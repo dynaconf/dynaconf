@@ -3,6 +3,8 @@ from __future__ import annotations
 import copy
 import os
 import sys
+from pathlib import Path
+from textwrap import dedent
 
 import pytest
 
@@ -39,6 +41,18 @@ def settings():
     sets.SIMPLE_BOOL = False
     sets.configure()
     return sets
+
+
+@pytest.fixture
+def create_file(tmp_path):
+    # TODO @pbrochad: refactor all create_file utils scattered around to use this
+    # https://github.com/dynaconf/dynaconf/issues/todo
+    def _create_file(filename: str, data: str) -> Path:
+        filepath = tmp_path / filename
+        filepath.write_text(dedent(data))
+        return filepath
+
+    return _create_file
 
 
 @pytest.fixture(scope="module")

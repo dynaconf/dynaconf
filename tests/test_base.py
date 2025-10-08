@@ -10,10 +10,10 @@ from dynaconf import ValidationError
 from dynaconf import Validator
 from dynaconf.loaders import toml_loader
 from dynaconf.loaders import yaml_loader
+from dynaconf.nodes import DataDict
+from dynaconf.nodes import DataList
 from dynaconf.strategies.filtering import PrefixFilter
-from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils.parse_conf import true_values
-from dynaconf.vendor.box.box_list import BoxList
 
 
 def test_deleted_raise(settings):
@@ -145,11 +145,11 @@ def test_populate_obj_convert_to_dict(settings):
     class Obj:
         pass
 
-    # first make sure regular populate brings in Box and BoxList
+    # first make sure regular populate brings in DataDict and DataList
     obj = Obj()
     settings.populate_obj(obj)
-    assert isinstance(obj.ADICT, DynaBox)
-    assert isinstance(obj.ALIST, BoxList)
+    assert isinstance(obj.ADICT, DataDict)
+    assert isinstance(obj.ALIST, DataList)
     assert isinstance(obj.ADICT.to_yaml(), str)
 
     # now make sure convert_to_dict=True brings in dict and list
@@ -1259,11 +1259,13 @@ def test_lowercase_read_mode(tmpdir):
     assert "FOO" in settings
 
     # test __dir__
+    # TODO @pbrochad: do we really need to have those on the dir?
+    # https://github.com/dynaconf/dynaconf/issues/todo
     results = dir(settings)
     assert "foo" in results
     assert "FOO" in results
 
-    results = dir(settings.databases)
+    results = settings.databases
     assert "default" in results
     assert "DEFAULT" in results
 
@@ -1387,8 +1389,8 @@ def test_list_entries_from_yaml_should_not_duplicate_when_merged(tmpdir):
         merge_enabled=True,
     )
 
-    expected_default_value = BoxList(["item_1", "item_2", "item_3"])
-    expected_other_value = BoxList(
+    expected_default_value = DataList(["item_1", "item_2", "item_3"])
+    expected_other_value = DataList(
         ["item_1", "item_2", "item_3", "item_4", "item_5"]
     )
 

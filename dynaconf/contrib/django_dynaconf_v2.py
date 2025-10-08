@@ -40,7 +40,7 @@ except ImportError:  # pragma: no cover
 
 
 # Compat with Django 5.x
-def _add_script_prefix(value):
+def _add_script_prefix(value):  # pragma: nocover
     """
     Add SCRIPT_NAME prefix to relative paths.
 
@@ -57,7 +57,7 @@ def _add_script_prefix(value):
 
 # Special case some settings which require further modification.
 # This is done here for performance reasons so the modified value is cached.
-def fix_absolute_urls(_settings):
+def fix_absolute_urls(_settings):  # pragma: nocover
     data = {}
     if media_url := _settings.get("MEDIA_URL"):
         data["MEDIA_URL"] = _add_script_prefix(media_url)
