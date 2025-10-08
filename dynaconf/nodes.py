@@ -14,6 +14,7 @@ the legacy `Settings` attributes `._fresh, ._store, ._deleted, etc`.
 from __future__ import annotations
 
 import copy
+import inspect
 import warnings
 from dataclasses import dataclass
 from typing import Optional
@@ -149,7 +150,23 @@ class DataDict(dict):
         resolved = ut.find_the_correct_casing(key, tuple(self.keys())) or key
         return super().__contains__(resolved)
 
-    # Box compatibility. Remove in 3.3.0
+    # Box compatibility. Remove in 4.0
+
+    def __dir__(self):
+        keys = list(self.keys())
+        reserved = [
+            item[0]
+            for item in inspect.getmembers(DataDict)
+            if not item[0].startswith("__")
+        ]
+        result = (
+            keys
+            + [k.lower() for k in keys]
+            + [k.upper() for k in keys]
+            + reserved
+        )
+        return result
+
     def to_dict(self):
         """
         Turn the DataDict and sub DataDicts back into a native python dictionary.
@@ -414,7 +431,8 @@ class DataList(list):
         # NOTE: debatable choice: same representation of list
         return f"{list(self)!r}"
 
-    # Box compatibility. Remove in 3.3.0
+    # Box compatibility. Remove in 4.0
+
     def __copy__(self):  # pragma: nocover
         box_deprecation_warning("__copy__", "DataList")
         return self.copy()
