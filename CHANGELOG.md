@@ -2,6 +2,14 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.2.12](https://github.com/pedro-psb/dynaconf/releases/tag/3.2.12) - 2025-10-10
+
+### Bug Fixes
+
+- get method to return Any type.. *By Bruno Rocha*.
+- remove unnecessary recursive evaluation call on Settings.get. *By Pedro Brochado*.
+- improve performance of settings access in a loop (part 1). *By Pedro Brochado*.
+
 ## [3.2.11](https://github.com/dynaconf/dynaconf/releases/tag/3.2.11) - 2025-05-06
 
 ### Bug Fixes
