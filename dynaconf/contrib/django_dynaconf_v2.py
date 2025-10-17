@@ -134,6 +134,10 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
 
     lazy_settings.update(dj)
 
+    # 2 pass execution, 1st immediately and second deferred
+    # to post hooks so it can fix URLS added later in the
+    # loading pipeline
+    lazy_settings.update(fix_absolute_urls(lazy_settings))
     lazy_settings._post_hooks.append(fix_absolute_urls)
 
     # Allow dynaconf_hooks to be in the same folder as the django.settings
