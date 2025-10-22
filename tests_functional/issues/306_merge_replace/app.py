@@ -44,6 +44,6 @@ data = settings.REST_FRAMEWORK.DEFAULT_AUTHENTICATION_CLASSES
 
 assert len(data) == 1, (len(data), data)
 
-assert data == ["pulpcore.app.authentication.PulpRemoteUserAuthentication"], (
-    data
-)
+assert data == [
+    "pulpcore.app.authentication.PulpRemoteUserAuthentication"
+], data

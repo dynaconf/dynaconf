@@ -14,7 +14,7 @@ print(settings.DATABASE_PATH)
 
 
 DB_PATH_JINJA = "/home/robert_plant/development/my_database.db"
-assert settings.DATABASE_PATH_JINJA == DB_PATH_JINJA, (
-    settings.DATABASE_PATH_JINJA
-)
+assert (
+    settings.DATABASE_PATH_JINJA == DB_PATH_JINJA
+), settings.DATABASE_PATH_JINJA
 print(settings.DATABASE_PATH_JINJA)

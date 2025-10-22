@@ -14,6 +14,6 @@ settings = Dynaconf(
     ],
 )
 
-assert settings.azurerm.client_secret == "myAzurePass", (
-    settings.azurerm.client_secret
-)
+assert (
+    settings.azurerm.client_secret == "myAzurePass"
+), settings.azurerm.client_secret

@@ -15,9 +15,9 @@ settings_files = [
     Path.cwd() / "config" / "settings-staging.yaml",
 ]
 
-assert all(p.exists() for p in settings_files), (
-    "Some of the given config files do not exist"
-)
+assert all(
+    p.exists() for p in settings_files
+), "Some of the given config files do not exist"
 
 settings = Dynaconf(
     settings_files=settings_files,
