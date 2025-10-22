@@ -34,9 +34,9 @@ settings = dynaconf.DjangoDynaconf(
 
 
 # test
-assert (
-    settings.ENVVAR_PREFIX_FOR_DYNACONF == "MYWEBAPP"
-), settings.ENVVAR_PREFIX_FOR_DYNACONF
+assert settings.ENVVAR_PREFIX_FOR_DYNACONF == "MYWEBAPP", (
+    settings.ENVVAR_PREFIX_FOR_DYNACONF
+)
 assert settings.GLOBAL_ENV_FOR_DYNACONF == "MYWEBAPP"
 assert settings.PLUGIN_ENABLED is True
 assert settings.PLUGIN_LIST == ["plugin1", "plugin2"]
@@ -52,11 +52,11 @@ assert settings.DATABASES.DEFAULT.NAME == "db.sqlite3"
 
 
 assert settings.SETTINGS_FILE_FOR_DYNACONF == settings_location
-assert (
-    settings.SETTINGS_MODULE_FOR_DYNACONF == settings_location
-), settings.SETTINGS_MODULE_FOR_DYNACONF
+assert settings.SETTINGS_MODULE_FOR_DYNACONF == settings_location, (
+    settings.SETTINGS_MODULE_FOR_DYNACONF
+)
 assert settings.SETTINGS_MODULE == settings_location
-assert (
-    settings.DYNACONF_SETTINGS == settings_location
-), settings.DYNACONF_SETTINGS
+assert settings.DYNACONF_SETTINGS == settings_location, (
+    settings.DYNACONF_SETTINGS
+)
 assert settings.settings_module == settings_location

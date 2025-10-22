@@ -10,7 +10,7 @@ settings = Dynaconf(
 print(settings.current_env)
 print(settings._loaded_by_loaders)
 
-assert (
-    settings.get("www.google.com", dotted_lookup=False) == "data"
-), settings.get("www.google.com")
+assert settings.get("www.google.com", dotted_lookup=False) == "data", (
+    settings.get("www.google.com")
+)
 assert settings.as_dict() == {"WWW.GOOGLE.COM": "data"}, settings.as_dict()

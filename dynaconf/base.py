@@ -121,7 +121,7 @@ class LazySettings(LazyObject):
             self._setup()
         if name in self._wrapped._deleted:  # noqa
             raise AttributeError(
-                f"Attribute {name} was deleted, " "or belongs to different env"
+                f"Attribute {name} was deleted, or belongs to different env"
             )
 
         if name not in RESERVED_ATTRS:

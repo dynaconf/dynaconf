@@ -223,7 +223,7 @@ def test_post_load_hooks(clean_env, tmpdir):
             "'DATABASES__default': '@merge PORT=5151',"
             "'DATABASES__default__VERSION': 42,"
             "'DATABASES__default__FORCED_INT': '@int 12',",
-            "'BANDS': ['Anathema', 'dynaconf_merge']" "}",
+            "'BANDS': ['Anathema', 'dynaconf_merge']}",
         ],
         str(settings_hook): [
             "post = lambda settings: "
