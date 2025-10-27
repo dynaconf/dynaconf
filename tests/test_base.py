@@ -15,6 +15,14 @@ from dynaconf.nodes import DataList
 from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils.parse_conf import true_values
 
+# def test_getattr():
+#     settings = Dynaconf(
+#         # load_dotenv=True,
+#         ROOT_PATH_FOR_DYNACONF=os.path.dirname(os.path.abspath(__file__)),
+#     )
+#     result = settings["DOTENV_INT"] == 1
+#     assert result
+
 
 def test_deleted_raise(settings):
     """asserts variable can be deleted"""
