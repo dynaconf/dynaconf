@@ -325,6 +325,8 @@ class Settings:
         return item.upper() in self.store or item.lower() in self.store
 
     def __getattr__(self, name):
+        # Uses the super 'object' class getter, which looks in instance __dict__
+        # Only use that for internal values, otherwise use self._store
         if _is_key_internal(name):
             return super().__getattribute__(name)
 
@@ -333,19 +335,17 @@ class Settings:
         if _should_use_strict_uppercase(name, self):
             return self._store.__getattribute__(name)
 
-        # then go to the regular .get which triggers hooks among other things
+        # Use regular .get which triggers hooks among other things
         value = self.get(name, default=empty)
         if value is empty:
             raise AttributeError(name)
-
         return value
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
-        # try:
-        #     return self.__getattr__(item)
-        # except AttributeError:
-        #     raise KeyError(f"{item} does not exist")
+        # TODO(@pbrochad): This should use __getattr__ as the behavior source of
+        # truth, but the behavior differs when dealing with 'strict uppercase mode'
+        # https://github.com/dynaconf/dynaconf/issues/todo
         value = self.get(item, default=empty)
         if value is empty:
             raise KeyError(f"{item} does not exist")
@@ -515,16 +515,20 @@ class Settings:
         :return: The value if found, default or None
         """
         if sysenv_fallback is None:
-            sysenv_fallback = self._store.get("SYSENV_FALLBACK_FOR_DYNACONF")
+            sysenv_fallback = getattr(
+                self, "SYSENV_FALLBACK_FOR_DYNACONF", None
+            )
 
-        nested_sep = self._store.get("NESTED_SEPARATOR_FOR_DYNACONF")
+        nested_sep = getattr(self, "NESTED_SEPARATOR_FOR_DYNACONF", None)
         if isinstance(key, str):
             if nested_sep and nested_sep in key:
                 # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
                 key = key.replace(nested_sep, ".")
 
             if dotted_lookup is empty:
-                dotted_lookup = self._store.get("DOTTED_LOOKUP_FOR_DYNACONF")
+                dotted_lookup = getattr(
+                    self, "DOTTED_LOOKUP_FOR_DYNACONF", None
+                )
 
             if "." in key and dotted_lookup:
                 return self._dotted_get(
@@ -1676,7 +1680,6 @@ def _is_key_internal(key: str | int) -> bool:
 
 
 def _should_use_strict_uppercase(key, obj):
-    return (
-        key.islower()
-        and getattr(obj, "LOWERCASE_READ_FOR_DYNACONF", empty) is False
-    )
+    return (isinstance(key, str) and key.islower()) and getattr(
+        obj, "LOWERCASE_READ_FOR_DYNACONF", empty
+    ) is False
