@@ -14,6 +14,8 @@ from typing import TYPE_CHECKING
 from typing import TypedDict
 from typing import TypeVar
 
+from dynaconf.utils.functional import empty
+
 if TYPE_CHECKING:  # pragma: no cover
     from dynaconf.base import LazySettings
     from dynaconf.base import Settings
@@ -292,9 +294,37 @@ RENAMED_VARS = {
     "GLOBAL_ENV_FOR_DYNACONF": "ENVVAR_PREFIX_FOR_DYNACONF",
 }
 
+MISSPELL_OPTIONS = {
+    "settings_files": "settings_file",
+    "SETTINGS_FILES": "SETTINGS_FILE",
+    "environment": "environments",
+    "ENVIRONMENT": "ENVIRONMENTS",
+}
 
-def compat_kwargs(kwargs: dict[str, Any]) -> None:
-    """To keep backwards compat change the kwargs to new names"""
+
+def normalize_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
+    """Resolve names in the user provided keyword arguments."""
+    from dynaconf.base import UPPER_DEFAULT_SETTINGS  # avoid circular import
+
+    for_dynaconf_keys = {
+        key for key in UPPER_DEFAULT_SETTINGS if key.endswith("_FOR_DYNACONF")
+    }
+
+    # Fix config name misspells. E.g:
+    # "settings_files" -> "settings_file"
+    for misspell, correct in MISSPELL_OPTIONS.items():
+        if misspell in kwargs:
+            kwargs[correct] = kwargs.pop(misspell)
+
+    # Replace `_FOR_DYNACONF` alises. E.g:
+    # "root_PATH" -> "ROOT_PATH_FOR_DYNACONF"
+    for key in tuple(kwargs.keys()):
+        normalized_key = f"{key.upper()}_FOR_DYNACONF"
+        if normalized_key in for_dynaconf_keys:
+            kwargs[normalized_key] = kwargs.pop(key)
+
+    # Keep backwards compat with renamed options. E.g:
+    # "DYNACONF_NAMESPACE" -> "ENV_FOR_DYNACONF"
     warn_deprecations(kwargs)
     for old, new in RENAMED_VARS.items():
         if old in kwargs:
@@ -303,6 +333,7 @@ def compat_kwargs(kwargs: dict[str, Any]) -> None:
             for c_old, c_new in RENAMED_VARS.items():
                 if c_new == new:
                     kwargs[c_old] = kwargs[new]
+    return kwargs
 
 
 class Missing:
