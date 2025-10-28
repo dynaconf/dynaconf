@@ -9,6 +9,7 @@ import warnings
 from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -323,34 +324,28 @@ class Settings:
         """Respond to `item in settings`"""
         return item.upper() in self.store or item.lower() in self.store
 
-    def __getattribute__(self, name):
-        if (
-            name.startswith("__")
-            or name in RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS
-        ):
+    def __getattr__(self, name):
+        # Uses the super 'object' class getter, which looks in instance __dict__
+        # Only use that for internal values, otherwise use self._store
+        if _is_key_internal(name):
             return super().__getattribute__(name)
 
         # This is to keep the only upper case mode working
-        # self._store has Lazy values already evaluated
-        if (
-            name.islower()
-            and self._store.get("LOWERCASE_READ_FOR_DYNACONF", empty) is False
-        ):
-            try:
-                # only matches exact casing, first levels always upper
-                return self._store.__getattribute__(name)
-            except KeyError:
-                return super().__getattribute__(name)
+        # __getattribute__ will only match exact casing, first levels always upper
+        if _should_use_strict_uppercase(name, self):
+            return self._store.__getattribute__(name)
 
-        # then go to the regular .get which triggers hooks among other things
+        # Use regular .get which triggers hooks among other things
         value = self.get(name, default=empty)
         if value is empty:
-            return super().__getattribute__(name)
-
+            raise AttributeError(name)
         return value
 
     def __getitem__(self, item):
         """Allow getting variables as dict keys `settings['KEY']`"""
+        # TODO(@pbrochad): This should use __getattr__ as the behavior source of
+        # truth, but the behavior differs when dealing with 'strict uppercase mode'
+        # https://github.com/dynaconf/dynaconf/issues/todo
         value = self.get(item, default=empty)
         if value is empty:
             raise KeyError(f"{item} does not exist")
@@ -358,7 +353,7 @@ class Settings:
 
     def __setitem__(self, key, value):
         """Allow `settings['KEY'] = 'value'`"""
-        self.set(key, value)
+        self.__setattr__(key, value)
 
     @property
     def store(self):
@@ -520,16 +515,20 @@ class Settings:
         :return: The value if found, default or None
         """
         if sysenv_fallback is None:
-            sysenv_fallback = self._store.get("SYSENV_FALLBACK_FOR_DYNACONF")
+            sysenv_fallback = getattr(
+                self, "SYSENV_FALLBACK_FOR_DYNACONF", None
+            )
 
-        nested_sep = self._store.get("NESTED_SEPARATOR_FOR_DYNACONF")
+        nested_sep = getattr(self, "NESTED_SEPARATOR_FOR_DYNACONF", None)
         if isinstance(key, str):
             if nested_sep and nested_sep in key:
                 # turn FOO__bar__ZAZ in `FOO.bar.ZAZ`
                 key = key.replace(nested_sep, ".")
 
             if dotted_lookup is empty:
-                dotted_lookup = self._store.get("DOTTED_LOOKUP_FOR_DYNACONF")
+                dotted_lookup = getattr(
+                    self, "DOTTED_LOOKUP_FOR_DYNACONF", None
+                )
 
             if "." in key and dotted_lookup:
                 return self._dotted_get(
@@ -560,13 +559,10 @@ class Settings:
         if key in self._deleted:
             return default
 
+        fresh_vars = getattr(self, "FRESH_VARS_FOR_DYNACONF", [])
+        key_in_fresh_vars = key in ensure_upperfied_list(fresh_vars)
         if (
-            fresh
-            or self._fresh
-            or key
-            in ensure_upperfied_list(
-                getattr(self, "FRESH_VARS_FOR_DYNACONF", ())
-            )
+            fresh or self._fresh or key_in_fresh_vars
         ) and key not in UPPER_DEFAULT_SETTINGS:
             self.unset(key)
             self.execute_loaders(key=key)
@@ -1145,10 +1141,9 @@ class Settings:
         self.store[key] = parsed
         self._deleted.discard(key)
 
-        # check if str because we can't directly set/get non-str with obj. e.g.
-        #     setting.1
-        #     settings.(1,2)
-        if isinstance(key, str):
+        # only use super().__setattr__ (uses the 'object' class setattr)
+        # with internal values. Other values should go to internal store
+        if _is_key_internal(key):
             super().__setattr__(key, parsed)
 
         # Track history for inspect, store the raw_value
@@ -1675,3 +1670,16 @@ RESERVED_ATTRS = (
         "_REGISTERED_HOOKS",
     ]
 )
+
+
+@lru_cache
+def _is_key_internal(key: str | int) -> bool:
+    return (
+        isinstance(key, str) and key.startswith("__")
+    ) or key in RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS
+
+
+def _should_use_strict_uppercase(key, obj):
+    return (isinstance(key, str) and key.islower()) and getattr(
+        obj, "LOWERCASE_READ_FOR_DYNACONF", empty
+    ) is False
