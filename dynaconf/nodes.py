@@ -18,25 +18,21 @@ import inspect
 import warnings
 from dataclasses import dataclass
 from typing import Optional
+from typing import TYPE_CHECKING
 from typing import Union
 
 import dynaconf.utils as ut
 from dynaconf.utils.functional import empty
 from dynaconf.vendor.box import converters
 
+if TYPE_CHECKING:
+    from dynaconf.base import DynaconfCore
+
 
 class DynaconfNotInitialized(BaseException): ...
 
 
 class AccessError(KeyError, AttributeError): ...
-
-
-class DynaconfCore:
-    def __init__(self, id: str):
-        # NOTE: this is where all Dynaconf settings, hooks, validators and internal
-        # data should live. This is a proper 'isolated' object of users and it's safe
-        # to access internally without unwanted side-effects
-        self.id = id
 
 
 @dataclass

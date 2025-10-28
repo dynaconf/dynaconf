@@ -5,9 +5,9 @@ from collections import namedtuple
 
 import pytest
 
+from dynaconf.base import DynaconfCore
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
-from dynaconf.nodes import DynaconfCore
 from dynaconf.nodes import DynaconfNotInitialized
 from dynaconf.nodes import get_core
 from dynaconf.nodes import init_core

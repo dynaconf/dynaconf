@@ -248,7 +248,6 @@ class DynaconfDict(dict):
     useful to run loaders in to a dict for testing"""
 
     def __init__(self, *args, **kwargs):
-        self._fresh = False
         self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)
         self._loaded_py_modules = []
