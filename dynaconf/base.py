@@ -27,10 +27,10 @@ from dynaconf.loaders.base import SourceMetadata
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
 from dynaconf.utils import BANNER
-from dynaconf.utils import compat_kwargs
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import ensure_upperfied_list
 from dynaconf.utils import missing
+from dynaconf.utils import normalize_kwargs
 from dynaconf.utils import object_merge
 from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
@@ -70,13 +70,7 @@ class LazySettings(LazyObject):
         :param kwargs: values that overrides default_settings
         """
         self._wrapper_class = kwargs.pop("_wrapper_class", Settings)
-        self._warn_dynaconf_global_settings = kwargs.pop(
-            "warn_dynaconf_global_settings", None
-        )  # in 3.0.0 global settings is deprecated
-
-        self.__resolve_config_aliases(kwargs)
-        compat_kwargs(kwargs)
-        self._kwargs = kwargs
+        self._kwargs = normalize_kwargs(kwargs)
         super().__init__()
 
         if wrapped:
@@ -86,104 +80,24 @@ class LazySettings(LazyObject):
             else:
                 self._wrapped = wrapped
 
-    def __resolve_config_aliases(self, kwargs):
-        """takes aliases for _FOR_DYNACONF configurations
-
-        e.g: ROOT_PATH='/' is transformed into `ROOT_PATH_FOR_DYNACONF`
-        """
-
-        misspells = {
-            "settings_files": "settings_file",
-            "SETTINGS_FILES": "SETTINGS_FILE",
-            "environment": "environments",
-            "ENVIRONMENT": "ENVIRONMENTS",
-        }
-        for misspell, correct in misspells.items():
-            if misspell in kwargs:
-                kwargs[correct] = kwargs.pop(misspell)
-
-        for_dynaconf_keys = {
-            key
-            for key in UPPER_DEFAULT_SETTINGS
-            if key.endswith("_FOR_DYNACONF")
-        }
-        aliases = {
-            key.upper()
-            for key in kwargs
-            if f"{key.upper()}_FOR_DYNACONF" in for_dynaconf_keys
-        }
-        for alias in aliases:
-            value = kwargs.pop(alias, empty)
-            if value is empty:
-                value = kwargs.pop(alias.lower())
-            kwargs[f"{alias}_FOR_DYNACONF"] = value
-
     def __getattr__(self, name):
-        """Allow getting keys from self.store using dot notation"""
+        """Setup wrapped Setting instance on first access."""
         if self._wrapped is empty:
             self._setup()
-        if name in self._wrapped._deleted:  # noqa
-            raise AttributeError(
-                f"Attribute {name} was deleted, " "or belongs to different env"
-            )
 
-        if name not in RESERVED_ATTRS:
-            lowercase_mode = self._kwargs.get(
-                "LOWERCASE_READ_FOR_DYNACONF",
-                default_settings.LOWERCASE_READ_FOR_DYNACONF,
-            )
-            if lowercase_mode is True:
-                name = name.upper()
-
-        if (
-            name.isupper()
-            and (
-                self._wrapped._fresh
-                or name
-                in ensure_upperfied_list(self._wrapped.FRESH_VARS_FOR_DYNACONF)
-            )
-            and name not in UPPER_DEFAULT_SETTINGS
-        ):
-            return self._wrapped.get_fresh(name)
-        value = getattr(self._wrapped, name)
-        return value
-
-    def __call__(self, *args, **kwargs):
-        """Allow direct call of settings('val')
-        in place of settings.get('val')
-        """
-        return self.get(*args, **kwargs)
-
-    @property
-    def _should_load_dotenv(self):
-        """Chicken and egg problem, we must manually check envvar
-        before deciding if we are loading envvars :)"""
-        _environ_load_dotenv = parse_conf_data(
-            boolean_fix(os.environ.get("LOAD_DOTENV_FOR_DYNACONF")),
-            tomlfy=True,
-        )
-        return self._kwargs.get("load_dotenv", _environ_load_dotenv)
+        return getattr(self._wrapped, name)
 
     def _setup(self):
         """Initial setup, run once."""
+        using_global_settings = self._kwargs.pop(
+            "warn_dynaconf_global_settings", None
+        )  # in 3.0.0 global settings is deprecated
 
-        if self._warn_dynaconf_global_settings:
-            warnings.warn(
-                "Usage of `from dynaconf import settings` is now "
-                "DEPRECATED in 3.0.0+. You are encouraged to change it to "
-                "your own instance e.g: `settings = Dynaconf(*options)`",
-                DeprecationWarning,
-            )
+        if using_global_settings:
+            _warn_global_settings_deprecation()
             self._wrapper_class = Settings  # Force unhooked for this
 
-        default_settings.reload(self._should_load_dotenv)
-        environment_variable = self._kwargs.get(
-            "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
-        )
-        settings_module = os.environ.get(environment_variable)
-        self._wrapped = self._wrapper_class(
-            settings_module=settings_module, **self._kwargs
-        )
+        self.configure()
 
     def configure(self, settings_module=None, **kwargs):
         """
@@ -193,12 +107,13 @@ class LazySettings(LazyObject):
         :param settings_module: defines the settings file
         :param kwargs:  override default settings
         """
-        default_settings.reload(self._should_load_dotenv)
+        load_dotenv = _should_load_dotenv(self._kwargs)
+        default_settings.reload(load_dotenv=load_dotenv)
         environment_var = self._kwargs.get(
             "ENVVAR_FOR_DYNACONF", default_settings.ENVVAR_FOR_DYNACONF
         )
         settings_module = settings_module or os.environ.get(environment_var)
-        compat_kwargs(kwargs)
+        kwargs = normalize_kwargs(kwargs)
         kwargs.update(self._kwargs)
         self._wrapped = self._wrapper_class(
             settings_module=settings_module, **kwargs
@@ -209,6 +124,12 @@ class LazySettings(LazyObject):
         """If wrapped is configured"""
         return self._wrapped is not empty
 
+    def __call__(self, *args, **kwargs):
+        """Allow direct call of settings('val')
+        in place of settings.get('val')
+        """
+        return self.get(*args, **kwargs)
+
 
 class Settings:
     """
@@ -216,7 +137,6 @@ class Settings:
     """
 
     dynaconf_banner = BANNER
-    _store = DataDict()
 
     def __init__(self, settings_module=None, **kwargs):  # pragma: no cover
         """Execute loaders and custom initialization
@@ -264,7 +184,6 @@ class Settings:
             kwargs.get("post_hooks", [])
         )
 
-        compat_kwargs(kwargs)
         if settings_module:
             self.set(
                 "SETTINGS_FILE_FOR_DYNACONF",
@@ -1656,8 +1575,6 @@ RESERVED_ATTRS = (
         "_loaders",
         "_not_installed_warnings",
         "_store",
-        "_warn_dynaconf_global_settings",
-        "_should_load_dotenv",
         "environ",
         "SETTINGS_MODULE",
         "filter_strategy",
@@ -1683,3 +1600,22 @@ def _should_use_strict_uppercase(key, obj):
     return (isinstance(key, str) and key.islower()) and getattr(
         obj, "LOWERCASE_READ_FOR_DYNACONF", empty
     ) is False
+
+
+def _should_load_dotenv(kwargs):
+    """Chicken and egg problem, we must manually check envvar
+    before deciding if we are loading envvars :)"""
+    _environ_load_dotenv = parse_conf_data(
+        boolean_fix(os.environ.get("LOAD_DOTENV_FOR_DYNACONF")),
+        tomlfy=True,
+    )
+    return kwargs.get("load_dotenv", _environ_load_dotenv)
+
+
+def _warn_global_settings_deprecation():
+    warnings.warn(
+        "Usage of `from dynaconf import settings` is now "
+        "DEPRECATED in 3.0.0+. You are encouraged to change it to "
+        "your own instance e.g: `settings = Dynaconf(*options)`",
+        DeprecationWarning,
+    )
