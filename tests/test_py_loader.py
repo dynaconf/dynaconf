@@ -153,8 +153,9 @@ def test_decorated_hooks(clean_env, tmpdir):
 
     # Assert
     # settings has _post_hooks attribute with one hook registered
-    assert settings._post_hooks
-    assert len(settings._post_hooks) == 1
+    config = settings.__core__.config
+    assert config.post_hooks
+    assert len(config.post_hooks) == 1
 
     # assert values set by the first hook only
     assert settings.INSTALLED_APPS == ["admin", "plugin"]
@@ -169,7 +170,7 @@ def test_decorated_hooks(clean_env, tmpdir):
     settings.load_file(str(settings_extra))
 
     # assert _post_hooks attribute has two hooks registered
-    assert len(settings._post_hooks) == 2
+    assert len(config.post_hooks) == 2
 
     # assert values set by the second hook only
     assert settings.INSTALLED_APPS == ["admin", "extra"]

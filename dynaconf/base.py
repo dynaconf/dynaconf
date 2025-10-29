@@ -10,6 +10,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
 from dataclasses import dataclass
+from dataclasses import field
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
@@ -147,12 +148,21 @@ class DynaconfConfig:
     validate_exclude: Optional[list[str]] = None
     validate_only_current_env: bool = False
 
+    # hooks
+    post_hooks: list[Callable] = field(default_factory=list)
+
+    def __post_init__(self):
+        """Process values."""
+        if not isinstance(self.post_hooks, list):
+            self.post_hooks = ensure_a_list(self.post_hooks)
+
     def override_with(self, data: dict):
         """Override keys and ignore unknows items."""
         keys = self.__dataclass_fields__
         for key, value in data.items():
             if key.lower() in keys:
                 setattr(self, key.lower(), value)
+        self.__post_init__()
 
 
 class DynaconfCore:
@@ -211,12 +221,7 @@ class Settings:
         self._not_installed_warnings = []
 
         # Internal config
-        self._post_hooks: list[Callable] = ensure_a_list(
-            kwargs.get("post_hooks", [])
-        )
         self._defaults = kwargs
-        skip_loaders = kwargs.get("dynaconf_skip_loaders", False)
-        skip_validators = kwargs.get("dynaconf_skip_validators", False)
 
         # Public attributes
         self.environ = os.environ
@@ -241,6 +246,9 @@ class Settings:
             )
 
         # These skipping flags are used for when copying of settings is done
+        skip_loaders = kwargs.get("dynaconf_skip_loaders", False)
+        skip_validators = kwargs.get("dynaconf_skip_validators", False)
+
         if not skip_loaders:
             self.execute_loaders()
 
@@ -1241,9 +1249,10 @@ class Settings:
 
     def reload(self, env=None, silent=None):  # pragma: no cover
         """Clean end Execute all loaders"""
+        config = self.__core__.config
         self.clean()
         self._loaded_hooks.clear()
-        for hook in self._post_hooks:
+        for hook in config.post_hooks:
             with suppress(AttributeError, TypeError):
                 hook._called = False
 
@@ -1260,6 +1269,7 @@ class Settings:
         :param filename: optional custom filename to load
         :param loaders: optional list of loader modules
         """
+        config = self.__core__.config
         if key is None:
             default_loader(self, self._defaults)
 
@@ -1283,7 +1293,7 @@ class Settings:
 
         # execute hooks
         execute_module_hooks("post", self, env, silent=silent, key=key)
-        execute_instance_hooks(self, "post", self._post_hooks)
+        execute_instance_hooks(self, "post", config.post_hooks)
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
@@ -1325,6 +1335,7 @@ class Settings:
         :param validate: Should trigger validation?
         :param run_hooks: Should run collected hooks?
         """
+        config = self.__core__.config
         files = ensure_a_list(path)
         if not files:  # a glob pattern may return empty
             return
@@ -1402,7 +1413,7 @@ class Settings:
                 "post",
                 [
                     _hook
-                    for _hook in self._post_hooks
+                    for _hook in config.post_hooks
                     if getattr(_hook, "_dynaconf_hook", False) is True
                     and not getattr(_hook, "_called", False)
                 ],
@@ -1618,7 +1629,6 @@ RESERVED_ATTRS = (
         "environ",
         "SETTINGS_MODULE",
         "validators",
-        "_post_hooks",
         "_registered_hooks",
         "_REGISTERED_HOOKS",
     ]

@@ -365,6 +365,7 @@ def get_debug_info(
     key: str | None = None,
 ) -> dict:
     """Returns a dict with debug info about the settings object"""
+    config = settings.__core__.config
 
     if key:
         verbosity = 2
@@ -447,7 +448,7 @@ def get_debug_info(
         "core_loaders": settings._loaders,
         "loaded_files": settings._loaded_files,
         "history": build_loading_history(),
-        "post_hooks": [str(h) for h in settings._post_hooks],
+        "post_hooks": [str(h) for h in config.post_hooks],
         "loaded_hooks": build_loaded_hooks(),
     }
     for name in ["django", "flask", "fastapi", "starlette"]:
