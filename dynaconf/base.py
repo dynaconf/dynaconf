@@ -1638,13 +1638,12 @@ RESERVED_ATTRS = (
         if not item[0].startswith("__")
     ]
     + [
+        "__core__",
         "_kwargs",
-        "_loaded_envs",
         "SETTINGS_MODULE",
         "_registered_hooks",
         "_REGISTERED_HOOKS",
     ]
-    + ["__core__"]
 )
 
 
