@@ -166,6 +166,7 @@ class DynaconfConfig:
     loaded_py_modules: list[str] = field(default_factory=list)
     loaded_files: list[str] = field(default_factory=list)
     deleted: set[str] = field(default_factory=set)
+    env_cache: dict = field(default_factory=dict)
 
     def __post_init__(self):
         """Process values."""
@@ -181,6 +182,7 @@ class DynaconfConfig:
             "loaded_py_modules",
             "loaded_files",
             "deleted",
+            "env_cache",
         ]
         keys = self.__dataclass_fields__
         for key, value in data.items():
@@ -231,7 +233,6 @@ class Settings:
         self.__core__ = core
 
         # Internal state
-        self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []
         self._not_installed_warnings = []
@@ -667,9 +668,11 @@ class Settings:
             keep {bool} -- Keep pre-existing values (default: {False})
             kwargs {dict} -- Passed directly to new instance.
         """
+        config = self.__core__.config
+
         cache_key = f"{env}_{keep}_{kwargs}"
-        if cache_key in self._env_cache:
-            return self._env_cache[cache_key]
+        if cache_key in config.env_cache:
+            return config.env_cache[cache_key]
 
         new_data = {
             key: self.get(key)
@@ -700,7 +703,7 @@ class Settings:
         new_data.update(kwargs)
         new_data["FORCE_ENV_FOR_DYNACONF"] = env
         new_settings = LazySettings(**new_data)
-        self._env_cache[cache_key] = new_settings
+        config.env_cache[cache_key] = new_settings
 
         # update source metadata for inspecting
         self._loaded_by_loaders.update(new_settings._loaded_by_loaders)
@@ -1634,7 +1637,6 @@ RESERVED_ATTRS = (
         if not item[0].startswith("__")
     ]
     + [
-        "_env_cache",
         "_kwargs",
         "_loaded_by_loaders",
         "_loaded_envs",
