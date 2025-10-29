@@ -239,7 +239,6 @@ class Settings:
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
 
         # Public attributes
-        self.environ = os.environ
         self.SETTINGS_MODULE = None
 
         if settings_module:
@@ -271,6 +270,10 @@ class Settings:
                 exclude=config.validate_exclude,
                 only_current_env=config.validate_only_current_env,
             )
+
+    @property
+    def environ(self):
+        return os.environ
 
     @property
     def filter_strategy(self):
@@ -1642,7 +1645,6 @@ RESERVED_ATTRS = (
         "_kwargs",
         "_loaded_by_loaders",
         "_loaded_envs",
-        "environ",
         "SETTINGS_MODULE",
         "_registered_hooks",
         "_REGISTERED_HOOKS",
