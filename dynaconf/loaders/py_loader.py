@@ -81,7 +81,7 @@ def load_from_python_object(
             if setting_value not in config.post_hooks:
                 config.post_hooks.append(setting_value)
     config.loaded_py_modules.append(mod.__name__)
-    obj._loaded_files.append(mod.__file__)
+    config.loaded_files.append(mod.__file__)
 
 
 def try_to_load_from_py_module_name(

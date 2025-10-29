@@ -90,13 +90,15 @@ class BaseLoader:
         """Reads each file and returns source data for each file
         {"path/to/file.ext": {"key": "value"}}
         """
+        config = self.obj.__core__.config
+
         data = {}
         for source_file in files:
             if source_file.endswith(self.extensions):
                 try:
                     with open(source_file, **self.opener_params) as open_file:
                         content = self.file_reader(open_file)
-                        self.obj._loaded_files.append(source_file)
+                        config.loaded_files.append(source_file)
                         if content:
                             data[source_file] = content
                 except OSError as e:

@@ -125,7 +125,7 @@ def execute_module_hooks(
             )
 
     # Try to load from python filename path
-    files = files or obj._loaded_files
+    files = files or config.loaded_files
     for loaded_file in files:
         hook_file = os.path.join(
             os.path.dirname(loaded_file), "dynaconf_hooks.py"

@@ -159,6 +159,7 @@ class DynaconfConfig:
         default_factory=lambda: defaultdict(dict)
     )
     loaded_py_modules: list[str] = field(default_factory=list)
+    loaded_files: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Process values."""
@@ -169,7 +170,13 @@ class DynaconfConfig:
         """Override keys and ignore unknows items."""
         # Exclude args that shouldnt be set by the user
         # Consider getting them out of this config.
-        exclude = ["defaults"]
+        exclude = [
+            "defaults",
+            "loaded_envs",
+            "loaded_hooks",
+            "loaded_py_modules",
+            "loaded_files",
+        ]
         keys = self.__dataclass_fields__
         for key, value in data.items():
             lower_key = key.lower()
@@ -219,7 +226,6 @@ class Settings:
         self.__core__ = core
 
         # Internal state
-        self._loaded_files = []
         self._deleted = set()
         self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
@@ -1437,12 +1443,13 @@ class Settings:
     @property
     def _root_path(self):
         """ROOT_PATH_FOR_DYNACONF or the path of first loaded file or '.'"""
+        config = self.__core__.config
 
         if self.ROOT_PATH_FOR_DYNACONF is not None:
             return self.ROOT_PATH_FOR_DYNACONF
 
-        if self._loaded_files:  # called once
-            root_path = os.path.dirname(self._loaded_files[0])
+        if config.loaded_files:  # called once
+            root_path = os.path.dirname(config.loaded_files[0])
             self.set(
                 "ROOT_PATH_FOR_DYNACONF",
                 root_path,
@@ -1628,7 +1635,6 @@ RESERVED_ATTRS = (
         "_kwargs",
         "_loaded_by_loaders",
         "_loaded_envs",
-        "_loaded_files",
         "_loaders",
         "_not_installed_warnings",
         "environ",
