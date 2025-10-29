@@ -1282,10 +1282,10 @@ def test_settings_dict_like_iteration(tmpdir):
     settings = LazySettings(settings_files="settings.toml")
 
     for key in settings:
-        assert key in settings._store
+        assert key in settings.store
 
     for key, value in settings.items():
-        assert settings._store[key] == value
+        assert settings.store[key] == value
 
 
 def test_prefix_is_not_str_raises():

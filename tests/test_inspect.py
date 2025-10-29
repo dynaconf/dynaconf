@@ -217,6 +217,7 @@ def test_get_history_env_false__val_default_plus_envvar():
         validators=[Validator("bar", default="from_val_default")]
     )
     history = get_history(settings)
+    # breakpoint()
 
     # metadata (validation_default runs after envvar loading)
     assert len(history) == 3

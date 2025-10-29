@@ -369,7 +369,8 @@ class Validator:
                 default_value = f"'{default_value}'"
 
             # NOTE: must stop mutating settings here
-            if getattr(settings, "_store", None):
+            is_dynaconf_settings = getattr(settings, "__core__", False)
+            if is_dynaconf_settings:
                 try:
                     # settings is a Dynaconf instance
                     _setdefault = getattr(settings, "setdefault")

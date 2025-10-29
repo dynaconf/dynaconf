@@ -139,11 +139,6 @@ class LazySettings(LazyObject):
 class DynaconfConfig:
     """Dynaconf specific configuration."""
 
-    fresh: bool = False
-    dynaboxify: bool = True
-    filter_strategy: Optional[PrefixFilter] = None
-    defaults: Optional[dict] = None
-
     # validation
     validate_only: Optional[list[str]] = None
     validate_exclude: Optional[list[str]] = None
@@ -152,6 +147,12 @@ class DynaconfConfig:
     # hooks
     post_hooks: list[Callable] = field(default_factory=list)
 
+    # general
+    fresh: bool = False
+    dynaboxify: bool = True
+    filter_strategy: Optional[PrefixFilter] = None
+    defaults: Optional[dict] = None
+
     def __post_init__(self):
         """Process values."""
         if not isinstance(self.post_hooks, list):
@@ -159,10 +160,14 @@ class DynaconfConfig:
 
     def override_with(self, data: dict):
         """Override keys and ignore unknows items."""
+        # Exclude args that shouldnt be set by the user
+        # Consider getting them out of this config.
+        exclude = ["defaults"]
         keys = self.__dataclass_fields__
         for key, value in data.items():
-            if key.lower() in keys:
-                setattr(self, key.lower(), value)
+            lower_key = key.lower()
+            if (lower_key in keys) and (lower_key not in exclude):
+                setattr(self, lower_key, value)
         self.__post_init__()
 
 
@@ -170,13 +175,18 @@ class DynaconfCore:
     """Developer-facing settings manager."""
 
     def __init__(self, id: str, **kwargs):
+        if "dynaconf_options" in kwargs:
+            _warn_incompatible_typed_dynaconf_arg()
+
+        # obj is the user facing object (e.g, a Settings instance)
+        obj = kwargs.get("box_settings")
         config = DynaconfConfig()
         config.override_with(kwargs)
-        box_settings = self if config.dynaboxify else None
-        store = kwargs.get("_store") or DataDict(box_settings=box_settings)
+        default_store = DataDict(box_settings=obj) if config.dynaboxify else {}
+        store = kwargs.pop("_store", default_store)
 
         self.id = id
-        self.obj = kwargs.get("box_settings")  # user facing obj
+        self.obj = obj
         self.config = config
         self.store = store
 
@@ -192,24 +202,11 @@ class Settings:
         :param settings_module: defines the settings file
         :param kwargs:  override default settings
         """
-        if "dynaconf_options" in kwargs:
-            warnings.warn(
-                "dynaconf_options: Options works only with typed Dynaconf"
-                "Change your import to: `from dynaconf.typed import Dynaconf`",
-                RuntimeWarning,
-            )
-
-        core = DynaconfCore("main", box_settings=self, **kwargs)
-        self.__core__ = core
-        config = core.config
+        self.__core__ = DynaconfCore("main", box_settings=self, **kwargs)
+        config = self.__core__.config
         config.defaults = kwargs
 
         # Internal state
-        if config.dynaboxify:
-            default_store = DataDict(box_settings=self)
-        else:
-            default_store = {}  # Disabled dot access
-        self._store = kwargs.pop("_store", default_store)
         self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)
         self._loaded_py_modules = []
@@ -297,7 +294,7 @@ class Settings:
         # This is to keep the only upper case mode working
         # __getattribute__ will only match exact casing, first levels always upper
         if _should_use_strict_uppercase(name, self):
-            return self._store.__getattribute__(name)
+            return self.store.__getattribute__(name)
 
         # Use regular .get which triggers hooks among other things
         value = self.get(name, default=empty)
@@ -322,7 +319,7 @@ class Settings:
     @property
     def store(self):
         """Gets internal storage"""
-        return self._store
+        return self.__core__.store
 
     def __dir__(self):
         """Enable auto-complete for code editors"""
@@ -334,11 +331,11 @@ class Settings:
 
     def __iter__(self):
         """Redirects to store object"""
-        yield from self._store
+        yield from self.store
 
     def items(self):
         """Redirects to store object"""
-        return self._store.items()
+        return self.store.items()
 
     def keys(self):
         """Redirects to store object"""
@@ -515,7 +512,7 @@ class Settings:
                 default = self.get_environ(key, cast=True)
 
         # default values should behave exactly Dynaconf parsed values
-        if default is not None and self._store.get("DYNABOXIFY", True):
+        if default is not None and self.store.get("DYNABOXIFY", True):
             if isinstance(default, list):
                 default = DataList(default)
             elif isinstance(default, dict):
@@ -1623,7 +1620,6 @@ RESERVED_ATTRS = (
         "_loaded_files",
         "_loaders",
         "_not_installed_warnings",
-        "_store",
         "environ",
         "SETTINGS_MODULE",
         "validators",
@@ -1663,4 +1659,12 @@ def _warn_global_settings_deprecation():
         "DEPRECATED in 3.0.0+. You are encouraged to change it to "
         "your own instance e.g: `settings = Dynaconf(*options)`",
         DeprecationWarning,
+    )
+
+
+def _warn_incompatible_typed_dynaconf_arg():
+    warnings.warn(
+        "dynaconf_options: Options works only with typed Dynaconf"
+        "Change your import to: `from dynaconf.typed import Dynaconf`",
+        RuntimeWarning,
     )
