@@ -414,7 +414,7 @@ def get_debug_info(
 
     def build_loaded_hooks():
         _data = []
-        for hook, hook_data in settings._loaded_hooks.items():
+        for hook, hook_data in config.loaded_hooks.items():
             _real_data = filter_by_key(hook_data.get("post", {})) or {}
             if verbosity == 0:
                 _data.append(

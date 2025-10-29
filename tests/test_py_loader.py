@@ -247,6 +247,7 @@ def test_post_load_hooks(clean_env, tmpdir):
     settings = LazySettings(
         preload=["plugin_folder.plugin"], settings_file="settings.py"
     )
+    config = settings.__core__.config
 
     # Assert
     assert settings.PLUGIN_NAME == "dummyplugin"
@@ -258,8 +259,8 @@ def test_post_load_hooks(clean_env, tmpdir):
     assert settings.DATABASES.default.FORCED_INT == 12
     assert settings.BANDS == ["Rush", "Yes", "Anathema"]
 
-    plugin_hook, settings_hook = list(settings._loaded_hooks.keys())
-    assert settings._loaded_hooks[plugin_hook] == {
+    plugin_hook, settings_hook = list(config.loaded_hooks.keys())
+    assert config.loaded_hooks[plugin_hook] == {
         "post": {
             "PLUGIN_NAME": "dummyplugin",
             "COLORS": "@merge blue",
@@ -269,7 +270,7 @@ def test_post_load_hooks(clean_env, tmpdir):
             "BANDS": ["Anathema", "dynaconf_merge"],
         }
     }
-    assert settings._loaded_hooks[settings_hook] == {
+    assert config.loaded_hooks[settings_hook] == {
         "post": {
             "INSTALLED_APPS": ["dummyplugin"],
         }

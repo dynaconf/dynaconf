@@ -170,6 +170,7 @@ def _run_hook_module(hook_type, hook_module, obj, key=""):
     Given a @hook_type, a @hook_module and a settings @obj, load the function
     and execute it if found.
     """
+    config = obj.__core__.config
 
     # check errors
     if hook_module and getattr(hook_module, "_error", False):
@@ -181,7 +182,7 @@ def _run_hook_module(hook_type, hook_module, obj, key=""):
     hook_func = getattr(hook_module, hook_type, None)
     if hook_func:
         identifier = _get_unique_hook_id(hook_func, hook_source)
-        if hook_type not in obj._loaded_hooks.get(identifier, {}):
+        if hook_type not in config.loaded_hooks.get(identifier, {}):
             _run_hook_function(obj, hook_type, hook_func, hook_source, key)
 
 
@@ -198,6 +199,7 @@ def _run_hook_function(
     It execute @hook_func, update the results into settings @obj and
     add it to _loaded_hook registry ([@hook_source][@hook_type])
     """
+    config = obj.__core__.config
     # if the function has a _dynaconf_hook_source attribute set
     # hook_source to it
     hook_source = getattr(hook_func, "_dynaconf_hook_source", hook_source)
@@ -239,7 +241,7 @@ def _run_hook_function(
             )
 
     # add to registry
-    obj._loaded_hooks[identifier][hook_type] = hook_dict
+    config.loaded_hooks[identifier][hook_type] = hook_dict
 
 
 def settings_loader(

@@ -155,6 +155,9 @@ class DynaconfConfig:
     # not overridable in instantiation
     defaults: Optional[dict] = None
     loaded_envs: list[str] = field(default_factory=list)
+    loaded_hooks: dict[str, dict] = field(
+        default_factory=lambda: defaultdict(dict)
+    )
 
     def __post_init__(self):
         """Process values."""
@@ -215,7 +218,6 @@ class Settings:
         self.__core__ = core
 
         # Internal state
-        self._loaded_hooks = defaultdict(dict)
         self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
@@ -1256,7 +1258,7 @@ class Settings:
         """Clean end Execute all loaders"""
         config = self.__core__.config
         self.clean()
-        self._loaded_hooks.clear()
+        config.loaded_hooks.clear()
         for hook in config.post_hooks:
             with suppress(AttributeError, TypeError):
                 hook._called = False
@@ -1626,7 +1628,6 @@ RESERVED_ATTRS = (
         "_kwargs",
         "_loaded_by_loaders",
         "_loaded_envs",
-        "_loaded_hooks",
         "_loaded_py_modules",
         "_loaded_files",
         "_loaders",
