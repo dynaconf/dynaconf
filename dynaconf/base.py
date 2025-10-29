@@ -154,6 +154,7 @@ class DynaconfConfig:
 
     # not overridable in instantiation
     defaults: Optional[dict] = None
+    loaded_envs: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Process values."""
@@ -214,7 +215,6 @@ class Settings:
         self.__core__ = core
 
         # Internal state
-        self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)
         self._loaded_py_modules = []
         self._loaded_files = []
@@ -612,14 +612,12 @@ class Settings:
     @property
     def loaded_envs(self):
         """Get or create internal loaded envs list"""
-        if not self._loaded_envs:
-            self._loaded_envs = []
-        return self._loaded_envs
+        return self.__core__.config.loaded_envs
 
     @loaded_envs.setter
     def loaded_envs(self, value):
         """Setter for env list"""
-        self._loaded_envs = value
+        self.__core__.config.loaded_envs = value
 
     # compat
     loaded_namespaces = loaded_envs

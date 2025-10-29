@@ -461,7 +461,7 @@ def get_debug_info(
             data["environments"] = list(environments)
         else:
             data["environments"] = environments
-        data["loaded_envs"] = settings._loaded_envs
+        data["loaded_envs"] = settings.loaded_envs
 
     if key:
         data["current"] = {key: settings.get(key)}
