@@ -142,6 +142,7 @@ class DynaconfConfig:
     fresh: bool = False
     dynaboxify: bool = True
     filter_strategy: Optional[PrefixFilter] = None
+    defaults: Optional[dict] = None
 
     # validation
     validate_only: Optional[list[str]] = None
@@ -201,14 +202,14 @@ class Settings:
         core = DynaconfCore("main", box_settings=self, **kwargs)
         self.__core__ = core
         config = core.config
+        config.defaults = kwargs
 
+        # Internal state
         if config.dynaboxify:
             default_store = DataDict(box_settings=self)
         else:
             default_store = {}  # Disabled dot access
         self._store = kwargs.pop("_store", default_store)
-
-        # Internal state
         self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)
         self._loaded_py_modules = []
@@ -217,11 +218,7 @@ class Settings:
         self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []
-        self._defaults = DataDict(box_settings=self)
         self._not_installed_warnings = []
-
-        # Internal config
-        self._defaults = kwargs
 
         # Public attributes
         self.environ = os.environ
@@ -855,10 +852,11 @@ class Settings:
         :param key: The key to be unset
         :param force: Bypass default checks and force unset
         """
+        config = self.__core__.config
         key = upperfy(key.strip())
         if (
             key not in UPPER_DEFAULT_SETTINGS
-            and key not in self._defaults
+            and key not in config.defaults
             or force
         ):
             with suppress(KeyError, AttributeError):
@@ -991,6 +989,7 @@ class Settings:
         :param validate: Bool define if validation will be triggered
         :param tomlfy_filter: Optional tuple with the keys where tomlfy should apply
         """
+        config = self.__core__.config
 
         # Ensure source_metadata always is set even if set is called
         # without a loader_identifier
@@ -1123,7 +1122,7 @@ class Settings:
         if loader_identifier is None:
             # if .set is called without loader identifier it becomes
             # a default value and goes away only when explicitly unset
-            self._defaults[key] = parsed
+            config.defaults[key] = parsed
 
         if validate is True:
             self.validators.validate()
@@ -1271,7 +1270,7 @@ class Settings:
         """
         config = self.__core__.config
         if key is None:
-            default_loader(self, self._defaults)
+            default_loader(self, config.defaults)
 
         env = (env or self.current_env).upper()
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
@@ -1614,7 +1613,6 @@ RESERVED_ATTRS = (
         if not item[0].startswith("__")
     ]
     + [
-        "_defaults",
         "_deleted",
         "_env_cache",
         "_kwargs",
