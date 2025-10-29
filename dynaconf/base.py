@@ -151,6 +151,8 @@ class DynaconfConfig:
     fresh: bool = False
     dynaboxify: bool = True
     filter_strategy: Optional[PrefixFilter] = None
+
+    # not overridable in instantiation
     defaults: Optional[dict] = None
 
     def __post_init__(self):
@@ -179,16 +181,19 @@ class DynaconfCore:
             _warn_incompatible_typed_dynaconf_arg()
 
         # obj is the user facing object (e.g, a Settings instance)
-        obj = kwargs.get("box_settings")
+        obj = kwargs.get("box_settings") or Settings()
+
         config = DynaconfConfig()
         config.override_with(kwargs)
         default_store = DataDict(box_settings=obj) if config.dynaboxify else {}
         store = kwargs.pop("_store", default_store)
+        validators = kwargs.pop("validators", None)
 
         self.id = id
         self.obj = obj
         self.config = config
         self.store = store
+        self.validators = ValidatorList(obj, validators=validators)
 
 
 class Settings:
@@ -202,9 +207,11 @@ class Settings:
         :param settings_module: defines the settings file
         :param kwargs:  override default settings
         """
-        self.__core__ = DynaconfCore("main", box_settings=self, **kwargs)
-        config = self.__core__.config
+        core = DynaconfCore("main", box_settings=self, **kwargs)
+        config = core.config
         config.defaults = kwargs
+
+        self.__core__ = core
 
         # Internal state
         self._loaded_envs = []
@@ -220,9 +227,6 @@ class Settings:
         # Public attributes
         self.environ = os.environ
         self.SETTINGS_MODULE = None
-        self.validators = ValidatorList(
-            self, validators=kwargs.pop("validators", None)
-        )
 
         if settings_module:
             self.set(
@@ -230,6 +234,7 @@ class Settings:
                 settings_module,
                 loader_identifier="init_settings_module",
             )
+        kwargs.pop("validators", None)
         for key, value in kwargs.items():
             self.set(
                 key,
@@ -247,7 +252,7 @@ class Settings:
             self.execute_loaders()
 
         if not skip_validators:
-            self.validators.validate(
+            core.validators.validate(
                 only=config.validate_only,
                 exclude=config.validate_exclude,
                 only_current_env=config.validate_only_current_env,
@@ -256,6 +261,10 @@ class Settings:
     @property
     def filter_strategy(self):
         return self.__core__.config.filter_strategy
+
+    @property
+    def validators(self):
+        return self.__core__.validators
 
     def __call__(self, *args, **kwargs):
         """Allow direct call of `settings('val')`
@@ -986,7 +995,8 @@ class Settings:
         :param validate: Bool define if validation will be triggered
         :param tomlfy_filter: Optional tuple with the keys where tomlfy should apply
         """
-        config = self.__core__.config
+        core = self.__core__
+        config = core.config
 
         # Ensure source_metadata always is set even if set is called
         # without a loader_identifier
@@ -1122,7 +1132,7 @@ class Settings:
             config.defaults[key] = parsed
 
         if validate is True:
-            self.validators.validate()
+            core.validators.validate()
 
     def update(
         self,
@@ -1156,6 +1166,7 @@ class Settings:
         :param kwargs: extra values to update
         :return: None
         """
+        core = self.__core__
 
         if validate is empty:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
@@ -1179,9 +1190,9 @@ class Settings:
 
         # handle param `validate`
         if validate is True:
-            self.validators.validate()
+            core.validators.validate()
         elif validate == "all":
-            self.validators.validate_all()
+            core.validators.validate_all()
 
     def _merge_before_set(
         self,
@@ -1331,7 +1342,9 @@ class Settings:
         :param validate: Should trigger validation?
         :param run_hooks: Should run collected hooks?
         """
-        config = self.__core__.config
+        core = self.__core__
+        config = core.config
+
         files = ensure_a_list(path)
         if not files:  # a glob pattern may return empty
             return
@@ -1417,9 +1430,9 @@ class Settings:
 
         # handle param `validate`
         if validate is True:
-            self.validators.validate()
+            core.validators.validate()
         elif validate == "all":
-            self.validators.validate_all()
+            core.validators.validate_all()
 
     @property
     def _root_path(self):
@@ -1622,7 +1635,6 @@ RESERVED_ATTRS = (
         "_not_installed_warnings",
         "environ",
         "SETTINGS_MODULE",
-        "validators",
         "_registered_hooks",
         "_REGISTERED_HOOKS",
     ]
