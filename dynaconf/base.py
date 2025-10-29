@@ -279,33 +279,10 @@ class Settings:
     def validators(self):
         return self.__core__.validators
 
-    def __call__(self, *args, **kwargs):
-        """Allow direct call of `settings('val')`
-        in place of `settings.get('val')`
-        """
-        return self.get(*args, **kwargs)
-
-    def __setattr__(self, name, value):
-        """Allow `settings.FOO = 'value'` while keeping internal attrs."""
-
-        if name in RESERVED_ATTRS:
-            super().__setattr__(name, value)
-        else:
-            self.set(name, value)
-
-    def __delattr__(self, name):
-        """stores reference in `_deleted` for proper error management"""
-        self.__core__.config.deleted.add(name)
-        if hasattr(self, name):
-            super().__delattr__(name)
-
-    def __delitem__(self, name):
-        self.__core__.config.deleted.add(name)
-        self.set(name, "@del")
-
-    def __contains__(self, item):
-        """Respond to `item in settings`"""
-        return item.upper() in self.store or item.lower() in self.store
+    @property
+    def store(self):
+        """Gets internal storage"""
+        return self.__core__.store
 
     def __getattr__(self, name):
         # Uses the super 'object' class getter, which looks in instance __dict__
@@ -334,14 +311,30 @@ class Settings:
             raise KeyError(f"{item} does not exist")
         return value
 
+    def __setattr__(self, name, value):
+        """Allow `settings.FOO = 'value'` while keeping internal attrs."""
+        if name in RESERVED_ATTRS:
+            super().__setattr__(name, value)
+        else:
+            self.set(name, value)
+
     def __setitem__(self, key, value):
         """Allow `settings['KEY'] = 'value'`"""
         self.__setattr__(key, value)
 
-    @property
-    def store(self):
-        """Gets internal storage"""
-        return self.__core__.store
+    def __delattr__(self, name):
+        """stores reference in `_deleted` for proper error management"""
+        self.__core__.config.deleted.add(name)
+        if hasattr(self, name):
+            super().__delattr__(name)
+
+    def __delitem__(self, name):
+        self.__core__.config.deleted.add(name)
+        self.set(name, "@del")
+
+    def __contains__(self, item):
+        """Respond to `item in settings`"""
+        return item.upper() in self.store or item.lower() in self.store
 
     def __dir__(self):
         """Enable auto-complete for code editors"""
@@ -354,6 +347,12 @@ class Settings:
     def __iter__(self):
         """Redirects to store object"""
         yield from self.store
+
+    def __call__(self, *args, **kwargs):
+        """Allow direct call of `settings('val')`
+        in place of `settings.get('val')`
+        """
+        return self.get(*args, **kwargs)
 
     def items(self):
         """Redirects to store object"""
