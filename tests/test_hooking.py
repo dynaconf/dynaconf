@@ -16,7 +16,7 @@ from dynaconf.nodes import DataDict
 class BaseHookedSettings:
     def __init__(self, **kwargs):
         self.store = DataDict(kwargs)
-        self._loaded_by_loaders = {}
+        self.loaded_by_loaders = {}
 
     @property
     def __dict__(self):

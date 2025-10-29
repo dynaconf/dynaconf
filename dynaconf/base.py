@@ -163,6 +163,7 @@ class DynaconfConfig:
     loaded_hooks: dict[str, dict] = field(
         default_factory=lambda: defaultdict(dict)
     )
+    loaded_by_loaders: dict[SourceMetadata, Any] = field(default_factory=dict)
     loaded_py_modules: list[str] = field(default_factory=list)
     loaded_files: list[str] = field(default_factory=list)
     loaders: list[str] = field(default_factory=list)
@@ -234,11 +235,6 @@ class Settings:
         config.defaults = kwargs
 
         self.__core__ = core
-
-        # Internal state
-        self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
-
-        # Public attributes
         self.SETTINGS_MODULE = None
 
         if settings_module:
@@ -642,7 +638,8 @@ class Settings:
     @property
     def loaded_by_loaders(self):  # pragma: no cover
         """Gets the internal mapping of LOADER -> values"""
-        return self._loaded_by_loaders
+        config = self.__core__.config
+        return config.loaded_by_loaders
 
     def from_env(self, env="", keep=False, **kwargs):
         """Return a new isolated settings object pointing to specified env.
@@ -710,7 +707,7 @@ class Settings:
         config.env_cache[cache_key] = new_settings
 
         # update source metadata for inspecting
-        self._loaded_by_loaders.update(new_settings._loaded_by_loaders)
+        self.loaded_by_loaders.update(new_settings.loaded_by_loaders)
 
         return new_settings
 
@@ -1138,10 +1135,10 @@ class Settings:
             super().__setattr__(key, parsed)
 
         # Track history for inspect, store the raw_value
-        if source_metadata in self._loaded_by_loaders:
-            self._loaded_by_loaders[source_metadata][key] = value
+        if source_metadata in self.loaded_by_loaders:
+            self.loaded_by_loaders[source_metadata][key] = value
         else:
-            self._loaded_by_loaders[source_metadata] = {key: value}
+            self.loaded_by_loaders[source_metadata] = {key: value}
 
         if loader_identifier is None:
             # if .set is called without loader identifier it becomes
@@ -1643,7 +1640,6 @@ RESERVED_ATTRS = (
     ]
     + [
         "_kwargs",
-        "_loaded_by_loaders",
         "_loaded_envs",
         "SETTINGS_MODULE",
         "_registered_hooks",

@@ -606,8 +606,8 @@ def _list(
         data = settings.as_dict(env=env, internal=_all)
     else:
         identifier = f"{loader}_{cur_env}"
-        data = settings._loaded_by_loaders.get(identifier, {})
-        data = data or settings._loaded_by_loaders.get(loader, {})
+        data = settings.loaded_by_loaders.get(identifier, {})
+        data = data or settings.loaded_by_loaders.get(loader, {})
 
     # remove to avoid displaying twice
     data.pop("SETTINGS_MODULE", None)

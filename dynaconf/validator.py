@@ -321,9 +321,11 @@ class Validator:
             )
             # merge source metadata into original settings for history inspect
             # use getattr to cheat mypy
-            if (d1 := getattr(settings, "_loaded_by_loaders", None)) and (
-                d2 := getattr(env_settings, "_loaded_by_loaders")
+            if (d1 := getattr(settings, "loaded_by_loaders")) and (
+                d2 := getattr(env_settings, "loaded_by_loaders")
             ):
+                d1 = settings.loaded_by_loaders  # type: ignore
+                d2 = env_settings.loaded_by_loaders  # type: ignore
                 d1.update(d2)
 
     def _validate_names(

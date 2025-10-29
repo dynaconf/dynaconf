@@ -117,7 +117,7 @@ def hookable(function=None, name=None):
                 identifier=f"{function_name}_hook_({hook_names})",
                 merged=True,
             )
-            history = self._loaded_by_loaders.setdefault(metadata, {})
+            history = self.loaded_by_loaders.setdefault(metadata, {})
             key = args[0] if args else kwargs.get("key")
             history[key] = value.value
 

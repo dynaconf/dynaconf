@@ -143,7 +143,7 @@ def inspect_settings(
     if env:
         settings = settings.from_env(env)
         registered_envs = {
-            src_meta.env for src_meta in settings._loaded_by_loaders.keys()
+            src_meta.env for src_meta in settings.loaded_by_loaders.keys()
         }
         if env.lower() not in registered_envs:
             raise EnvNotFoundError(f"The requested env is not valid: {env!r}")
@@ -260,7 +260,7 @@ def get_history(
 
     internal_identifiers = ["default_settings", "_root_path"]
     result = []
-    for source_metadata, data in obj._loaded_by_loaders.items():
+    for source_metadata, data in obj.loaded_by_loaders.items():
         # filter by source_metadata
         if filter_callable(source_metadata) is False:
             continue
@@ -384,7 +384,7 @@ def get_debug_info(
         for (
             source_metadata,
             source_data,
-        ) in settings._loaded_by_loaders.items():
+        ) in settings.loaded_by_loaders.items():
             _real_data = filter_by_key(source_data)
             if verbosity == 0:
                 _data.append(
