@@ -142,6 +142,11 @@ class DynaconfConfig:
     dynaboxify: bool = True
     filter_strategy: Optional[PrefixFilter] = None
 
+    # validation
+    validate_only: Optional[list[str]] = None
+    validate_exclude: Optional[list[str]] = None
+    validate_only_current_env: bool = False
+
     def override_with(self, data: dict):
         """Override keys and ignore unknows items."""
         keys = self.__dataclass_fields__
@@ -185,8 +190,9 @@ class Settings:
 
         core = DynaconfCore("main", box_settings=self, **kwargs)
         self.__core__ = core
+        config = core.config
 
-        if core.config.dynaboxify:
+        if config.dynaboxify:
             default_store = DataDict(box_settings=self)
         else:
             default_store = {}  # Disabled dot access
@@ -205,11 +211,6 @@ class Settings:
         self._not_installed_warnings = []
 
         # Internal config
-        self._validate_only = kwargs.pop("validate_only", None)
-        self._validate_exclude = kwargs.pop("validate_exclude", None)
-        self._validate_only_current_env = kwargs.pop(
-            "validate_only_current_env", False
-        )
         self._post_hooks: list[Callable] = ensure_a_list(
             kwargs.get("post_hooks", [])
         )
@@ -245,9 +246,9 @@ class Settings:
 
         if not skip_validators:
             self.validators.validate(
-                only=self._validate_only,
-                exclude=self._validate_exclude,
-                only_current_env=self._validate_only_current_env,
+                only=config.validate_only,
+                exclude=config.validate_exclude,
+                only_current_env=config.validate_only_current_env,
             )
 
     @property
@@ -1617,9 +1618,6 @@ RESERVED_ATTRS = (
         "environ",
         "SETTINGS_MODULE",
         "validators",
-        "_validate_only",
-        "_validate_exclude",
-        "_validate_only_current_env",
         "_post_hooks",
         "_registered_hooks",
         "_REGISTERED_HOOKS",
