@@ -80,8 +80,7 @@ def load_from_python_object(
         elif setting.startswith("_dynaconf_hook") and callable(setting_value):
             if setting_value not in config.post_hooks:
                 config.post_hooks.append(setting_value)
-
-    obj._loaded_py_modules.append(mod.__name__)
+    config.loaded_py_modules.append(mod.__name__)
     obj._loaded_files.append(mod.__file__)
 
 

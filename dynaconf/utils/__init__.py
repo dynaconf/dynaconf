@@ -257,9 +257,9 @@ class FakeCore:
         if name == "config":
             return self
         try:
-            return self.dynaconf_dict[f"_{name}"]
-        except KeyError:
-            return self.dynaconf_dict[name]
+            return getattr(self.dynaconf_dict, f"_{name}")
+        except AttributeError:
+            return getattr(self.dynaconf_dict, name)
 
     def __setattr__(self, name, value):  # pragma: no cover
         underscore_name = f"_{name}"

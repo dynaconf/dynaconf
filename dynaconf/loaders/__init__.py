@@ -100,11 +100,13 @@ def execute_module_hooks(
     hook, obj, env=None, silent=True, key=None, modules=None, files=None
 ):
     """Execute dynaconf_hooks from module or filepath."""
+    config = obj.__core__.config
+
     if hook not in ["post"]:
         raise ValueError(f"hook {hook} not supported yet.")
 
     # try to load hooks using python module __name__
-    modules = modules or obj._loaded_py_modules
+    modules = modules or config.loaded_py_modules
     for loaded_module in modules:
         hook_module_name = ".".join(
             loaded_module.split(".")[:-1] + ["dynaconf_hooks"]

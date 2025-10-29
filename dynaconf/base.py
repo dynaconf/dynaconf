@@ -158,6 +158,7 @@ class DynaconfConfig:
     loaded_hooks: dict[str, dict] = field(
         default_factory=lambda: defaultdict(dict)
     )
+    loaded_py_modules: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Process values."""
@@ -218,7 +219,6 @@ class Settings:
         self.__core__ = core
 
         # Internal state
-        self._loaded_py_modules = []
         self._loaded_files = []
         self._deleted = set()
         self._env_cache = {}
@@ -1628,7 +1628,6 @@ RESERVED_ATTRS = (
         "_kwargs",
         "_loaded_by_loaders",
         "_loaded_envs",
-        "_loaded_py_modules",
         "_loaded_files",
         "_loaders",
         "_not_installed_warnings",
