@@ -137,7 +137,10 @@ class LazySettings(LazyObject):
 
 @dataclass
 class DynaconfConfig:
-    """Dynaconf specific configuration."""
+    """Dynaconf specific configuration.
+
+    For internal use only.
+    """
 
     # validation
     validate_only: Optional[list[str]] = None
@@ -153,6 +156,8 @@ class DynaconfConfig:
     filter_strategy: Optional[PrefixFilter] = None
 
     # not overridable in instantiation
+    # NOTE: putting it here for simplifying the internal change. Consider
+    # getting them out of this config, later
     defaults: Optional[dict] = None
     loaded_envs: list[str] = field(default_factory=list)
     loaded_hooks: dict[str, dict] = field(
@@ -160,6 +165,7 @@ class DynaconfConfig:
     )
     loaded_py_modules: list[str] = field(default_factory=list)
     loaded_files: list[str] = field(default_factory=list)
+    deleted: set[str] = field(default_factory=set)
 
     def __post_init__(self):
         """Process values."""
@@ -168,14 +174,13 @@ class DynaconfConfig:
 
     def override_with(self, data: dict):
         """Override keys and ignore unknows items."""
-        # Exclude args that shouldnt be set by the user
-        # Consider getting them out of this config.
         exclude = [
             "defaults",
             "loaded_envs",
             "loaded_hooks",
             "loaded_py_modules",
             "loaded_files",
+            "deleted",
         ]
         keys = self.__dataclass_fields__
         for key, value in data.items():
@@ -226,7 +231,6 @@ class Settings:
         self.__core__ = core
 
         # Internal state
-        self._deleted = set()
         self._env_cache = {}
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
         self._loaders = []
@@ -290,12 +294,12 @@ class Settings:
 
     def __delattr__(self, name):
         """stores reference in `_deleted` for proper error management"""
-        self._deleted.add(name)
+        self.__core__.config.deleted.add(name)
         if hasattr(self, name):
             super().__delattr__(name)
 
     def __delitem__(self, name):
-        self._deleted.add(name)
+        self.__core__.config.deleted.add(name)
         self.set(name, "@del")
 
     def __contains__(self, item):
@@ -535,7 +539,7 @@ class Settings:
             elif isinstance(default, dict):
                 default = DataDict(default)
 
-        if key in self._deleted:
+        if key in config.deleted:
             return default
 
         fresh_vars = getattr(self, "FRESH_VARS_FOR_DYNACONF", [])
@@ -559,7 +563,7 @@ class Settings:
         :return: Boolean
         """
         key = upperfy(key)
-        if key in self._deleted:
+        if key in self.__core__.config.deleted:
             return False
         return self.get(key, fresh=fresh, default=missing) is not missing
 
@@ -1119,7 +1123,7 @@ class Settings:
 
         # Set the parsed value
         self.store[key] = parsed
-        self._deleted.discard(key)
+        config.deleted.discard(key)
 
         # only use super().__setattr__ (uses the 'object' class setattr)
         # with internal values. Other values should go to internal store
@@ -1630,7 +1634,6 @@ RESERVED_ATTRS = (
         if not item[0].startswith("__")
     ]
     + [
-        "_deleted",
         "_env_cache",
         "_kwargs",
         "_loaded_by_loaders",

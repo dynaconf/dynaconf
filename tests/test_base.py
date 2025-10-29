@@ -195,38 +195,42 @@ def test_get_env(settings):
 
 def test_float(settings):
     settings.set("money", "500.42")
+    config = settings.__core__.config
     assert settings.exists("MONEY")
     assert settings.MONEY == "500.42"
     assert settings.MONEY != 500.42
     assert settings.store["MONEY"] == "500.42"
-    assert "MONEY" not in settings._deleted
-    assert "money" not in settings._deleted
+    assert "MONEY" not in config.deleted
+    assert "money" not in config.deleted
     assert isinstance(settings.as_float("money"), float)
     assert settings.as_float("MONEY") == 500.42
 
 
 def test_int(settings):
     settings.set("age", "500")
+    config = settings.__core__.config
     assert settings.exists("AGE")
     assert settings.AGE == "500"
     assert settings.AGE != 500
     assert settings.store["AGE"] == "500"
-    assert "AGE" not in settings._deleted
-    assert "age" not in settings._deleted
+    assert "AGE" not in config.deleted
+    assert "age" not in config.deleted
     assert isinstance(settings.as_int("age"), int)
     assert settings.as_int("age") == 500
 
 
 def test_bool(settings):
+    config = settings.__core__.config
     for true_value in true_values:
         # ('t', 'true', 'enabled', '1', 'on', 'yes')
         settings.set("feature", true_value)
+        config = settings.__core__.config
         assert settings.exists("FEATURE")
         assert settings.FEATURE == true_value
         assert settings.FEATURE is not True
         assert settings.store["FEATURE"] == true_value
-        assert "FEATURE" not in settings._deleted
-        assert "feature" not in settings._deleted
+        assert "FEATURE" not in config.deleted
+        assert "feature" not in config.deleted
         assert isinstance(settings.as_bool("feature"), bool)
         assert settings.as_bool("FEATURE") is True
 
@@ -238,20 +242,21 @@ def test_bool(settings):
         assert settings.FEATURE == false_value
         assert settings.FEATURE is not False
         assert settings.store["FEATURE"] == false_value
-        assert "FEATURE" not in settings._deleted
-        assert "feature" not in settings._deleted
+        assert "FEATURE" not in config.deleted
+        assert "feature" not in config.deleted
         assert isinstance(settings.as_bool("feature"), bool)
         assert settings.as_bool("FEATURE") is False
 
 
 def test_as_json(settings):
     settings.set("fruits", '["banana", "apple", "kiwi"]')
+    config = settings.__core__.config
     assert settings.exists("FRUITS")
     assert settings.FRUITS == '["banana", "apple", "kiwi"]'
     assert settings.FRUITS != ["banana", "apple", "kiwi"]
     assert settings.store["FRUITS"] == '["banana", "apple", "kiwi"]'
-    assert "FRUITS" not in settings._deleted
-    assert "fruits" not in settings._deleted
+    assert "FRUITS" not in config.deleted
+    assert "fruits" not in config.deleted
     assert isinstance(settings.as_json("fruits"), list)
     assert settings.as_json("fruits") == ["banana", "apple", "kiwi"]
 
@@ -260,8 +265,8 @@ def test_as_json(settings):
     assert settings.PERSON == '{"name": "Bruno"}'
     assert settings.PERSON != {"name": "Bruno"}
     assert settings.store["PERSON"] == '{"name": "Bruno"}'
-    assert "PERSON" not in settings._deleted
-    assert "person" not in settings._deleted
+    assert "PERSON" not in config.deleted
+    assert "person" not in config.deleted
     assert isinstance(settings.as_json("person"), dict)
     assert settings.as_json("person") == {"name": "Bruno"}
 
