@@ -165,8 +165,11 @@ class DynaconfConfig:
     )
     loaded_py_modules: list[str] = field(default_factory=list)
     loaded_files: list[str] = field(default_factory=list)
+    loaders: list[str] = field(default_factory=list)
     deleted: set[str] = field(default_factory=set)
     env_cache: dict = field(default_factory=dict)
+
+    not_installed_warnings: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Process values."""
@@ -234,8 +237,6 @@ class Settings:
 
         # Internal state
         self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
-        self._loaders = []
-        self._not_installed_warnings = []
 
         # Public attributes
         self.environ = os.environ
@@ -1259,13 +1260,14 @@ class Settings:
     @property
     def loaders(self):  # pragma: no cover
         """Return available loaders"""
+        config = self.__core__.config
         if self.LOADERS_FOR_DYNACONF in (None, 0, "0", "false", False):
             return []
 
-        if not self._loaders:
-            self._loaders = self.LOADERS_FOR_DYNACONF
+        if not config.loaders:
+            config.loaders = self.LOADERS_FOR_DYNACONF
 
-        return [importlib.import_module(loader) for loader in self._loaders]
+        return [importlib.import_module(loader) for loader in config.loaders]
 
     def reload(self, env=None, silent=None):  # pragma: no cover
         """Clean end Execute all loaders"""
@@ -1640,8 +1642,6 @@ RESERVED_ATTRS = (
         "_kwargs",
         "_loaded_by_loaders",
         "_loaded_envs",
-        "_loaders",
-        "_not_installed_warnings",
         "environ",
         "SETTINGS_MODULE",
         "_registered_hooks",

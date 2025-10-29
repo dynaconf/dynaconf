@@ -1182,6 +1182,7 @@ def test_config_aliases(tmpdir):
         ENV="awesome",
         environments=True,
     )
+    config = settings.__core__.config
 
     assert settings.NAME == "Bruno"
     assert settings.PASSWD == 5678
@@ -1189,7 +1190,7 @@ def test_config_aliases(tmpdir):
     assert settings.ENVVAR_PREFIX_FOR_DYNACONF == "BRUCE"
     assert settings.CORE_LOADERS_FOR_DYNACONF == ["TOML"]
     assert settings.LOADERS_FOR_DYNACONF == ["dynaconf.loaders.env_loader"]
-    assert len(settings._loaders) == 1
+    assert len(config.loaders) == 1
     assert settings.DEFAULT_ENV_FOR_DYNACONF == "hello"
     assert settings.ENV_SWITCHER_FOR_DYNACONF == "BRUCE_ENV"
     assert settings.PRELOAD_FOR_DYNACONF == []

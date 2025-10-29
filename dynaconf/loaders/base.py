@@ -47,12 +47,13 @@ class BaseLoader:
 
     @staticmethod
     def warn_not_installed(obj, identifier):  # pragma: no cover
-        if identifier not in obj._not_installed_warnings:
+        config = obj.__core__.config
+        if identifier not in config.not_installed_warnings:
             warnings.warn(
                 f"{identifier} support is not installed in your environment. "
                 f"`pip install dynaconf[{identifier}]`"
             )
-        obj._not_installed_warnings.append(identifier)
+        config.not_installed_warnings.append(identifier)
 
     def load(self, filename=None, key=None, silent=True, merge=empty):
         """

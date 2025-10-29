@@ -445,7 +445,7 @@ def get_debug_info(
         },
         "root_path": settings._root_path,
         "validators": [str(v) for v in settings.validators],
-        "core_loaders": settings._loaders,
+        "core_loaders": config.loaders,
         "loaded_files": config.loaded_files,
         "history": build_loading_history(),
         "post_hooks": [str(h) for h in config.post_hooks],
