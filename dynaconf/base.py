@@ -1625,26 +1625,16 @@ class Settings:
 """Upper case default settings"""
 UPPER_DEFAULT_SETTINGS = [k for k in dir(default_settings) if k.isupper()]
 
-"""Attributes created on Settings before 3.0.0"""
-RESERVED_ATTRS = (
-    [
-        item[0]
-        for item in inspect.getmembers(LazySettings)
-        if not item[0].startswith("__")
-    ]
-    + [
-        item[0]
-        for item in inspect.getmembers(Settings)
-        if not item[0].startswith("__")
-    ]
-    + [
-        "__core__",
-        "_kwargs",
-        "SETTINGS_MODULE",
-        "_registered_hooks",
-        "_REGISTERED_HOOKS",
-    ]
-)
+"""Attributes created on Settings before 3.0.0. Remove in 4.0.0"""
+RESERVED_ATTRS = [
+    "__core__",
+    "_kwargs",
+    "SETTINGS_MODULE",
+    "loaded_envs",
+    "from_env",
+    "_registered_hooks",
+    "_REGISTERED_HOOKS",
+]
 
 
 @lru_cache
