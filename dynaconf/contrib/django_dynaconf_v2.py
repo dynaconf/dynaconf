@@ -138,7 +138,8 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     # to post hooks so it can fix URLS added later in the
     # loading pipeline
     lazy_settings.update(fix_absolute_urls(lazy_settings))
-    lazy_settings._post_hooks.append(fix_absolute_urls)
+    config = lazy_settings.__core__.config
+    config.post_hooks.append(fix_absolute_urls)
 
     # Allow dynaconf_hooks to be in the same folder as the django.settings
     dynaconf.loaders.execute_hooks(
@@ -148,7 +149,7 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
         modules=[settings_module_name],
         files=[settings_file],
     )
-    lazy_settings._loaded_py_modules.insert(0, settings_module_name)
+    config.loaded_py_modules.insert(0, settings_module_name)
 
     # 5) Patch django.conf.settings
     class Wrapper:

@@ -172,7 +172,7 @@ def test_compatibility_mode():
     data = {}
     new_data = app.config.setdefault("asdf", data)
     assert new_data is data
-    assert new_data is app.config._store["ASDF"]
+    assert new_data is app.config.store["ASDF"]
 
     asdf = app.config.setdefault("ASDF", {})
     asdf.setdefault("qwer", "zxcv")

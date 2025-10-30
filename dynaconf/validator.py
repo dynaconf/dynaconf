@@ -321,9 +321,11 @@ class Validator:
             )
             # merge source metadata into original settings for history inspect
             # use getattr to cheat mypy
-            if (d1 := getattr(settings, "_loaded_by_loaders", None)) and (
-                d2 := getattr(env_settings, "_loaded_by_loaders")
+            if (d1 := getattr(settings, "loaded_by_loaders")) and (
+                d2 := getattr(env_settings, "loaded_by_loaders")
             ):
+                d1 = settings.loaded_by_loaders  # type: ignore
+                d2 = env_settings.loaded_by_loaders  # type: ignore
                 d1.update(d2)
 
     def _validate_names(
@@ -369,7 +371,8 @@ class Validator:
                 default_value = f"'{default_value}'"
 
             # NOTE: must stop mutating settings here
-            if getattr(settings, "_store", None):
+            is_dynaconf_settings = getattr(settings, "__core__", False)
+            if is_dynaconf_settings:
                 try:
                     # settings is a Dynaconf instance
                     _setdefault = getattr(settings, "setdefault")

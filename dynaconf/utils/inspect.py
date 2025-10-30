@@ -143,7 +143,7 @@ def inspect_settings(
     if env:
         settings = settings.from_env(env)
         registered_envs = {
-            src_meta.env for src_meta in settings._loaded_by_loaders.keys()
+            src_meta.env for src_meta in settings.loaded_by_loaders.keys()
         }
         if env.lower() not in registered_envs:
             raise EnvNotFoundError(f"The requested env is not valid: {env!r}")
@@ -260,7 +260,7 @@ def get_history(
 
     internal_identifiers = ["default_settings", "_root_path"]
     result = []
-    for source_metadata, data in obj._loaded_by_loaders.items():
+    for source_metadata, data in obj.loaded_by_loaders.items():
         # filter by source_metadata
         if filter_callable(source_metadata) is False:
             continue
@@ -365,6 +365,7 @@ def get_debug_info(
     key: str | None = None,
 ) -> dict:
     """Returns a dict with debug info about the settings object"""
+    config = settings.__core__.config
 
     if key:
         verbosity = 2
@@ -383,7 +384,7 @@ def get_debug_info(
         for (
             source_metadata,
             source_data,
-        ) in settings._loaded_by_loaders.items():
+        ) in settings.loaded_by_loaders.items():
             _real_data = filter_by_key(source_data)
             if verbosity == 0:
                 _data.append(
@@ -413,7 +414,7 @@ def get_debug_info(
 
     def build_loaded_hooks():
         _data = []
-        for hook, hook_data in settings._loaded_hooks.items():
+        for hook, hook_data in config.loaded_hooks.items():
             _real_data = filter_by_key(hook_data.get("post", {})) or {}
             if verbosity == 0:
                 _data.append(
@@ -444,10 +445,10 @@ def get_debug_info(
         },
         "root_path": settings._root_path,
         "validators": [str(v) for v in settings.validators],
-        "core_loaders": settings._loaders,
-        "loaded_files": settings._loaded_files,
+        "core_loaders": config.loaders,
+        "loaded_files": config.loaded_files,
         "history": build_loading_history(),
-        "post_hooks": [str(h) for h in settings._post_hooks],
+        "post_hooks": [str(h) for h in config.post_hooks],
         "loaded_hooks": build_loaded_hooks(),
     }
     for name in ["django", "flask", "fastapi", "starlette"]:
@@ -460,7 +461,7 @@ def get_debug_info(
             data["environments"] = list(environments)
         else:
             data["environments"] = environments
-        data["loaded_envs"] = settings._loaded_envs
+        data["loaded_envs"] = settings.loaded_envs
 
     if key:
         data["current"] = {key: settings.get(key)}

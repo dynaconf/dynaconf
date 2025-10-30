@@ -243,12 +243,46 @@ def handle_metavalues(
                 )
 
 
+class FakeCore:
+    """
+    Workaround to support DynaconfCore + DynaconfConfig in DynaconfDict.
+
+    When/if re-writing the loaders module we should get rid of this.
+    """
+
+    def __init__(self, dynaconf_dict):  # pragma: no cover
+        self.dynaconf_dict = dynaconf_dict
+
+    def __getattr__(self, name):  # pragma: no cover
+        if name == "config":
+            return self
+        try:
+            return getattr(self.dynaconf_dict, f"_{name}")
+        except AttributeError:
+            return getattr(self.dynaconf_dict, name)
+
+    def __setattr__(self, name, value):  # pragma: no cover
+        underscore_name = f"_{name}"
+        if name == "dynaconf_dict":
+            super().__setattr__(name, value)
+        elif name in self.dynaconf_dict:
+            setattr(self.dynaconf_dict, name, value)
+        elif underscore_name in self.dynaconf_dict:
+            setattr(self.dynaconf_dict, underscore_name, value)
+        else:
+            # Calling this for properly raising
+            setattr(self.dynaconf_dict, name, value)
+
+
+# NOTE: can we get rid of this? (and consequently of FakeCore)
 class DynaconfDict(dict):
     """A dict representing en empty Dynaconf object
     useful to run loaders in to a dict for testing"""
 
     def __init__(self, *args, **kwargs):
-        self._fresh = False
+        self.__core__ = FakeCore(
+            self
+        )  # compat with DynaconfCore + DynaconfConfig
         self._loaded_envs = []
         self._loaded_hooks = defaultdict(dict)
         self._loaded_py_modules = []

@@ -117,7 +117,7 @@ def hookable(function=None, name=None):
                 identifier=f"{function_name}_hook_({hook_names})",
                 merged=True,
             )
-            history = self._loaded_by_loaders.setdefault(metadata, {})
+            history = self.loaded_by_loaders.setdefault(metadata, {})
             key = args[0] if args else kwargs.get("key")
             history[key] = value.value
 
@@ -157,8 +157,8 @@ def get_hooks(obj):
             return getattr(obj, key)
         elif isinstance(obj, dict) and key in obj:
             return obj[key]
-        elif hasattr(obj, "_store") and key in obj._store:
-            return obj._store[key]
+        elif hasattr(obj, "store") and key in obj.store:
+            return obj.store[key]
     return {}
 
 
@@ -314,7 +314,7 @@ class TempSettingsHolder:
             self._temp_settings = Settings(
                 dynaconf_skip_loaders=True,
                 dynaconf_skip_validators=True,
-                _store=self._original_settings._store.copy(bypass_eval=True),
+                _store=self._original_settings.store.copy(bypass_eval=True),
             )
         return self._temp_settings
 

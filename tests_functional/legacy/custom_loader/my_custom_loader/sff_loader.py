@@ -49,4 +49,4 @@ def load(obj, env=None, silent=True, key=None, filename=None):
     else:
         obj.update(data, loader_identifier=source_metadata)
 
-    obj._loaded_files.append(found_file)
+    obj.__core__.config.loaded_files.append(found_file)

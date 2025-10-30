@@ -153,8 +153,9 @@ def test_decorated_hooks(clean_env, tmpdir):
 
     # Assert
     # settings has _post_hooks attribute with one hook registered
-    assert settings._post_hooks
-    assert len(settings._post_hooks) == 1
+    config = settings.__core__.config
+    assert config.post_hooks
+    assert len(config.post_hooks) == 1
 
     # assert values set by the first hook only
     assert settings.INSTALLED_APPS == ["admin", "plugin"]
@@ -169,7 +170,7 @@ def test_decorated_hooks(clean_env, tmpdir):
     settings.load_file(str(settings_extra))
 
     # assert _post_hooks attribute has two hooks registered
-    assert len(settings._post_hooks) == 2
+    assert len(config.post_hooks) == 2
 
     # assert values set by the second hook only
     assert settings.INSTALLED_APPS == ["admin", "extra"]
@@ -246,6 +247,7 @@ def test_post_load_hooks(clean_env, tmpdir):
     settings = LazySettings(
         preload=["plugin_folder.plugin"], settings_file="settings.py"
     )
+    config = settings.__core__.config
 
     # Assert
     assert settings.PLUGIN_NAME == "dummyplugin"
@@ -257,8 +259,8 @@ def test_post_load_hooks(clean_env, tmpdir):
     assert settings.DATABASES.default.FORCED_INT == 12
     assert settings.BANDS == ["Rush", "Yes", "Anathema"]
 
-    plugin_hook, settings_hook = list(settings._loaded_hooks.keys())
-    assert settings._loaded_hooks[plugin_hook] == {
+    plugin_hook, settings_hook = list(config.loaded_hooks.keys())
+    assert config.loaded_hooks[plugin_hook] == {
         "post": {
             "PLUGIN_NAME": "dummyplugin",
             "COLORS": "@merge blue",
@@ -268,7 +270,7 @@ def test_post_load_hooks(clean_env, tmpdir):
             "BANDS": ["Anathema", "dynaconf_merge"],
         }
     }
-    assert settings._loaded_hooks[settings_hook] == {
+    assert config.loaded_hooks[settings_hook] == {
         "post": {
             "INSTALLED_APPS": ["dummyplugin"],
         }

@@ -9,10 +9,13 @@ import warnings
 from collections import defaultdict
 from contextlib import contextmanager
 from contextlib import suppress
+from dataclasses import dataclass
+from dataclasses import field
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from typing import Callable
+from typing import Optional
 
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
@@ -26,6 +29,7 @@ from dynaconf.loaders import yaml_loader
 from dynaconf.loaders.base import SourceMetadata
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
+from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils import BANNER
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import ensure_upperfied_list
@@ -131,10 +135,92 @@ class LazySettings(LazyObject):
         return self.get(*args, **kwargs)
 
 
+@dataclass
+class DynaconfConfig:
+    """Dynaconf specific configuration.
+
+    For internal use only.
+    """
+
+    # validation
+    validate_only: Optional[list[str]] = None
+    validate_exclude: Optional[list[str]] = None
+    validate_only_current_env: bool = False
+
+    # hooks
+    post_hooks: list[Callable] = field(default_factory=list)
+
+    # general
+    fresh: bool = False
+    dynaboxify: bool = True
+    filter_strategy: Optional[PrefixFilter] = None
+
+    # not overridable in instantiation
+    # NOTE: putting it here for simplifying the internal change. Consider
+    # getting them out of this config, later
+    defaults: Optional[dict] = None
+    loaded_envs: list[str] = field(default_factory=list)
+    loaded_hooks: dict[str, dict] = field(
+        default_factory=lambda: defaultdict(dict)
+    )
+    loaded_by_loaders: dict[SourceMetadata, Any] = field(default_factory=dict)
+    loaded_py_modules: list[str] = field(default_factory=list)
+    loaded_files: list[str] = field(default_factory=list)
+    loaders: list[str] = field(default_factory=list)
+    deleted: set[str] = field(default_factory=set)
+    env_cache: dict = field(default_factory=dict)
+
+    not_installed_warnings: list[str] = field(default_factory=list)
+
+    def __post_init__(self):
+        """Process values."""
+        if not isinstance(self.post_hooks, list):
+            self.post_hooks = ensure_a_list(self.post_hooks)
+
+    def override_with(self, data: dict):
+        """Override keys and ignore unknows items."""
+        exclude = [
+            "defaults",
+            "loaded_envs",
+            "loaded_hooks",
+            "loaded_py_modules",
+            "loaded_files",
+            "deleted",
+            "env_cache",
+        ]
+        keys = self.__dataclass_fields__
+        for key, value in data.items():
+            lower_key = key.lower()
+            if (lower_key in keys) and (lower_key not in exclude):
+                setattr(self, lower_key, value)
+        self.__post_init__()
+
+
+class DynaconfCore:
+    """Developer-facing settings manager."""
+
+    def __init__(self, id: str, **kwargs):
+        if "dynaconf_options" in kwargs:
+            _warn_incompatible_typed_dynaconf_arg()
+
+        # obj is the user facing object (e.g, a Settings instance)
+        obj = kwargs.get("box_settings") or Settings()
+
+        config = DynaconfConfig()
+        config.override_with(kwargs)
+        default_store = DataDict(box_settings=obj) if config.dynaboxify else {}
+        store = kwargs.pop("_store", default_store)
+        validators = kwargs.pop("validators", None)
+
+        self.id = id
+        self.obj = obj
+        self.config = config
+        self.store = store
+        self.validators = ValidatorList(obj, validators=validators)
+
+
 class Settings:
-    """
-    Common logic for settings whether set by a module or by the user.
-    """
+    """User-facing settings object."""
 
     dynaconf_banner = BANNER
 
@@ -144,45 +230,12 @@ class Settings:
         :param settings_module: defines the settings file
         :param kwargs:  override default settings
         """
-        if "dynaconf_options" in kwargs:
-            warnings.warn(
-                "dynaconf_options: Options works only with typed Dynaconf"
-                "Change your import to: `from dynaconf.typed import Dynaconf`",
-                RuntimeWarning,
-            )
+        core = DynaconfCore("main", box_settings=self, **kwargs)
+        config = core.config
+        config.defaults = kwargs
 
-        self._fresh = False
-        self._loaded_envs = []
-        self._loaded_hooks = defaultdict(dict)
-        self._loaded_py_modules = []
-        self._loaded_files = []
-        self._deleted = set()
-        if kwargs.get("DYNABOXIFY", True):
-            default_store = DataDict(box_settings=self)
-        else:
-            default_store = {}  # Disabled dot access
-        self._store = kwargs.pop("_store", default_store)
-
-        self._env_cache = {}
-        self._loaded_by_loaders: dict[SourceMetadata | str, Any] = {}
-        self._loaders = []
-        self._defaults = DataDict(box_settings=self)
-        self.environ = os.environ
+        self.__core__ = core
         self.SETTINGS_MODULE = None
-        self.filter_strategy = kwargs.get("filter_strategy", None)
-        self._not_installed_warnings = []
-        self._validate_only = kwargs.pop("validate_only", None)
-        self._validate_exclude = kwargs.pop("validate_exclude", None)
-        self._validate_only_current_env = kwargs.pop(
-            "validate_only_current_env", False
-        )
-
-        self.validators = ValidatorList(
-            self, validators=kwargs.pop("validators", None)
-        )
-        self._post_hooks: list[Callable] = ensure_a_list(
-            kwargs.get("post_hooks", [])
-        )
 
         if settings_module:
             self.set(
@@ -190,6 +243,7 @@ class Settings:
                 settings_module,
                 loader_identifier="init_settings_module",
             )
+        kwargs.pop("validators", None)
         for key, value in kwargs.items():
             self.set(
                 key,
@@ -198,10 +252,8 @@ class Settings:
                 validate=False,
                 dotted_lookup=True,
             )
-        # execute loaders only after setting defaults got from kwargs
-        self._defaults = kwargs
 
-        # The following flags are used for when copying of settings is done
+        # These skipping flags are used for when copying of settings is done
         skip_loaders = kwargs.get("dynaconf_skip_loaders", False)
         skip_validators = kwargs.get("dynaconf_skip_validators", False)
 
@@ -209,39 +261,28 @@ class Settings:
             self.execute_loaders()
 
         if not skip_validators:
-            self.validators.validate(
-                only=self._validate_only,
-                exclude=self._validate_exclude,
-                only_current_env=self._validate_only_current_env,
+            core.validators.validate(
+                only=config.validate_only,
+                exclude=config.validate_exclude,
+                only_current_env=config.validate_only_current_env,
             )
 
-    def __call__(self, *args, **kwargs):
-        """Allow direct call of `settings('val')`
-        in place of `settings.get('val')`
-        """
-        return self.get(*args, **kwargs)
+    @property
+    def environ(self):
+        return os.environ
 
-    def __setattr__(self, name, value):
-        """Allow `settings.FOO = 'value'` while keeping internal attrs."""
+    @property
+    def filter_strategy(self):
+        return self.__core__.config.filter_strategy
 
-        if name in RESERVED_ATTRS:
-            super().__setattr__(name, value)
-        else:
-            self.set(name, value)
+    @property
+    def validators(self):
+        return self.__core__.validators
 
-    def __delattr__(self, name):
-        """stores reference in `_deleted` for proper error management"""
-        self._deleted.add(name)
-        if hasattr(self, name):
-            super().__delattr__(name)
-
-    def __delitem__(self, name):
-        self._deleted.add(name)
-        self.set(name, "@del")
-
-    def __contains__(self, item):
-        """Respond to `item in settings`"""
-        return item.upper() in self.store or item.lower() in self.store
+    @property
+    def store(self):
+        """Gets internal storage"""
+        return self.__core__.store
 
     def __getattr__(self, name):
         # Uses the super 'object' class getter, which looks in instance __dict__
@@ -252,7 +293,7 @@ class Settings:
         # This is to keep the only upper case mode working
         # __getattribute__ will only match exact casing, first levels always upper
         if _should_use_strict_uppercase(name, self):
-            return self._store.__getattribute__(name)
+            return self.store.__getattribute__(name)
 
         # Use regular .get which triggers hooks among other things
         value = self.get(name, default=empty)
@@ -270,14 +311,30 @@ class Settings:
             raise KeyError(f"{item} does not exist")
         return value
 
+    def __setattr__(self, name, value):
+        """Allow `settings.FOO = 'value'` while keeping internal attrs."""
+        if name in RESERVED_ATTRS:
+            super().__setattr__(name, value)
+        else:
+            self.set(name, value)
+
     def __setitem__(self, key, value):
         """Allow `settings['KEY'] = 'value'`"""
         self.__setattr__(key, value)
 
-    @property
-    def store(self):
-        """Gets internal storage"""
-        return self._store
+    def __delattr__(self, name):
+        """stores reference in `_deleted` for proper error management"""
+        self.__core__.config.deleted.add(name)
+        if hasattr(self, name):
+            super().__delattr__(name)
+
+    def __delitem__(self, name):
+        self.__core__.config.deleted.add(name)
+        self.set(name, "@del")
+
+    def __contains__(self, item):
+        """Respond to `item in settings`"""
+        return item.upper() in self.store or item.lower() in self.store
 
     def __dir__(self):
         """Enable auto-complete for code editors"""
@@ -289,11 +346,17 @@ class Settings:
 
     def __iter__(self):
         """Redirects to store object"""
-        yield from self._store
+        yield from self.store
+
+    def __call__(self, *args, **kwargs):
+        """Allow direct call of `settings('val')`
+        in place of `settings.get('val')`
+        """
+        return self.get(*args, **kwargs)
 
     def items(self):
         """Redirects to store object"""
-        return self._store.items()
+        return self.store.items()
 
     def keys(self):
         """Redirects to store object"""
@@ -433,6 +496,7 @@ class Settings:
         :param sysenv_fallback: Should fallback to system environ if not found?
         :return: The value if found, default or None
         """
+        config = self.__core__.config
         if sysenv_fallback is None:
             sysenv_fallback = getattr(
                 self, "SYSENV_FALLBACK_FOR_DYNACONF", None
@@ -469,19 +533,19 @@ class Settings:
                 default = self.get_environ(key, cast=True)
 
         # default values should behave exactly Dynaconf parsed values
-        if default is not None and self._store.get("DYNABOXIFY", True):
+        if default is not None and self.store.get("DYNABOXIFY", True):
             if isinstance(default, list):
                 default = DataList(default)
             elif isinstance(default, dict):
                 default = DataDict(default)
 
-        if key in self._deleted:
+        if key in config.deleted:
             return default
 
         fresh_vars = getattr(self, "FRESH_VARS_FOR_DYNACONF", [])
         key_in_fresh_vars = key in ensure_upperfied_list(fresh_vars)
         if (
-            fresh or self._fresh or key_in_fresh_vars
+            fresh or config.fresh or key_in_fresh_vars
         ) and key not in UPPER_DEFAULT_SETTINGS:
             self.unset(key)
             self.execute_loaders(key=key)
@@ -499,7 +563,7 @@ class Settings:
         :return: Boolean
         """
         key = upperfy(key)
-        if key in self._deleted:
+        if key in self.__core__.config.deleted:
             return False
         return self.get(key, fresh=fresh, default=missing) is not missing
 
@@ -560,14 +624,12 @@ class Settings:
     @property
     def loaded_envs(self):
         """Get or create internal loaded envs list"""
-        if not self._loaded_envs:
-            self._loaded_envs = []
-        return self._loaded_envs
+        return self.__core__.config.loaded_envs
 
     @loaded_envs.setter
     def loaded_envs(self, value):
         """Setter for env list"""
-        self._loaded_envs = value
+        self.__core__.config.loaded_envs = value
 
     # compat
     loaded_namespaces = loaded_envs
@@ -575,7 +637,8 @@ class Settings:
     @property
     def loaded_by_loaders(self):  # pragma: no cover
         """Gets the internal mapping of LOADER -> values"""
-        return self._loaded_by_loaders
+        config = self.__core__.config
+        return config.loaded_by_loaders
 
     def from_env(self, env="", keep=False, **kwargs):
         """Return a new isolated settings object pointing to specified env.
@@ -605,9 +668,11 @@ class Settings:
             keep {bool} -- Keep pre-existing values (default: {False})
             kwargs {dict} -- Passed directly to new instance.
         """
+        config = self.__core__.config
+
         cache_key = f"{env}_{keep}_{kwargs}"
-        if cache_key in self._env_cache:
-            return self._env_cache[cache_key]
+        if cache_key in config.env_cache:
+            return config.env_cache[cache_key]
 
         new_data = {
             key: self.get(key)
@@ -638,10 +703,10 @@ class Settings:
         new_data.update(kwargs)
         new_data["FORCE_ENV_FOR_DYNACONF"] = env
         new_settings = LazySettings(**new_data)
-        self._env_cache[cache_key] = new_settings
+        config.env_cache[cache_key] = new_settings
 
         # update source metadata for inspecting
-        self._loaded_by_loaders.update(new_settings._loaded_by_loaders)
+        self.loaded_by_loaders.update(new_settings.loaded_by_loaders)
 
         return new_settings
 
@@ -703,9 +768,9 @@ class Settings:
         :return: context
         """
 
-        self._fresh = True
+        self.__core__.config.fresh = True
         yield
-        self._fresh = False
+        self.__core__.config.fresh = False
 
     @property
     def current_env(self):
@@ -806,10 +871,11 @@ class Settings:
         :param key: The key to be unset
         :param force: Bypass default checks and force unset
         """
+        config = self.__core__.config
         key = upperfy(key.strip())
         if (
             key not in UPPER_DEFAULT_SETTINGS
-            and key not in self._defaults
+            and key not in config.defaults
             or force
         ):
             with suppress(KeyError, AttributeError):
@@ -942,6 +1008,8 @@ class Settings:
         :param validate: Bool define if validation will be triggered
         :param tomlfy_filter: Optional tuple with the keys where tomlfy should apply
         """
+        core = self.__core__
+        config = core.config
 
         # Ensure source_metadata always is set even if set is called
         # without a loader_identifier
@@ -1058,7 +1126,7 @@ class Settings:
 
         # Set the parsed value
         self.store[key] = parsed
-        self._deleted.discard(key)
+        config.deleted.discard(key)
 
         # only use super().__setattr__ (uses the 'object' class setattr)
         # with internal values. Other values should go to internal store
@@ -1066,18 +1134,18 @@ class Settings:
             super().__setattr__(key, parsed)
 
         # Track history for inspect, store the raw_value
-        if source_metadata in self._loaded_by_loaders:
-            self._loaded_by_loaders[source_metadata][key] = value
+        if source_metadata in self.loaded_by_loaders:
+            self.loaded_by_loaders[source_metadata][key] = value
         else:
-            self._loaded_by_loaders[source_metadata] = {key: value}
+            self.loaded_by_loaders[source_metadata] = {key: value}
 
         if loader_identifier is None:
             # if .set is called without loader identifier it becomes
             # a default value and goes away only when explicitly unset
-            self._defaults[key] = parsed
+            config.defaults[key] = parsed
 
         if validate is True:
-            self.validators.validate()
+            core.validators.validate()
 
     def update(
         self,
@@ -1111,6 +1179,7 @@ class Settings:
         :param kwargs: extra values to update
         :return: None
         """
+        core = self.__core__
 
         if validate is empty:
             validate = self.get("VALIDATE_ON_UPDATE_FOR_DYNACONF")
@@ -1134,9 +1203,9 @@ class Settings:
 
         # handle param `validate`
         if validate is True:
-            self.validators.validate()
+            core.validators.validate()
         elif validate == "all":
-            self.validators.validate_all()
+            core.validators.validate_all()
 
     def _merge_before_set(
         self,
@@ -1190,19 +1259,21 @@ class Settings:
     @property
     def loaders(self):  # pragma: no cover
         """Return available loaders"""
+        config = self.__core__.config
         if self.LOADERS_FOR_DYNACONF in (None, 0, "0", "false", False):
             return []
 
-        if not self._loaders:
-            self._loaders = self.LOADERS_FOR_DYNACONF
+        if not config.loaders:
+            config.loaders = self.LOADERS_FOR_DYNACONF
 
-        return [importlib.import_module(loader) for loader in self._loaders]
+        return [importlib.import_module(loader) for loader in config.loaders]
 
     def reload(self, env=None, silent=None):  # pragma: no cover
         """Clean end Execute all loaders"""
+        config = self.__core__.config
         self.clean()
-        self._loaded_hooks.clear()
-        for hook in self._post_hooks:
+        config.loaded_hooks.clear()
+        for hook in config.post_hooks:
             with suppress(AttributeError, TypeError):
                 hook._called = False
 
@@ -1219,8 +1290,9 @@ class Settings:
         :param filename: optional custom filename to load
         :param loaders: optional list of loader modules
         """
+        config = self.__core__.config
         if key is None:
-            default_loader(self, self._defaults)
+            default_loader(self, config.defaults)
 
         env = (env or self.current_env).upper()
         silent = silent or self.SILENT_ERRORS_FOR_DYNACONF
@@ -1242,7 +1314,7 @@ class Settings:
 
         # execute hooks
         execute_module_hooks("post", self, env, silent=silent, key=key)
-        execute_instance_hooks(self, "post", self._post_hooks)
+        execute_instance_hooks(self, "post", config.post_hooks)
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""
@@ -1284,6 +1356,9 @@ class Settings:
         :param validate: Should trigger validation?
         :param run_hooks: Should run collected hooks?
         """
+        core = self.__core__
+        config = core.config
+
         files = ensure_a_list(path)
         if not files:  # a glob pattern may return empty
             return
@@ -1361,7 +1436,7 @@ class Settings:
                 "post",
                 [
                     _hook
-                    for _hook in self._post_hooks
+                    for _hook in config.post_hooks
                     if getattr(_hook, "_dynaconf_hook", False) is True
                     and not getattr(_hook, "_called", False)
                 ],
@@ -1369,19 +1444,20 @@ class Settings:
 
         # handle param `validate`
         if validate is True:
-            self.validators.validate()
+            core.validators.validate()
         elif validate == "all":
-            self.validators.validate_all()
+            core.validators.validate_all()
 
     @property
     def _root_path(self):
         """ROOT_PATH_FOR_DYNACONF or the path of first loaded file or '.'"""
+        config = self.__core__.config
 
         if self.ROOT_PATH_FOR_DYNACONF is not None:
             return self.ROOT_PATH_FOR_DYNACONF
 
-        if self._loaded_files:  # called once
-            root_path = os.path.dirname(self._loaded_files[0])
+        if config.loaded_files:  # called once
+            root_path = os.path.dirname(config.loaded_files[0])
             self.set(
                 "ROOT_PATH_FOR_DYNACONF",
                 root_path,
@@ -1549,44 +1625,16 @@ class Settings:
 """Upper case default settings"""
 UPPER_DEFAULT_SETTINGS = [k for k in dir(default_settings) if k.isupper()]
 
-"""Attributes created on Settings before 3.0.0"""
-RESERVED_ATTRS = (
-    [
-        item[0]
-        for item in inspect.getmembers(LazySettings)
-        if not item[0].startswith("__")
-    ]
-    + [
-        item[0]
-        for item in inspect.getmembers(Settings)
-        if not item[0].startswith("__")
-    ]
-    + [
-        "_defaults",
-        "_deleted",
-        "_env_cache",
-        "_fresh",
-        "_kwargs",
-        "_loaded_by_loaders",
-        "_loaded_envs",
-        "_loaded_hooks",
-        "_loaded_py_modules",
-        "_loaded_files",
-        "_loaders",
-        "_not_installed_warnings",
-        "_store",
-        "environ",
-        "SETTINGS_MODULE",
-        "filter_strategy",
-        "validators",
-        "_validate_only",
-        "_validate_exclude",
-        "_validate_only_current_env",
-        "_post_hooks",
-        "_registered_hooks",
-        "_REGISTERED_HOOKS",
-    ]
-)
+"""Attributes created on Settings before 3.0.0. Remove in 4.0.0"""
+RESERVED_ATTRS = [
+    "__core__",
+    "_kwargs",
+    "SETTINGS_MODULE",
+    "loaded_envs",
+    "from_env",
+    "_registered_hooks",
+    "_REGISTERED_HOOKS",
+]
 
 
 @lru_cache
@@ -1618,4 +1666,12 @@ def _warn_global_settings_deprecation():
         "DEPRECATED in 3.0.0+. You are encouraged to change it to "
         "your own instance e.g: `settings = Dynaconf(*options)`",
         DeprecationWarning,
+    )
+
+
+def _warn_incompatible_typed_dynaconf_arg():
+    warnings.warn(
+        "dynaconf_options: Options works only with typed Dynaconf"
+        "Change your import to: `from dynaconf.typed import Dynaconf`",
+        RuntimeWarning,
     )
