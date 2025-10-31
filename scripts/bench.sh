@@ -10,7 +10,7 @@ SCENARIOS=(
   # "subs_access_pure_dynabox"
 )
 
-# Utility funciton
+# Utility function
  
 function bench(){
   OUTPUT_FILE=$1

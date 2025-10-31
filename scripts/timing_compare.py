@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import os
 import timeit
 from textwrap import dedent
 
@@ -84,13 +83,12 @@ def run(git_ref, scenario):
 
     scenario_code = scenarios[scenario]
 
-    # Use a fixed repeat count for single measurement
     repeat_count = 100_000
     code = dedent(scenario_code).format(repeats=repeat_count)
     result = timeit.timeit(stmt=code, setup=setup_code, number=1)
 
     # Output in TSV format: GIT_REF RESULT
-    print(f"{git_ref}\t{result}")
+    print(f"{git_ref}\t{result}")  # noqa
 
 
 if __name__ == "__main__":

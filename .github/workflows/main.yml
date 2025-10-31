@@ -73,6 +73,32 @@ jobs:
       python_latest: '3.13'
     secrets: inherit
 
+  benchmark:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch full git history for benchmarking
+      - name: Setup upstream remote
+        run: |
+          git remote add upstream https://github.com/dynaconf/dynaconf.git
+          git fetch upstream
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - name: Run benchmarks
+        run: make bench
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: tmp-bench/
+          if-no-files-found: "warn"
+          retention-days: 7
+
   checkpoint:
     runs-on: ubuntu-latest
     needs:
