@@ -11,8 +11,8 @@ def test_dynaconf():
         **data,
     )
 
-    for i in range(40000):
-        settings.common.mode
+    for i in range(500_000):
+        settings["common"]["mode"]
 
 
 def main():
