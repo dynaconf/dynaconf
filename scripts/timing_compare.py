@@ -18,6 +18,7 @@ settings = Dynaconf(
 )
 dynabox = DynaBox(data)
 datadict = DataDict(data)
+settings.common  # trigger setup
 """
 
 scenarios = {
