@@ -142,6 +142,9 @@ class DynaconfConfig:
     For internal use only.
     """
 
+    # for_dynaconf
+    fresh_vars: list[str] = field(default_factory=list)  # always upper
+
     # validation
     validate_only: Optional[list[str]] = None
     validate_exclude: Optional[list[str]] = None
@@ -496,7 +499,8 @@ class Settings:
         :param sysenv_fallback: Should fallback to system environ if not found?
         :return: The value if found, default or None
         """
-        config = self.__core__.config
+        core = self.__core__
+        config = core.config
         if sysenv_fallback is None:
             sysenv_fallback = getattr(
                 self, "SYSENV_FALLBACK_FOR_DYNACONF", None
@@ -533,7 +537,8 @@ class Settings:
                 default = self.get_environ(key, cast=True)
 
         # default values should behave exactly Dynaconf parsed values
-        if default is not None and self.store.get("DYNABOXIFY", True):
+        # NOTE: is this really required?
+        if default is not None and config.dynaboxify:
             if isinstance(default, list):
                 default = DataList(default)
             elif isinstance(default, dict):
@@ -542,15 +547,13 @@ class Settings:
         if key in config.deleted:
             return default
 
-        fresh_vars = getattr(self, "FRESH_VARS_FOR_DYNACONF", [])
-        key_in_fresh_vars = key in ensure_upperfied_list(fresh_vars)
         if (
-            fresh or config.fresh or key_in_fresh_vars
+            fresh or config.fresh or key in config.fresh_vars
         ) and key not in UPPER_DEFAULT_SETTINGS:
             self.unset(key)
             self.execute_loaders(key=key)
 
-        data = (parent or self.store).get(key, default)
+        data = (parent or core.store).get(key, default)
         if cast:
             data = apply_converter(cast, data, box_settings=self)
         return data
@@ -1315,6 +1318,9 @@ class Settings:
         # execute hooks
         execute_module_hooks("post", self, env, silent=silent, key=key)
         execute_instance_hooks(self, "post", config.post_hooks)
+
+        # always upper
+        config.fresh_vars = ensure_upperfied_list(self.FRESH_VARS_FOR_DYNACONF)
 
     def pre_load(self, env, silent, key):
         """Do we have any file to pre-load before main settings file?"""

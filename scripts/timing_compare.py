@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import os
 import timeit
 from textwrap import dedent
 
-import click
+from dynaconf.vendor import click
 
 setup_code = """\
 from dynaconf import Dynaconf
@@ -16,8 +15,9 @@ data = {"common": {"mode": 123}}
 settings = Dynaconf(
     **data,
 )
-dynabox = DynaBox(data)
-datadict = DataDict(data)
+# dynabox = DynaBox(data)
+# datadict = DataDict(data)
+settings.common  # trigger setup
 """
 
 scenarios = {
@@ -25,10 +25,10 @@ scenarios = {
         for i in range({repeats}):
             x = data["common"]["mode"]
         """,
-    # "dot_access": """\
-    #     for i in range({repeats}):
-    #         x = settings.common.mode
-    #     """,
+    "dot_access": """\
+        for i in range({repeats}):
+            x = settings.common.mode
+        """,
     "subs_access": """\
         for i in range({repeats}):
             x = settings["common"]["mode"]
@@ -63,47 +63,32 @@ def list():
 
 @cli.command()
 @click.option(
-    "--repeat-set",
-    "-r",
-    default="1,10,100,1000,5000,10000,50000,100000,250000,500000",
-    help="Comma-separated list of repeat counts",
+    "--git-ref",
+    required=False,
+    default="default",
+    help="Git reference identifier",
 )
-@click.option(
-    "--include",
-    "-i",
-    help="Comma-separated list of scenarios to include (default: all)",
-)
-@click.option(
-    "--output-dir", "-o", help="Output directory (default: current directory)"
-)
-def run(repeat_set, include, output_dir):
+@click.argument("scenario", required=True)
+def run(git_ref, scenario):
     """Run benchmark."""
     global scenarios
 
-    repeat_list = [int(x.strip()) for x in repeat_set.split(",")]
-    include_list = []
-    if include:
-        include_list = [x.strip() for x in include.split(",")]
+    if scenario not in scenarios:
+        click.echo(
+            f"Error: Scenario '{scenario}' not found. Available scenarios:"
+        )
+        for scenario_name in scenarios.keys():
+            click.echo(f"  {scenario_name}")
+        return
 
-    scenarios_items = scenarios.items()
-    if include_list:
-        scenarios_items = [
-            (k, v) for k, v in scenarios_items if k in include_list
-        ]
+    scenario_code = scenarios[scenario]
 
-    for scenario_name, scenario_code in scenarios_items:
-        print(scenario_name)  # noqa
-        filename = scenario_name + ".dat"
-        if output_dir:
-            os.makedirs(output_dir, exist_ok=True)
-            filename = os.path.join(output_dir, filename)
-        with open(filename, "w") as fd:
-            for repeat in repeat_list:
-                code = dedent(scenario_code).format(repeats=repeat)
-                result = timeit.timeit(stmt=code, setup=setup_code, number=1)
-                display = f"{repeat} {result}"
-                print(display, file=fd)
-                print(display)  # noqa
+    repeat_count = 100_000
+    code = dedent(scenario_code).format(repeats=repeat_count)
+    result = timeit.timeit(stmt=code, setup=setup_code, number=1)
+
+    # Output in TSV format: GIT_REF RESULT
+    print(f"{git_ref}\t{result}")  # noqa
 
 
 if __name__ == "__main__":

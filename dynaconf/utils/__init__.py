@@ -490,6 +490,7 @@ def build_env_list(obj: Settings | LazySettings, env: str | None) -> list[str]:
     return env_list
 
 
+@lru_cache
 def upperfy(key: str) -> str:
     """Receive a string key and returns its upper version.
 

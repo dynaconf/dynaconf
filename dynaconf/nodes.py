@@ -71,11 +71,16 @@ class DataDict(dict):
 
     def get(self, item, default=None, bypass_eval=False):
         if not bypass_eval:
-            n_item = (
-                ut.find_the_correct_casing(item, tuple(self.keys())) or item
-            )
-            result = super().get(n_item, empty)
-            result = result if result is not empty else default
+            try:
+                result = super().__getitem__(item)
+            except KeyError:
+                pass
+                n_item = (
+                    ut.find_the_correct_casing(item, tuple(self.keys()))
+                    or item
+                )
+                result = super().get(n_item, empty)
+                result = result if result is not empty else default
             return recursively_evaluate_lazy_format(result, self.__meta__.core)
         try:
             return super().__getitem__(item)
@@ -748,7 +753,7 @@ def recursively_evaluate_lazy_format(value, settings):
 
     For example: Evaluate values inside lists and dicts
     """
-    if getattr(value, "_dynaconf_lazy_format", None):
+    if value.__class__.__name__ == "Lazy":
         value = value(settings)
 
     if isinstance(value, list):
