@@ -13,10 +13,12 @@ def setup_dynaconf():
     settings.common  # trigger setup
     return settings
 
+
 def setup_datadict():
     from dynaconf.nodes import DataDict
 
     return DataDict({"common": {"mode": 123}})
+
 
 def test_scenario(settings):
     for i in range(500_000):
@@ -25,7 +27,7 @@ def test_scenario(settings):
 
 def main():
     profiler = Profiler()
-    obj=setup_dynaconf()
+    obj = setup_dynaconf()
     profiler.start()
     test_scenario(obj)
     profiler.stop()
