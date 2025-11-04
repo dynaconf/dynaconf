@@ -21,7 +21,6 @@ from __future__ import annotations
 import importlib.util
 import timeit
 from pathlib import Path
-from textwrap import dedent
 
 import click
 
@@ -44,81 +43,14 @@ def discover_scenarios():
     for scenario_file in scenarios_dir.glob("*.py"):
         if scenario_file.name.startswith("__"):
             continue
-
-        try:
-            # Validate that the module has required functions
-            scenario_name, module = _load_scenario_module(scenario_file)
-            if not hasattr(module, "setup"):
-                click.echo(
-                    f"Warning: Scenario {scenario_name} missing setup() function",
-                    err=True,
-                )
+        # Validate that the module has required functions
+        scenario_name, module = _load_scenario_module(scenario_file)
+        for required_fn in ("setup", "run", "baseline_setup", "baseline_run"):
+            if not hasattr(module, required_fn):
+                _missing_function_err(scenario_name, required_fn)
                 raise click.Abort()
-            if not hasattr(module, "run"):
-                click.echo(
-                    f"Warning: Scenario {scenario_name} missing run() function",
-                    err=True,
-                )
-                raise click.Abort()
-            scenarios[scenario_name] = module
-        except Exception as e:
-            click.echo(
-                f"Warning: Failed to load scenario {scenario_name}: {e}",
-                err=True,
-            )
-            continue
-
+        scenarios[scenario_name] = module
     return scenarios
-
-
-def _load_scenario_module(scenario_file):
-    scenario_name = scenario_file.stem
-    spec = importlib.util.spec_from_file_location(scenario_name, scenario_file)
-    if spec is None or spec.loader is None:
-        click.echo(
-            f"Warning: Could not load spec for {scenario_file}", err=True
-        )
-        raise click.Abort()
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return scenario_name, module
-
-
-def _get_scenario_source_code(scenario_name):
-    """Get the file path for a scenario by name."""
-    scenarios_dir = Path(__file__).parent / "scenarios"
-    scenario_file = scenarios_dir / f"{scenario_name}.py"
-    if not scenario_file.exists():
-        click.echo(f"Error: Could not find scenario file for '{scenario_name}'", err=True)
-        raise click.Abort()
-    with open(scenario_file) as f:
-        scenario_source = f.read()
-
-    setup_code = dedent(
-        scenario_source +
-        "context = setup()"
-    )
-    stmt_code = "run(context)"
-    return dedent(setup_code), stmt_code
-
-
-
-def create_scenario_runner(scenario_module):
-    """
-    Create a callable that sets up the scenario once and runs it.
-
-    Args:
-        scenario_module: The loaded scenario module
-
-    Returns:
-        callable: Function that runs the scenario
-    """
-    try:
-        context = scenario_module.setup()
-        return lambda: scenario_module.run(context)
-    except Exception as e:
-        click.echo(f"Error setting up scenario: {e}", err=True)
-        raise click.Abort()
 
 
 @click.group()
@@ -145,13 +77,6 @@ def list():
             click.echo(scenario_name)
 
 
-def _get_docstring(module):
-    if hasattr(module, "__doc__") and module.__doc__:
-        # Get first line of docstring
-        return module.__doc__.strip().split("\n")[0]
-    return ""
-
-
 @cli.command()
 @click.option(
     "--label",
@@ -159,26 +84,30 @@ def _get_docstring(module):
     default="default",
     help="Label identifier for this benchmark run",
 )
+@click.option(
+    "--baseline",
+    is_flag=True,
+    help="Run the baseline version of the scenario (label will be set to 'baseline')",
+)
 @click.argument("scenario", required=True)
-def run(label, scenario):
+def run(label, baseline, scenario):
     """Run benchmark for a specific scenario."""
-    scenarios = discover_scenarios()
-
-    if scenario not in scenarios:
-        err_msg = (
-            f"Error: Scenario '{scenario}' not found. Available scenarios:"
-        )
-        for scenario_name in sorted(scenarios.keys()):
-            err_msg += f"\n    {scenario_name}"
-        click.echo(err_msg, err=True)
+    # Validate that --label and --baseline are not used together
+    if baseline and label != "default":
+        click.echo("Error: Cannot use --label with --baseline flag", err=True)
         raise click.Abort()
 
-    try:
-        setup_code, stmt_code = _get_scenario_source_code(scenario)
-        result = timeit.timeit(stmt_code, setup=setup_code, number=1)
+    if baseline:
+        label = "baseline"
 
-        # Output in TSV format: LABEL RESULT
-        print(f"{label}\t{result}")  # noqa
+    scenarios = discover_scenarios()
+    _validate_scenarios(scenarios, scenario)
+    try:
+        setup_code, stmt_code = _get_scenario_source_code(
+            scenario, use_baseline=baseline
+        )
+        result = timeit.timeit(stmt_code, setup=setup_code, number=1)
+        _output_tsv(label, result)
     except Exception as e:
         click.echo(f"Error running scenario '{scenario}': {e}", err=True)
         raise click.Abort()
@@ -196,16 +125,7 @@ def profile(scenario, output):
     from pyinstrument import Profiler
 
     scenarios = discover_scenarios()
-
-    if scenario not in scenarios:
-        err_msg = (
-            f"Error: Scenario '{scenario}' not found. Available scenarios:"
-        )
-        for scenario_name in sorted(scenarios.keys()):
-            err_msg += f"\n    {scenario_name}"
-        click.echo(err_msg, err=True)
-        raise click.Abort()
-
+    _validate_scenarios(scenarios, scenario)
     scenario_module = scenarios[scenario]
 
     try:
@@ -237,6 +157,77 @@ def profile(scenario, output):
     except Exception as e:
         click.echo(f"Error profiling scenario '{scenario}': {e}", err=True)
         raise click.Abort()
+
+
+def _missing_function_err(scenario_name, required_fn):
+    click.echo(
+        f"Warning: Scenario {scenario_name} missing {required_fn} function",
+        err=True,
+    )
+
+
+def _load_scenario_module(scenario_file):
+    scenario_name = scenario_file.stem
+    spec = importlib.util.spec_from_file_location(scenario_name, scenario_file)
+    if spec is None or spec.loader is None:
+        click.echo(
+            f"Warning: Could not load spec for {scenario_file}", err=True
+        )
+        raise click.Abort()
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return scenario_name, module
+
+
+def _get_scenario_source_code(scenario_name, use_baseline=False):
+    """Get the source code for a scenario by name.
+
+    Args:
+        scenario_name: Name of the scenario
+        use_baseline: If True, use baseline_setup() and baseline_run() instead of setup() and run()
+
+    Returns:
+        tuple: (setup_code, stmt_code) for timeit
+    """
+    scenarios_dir = Path(__file__).parent / "scenarios"
+    scenario_file = scenarios_dir / f"{scenario_name}.py"
+    if not scenario_file.exists():
+        click.echo(
+            f"Error: Could not find scenario file for '{scenario_name}'",
+            err=True,
+        )
+        raise click.Abort()
+    with open(scenario_file) as f:
+        scenario_source = f.read()
+
+    setup_fn = "baseline_setup" if use_baseline else "setup"
+    run_fn = "baseline_run" if use_baseline else "run"
+    setup_code = scenario_source + f"\ncontext = {setup_fn}()"
+    stmt_code = f"{run_fn}(context)"
+
+    return setup_code, stmt_code
+
+
+def _get_docstring(module):
+    if hasattr(module, "__doc__") and module.__doc__:
+        # Get first line of docstring
+        return module.__doc__.strip().split("\n")[0]
+    return ""
+
+
+def _validate_scenarios(scenarios, scenario):
+    if scenario not in scenarios:
+        err_msg = (
+            f"Error: Scenario '{scenario}' not found. Available scenarios:"
+        )
+        for scenario_name in sorted(scenarios.keys()):
+            err_msg += f"\n    {scenario_name}"
+        click.echo(err_msg, err=True)
+        raise click.Abort()
+
+
+def _output_tsv(label, data):
+    print(f"{label}\t{data}")  # noqa
 
 
 if __name__ == "__main__":

@@ -76,10 +76,10 @@ function bench(){
 
 function run_baseline(){
   OUTPUT_FILE=$1
-  BASELINE_SCENARIO="baseline"
+  SCENARIO=$2
   PKG_LOCATION="git+file://$PWD"
-  echo "uv run --with $PKG_LOCATION $BENCH_SCRIPT run --label $BASELINE_SCENARIO $BASELINE_SCENARIO"
-  uv run --with "$PKG_LOCATION" "$BENCH_SCRIPT" run --label "$BASELINE_SCENARIO" "$BASELINE_SCENARIO" >> "$OUTPUT_FILE"
+  echo "uv run --with $PKG_LOCATION $BENCH_SCRIPT run --baseline $SCENARIO"
+  uv run --with "$PKG_LOCATION" "$BENCH_SCRIPT" run --baseline "$SCENARIO" >> "$OUTPUT_FILE"
 }
 
 # Main 
@@ -125,7 +125,7 @@ mkdir -p $TMPDIR
 OUTPUT_FILE="$TMPDIR/bench-${SCENARIO}.tsv"
 # baseline
 for ((i=1; i<=SAMPLE_N; i++)); do
-    run_baseline "$OUTPUT_FILE"
+    run_baseline "$OUTPUT_FILE" "$SCENARIO"
 done
 # regular scenarios
 for GIT_REF in "${GIT_REFS[@]}"; do
