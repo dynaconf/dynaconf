@@ -962,6 +962,18 @@ def test_dotted_set_with_merge(settings):
     assert settings.DATABASES.default.ATTRS == {"x": 26}
 
 
+def test_deepcopy_settings():
+    import copy
+
+    from dynaconf.base import Settings
+
+    s1 = Settings()
+    s2 = copy.deepcopy(s1)
+    assert id(s1) != id(s2)
+    assert id(s1.__core__) != id(s2.__core__)
+    assert s1.__core__.id != s2.__core__.id
+
+
 def test_from_env_method(clean_env, tmpdir):
     data = {
         "default": {"a_default": "From default env"},

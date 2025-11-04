@@ -100,9 +100,9 @@ else
   )
 
   # Add last tag if it exists
-  if [ -n "$LAST_TAG" ]; then
-    GIT_REFS+=("$LAST_TAG")
-  fi
+  # if [ -n "$LAST_TAG" ]; then
+  #   GIT_REFS+=("$LAST_TAG")
+  # fi
 fi
 
 echo "Using scenario: ${SCENARIO}"
@@ -117,7 +117,6 @@ if [ "$DRY_RUN" = true ]; then
   exit 0
 fi
 
-rm -rf $TMPDIR
 mkdir -p $TMPDIR
 
 # Run benchmarks for all combinations
@@ -137,20 +136,10 @@ done
 
 # Generate plot and summary
 echo -e "----------------------------------------------\n\n"
-
 uv run scripts/plot.py "$OUTPUT_FILE"
-echo "vs_previous:"
-echo "    The factor of how much the commit changed in relation to the previous. (T_cur / T_prev). E.g:"
-echo "    vs_previous=0.5 means the time reduced by half."
-echo "    vs_previous=2 means the time doubled."
-echo "vs_baseline:"
-echo "    The factor of how much the commit changed in relation to the baseline. (T_cur / T_baseline). E.g:"
-echo "    vs_baseline=2 means the time is the double of the baseline."
-echo "    The baseline is the best possible result."
-echo ""
+echo -e "----------------------------------------------\n\n"
 
 # Generate profile results
-echo -e "----------------------------------------------\n\n"
 echo "Generating profile for scenario: $SCENARIO"
 PROFILE_OUTPUT="$TMPDIR/profile-${SCENARIO}.html"
 uv run --with "$CURRENT_CHECKOUT_LOCATION" scripts/bench_tool.py profile "$SCENARIO" -o "$PROFILE_OUTPUT"
