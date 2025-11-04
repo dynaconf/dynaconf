@@ -16,7 +16,10 @@ test_redis:
 	./tests_functional/test_redis.sh
 
 bench:
+	rm -rf tmp-bench
 	@scripts/bench.sh subs_access
+	@scripts/bench.sh dot_access
+	@scripts/bench.sh first_level_access
 
 watch:
 	ls **/**.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/

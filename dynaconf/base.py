@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import importlib
 import inspect
+import multiprocessing
 import os
 import re
 import warnings
@@ -11,7 +12,9 @@ from contextlib import contextmanager
 from contextlib import suppress
 from dataclasses import dataclass
 from dataclasses import field
+from functools import cached_property
 from functools import lru_cache
+from functools import wraps
 from pathlib import Path
 from typing import Any
 from typing import Callable
@@ -50,6 +53,10 @@ from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
+
+cache: dict = {}
+cache_enabled = True  # disable if something weird happen
+id_counter = multiprocessing.Value("i", 0)
 
 
 class LazySettings(LazyObject):
@@ -215,11 +222,70 @@ class DynaconfCore:
         store = kwargs.pop("_store", default_store)
         validators = kwargs.pop("validators", None)
 
-        self.id = id
+        self._id = id
         self.obj = obj
         self.config = config
         self.store = store
         self.validators = ValidatorList(obj, validators=validators)
+
+    # CACHING
+
+    def get_cached(self, key):
+        if not cache_enabled:
+            raise KeyError  # communicates "cache not found"
+        return cache[(self.id, key)]
+
+    def set_cached(self, key, value):
+        if not cache_enabled:
+            return
+        fresh_vars = self.config.fresh_vars
+        is_lazy = value.__class__.__name__ == "Lazy"
+        if key not in fresh_vars and not is_lazy:
+            cache[(self.id, key)] = value
+
+    def clear_cache(self, key=None):
+        if not cache_enabled:
+            return
+        cache.clear()
+
+    # COPYING
+
+    @cached_property
+    def id(self):
+        return f"{self._id}-{get_unique_id()}"
+
+    def __deepcopy__(self, memo):
+        """Custom deepcopy to ensure unique id generation for copied cores."""
+        import copy
+
+        # Create a new instance without calling __init__
+        new_instance = self.__class__.__new__(self.__class__)
+
+        # Add it to memo to handle circular references
+        memo[id(self)] = new_instance
+
+        # Deepcopy all attributes
+        for key, value in self.__dict__.items():
+            # Skip the cached 'id' property so it regenerates with a new unique value
+            if key != "id":
+                setattr(new_instance, key, copy.deepcopy(value, memo))
+
+        return new_instance
+
+
+def invalidates_cache(func):
+    """Decorator that clears the cache before calling the decorated method."""
+
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        # core should encapsulates all the caching logic
+        # using getattr because before Settings init it's unset
+        core = getattr(self, "__core__", None)
+        if core:
+            core.clear_cache()
+        return func(self, *args, **kwargs)
+
+    return wrapper
 
 
 class Settings:
@@ -287,33 +353,52 @@ class Settings:
         """Gets internal storage"""
         return self.__core__.store
 
-    def __getattr__(self, name):
+    def __getattr__(self, key):
+        # do we have cached value?
+        try:
+            if key != "__core__":
+                core = self.__core__
+                return core.get_cached(key)
+        except KeyError:
+            pass
+
         # Uses the super 'object' class getter, which looks in instance __dict__
         # Only use that for internal values, otherwise use self._store
-        if _is_key_internal(name):
-            return super().__getattribute__(name)
+        if _is_key_internal(key):
+            value = super().__getattribute__(key)
+            return value
 
         # This is to keep the only upper case mode working
         # __getattribute__ will only match exact casing, first levels always upper
-        if _should_use_strict_uppercase(name, self):
-            return self.store.__getattribute__(name)
+        if _should_use_strict_uppercase(key, self):
+            value = core.store.__getattribute__(key)
+        # Use regular .get which triggers hooks among other things
+        else:
+            value = self.get(key, default=empty)
+            if value is empty:
+                raise AttributeError(key)
+            core.set_cached(key, value)
+        return value
+
+    def __getitem__(self, key):
+        """Allow getting variables as dict keys `settings['KEY']`"""
+        # WARNING: keep logic in sync with __getattr__
+        # do we have cached value?
+        try:
+            if key != "__core__":
+                core = self.__core__
+                return core.get_cached(key)
+        except KeyError:
+            pass
 
         # Use regular .get which triggers hooks among other things
-        value = self.get(name, default=empty)
+        value = self.get(key, default=empty)
         if value is empty:
-            raise AttributeError(name)
+            raise KeyError(f"{key} does not exist")
+        core.set_cached(key, value)
         return value
 
-    def __getitem__(self, item):
-        """Allow getting variables as dict keys `settings['KEY']`"""
-        # TODO(@pbrochad): This should use __getattr__ as the behavior source of
-        # truth, but the behavior differs when dealing with 'strict uppercase mode'
-        # https://github.com/dynaconf/dynaconf/issues/todo
-        value = self.get(item, default=empty)
-        if value is empty:
-            raise KeyError(f"{item} does not exist")
-        return value
-
+    @invalidates_cache
     def __setattr__(self, name, value):
         """Allow `settings.FOO = 'value'` while keeping internal attrs."""
         if name in RESERVED_ATTRS:
@@ -325,12 +410,14 @@ class Settings:
         """Allow `settings['KEY'] = 'value'`"""
         self.__setattr__(key, value)
 
+    @invalidates_cache
     def __delattr__(self, name):
         """stores reference in `_deleted` for proper error management"""
         self.__core__.config.deleted.add(name)
         if hasattr(self, name):
             super().__delattr__(name)
 
+    @invalidates_cache
     def __delitem__(self, name):
         self.__core__.config.deleted.add(name)
         self.set(name, "@del")
@@ -369,6 +456,7 @@ class Settings:
         """Redirects to store object"""
         return self.store.values()
 
+    @invalidates_cache
     def setdefault(
         self, item, default, apply_default_on_none=False, env: str = "unknown"
     ):
@@ -396,6 +484,7 @@ class Settings:
         loader_identifier = SourceMetadata("setdefault", "unique", env.lower())
 
         if apply_default:
+            cache.clear()
             # Passing tomlfy_filter prevents side-effects of tomlfy on sibling items.
             # See: https://github.com/dynaconf/dynaconf/issues/905
             self.set(
@@ -570,6 +659,7 @@ class Settings:
             return False
         return self.get(key, fresh=fresh, default=missing) is not missing
 
+    @invalidates_cache
     def get_fresh(self, key, default=None, cast=None):
         """This is a shortcut to `get(key, fresh=True)`. always reload from
         loaders store before getting the var.
@@ -581,6 +671,7 @@ class Settings:
         """
         return self.get(key, default=default, cast=cast, fresh=True)
 
+    @invalidates_cache
     def get_environ(self, key, default=None, cast=None):
         """Get value from environment variable using os.environ.get
 
@@ -643,6 +734,7 @@ class Settings:
         config = self.__core__.config
         return config.loaded_by_loaders
 
+    @invalidates_cache
     def from_env(self, env="", keep=False, **kwargs):
         """Return a new isolated settings object pointing to specified env.
 
@@ -714,6 +806,7 @@ class Settings:
         return new_settings
 
     @contextmanager
+    @invalidates_cache
     def using_env(self, env, clean=True, silent=True, filename=None):
         """
         This context manager allows the contextual use of a different env
@@ -751,6 +844,7 @@ class Settings:
     using_namespace = using_env
 
     @contextmanager
+    @invalidates_cache
     def fresh(self):
         """
         this context manager force the load of a key direct from the store::
@@ -820,6 +914,7 @@ class Settings:
     # Backwards compatibility see #169
     settings_file = settings_module
 
+    @invalidates_cache
     def setenv(self, env=None, clean=True, silent=True, filename=None):
         """Used to interactively change the env
         Example of settings.toml::
@@ -863,11 +958,13 @@ class Settings:
     # compat
     namespace = setenv
 
+    @invalidates_cache
     def clean(self, *args, **kwargs):
         """Clean all loaded values to reload when switching envs"""
         for key in list(self.store.keys()):
             self.unset(key)
 
+    @invalidates_cache
     def unset(self, key, force=False):
         """Unset on all references
 
@@ -887,6 +984,7 @@ class Settings:
                 delattr(self, key)
                 del self.store[key]
 
+    @invalidates_cache
     def unset_all(self, keys, force=False):  # pragma: no cover
         """Unset based on a list of keys
 
@@ -988,6 +1086,7 @@ class Settings:
             **kwargs,
         )
 
+    @invalidates_cache
     def set(
         self,
         key,
@@ -1150,6 +1249,7 @@ class Settings:
         if validate is True:
             core.validators.validate()
 
+    @invalidates_cache
     def update(
         self,
         data=None,
@@ -1271,6 +1371,7 @@ class Settings:
 
         return [importlib.import_module(loader) for loader in config.loaders]
 
+    @invalidates_cache
     def reload(self, env=None, silent=None):  # pragma: no cover
         """Clean end Execute all loaders"""
         config = self.__core__.config
@@ -1339,6 +1440,7 @@ class Settings:
             if last_loader and last_loader == env_loader:
                 last_loader.load(self, env, silent, key)
 
+    @invalidates_cache
     def load_file(
         self,
         path=None,
@@ -1681,3 +1783,10 @@ def _warn_incompatible_typed_dynaconf_arg():
         "Change your import to: `from dynaconf.typed import Dynaconf`",
         RuntimeWarning,
     )
+
+
+def get_unique_id():
+    # thread-safe, just in case
+    with id_counter.get_lock():
+        id_counter.value += 1
+        return id_counter.value

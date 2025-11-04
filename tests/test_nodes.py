@@ -472,7 +472,7 @@ class TestCoreFunctions:
         core_id = "test_core_123"
         core = DynaconfCore(core_id)
 
-        assert core.id == core_id
+        assert core_id in core.id
         assert isinstance(core, DynaconfCore)
 
     def test_init_core_already_exists(self):
