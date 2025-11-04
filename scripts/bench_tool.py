@@ -21,6 +21,7 @@ from __future__ import annotations
 import importlib.util
 import timeit
 from pathlib import Path
+from textwrap import dedent
 
 import click
 
@@ -81,6 +82,25 @@ def _load_scenario_module(scenario_file):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return scenario_name, module
+
+
+def _get_scenario_source_code(scenario_name):
+    """Get the file path for a scenario by name."""
+    scenarios_dir = Path(__file__).parent / "scenarios"
+    scenario_file = scenarios_dir / f"{scenario_name}.py"
+    if not scenario_file.exists():
+        click.echo(f"Error: Could not find scenario file for '{scenario_name}'", err=True)
+        raise click.Abort()
+    with open(scenario_file) as f:
+        scenario_source = f.read()
+
+    setup_code = dedent(
+        scenario_source +
+        "context = setup()"
+    )
+    stmt_code = "run(context)"
+    return dedent(setup_code), stmt_code
+
 
 
 def create_scenario_runner(scenario_module):
@@ -153,11 +173,9 @@ def run(label, scenario):
         click.echo(err_msg, err=True)
         raise click.Abort()
 
-    scenario_module = scenarios[scenario]
-
     try:
-        runner = create_scenario_runner(scenario_module)
-        result = timeit.timeit(runner, number=1)
+        setup_code, stmt_code = _get_scenario_source_code(scenario)
+        result = timeit.timeit(stmt_code, setup=setup_code, number=1)
 
         # Output in TSV format: LABEL RESULT
         print(f"{label}\t{result}")  # noqa
