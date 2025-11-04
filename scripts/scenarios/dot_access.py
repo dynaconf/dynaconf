@@ -8,6 +8,19 @@ using dot notation (settings.key.subkey).
 LOOP_COUNT = 100_000
 
 
+def baseline_setup():
+    """Baseline setup function - creates raw dict for comparison."""
+    data = {"common": {"mode": 123}}
+    return {"data": data}
+
+
+def baseline_run(context):
+    """Baseline run function - performs raw dict access."""
+    data = context["data"]
+    for i in range(LOOP_COUNT):
+        data["common"]["mode"]
+
+
 def setup():
     """Setup function - creates Dynaconf settings object."""
     from dynaconf import Dynaconf
