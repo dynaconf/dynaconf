@@ -17,9 +17,10 @@ test_redis:
 
 bench:
 	rm -rf tmp-bench
-	@scripts/bench.sh subs_access
-	@scripts/bench.sh dot_access
-	@scripts/bench.sh first_level_access
+	@scripts/bench.sh depth2_getitem
+	@scripts/bench.sh depth2_getattr
+	@scripts/bench.sh depth1_getattr
+	@scripts/bench.sh depth1_setattr
 
 watch:
 	ls **/**.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/
