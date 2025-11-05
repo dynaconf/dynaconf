@@ -1,8 +1,8 @@
 """
-Dynaconf dot notation access scenario.
+Top level getattr access.
 
-This scenario measures the performance of accessing Dynaconf settings
-using dot notation (settings.key.subkey).
+This is concerned with the top-level access only. In Django applications it's common
+to have flat settings where most of the items live in the root level.
 """
 
 LOOP_COUNT = 500_000

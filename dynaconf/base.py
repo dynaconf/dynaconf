@@ -484,7 +484,6 @@ class Settings:
         loader_identifier = SourceMetadata("setdefault", "unique", env.lower())
 
         if apply_default:
-            cache.clear()
             # Passing tomlfy_filter prevents side-effects of tomlfy on sibling items.
             # See: https://github.com/dynaconf/dynaconf/issues/905
             self.set(
