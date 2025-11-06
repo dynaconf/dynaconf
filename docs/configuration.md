@@ -384,13 +384,13 @@ Otherwise it will be only what is specified in the latest loaded file. read more
 
 One of the [merging strategies](merging.md) is the use of `__` to access nested level data structures. By default the separator is `__` (double underline), this variable allows you to change that.
 
-ex:
+Example:
 
 ```bash
 export DYNACONF_DATABASES__default__ENGINE__Address="0.0.0.0"
 ```
 
-generates:
+Is equivalent to:
 
 ```python
 DATABASES = {
@@ -402,26 +402,33 @@ DATABASES = {
 }
 ```
 
-To access list by indexing
+!!! warning
+    Choose something that is suitable for env vars, usually you don't need to change this variable.
+
+!!! Warning
+    On windows env vars are all transformed to upper case.
+
+### **index_separators**
 
 > type=`str`, default=`"___"` (triple underescore) </br>
 > env-var=`INDEX_SEPARATOR_FOR_DYNACONF`
 
-ex:
+> New in **3.3.0 (tech preview)**
+
+Similar to [nested_separator](#nested_separators), but for dismbiguation of index keys.
+
+Example:
 
 ```bash
 export DYNACONF_DATABASES__default__WORKERS___0__Address="1.1.1.1"
 export DYNACONF_DATABASES__default__WORKERS___1__Address="2.2.2.2"
 ```
 
-generates:
+Is equivalent to:
 
 ```python
 DATABASES = {
     "default": {
-        "ENGINE": {
-            "Address": "0.0.0.0"
-        },
         "WORKERS": [
             {"Address": "1.1.1.1"},
             {"Address": "2.2.2.2"} 
@@ -429,12 +436,6 @@ DATABASES = {
     }
 }
 ```
-
-!!! warning
-    Choose something that is suitable for env vars, usually you don't need to change this variable.
-
-!!! Warning
-    On windows env vars are all transformed to upper case.
 
 ---
 

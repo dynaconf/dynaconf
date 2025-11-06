@@ -320,7 +320,9 @@ parameters__enabled = false
 The use of `__` to denote nested level will ensure the key is merged with existing values read more in [merging existing values](#merging-existing-values).
 
 
-## Nested keys in dictionaries via environment variables.
+## Nested set via environment variables
+
+### With dictionaries
 
 > **New in 2.1.0**
 >
@@ -471,6 +473,33 @@ DATABASES = {
 }
 ```
 
+### With lists
+
+> **New in 3.3.0 (tech preview)**
+
+This works similarly to the case for dicionaries, but uses a different separator.
+For lists the separator is `___` (three underscores), and it can be configured via the [index_separator](../configuration/#index_separators) configuration.
+
+Example:
+
+```bash
+export DYNACONF_DATABASES__default__WORKERS___0__Address="1.1.1.1"
+export DYNACONF_DATABASES__default__WORKERS___1__Address="2.2.2.2"
+```
+
+Is equivalent to:
+
+```python
+DATABASES = {
+    "default": {
+        "WORKERS": [
+            {"Address": "1.1.1.1"},
+            {"Address": "2.2.2.2"} 
+        ]
+    }
+}
+```
+
 ## Using the `dynaconf_merge` mark on configuration files.
 
 > **New in 2.0.0**
@@ -528,14 +557,6 @@ settings.DATABASE == {'host': 'server.com', 'user': 'dev_user', 'password': 1234
 
 > **BEWARE**: Using `MERGE_ENABLED_FOR_DYNACONF` can lead to unexpected results because you do not have granular control of what is being merged or overwritten so the recommendation is to use other options.
 
-## Known caveats
-
-The **dynaconf_merge** and **@merge** functionalities work only for the first level keys, it will not merge subdicts or nested lists (yet).
-
-
-## More examples
-
-Take a look at the [example](https://github.com/dynaconf/dynaconf/tree/master/example) folder to see some examples of use with different file formats and features.
 
 
 ## Inserting values to specific positions in lists
@@ -550,13 +571,13 @@ The `@insert` token can also be used to insert a value in a specific position in
 
 The insert token also accepts signed indexes, so you can insert values at the end of the list by using a negative index.
 
-## syntax
+### Syntax
 
 ```bash
 KEY = '@insert [index] value'
 ```
 
-## Example
+### Example
 
 Programmatically:
 
@@ -609,3 +630,13 @@ Result:
 ```python
 assert settings.PEOPLE == [{name="Alice"}, {name="Charlie"}, {name="Bob"}]
 ```
+
+## More examples
+
+Take a look at the [example](https://github.com/dynaconf/dynaconf/tree/master/example) folder to see some examples of use with different file formats and features.
+
+
+## Known caveats
+
+The **dynaconf_merge** and **@merge** functionalities work only for the first level keys, it will not merge subdicts or nested lists (yet).
+
