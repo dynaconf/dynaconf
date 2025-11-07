@@ -57,7 +57,7 @@ citest:
 	make coverage-report
 
 ciinstall:
-	uv export --group ci > /tmp/requirements-ci.txt  # lets move all uv soon
+	uv export --no-hashes --group ci > /tmp/requirements-ci.txt  # lets move all uv soon
 	python -m pip install --upgrade pip
 	python -m pip install -r /tmp/requirements-ci.txt
 
@@ -65,7 +65,7 @@ test_all: test_functional test_integration test_redis test_vault test
 	@coverage html
 
 install:
-	uv export --group dev > /tmp/requirements-dev.txt  # lets move all uv soon
+	uv export --no-hashes --group dev > /tmp/requirements-dev.txt  # lets move all uv soon
 	python -m pip install -r /tmp/requirements-dev.txt
 
 run-pre-commit:
