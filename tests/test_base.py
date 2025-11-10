@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 
 import pytest
 
@@ -1788,6 +1789,9 @@ class TestDunderIndexSet:
             "DYNACONF_NESTED_A__nested_b___2___1__nested_c__nested_d___3"
         ]
 
+    @pytest.mark.skipif(
+        sys.platform == "win32", reason="Different behavior in Windows"
+    )
     def test_docs_example(self, monkeypatch):
         expected = {
             "default": {
