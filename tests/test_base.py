@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 
 import pytest
 
@@ -1768,19 +1769,41 @@ def test_no_extra_values_in_nested_structure():
     assert settings.key == [{"d": "v"}]
 
 
-def test_environ_dotted_set_with_index():
-    os.environ["DYNACONF_NESTED_A__nested_1__nested_2"] = "new_conf"
-    os.environ[
-        "DYNACONF_NESTED_A__nested_b___2___1__nested_c__nested_d___3"
-    ] = "old_conf"
-    settings = Dynaconf(envvar_prefix="DYANCONF")
-    assert isinstance(settings.NESTED_A.NESTED_B, list)
-    assert isinstance(settings.NESTED_A.NESTED_B[2], list)
-    assert isinstance(settings.NESTED_A.NESTED_B[2][1], dict)
-    assert settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[3] == "old_conf"
-    assert settings.NESTED_A.NESTED_1.NESTED_2 == "new_conf"
-    # remove environment variables after testing
-    del os.environ["DYNACONF_NESTED_A__nested_1__nested_2"]
-    del os.environ[
-        "DYNACONF_NESTED_A__nested_b___2___1__nested_c__nested_d___3"
-    ]
+class TestDunderIndexSet:
+    def test_environ_dotted_set_with_index(self):
+        os.environ["DYNACONF_NESTED_A__nested_1__nested_2"] = "new_conf"
+        os.environ[
+            "DYNACONF_NESTED_A__nested_b___2___1__nested_c__nested_d___3"
+        ] = "old_conf"
+        settings = Dynaconf(envvar_prefix="DYANCONF")
+        assert isinstance(settings.NESTED_A.NESTED_B, list)
+        assert isinstance(settings.NESTED_A.NESTED_B[2], list)
+        assert isinstance(settings.NESTED_A.NESTED_B[2][1], dict)
+        assert (
+            settings.NESTED_A.NESTED_B[2][1].NESTED_C.NESTED_D[3] == "old_conf"
+        )
+        assert settings.NESTED_A.NESTED_1.NESTED_2 == "new_conf"
+        # remove environment variables after testing
+        del os.environ["DYNACONF_NESTED_A__nested_1__nested_2"]
+        del os.environ[
+            "DYNACONF_NESTED_A__nested_b___2___1__nested_c__nested_d___3"
+        ]
+
+    @pytest.mark.skipif(
+        sys.platform == "win32", reason="Different behavior in Windows"
+    )
+    def test_docs_example(self, monkeypatch):
+        expected = {
+            "default": {
+                "WORKERS": [{"Address": "1.1.1.1"}, {"Address": "2.2.2.2"}],
+            }
+        }
+        with monkeypatch.context() as m:
+            m.setenv(
+                "DYNACONF_DATABASES__default__WORKERS___0__Address", "1.1.1.1"
+            )
+            m.setenv(
+                "DYNACONF_DATABASES__default__WORKERS___1__Address", "2.2.2.2"
+            )
+            settings = Dynaconf()
+            assert settings.databases == expected

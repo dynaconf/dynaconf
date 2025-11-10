@@ -22,6 +22,9 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
 
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+
     - name: Upgrade PIP
       if: inputs.os != 'Windows'
       shell: bash
@@ -44,7 +47,8 @@ runs:
       run: |
         PACKAGE=$(ls dist/*.whl)
         if [ -n "${{ inputs.dependencies }}" ]; then
-          pip install "$PACKAGE[${{ inputs.dependencies }}]"
+          uv export --no-hashes --only-group ${{ inputs.dependencies }} > requirements-tmp.txt
+          pip install "$PACKAGE" -r requirements-tmp.txt
         else
           pip install "$PACKAGE"
         fi
@@ -55,7 +59,8 @@ runs:
       run: |
         $PACKAGE = (Get-ChildItem dist/*.whl).FullName
         if ("${{ inputs.dependencies }}" -ne "") {
-          pip install --use-deprecated=legacy-resolver --user "$PACKAGE[${{ inputs.dependencies }}]"
+          uv export  --no-hashes --only-group ${{ inputs.dependencies }} > requirements-tmp.txt
+          pip install --use-deprecated=legacy-resolver --user "$PACKAGE" -r requirements-tmp.txt 
         } else {
           pip install --use-deprecated=legacy-resolver --user "$PACKAGE"
         }
