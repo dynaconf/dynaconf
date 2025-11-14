@@ -537,6 +537,14 @@ def test_get_converter(settings):
     assert settings.ZAZ == 42.0
 
 
+def test_get_converter_with_nested_data(settings):
+    """Ensure the work of @get converter on nested data"""
+    settings.set("FOO__BAR__ZAZ", 12)
+    settings.set("BAR", "@get FOO.BAR.ZAZ")
+    assert settings.FOO.BAR.ZAZ == 12
+    assert settings.BAR == 12
+
+
 def test_get_converter_error_when_converting(settings):
     """Malformed declaration errors"""
     settings.set("BLA", "@get")
