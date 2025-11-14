@@ -1,0 +1,38 @@
+---
+name: galaxy/pulp
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Checkout galaxy
+        uses: actions/checkout@v5
+        with:
+          repository: ansible/galaxy_ng
+          path: galaxy_repo
+
+      - name: install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y libsasl2-dev libldap2-dev libssl-dev gettext
+
+      - name: install tox
+        run: pip3 install tox
+
+      - name: Overwrite tox.ini
+        run: |
+          cp .github/galaxy_tox.ini galaxy_repo/tox.ini
+
+      - name: run the unit tests
+        run: tox --colored yes -e py311
+        working-directory: galaxy_repo
