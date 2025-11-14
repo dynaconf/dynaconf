@@ -240,31 +240,27 @@ def _get_formatter(value, **context):
     cast group will match anything provided after @
     the default group will match anything between single or double quotes
     """
-    pattern = re.compile(
-        r"(?P<key>\w+(?:\.\w+)?)\s*"
-        r"(?:(?P<cast>@\w+)\s*)?"
-        r'(?P<quote>["\']?)'
-        r'\s*(?P<default>[^"\']*)\s*(?P=quote)?'
-    )
-    if match := pattern.match(value.strip()):
-        data = match.groupdict()
-        key = data["key"]
-        default = data["default"]
-        cast = data["cast"]
-
-        params = {"key": key}
-        if default:
-            params["default"] = default
-        if cast:
-            params["cast"] = cast
-
-        if not default and key not in context["this"]:
-            raise DynaconfParseError(
-                f"Key {key} not found in settings and no default value provided."
-            )
-        return context["this"].get(**params)
-    else:
+    tokens = value.strip().split()
+    if not tokens or len(tokens) > 3:
         raise DynaconfFormatError(f"Error parsing {value} malformed syntax.")
+
+    params = {
+        "key": tokens[0],
+        "cast": None,
+        "default": None,
+    }
+    for token in tokens[1:]:
+        if token.startswith("@"):
+            params["cast"] = token
+        else:
+            params["default"] = token
+
+    if not params["default"] and params["key"] not in context["this"]:
+        raise DynaconfParseError(
+            f"Key {params['key']} not found in settings and no default value provided."
+        )
+
+    return context["this"].get(**params)
 
 
 def _read_file_formatter(value, **context):

@@ -424,6 +424,13 @@ class Settings:
 
     def __contains__(self, item):
         """Respond to `item in settings`"""
+        nested_sep = getattr(self, "NESTED_SEPARATOR_FOR_DYNACONF", None)
+
+        if isinstance(item, str) and nested_sep and nested_sep in item:
+            item = item.replace(nested_sep, ".")
+        if isinstance(item, str) and "." in item:
+            return self.get(item, default=missing) is not missing
+
         return item.upper() in self.store or item.lower() in self.store
 
     def __dir__(self):
