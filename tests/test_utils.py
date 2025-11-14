@@ -586,6 +586,59 @@ def test_get_converter_error_when_not_found(settings):
         settings.BLA
 
 
+def test_get_converter_quoted_default_multiword(settings):
+    """Test @get converter with quoted multi-word defaults"""
+    settings.set("KEY", '@get MISSING "default value here"')
+    assert settings.KEY == "default value here"
+
+
+def test_get_converter_quoted_default_single(settings):
+    """Test @get converter with quoted single-word defaults"""
+    settings.set("KEY", '@get MISSING "default"')
+    assert settings.KEY == "default"
+
+
+def test_get_converter_single_quoted(settings):
+    """Test @get converter with single-quoted defaults"""
+    settings.set("KEY", "@get MISSING 'default value'")
+    assert settings.KEY == "default value"
+
+
+def test_get_converter_empty_string_default(settings):
+    """Test @get converter with empty string default"""
+    settings.set("KEY", '@get MISSING ""')
+    assert settings.KEY == ""
+
+
+def test_get_converter_default_special_chars(settings):
+    """Test @get converter with special characters in default"""
+    settings.set("URL", '@get MISSING "http://example.com"')
+    assert settings.URL == "http://example.com"
+
+
+def test_get_converter_quoted_with_cast(settings):
+    """Test @get converter with quoted default and cast"""
+    settings.set("NUM", '@get MISSING @int "42"')
+    assert settings.NUM == 42
+
+    settings.set("NUM2", '@get MISSING "42" @int')
+    assert settings.NUM2 == 42
+
+
+def test_get_converter_whitespace_variations(settings):
+    """Test @get converter with extra whitespace"""
+    settings.set("FOO", "42")
+    settings.set("KEY", "@get  FOO  @int   42")
+    assert settings.KEY == 42
+
+
+def test_get_converter_unclosed_quote_error(settings):
+    """Test @get converter with unclosed quote raises error"""
+    settings.set("KEY", '@get MISSING "unclosed')
+    with pytest.raises(DynaconfFormatError, match="Unclosed quote"):
+        settings.KEY
+
+
 @pytest.mark.parametrize(
     "input_expected",
     [
@@ -794,6 +847,146 @@ def test_read_file_converter_with_strip(tmp_path):
     )
     # 4. Assert the SECRET_KEY is the content of the file
     assert settings.SECRET_KEY == "FOOBAR"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_empty_file(tmp_path):
+    """Test reading an empty file returns empty string"""
+    filename = tmp_path / "empty.txt"
+    filename.touch()  # Create empty file
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_KEY = "@read_file {filename}"
+        """,
+    )
+    settings = Dynaconf(settings_file=settings_file)
+    assert settings.SECRET_KEY == ""
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_whitespace_only(tmp_path):
+    """Test reading a file with only whitespace returns the content"""
+    filename = tmp_path / "whitespace.txt"
+    # Create a file with newlines only
+    with open(filename, "w") as f:
+        f.write("\n\n")
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_KEY = "@read_file {filename}"
+        """,
+    )
+    settings = Dynaconf(settings_file=settings_file)
+    assert settings.SECRET_KEY == "\n\n"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_path_with_spaces_quoted(tmp_path):
+    """Test reading a file with spaces in path using quotes"""
+    dir_with_space = tmp_path / "path with spaces"
+    dir_with_space.mkdir()
+    filename = dir_with_space / "file.txt"
+    create_file(filename, "SECRET")
+
+    settings_file = tmp_path / "settings.toml"
+    # Need to escape quotes for TOML
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_KEY = "@read_file \\"{filename}\\""
+        """,
+    )
+    settings = Dynaconf(settings_file=settings_file)
+    assert settings.SECRET_KEY == "SECRET"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_quoted_path_with_default(tmp_path):
+    """Test quoted path with default value"""
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        """\
+        SECRET_KEY = "@read_file \\"/nonexistent/file.txt\\" fallback"
+        """,
+    )
+    settings = Dynaconf(settings_file=settings_file)
+    assert settings.SECRET_KEY == "fallback"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_directory_error(tmp_path):
+    """Test that reading a directory raises appropriate error"""
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_KEY = "@read_file {tmp_path}"
+        """,
+    )
+    with pytest.raises(DynaconfFormatError, match="not a file"):
+        settings = Dynaconf(settings_file=settings_file)
+        settings.SECRET_KEY
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_empty_path_error(tmp_path):
+    """Test that empty path raises error"""
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        """\
+        SECRET_KEY = "@read_file \\"\\" fallback"
+        """,
+    )
+    # Empty path should raise error even with fallback
+    with pytest.raises(DynaconfFormatError, match="empty path"):
+        settings = Dynaconf(settings_file=settings_file)
+        settings.SECRET_KEY
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Doesn't work on windows due to backslash decoding errors",
+)
+def test_read_file_binary_file_error(tmp_path):
+    """Test that binary file raises appropriate error"""
+    # Create a binary file
+    binary_file = tmp_path / "binary.dat"
+    with open(binary_file, "wb") as f:
+        f.write(b"\x00\x01\x02\xff\xfe\xfd")
+
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET_KEY = "@read_file {binary_file}"
+        """,
+    )
+    with pytest.raises(DynaconfFormatError, match="not a UTF-8 text file"):
+        settings = Dynaconf(settings_file=settings_file)
+        settings.SECRET_KEY
 
 
 def test_string_utils():
