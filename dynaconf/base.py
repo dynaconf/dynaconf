@@ -121,7 +121,7 @@ class LazySettings(LazyObject):
             self._setup()
         if name in self._wrapped._deleted:  # noqa
             raise AttributeError(
-                f"Attribute {name} was deleted, " "or belongs to different env"
+                f"Attribute {name} was deleted, or belongs to different env"
             )
 
         if name not in RESERVED_ATTRS:
@@ -298,6 +298,13 @@ class Settings:
 
     def __contains__(self, item):
         """Respond to `item in settings`"""
+        nested_sep = getattr(self, "NESTED_SEPARATOR_FOR_DYNACONF", None)
+
+        if isinstance(item, str) and nested_sep and nested_sep in item:
+            item = item.replace(nested_sep, ".")
+        if isinstance(item, str) and "." in item:
+            return self.get(item, default=missing) is not missing
+
         return item.upper() in self.store or item.lower() in self.store
 
     def __getattribute__(self, name):
