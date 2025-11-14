@@ -21,6 +21,9 @@ jobs:
           repository: ansible/galaxy_ng
           path: galaxy_repo
 
+      - name: temporarily remove call to dailing dynaconf internal methods
+        run: sed -i '/data\.update(configure_dynaconf_cli(settings, data))/d' galaxy_repo/galaxy_ng/app/dynaconf_hooks.py
+
       - name: install system dependencies
         run: |
           sudo apt update
