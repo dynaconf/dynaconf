@@ -285,30 +285,25 @@ def _read_file_formatter(value, **context):
     @read_file @format /path/to/{this.FILENAME}
     @read_file @get FILENAME
     """
-    pattern = re.compile(
-        r"(?P<path>[^ ]+)\s*"
-        r'(?P<quote>["\']?)'
-        r'\s*(?P<default>[^"\']*)\s*(?P=quote)?'
-    )
-
     if isinstance(value, Lazy):
         value = value(context["this"], context["env"])
 
-    if match := pattern.match(value.strip()):
-        data = match.groupdict()
-        path = data["path"]
-        default = data["default"]
-        if os.path.exists(path):
-            with open(path) as file:
-                return file.read()
-        elif default:
-            return default
-        else:
-            raise DynaconfFileNotFoundError(
-                f"File {path} does not exist and no default value provided."
-            )
-    else:
+    tokens = value.strip().split(maxsplit=1)
+    if not tokens:
         raise DynaconfFormatError(f"Error parsing {value} malformed syntax.")
+
+    path = tokens[0]
+    default = tokens[1] if len(tokens) > 1 else None
+
+    if os.path.exists(path):
+        with open(path) as file:
+            return file.read()
+    elif default:
+        return default
+    else:
+        raise DynaconfFileNotFoundError(
+            f"File {path} does not exist and no default value provided."
+        )
 
 
 class Formatters:
