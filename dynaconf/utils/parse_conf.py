@@ -4,6 +4,7 @@ import json
 import os
 import re
 import warnings
+from contextlib import suppress
 from functools import wraps
 
 from dynaconf.nodes import DataDict
@@ -417,7 +418,8 @@ def _read_file_formatter(value, **context):
             raise DynaconfFormatError(
                 f"{path} is not a UTF-8 text file (binary files not supported)"
             )
-        except Exception as e:
+        except OSError as e:
+            # Covers other I/O errors (file locked, disk full, etc.)
             raise DynaconfFormatError(f"Error reading {path}: {e}")
     elif default is not None:
         return default
@@ -549,14 +551,12 @@ def _safe_json_parse(value):
     - {'message': "Hello, World!"} (mixed quotes)
     """
     # First try as-is (standard JSON with double quotes)
-    try:
+    with suppress(json.JSONDecodeError, TypeError):
         return json.loads(value)
-    except (json.JSONDecodeError, TypeError):
-        pass
 
     # Try extracting JSON objects with boolean/None normalization
     # This handles single-quoted JSON and Python-style booleans
-    try:
+    with suppress(json.JSONDecodeError, ValueError, TypeError):
         json_objects = list(
             extract_json_objects(
                 multi_replace(
@@ -574,16 +574,12 @@ def _safe_json_parse(value):
         )
         if json_objects:
             return json_objects[0]
-    except Exception:
-        pass
 
     # Last resort: try ast.literal_eval for Python dict/list syntax
-    try:
-        import ast
+    import ast
 
+    with suppress(ValueError, SyntaxError):
         return ast.literal_eval(value)
-    except (ValueError, SyntaxError):
-        pass
 
     # If all methods fail, raise clear error
     raise DynaconfParseError(f"Cannot parse as JSON: {value}")
