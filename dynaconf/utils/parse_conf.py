@@ -24,12 +24,21 @@ try:
 except ImportError:  # pragma: no cover
     jinja_env = None
 
-true_values = ("t", "true", "enabled", "1", "on", "yes", "True")
-false_values = ("f", "false", "disabled", "0", "off", "no", "False", "")
+true_values = ("t", "true", "enabled", "1", "on", "yes")
+false_values = ("f", "false", "disabled", "0", "off", "no", "")
 
 
 KV_PATTERN = re.compile(r"([a-zA-Z0-9_.  ]*=[a-zA-Z0-9_.\-:/@]*)")
 """matches `a=b, c=d, e=f` used on `VALUE='@merge foo=bar'` variables."""
+
+KV_PATTERN_QUOTED = re.compile(
+    r"""([a-zA-Z0-9_.]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([a-zA-Z0-9_.\-:/@]*))"""
+)
+"""
+Matches key=value pairs with optional quoted values.
+Supports: key=value, key="value with spaces", key='value with, comma'
+Captures: (key, double_quoted_val, single_quoted_val, unquoted_val)
+"""
 
 
 class DynaconfFormatError(Exception):
@@ -157,28 +166,42 @@ class Merge(MetaValue):
             if len(json_object) == 1:
                 self.value = json_object[0]
             else:
-                matches = KV_PATTERN.findall(self.value)
-                # a=b, c=d
+                # Try quoted pattern first (supports key="value" and key='value')
+                matches = KV_PATTERN_QUOTED.findall(self.value)
                 if matches:
-                    self.value = {
-                        k.strip(): parse_conf_data(
-                            v, tomlfy=True, box_settings=box_settings
+                    # matches is list of tuples: (key, double_quoted, single_quoted, unquoted)
+                    self.value = {}
+                    for match in matches:
+                        key = match[0].strip()
+                        # Value is in one of: match[1] (double quoted), match[2] (single quoted), match[3] (unquoted)
+                        value = match[1] or match[2] or match[3]
+                        self.value[key] = parse_conf_data(
+                            value, tomlfy=True, box_settings=box_settings
                         )
-                        for k, v in (
-                            match.strip().split("=") for match in matches
-                        )
-                    }
-                elif "," in self.value:
-                    # @merge foo,bar
-                    self.value = [
-                        parse_conf_data(
-                            v, tomlfy=True, box_settings=box_settings
-                        )
-                        for v in self.value.split(",")
-                    ]
                 else:
-                    # @merge foo
-                    self.value = [self.value]
+                    # Fallback to old pattern for backward compatibility
+                    matches = KV_PATTERN.findall(self.value)
+                    # a=b, c=d
+                    if matches:
+                        self.value = {
+                            k.strip(): parse_conf_data(
+                                v, tomlfy=True, box_settings=box_settings
+                            )
+                            for k, v in (
+                                match.strip().split("=") for match in matches
+                            )
+                        }
+                    elif "," in self.value:
+                        # @merge foo,bar
+                        self.value = [
+                            parse_conf_data(
+                                v, tomlfy=True, box_settings=box_settings
+                            )
+                            for v in self.value.split(",")
+                        ]
+                    else:
+                        # @merge foo
+                        self.value = [self.value]
 
         self.unique = unique
 
@@ -190,42 +213,62 @@ class Insert(MetaValue):
 
     def __init__(self, value, box_settings):
         """
-        normally value will be a string like
-        `0 foo` or `-1 foo` and needs to get split
-        but value can also be just a single string with or without space
-        like `foo` and in this case it will be treated as `0 foo`
-        but it can also be `foo bar` and in this case it will be treated as `0 foo bar`
-        we need to check if the first part is a number
-        if it is not a number then we will treat it as `0 value`
-        if it is a number then we will split it as `index, value`
-        this must use a regex to match value, examples:
-            -1 foo -> index = -1, value = foo
-            0 foo -> index = 0, value = foo
-            0 foo bar -> index = 0, value = foo bar
-            0 42 -> index = 0, value = 42
-            0 42 foo -> index = 0, value = 42 foo
-            foo -> index = 0, value = foo
-            foo bar -> index = 0, value = foo bar
-            42 -> index = 0, value = 42
-            42 foo -> index = 42, value = foo
-            42 foo bar -> index = 42, value = foo bar
+        Parse value which can be in formats:
+        - `0 foo` or `-1 foo` - index and value
+        - `0 "foo bar"` - index and quoted multi-word value
+        - `foo` - value only (index defaults to 0)
+        - `"foo bar"` - quoted value only (index defaults to 0)
+        - `42 foo` - number as index with value
+        - `42` - just a value (treated as value, not index)
+
+        Supports quoted values with single or double quotes for multi-word values.
+
+        Examples:
+            -1 foo -> index = -1, value = "foo"
+            0 "foo bar" -> index = 0, value = "foo bar"
+            'hello world' -> index = 0, value = "hello world"
+            42 "value" -> index = 42, value = "value"
+            @json {"key": "value"} -> index = 0, value = {"key": "value"}
         """
         self.box_settings = box_settings
 
-        try:
-            if value.lstrip("-+")[0].isdigit():
-                # `0 foo` or `-1 foo` or `42 foo` or `42`(raise ValueError)
-                index, value = value.split(" ", 1)
-            else:
-                # `foo` or `foo bar`
-                index, value = 0, value
-        except ValueError:
-            # `42` or any other non split able value
-            index, value = 0, value
+        # Parse first token (might be index or value, might be quoted)
+        first_token, remainder = _parse_quoted_string(value)
 
-        self.index = int(index)
+        # Determine if first token is an index (number)
+        try:
+            # Check if first token looks like a number (including negative)
+            if first_token and first_token.lstrip("-+")[0].isdigit():
+                # First token is a number, treat as index
+                index = int(first_token)
+                # The remainder is the value (might be quoted or contain @converters)
+                if remainder:
+                    # If remainder starts with a quote, parse it as quoted string
+                    # Otherwise, use the whole remainder as-is (may contain @converters)
+                    if remainder and remainder[0] in ('"', "'"):
+                        parsed_value, _ = _parse_quoted_string(remainder)
+                    else:
+                        parsed_value = remainder
+                else:
+                    # No value provided, treat first token as value instead
+                    index = 0
+                    parsed_value = first_token
+            else:
+                # First token is not a number, it's the value
+                # If there's a remainder, combine them (e.g., "@json {data}")
+                if remainder:
+                    parsed_value = value  # Use original value
+                else:
+                    parsed_value = first_token
+                index = 0
+        except (ValueError, IndexError):
+            # Not a valid number or empty, treat as value with index 0
+            index = 0
+            parsed_value = value  # Use original value
+
+        self.index = index
         self.value = parse_conf_data(
-            value, tomlfy=True, box_settings=box_settings
+            parsed_value, tomlfy=True, box_settings=box_settings
         )
 
 
@@ -463,6 +506,26 @@ def evaluate_lazy_format(f):
     return evaluate
 
 
+def _safe_int_casting(value):
+    """Safely cast to int with better error messages."""
+    try:
+        return int(value)
+    except (ValueError, TypeError) as e:
+        raise DynaconfParseError(
+            f"Cannot convert '{value}' to integer: {e}"
+        ) from e
+
+
+def _safe_float_casting(value):
+    """Safely cast to float with better error messages."""
+    try:
+        return float(value)
+    except (ValueError, TypeError) as e:
+        raise DynaconfParseError(
+            f"Cannot convert '{value}' to float: {e}"
+        ) from e
+
+
 def lazy_casting(value, cast_func):
     """Helper function to handle Lazy casting."""
     return (
@@ -472,21 +535,75 @@ def lazy_casting(value, cast_func):
     )
 
 
+def _safe_json_parse(value):
+    """Safely parse JSON, handling single quotes and Python dict syntax.
+
+    Tries in order:
+    1. Standard JSON (double quotes)
+    2. Extract JSON from string with boolean/None fixes
+    3. Python literal syntax (ast.literal_eval)
+
+    This handles cases like:
+    - {'key': 'value'} (Python dict syntax)
+    - {"key": "It's working"} (apostrophes in values)
+    - {'message': "Hello, World!"} (mixed quotes)
+    """
+    # First try as-is (standard JSON with double quotes)
+    try:
+        return json.loads(value)
+    except (json.JSONDecodeError, TypeError):
+        pass
+
+    # Try extracting JSON objects with boolean/None normalization
+    # This handles single-quoted JSON and Python-style booleans
+    try:
+        json_objects = list(
+            extract_json_objects(
+                multi_replace(
+                    value,
+                    {
+                        ": True": ": true",
+                        ":True": ": true",
+                        ": False": ": false",
+                        ":False": ": false",
+                        ": None": ": null",
+                        ":None": ": null",
+                    },
+                )
+            )
+        )
+        if json_objects:
+            return json_objects[0]
+    except Exception:
+        pass
+
+    # Last resort: try ast.literal_eval for Python dict/list syntax
+    try:
+        import ast
+
+        return ast.literal_eval(value)
+    except (ValueError, SyntaxError):
+        pass
+
+    # If all methods fail, raise clear error
+    raise DynaconfParseError(f"Cannot parse as JSON: {value}")
+
+
 def json_casting(value):
     """Helper function to handle JSON casting."""
     return (
-        value.set_casting(lambda x: json.loads(x.replace("'", '"')))
+        value.set_casting(_safe_json_parse)
         if isinstance(value, Lazy)
-        else json.loads(value)
+        else _safe_json_parse(value)
     )
 
 
 def bool_casting(value):
     """Helper function to handle boolean casting."""
     return (
-        value.set_casting(lambda x: str(x).lower() in true_values)
+        value.set_casting(lambda x: str(x).strip().lower() in true_values)
         if isinstance(value, Lazy)
-        else str(value).lower() in true_values
+        else str(value).strip().lower() in true_values
     )
 
 
@@ -501,8 +618,8 @@ def string_casting(value, str_func):
 
 converters = {
     "@str": lambda value: lazy_casting(value, str),
-    "@int": lambda value: lazy_casting(value, int),
-    "@float": lambda value: lazy_casting(value, float),
+    "@int": lambda value: lazy_casting(value, _safe_int_casting),
+    "@float": lambda value: lazy_casting(value, _safe_float_casting),
     "@bool": bool_casting,
     "@json": json_casting,
     "@format": lambda value: Lazy(value),
