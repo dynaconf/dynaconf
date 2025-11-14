@@ -545,6 +545,48 @@ def test_set_explicit_merge_token(tmpdir):
     assert settings.NEW_KEY == {"foo": "bar"}
 
 
+def test_merge_with_underscores(settings):
+    """Test @merge with underscores in keys and values"""
+    settings.set("CONFIG", "@merge foo_bar=baz_qux")
+    assert settings.CONFIG.foo_bar == "baz_qux"
+
+    settings.set("CONFIG2", "@merge my_var=my_value")
+    assert settings.CONFIG2.my_var == "my_value"
+
+
+def test_merge_with_dots_in_values(settings):
+    """Test @merge with dots in values (domains, floats)"""
+    settings.set("SERVER", "@merge host=example.com")
+    assert settings.SERVER.host == "example.com"
+
+    settings.set("API", "@merge endpoint=api.example.com")
+    assert settings.API.endpoint == "api.example.com"
+
+
+def test_merge_with_urls(settings):
+    """Test @merge with URLs in values"""
+    settings.set("API", "@merge url=http://api.example.com/v1")
+    assert settings.API.url == "http://api.example.com/v1"
+
+    settings.set("SECURE_API", "@merge url=https://secure.example.com:443/api")
+    assert settings.SECURE_API.url == "https://secure.example.com:443/api"
+
+
+def test_merge_with_paths(settings):
+    """Test @merge with file paths in values"""
+    settings.set("CONFIG", "@merge path=/usr/local/bin/app")
+    assert settings.CONFIG.path == "/usr/local/bin/app"
+
+    settings.set("DATA", "@merge dir=/var/lib/data")
+    assert settings.DATA.dir == "/var/lib/data"
+
+
+def test_merge_with_email(settings):
+    """Test @merge with email addresses"""
+    settings.set("CONTACT", "@merge email=user@example.com")
+    assert settings.CONTACT.email == "user@example.com"
+
+
 def test_set_new_merge_issue_241_1(tmpdir):
     data = {
         "default": {

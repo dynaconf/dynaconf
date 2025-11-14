@@ -28,7 +28,7 @@ true_values = ("t", "true", "enabled", "1", "on", "yes", "True")
 false_values = ("f", "false", "disabled", "0", "off", "no", "False", "")
 
 
-KV_PATTERN = re.compile(r"([a-zA-Z0-9 ]*=[a-zA-Z0-9\- :]*)")
+KV_PATTERN = re.compile(r"([a-zA-Z0-9_.  ]*=[a-zA-Z0-9_.\-:/@]*)")
 """matches `a=b, c=d, e=f` used on `VALUE='@merge foo=bar'` variables."""
 
 
@@ -42,6 +42,39 @@ class DynaconfParseError(Exception):
 
 class DynaconfFileNotFoundError(FileNotFoundError):
     """Error to raise when a file is not found"""
+
+
+def _parse_quoted_string(value: str) -> tuple[str, str]:
+    """
+    Parse a string that may contain quoted values.
+
+    Returns (unquoted_value, remainder)
+
+    Examples:
+        '"quoted value" rest' -> ("quoted value", "rest")
+        "'quoted' rest" -> ("quoted", "rest")
+        'unquoted rest' -> ("unquoted", "rest")
+    """
+    value = value.strip()
+
+    if not value:
+        return "", ""
+
+    # Check for quotes at start
+    if value[0] in ('"', "'"):
+        quote = value[0]
+        try:
+            end_idx = value.index(quote, 1)
+            return value[1:end_idx], value[end_idx + 1 :].strip()
+        except ValueError:
+            # Unclosed quote - treat as error
+            raise DynaconfFormatError(f"Unclosed quote in: {value}")
+    else:
+        # Not quoted - split on whitespace
+        parts = value.split(maxsplit=1)
+        if len(parts) == 1:
+            return parts[0], ""
+        return parts[0], parts[1]
 
 
 class MetaValue:
@@ -233,31 +266,54 @@ def _get_formatter(value, **context):
     @get KEY @int
     @get KEY default_value
     @get KEY @int default_value
+    @get KEY "default value"
+    @get KEY @int "default value"
+    @get KEY "default value" @int
 
     @marker KEY_TO_LOOKUP @OPTIONAL_CAST OPTIONAL_DEFAULT_VALUE
 
     key group will match the key
     cast group will match anything provided after @
-    the default group will match anything between single or double quotes
+    the default group will match single-word or quoted multi-word values
     """
     tokens = value.strip().split()
-    if not tokens or len(tokens) > 3:
-        raise DynaconfFormatError(f"Error parsing {value} malformed syntax.")
+    if not tokens:
+        raise DynaconfFormatError(f"Error parsing {value}: no key specified")
 
-    params = {
-        "key": tokens[0],
-        "cast": None,
-        "default": None,
-    }
-    for token in tokens[1:]:
-        if token.startswith("@"):
-            params["cast"] = token
+    key = tokens[0]
+    cast = None
+    default = None
+    remainder = " ".join(tokens[1:])
+
+    while remainder:
+        remainder = remainder.strip()
+        if not remainder:
+            break
+
+        if remainder[0] in ('"', "'"):
+            # Quoted value (default)
+            parsed, remainder = _parse_quoted_string(remainder)
+            default = parsed
+        elif remainder.startswith("@"):
+            # Cast token
+            parts = remainder.split(maxsplit=1)
+            cast = parts[0]
+            remainder = parts[1] if len(parts) > 1 else ""
         else:
-            params["default"] = token
+            # Unquoted default (single word)
+            parts = remainder.split(maxsplit=1)
+            default = parts[0]
+            remainder = parts[1] if len(parts) > 1 else ""
 
-    if not params["default"] and params["key"] not in context["this"]:
+    params = {"key": key}
+    if default is not None:
+        params["default"] = default
+    if cast:
+        params["cast"] = cast
+
+    if default is None and key not in context["this"]:
         raise DynaconfParseError(
-            f"Key {params['key']} not found in settings and no default value provided."
+            f"Key {key} not found in settings and no default value provided."
         )
 
     return context["this"].get(**params)
@@ -271,13 +327,17 @@ def _read_file_formatter(value, **context):
     @read_file relative/path/to/file
     @read_file file
     @read_file file default_value
+    @read_file "/path/with spaces/file.txt"
+    @read_file "/path/file.txt" default_value
 
     @marker FILEPATH OPTIONAL_DEFAULT_VALUE
 
     The path can be absolute or relative to the current working directory,
     default_value can be set to return if the file does not exist.
+    Paths with spaces must be quoted (single or double quotes).
     Raises error if file cannot be read.
     Sets empty string if file is empty.
+    Only UTF-8 encoded text files are supported.
 
     Can be composed with @get, @jinja and @format
 
@@ -288,17 +348,35 @@ def _read_file_formatter(value, **context):
     if isinstance(value, Lazy):
         value = value(context["this"], context["env"])
 
-    tokens = value.strip().split(maxsplit=1)
-    if not tokens:
-        raise DynaconfFormatError(f"Error parsing {value} malformed syntax.")
+    value = value.strip()
+    if not value:
+        raise DynaconfFormatError("Error parsing: no path specified")
 
-    path = tokens[0]
-    default = tokens[1] if len(tokens) > 1 else None
+    # Parse path (may be quoted)
+    path, remainder = _parse_quoted_string(value)
+    default = remainder.strip() if remainder else None
 
+    # Validate path is not empty after parsing
+    if not path:
+        raise DynaconfFormatError("Error parsing: empty path")
+
+    # Check if path exists and is a file
     if os.path.exists(path):
-        with open(path) as file:
-            return file.read()
-    elif default:
+        if not os.path.isfile(path):
+            raise DynaconfFormatError(f"{path} is not a file")
+
+        try:
+            with open(path, encoding="utf-8") as file:
+                return file.read()
+        except PermissionError:
+            raise DynaconfFormatError(f"Permission denied reading {path}")
+        except UnicodeDecodeError:
+            raise DynaconfFormatError(
+                f"{path} is not a UTF-8 text file (binary files not supported)"
+            )
+        except Exception as e:
+            raise DynaconfFormatError(f"Error reading {path}: {e}")
+    elif default is not None:
         return default
     else:
         raise DynaconfFileNotFoundError(
