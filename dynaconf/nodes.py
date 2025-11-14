@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import copy
 import inspect
+import threading
 import warnings
 from dataclasses import dataclass
 from typing import Optional
@@ -746,15 +747,40 @@ def convert_containers(data: dict | list | DataNode, iter, core):
             data[key] = DataList(value, core=core)
 
 
+_eval_stack_storage = threading.local()
+
+
 # NOTE: Moved here due to circular imports. Will sort it out later
-def recursively_evaluate_lazy_format(value, settings):
+def recursively_evaluate_lazy_format(value, settings, _evaluation_stack=None):
     """Given a value as a data structure, traverse all its members
     to find Lazy values and evaluate it.
 
     For example: Evaluate values inside lists and dicts
+
+    Includes circular reference detection to prevent infinite loops.
     """
+    # Use thread-local storage for the evaluation stack
+    if not hasattr(_eval_stack_storage, "stack"):
+        _eval_stack_storage.stack = []
+
+    eval_stack = _eval_stack_storage.stack
+
+    # Check for circular reference
+    value_id = id(value)
     if value.__class__.__name__ == "Lazy":
-        value = value(settings)
+        if value_id in eval_stack:
+            raise __import__("dynaconf.utils.parse_conf").DynaconfFormatError(
+                "Circular reference detected in lazy formatting. "
+                "A value is referencing itself directly or indirectly."
+            )
+
+        # Add to stack before evaluation
+        eval_stack.append(value_id)
+        try:
+            value = value(settings)
+        finally:
+            # Remove from stack after evaluation
+            eval_stack.pop()
 
     if isinstance(value, list):
         # This must be the right way of doing it, but breaks validators

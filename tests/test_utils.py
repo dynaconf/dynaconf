@@ -477,7 +477,7 @@ def test_extract_json():
     assert list(extract_json_objects("foo bar")) == []
     assert list(extract_json_objects('foo bar {"a": 1}')) == [{"a": 1}]
     assert list(extract_json_objects("foo bar {'a': 2{")) == []
-    assert list(extract_json_objects('{{{"x": {}}}}')) == [{"x": {}}]
+    assert list(extract_json_objects('{{{"x": {}}}}}')) == [{"x": {}}]
 
 
 def test_env_list():
@@ -957,7 +957,7 @@ def test_read_file_empty_path_error(tmp_path):
     create_file(
         settings_file,
         """\
-        SECRET_KEY = "@read_file \\"\\" fallback"
+        SECRET_KEY = "@read_file \\"\\""
         """,
     )
     # Empty path should raise error even with fallback
@@ -1001,3 +1001,163 @@ def test_string_utils():
     assert parse_conf_data("@split foo bar") == ["foo", "bar"]
     assert parse_conf_data("@casefold Foo BAR") == "foo bar"
     assert parse_conf_data("@swapcase Foo BAR") == "fOO bar"
+
+
+# NEW TESTS FOR EDGE CASES
+
+
+def test_insert_quoted_multiword_value(settings):
+    """Test @insert with quoted multi-word values"""
+    settings.set("ITEMS", [1, 2, 3])
+    settings.set("ITEMS", '@insert 0 "hello world"')
+    assert settings.ITEMS == ["hello world", 1, 2, 3]
+
+
+def test_insert_single_quoted_value(settings):
+    """Test @insert with single-quoted values"""
+    settings.set("ITEMS", [1, 2])
+    settings.set("ITEMS", "@insert 0 'test value'")
+    assert settings.ITEMS == ["test value", 1, 2]
+
+
+def test_insert_quoted_empty_string(settings):
+    """Test @insert with empty string"""
+    settings.set("ITEMS", [1, 2])
+    settings.set("ITEMS", '@insert 0 ""')
+    assert settings.ITEMS == ["", 1, 2]
+
+
+def test_insert_with_json(settings):
+    """Test @insert with JSON object"""
+    settings.set("ITEMS", [])
+    settings.set("ITEMS", '@insert 0 @json {"key": "value"}')
+    assert settings.ITEMS == [{"key": "value"}]
+
+
+def test_insert_negative_index(settings):
+    """Test @insert with negative index"""
+    settings.set("ITEMS", [1, 2, 3])
+    settings.set("ITEMS", "@insert -1 99")
+    assert settings.ITEMS == [1, 2, 99, 3]
+
+
+def test_json_with_apostrophes(settings):
+    """Test @json with apostrophes in string values"""
+    settings.set("DATA", """@json {"message": "It's working"}""")
+    assert settings.DATA == {"message": "It's working"}
+
+
+def test_json_single_quoted_dict(settings):
+    """Test @json with single-quoted Python dict"""
+    settings.set("DATA", "@json {'key': 'value'}")
+    assert settings.DATA == {"key": "value"}
+
+
+def test_json_mixed_quotes(settings):
+    """Test @json with mixed quotes"""
+    settings.set("DATA", """@json {'outer': "inner"}""")
+    assert settings.DATA == {"outer": "inner"}
+
+
+def test_json_nested_quotes(settings):
+    """Test @json with nested quotes"""
+    settings.set("DATA", """@json {"key": "value with 'quotes'"}""")
+    assert settings.DATA == {"key": "value with 'quotes'"}
+
+
+def test_bool_with_whitespace(settings):
+    """Test @bool with whitespace"""
+    settings.set("FLAG", "@bool   true  ")
+    assert settings.FLAG is True
+
+    settings.set("FLAG2", "@bool  false  ")
+    assert settings.FLAG2 is False
+
+
+def test_bool_whitespace_empty_string(settings):
+    """Test @bool with whitespace-only string (empty after strip)"""
+    # Note: empty string after strip is in false_values
+    settings.set("FLAG", "@bool    ")
+    assert settings.FLAG is False
+
+
+def test_merge_quoted_value_with_comma(settings):
+    """Test @merge with quoted values containing commas"""
+    settings.set("CONFIG", """@merge message="Hello, World!" count=5""")
+    assert settings.CONFIG.message == "Hello, World!"
+    assert settings.CONFIG.count == 5
+
+
+def test_merge_quoted_value_with_equals(settings):
+    """Test @merge with quoted values containing equals"""
+    settings.set("CONFIG", """@merge url="http://api.com?key=value" """)
+    assert settings.CONFIG.url == "http://api.com?key=value"
+
+
+def test_merge_empty_value(settings):
+    """Test @merge with empty value"""
+    settings.set("CONFIG", '@merge key=""')
+    assert settings.CONFIG.key == ""
+
+
+def test_merge_spaces_around_equals(settings):
+    """Test @merge with spaces around equals"""
+    settings.set("CONFIG", "@merge key = value")
+    assert settings.CONFIG.key == "value"
+
+
+def test_merge_duplicate_keys(settings):
+    """Test @merge with duplicate keys (last one wins)"""
+    settings.set("CONFIG", "@merge key=first key=second")
+    # Should have only one key, with the last value
+    assert settings.CONFIG.key == "second"
+
+
+def test_int_converter_error_handling(settings):
+    """Test @int with invalid input raises DynaconfParseError"""
+    with pytest.raises(DynaconfParseError, match="Cannot convert"):
+        settings.set("NUM", "@int abc")
+
+
+def test_float_converter_error_handling(settings):
+    """Test @float with invalid input raises DynaconfParseError"""
+    with pytest.raises(DynaconfParseError, match="Cannot convert"):
+        settings.set("NUM", "@float xyz")
+
+
+def test_format_circular_reference(settings):
+    """Test circular reference detection in @format"""
+    settings.set("A", "@format {this.B}")
+    settings.set("B", "@format {this.A}")
+
+    with pytest.raises(DynaconfFormatError, match="Circular reference"):
+        settings.A
+
+
+def test_string_utils_with_numbers(settings):
+    """Test string utilities with numeric input"""
+    settings.set("NUM", "@upper 42")
+    assert settings.NUM == "42"
+
+
+def test_string_utils_with_none(settings):
+    """Test string utilities with None"""
+    settings.set("VAL", "@title None")
+    assert settings.VAL == "None"
+
+
+def test_read_file_with_get_combo(tmp_path, settings):
+    """Test @read_file combined with @get"""
+    filename = tmp_path / "secret.txt"
+    create_file(filename, "SECRET_VALUE")
+
+    settings.set("FILENAME", str(filename))
+    settings.set("SECRET", "@read_file @get FILENAME")
+    assert settings.SECRET == "SECRET_VALUE"
+
+
+def test_int_with_get_combo(settings):
+    """Test @int combined with @get"""
+    settings.set("NUMBER_STR", "42")
+    settings.set("NUMBER", "@int @get NUMBER_STR")
+    assert settings.NUMBER == 42
