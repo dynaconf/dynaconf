@@ -813,9 +813,7 @@ def parse_conf_data(data, tomlfy=False, box_settings=None, tomlfy_filter=None):
         # It is important to keep the same object id because
         # of mutability
         for k, v in data.items():
-            should_tomlfy = tomlfy and (
-                not tomlfy_filter or in_tomlfy_filter(k)
-            )
+            should_tomlfy = tomlfy and in_tomlfy_filter(k)
             data[k] = parse_conf_data(
                 v,
                 tomlfy=should_tomlfy,
