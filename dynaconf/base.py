@@ -1637,7 +1637,7 @@ class Settings:
         env = env or self.ENVVAR_PREFIX_FOR_DYNACONF or "DYNACONF"
         with self.using_env(env):
             value = self.get_fresh(key)
-            return value is True or value in true_values
+            return value is True or str(value).strip().lower() in true_values
 
     def populate_obj(
         self,
