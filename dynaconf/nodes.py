@@ -13,9 +13,9 @@ the legacy `Settings` attributes `._fresh, ._store, ._deleted, etc`.
 
 from __future__ import annotations
 
+import contextvars
 import copy
 import inspect
-import threading
 import warnings
 from dataclasses import dataclass
 from typing import Optional
@@ -747,7 +747,7 @@ def convert_containers(data: dict | list | DataNode, iter, core):
             data[key] = DataList(value, core=core)
 
 
-_eval_stack_storage = threading.local()
+_eval_stack_storage = contextvars.ContextVar("_eval_stack", default=None)
 
 
 # NOTE: Moved here due to circular imports. Will sort it out later
@@ -758,12 +758,15 @@ def recursively_evaluate_lazy_format(value, settings, _evaluation_stack=None):
     For example: Evaluate values inside lists and dicts
 
     Includes circular reference detection to prevent infinite loops.
-    """
-    # Use thread-local storage for the evaluation stack
-    if not hasattr(_eval_stack_storage, "stack"):
-        _eval_stack_storage.stack = []
 
-    eval_stack = _eval_stack_storage.stack
+    Uses contextvars for context-local storage, ensuring proper isolation
+    in both threaded and async (asyncio) environments.
+    """
+    # Use context-local storage for the evaluation stack
+    eval_stack = _eval_stack_storage.get()
+    if eval_stack is None:
+        eval_stack = []
+        _eval_stack_storage.set(eval_stack)
 
     # Check for circular reference
     value_id = id(value)
