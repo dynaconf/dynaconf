@@ -1161,3 +1161,187 @@ def test_int_with_get_combo(settings):
     settings.set("NUMBER_STR", "42")
     settings.set("NUMBER", "@int @get NUMBER_STR")
     assert settings.NUMBER == 42
+
+
+# Tests for improved coverage of parse_conf.py
+
+
+def test_parse_quoted_string_empty(settings):
+    """Test _parse_quoted_string with empty string - covers line 71"""
+    from dynaconf.utils.parse_conf import _parse_quoted_string
+
+    result, remainder = _parse_quoted_string("")
+    assert result == ""
+    assert remainder == ""
+
+
+def test_merge_kv_pattern_fallback(settings):
+    """Test @merge using old KV_PATTERN (no quotes) - covers line 187"""
+    # This uses the fallback KV_PATTERN when KV_PATTERN_QUOTED doesn't match
+    # and there's no valid JSON
+    settings.set("CONFIG", "@merge a=1 b=2")
+    assert settings.CONFIG.a == 1
+    assert settings.CONFIG.b == 2
+
+
+def test_insert_with_remainder_not_number(settings):
+    """Test @insert when first token is not a number - covers line 261"""
+    # When first token is not a number and remainder exists
+    settings.set("ITEMS", [])
+    settings.set("ITEMS", "@insert @json {}")
+    # First token is "@json", not a number, so it uses original value
+    assert settings.ITEMS == [{}]
+
+
+def test_insert_value_error_handling(settings):
+    """Test @insert ValueError/IndexError handling - covers lines 265-268"""
+    # Create edge case where int() or string access might fail
+    settings.set("ITEMS", [1, 2])
+    # Empty string after stripping negative sign triggers exception path
+    settings.set("ITEMS", "@insert - value")
+    # Should default to index 0 and use original value
+    assert "value" in str(settings.ITEMS)
+
+
+def test_base_formatter_key_error(settings):
+    """Test BaseFormatter KeyError handling - covers line 287"""
+    # Trigger KeyError in formatter
+    settings.set("VAL", "@format {env[NONEXISTENT_KEY_XYZ123]}")
+    with pytest.raises(DynaconfFormatError, match="can't interpolate"):
+        settings.VAL
+
+
+def test_base_formatter_attribute_error(settings):
+    """Test BaseFormatter AttributeError handling - covers line 287"""
+    # Trigger AttributeError in formatter
+    settings.set("VAL", "@format {this.NONEXISTENT_ATTR_XYZ123}")
+    with pytest.raises(DynaconfFormatError, match="can't interpolate"):
+        settings.VAL
+
+
+def test_get_formatter_empty_remainder_break(settings):
+    """Test _get_formatter with empty remainder - covers line 335"""
+    # When parsing @get with trailing spaces that become empty
+    settings.set("FOO", "42")
+    settings.set("VAL", "@get FOO   ")  # Trailing spaces
+    assert settings.VAL == "42"
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="Permission tests don't work reliably on Windows",
+)
+def test_read_file_permission_error(tmp_path):
+    """Test @read_file with permission denied - covers line 416"""
+    import stat
+
+    filename = tmp_path / "no_permission.txt"
+    create_file(filename, "secret")
+
+    # Remove read permission
+    os.chmod(filename, stat.S_IWUSR)
+
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET = "@read_file {filename}"
+        """,
+    )
+
+    try:
+        with pytest.raises(DynaconfFormatError, match="Permission denied"):
+            settings = Dynaconf(settings_file=settings_file)
+            settings.SECRET
+    finally:
+        # Restore permissions for cleanup
+        os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR)
+
+
+@pytest.mark.skipif(
+    sys.platform.startswith("win"),
+    reason="OSError simulation doesn't work on Windows",
+)
+def test_read_file_os_error(tmp_path, monkeypatch):
+    """Test @read_file with OSError - covers lines 421-423"""
+    filename = tmp_path / "test.txt"
+    create_file(filename, "data")
+
+    settings_file = tmp_path / "settings.toml"
+    create_file(
+        settings_file,
+        f"""\
+        SECRET = "@read_file {filename}"
+        """,
+    )
+
+    # Mock open to raise OSError
+    original_open = open
+
+    def mock_open(*args, **kwargs):
+        if str(filename) in str(args[0]):
+            raise OSError("Simulated I/O error")
+        return original_open(*args, **kwargs)
+
+    settings = Dynaconf(settings_file=settings_file)
+
+    with monkeypatch.context() as m:
+        m.setattr("builtins.open", mock_open)
+        with pytest.raises(DynaconfFormatError, match="Error reading"):
+            settings.SECRET
+
+
+def test_lazy_with_custom_function_formatter():
+    """Test Lazy with custom function (not BaseFormatter) - covers line 457"""
+    from dynaconf.utils.parse_conf import Lazy
+
+    def custom_formatter(value, **context):
+        return f"custom:{value}"
+
+    lazy_val = Lazy("test", formatter=custom_formatter)
+    settings = {}
+    result = lazy_val(settings)
+    assert result == "custom:test"
+
+
+def test_safe_json_parse_extract_objects(settings):
+    """Test _safe_json_parse with extract_json_objects - covers line 576"""
+    # Test case where extract_json_objects finds valid JSON
+    # after Python boolean/None replacement
+    # Using single quotes around keys/values to force extract path
+    settings.set(
+        "DATA", "@json {'key': True}"
+    )  # Python-style True with single quotes
+    # This should parse successfully using extract_json_objects path
+    assert settings.DATA == {"key": True}
+
+
+def test_safe_json_parse_complete_failure():
+    """Test _safe_json_parse when all methods fail - covers line 585"""
+    from dynaconf.utils.parse_conf import _safe_json_parse
+
+    # Invalid JSON/Python syntax that fails all parsing methods
+    with pytest.raises(DynaconfParseError, match="Cannot parse as JSON"):
+        _safe_json_parse("not valid { json or python }")
+
+
+def test_parse_conf_data_tomlfy_filter_none(settings):
+    """Test parse_conf_data with tomlfy_filter=None - covers line 769"""
+    # When tomlfy_filter is None, in_tomlfy_filter should return False
+    data = {"key": "value"}
+    result = parse_conf_data(
+        data, tomlfy=True, box_settings=settings, tomlfy_filter=None
+    )
+    assert result == data
+
+
+def test_parse_conf_data_tomlfy_filter_non_string(settings):
+    """Test parse_conf_data with non-string key in filter - covers lines 775-776"""
+    # When filter contains non-string keys (like int), it should compare directly
+    data = {123: "value", "key": "456"}
+    # Use a filter with an integer key
+    result = parse_conf_data(
+        data, tomlfy=True, box_settings=settings, tomlfy_filter=[123]
+    )
+    # The integer key should match and be tomlfy'd
+    assert result == {123: "value", "key": "456"}
