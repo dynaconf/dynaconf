@@ -1,6 +1,6 @@
 exclude: "(^dynaconf/vendor+.|^venv/+.|^.venv/+.|^env/+.|^.tox/+.|^build/+.|docs|CHANGELOG.md)"
 default_language_version:
-    python: python3
+    python: python3.9
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
