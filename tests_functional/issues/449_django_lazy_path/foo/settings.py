@@ -44,9 +44,9 @@ assert settings.PASSWORD == "My5up3r53c4et"
 assert settings.get("PASSWORD") == "My5up3r53c4et"
 assert settings.FOO == "It overrides every other env"
 
-assert settings.TEMPLATES[0]["DIRS"] == [
-    f"{BASE_DIR}/templates"
-], settings.TEMPLATES[0]["DIRS"]
+assert settings.TEMPLATES[0]["DIRS"] == [f"{BASE_DIR}/templates"], (
+    settings.TEMPLATES[0]["DIRS"]
+)
 
 ALLOWED_HOSTS = settings.get(
     "ALLOWED_HOSTS", ["::1", "127.0.0.1", "localhost"]

@@ -67,7 +67,7 @@ def is_union(annotation) -> bool:
 
 def is_optional(annotation) -> bool:
     """Tell if an annotation is strictly typing.Optional or Union[**, None]"""
-    return is_union(annotation) and get_args(annotation)[1] == type(None)
+    return is_union(annotation) and get_args(annotation)[1] is type(None)
 
 
 def is_type(value) -> bool:
