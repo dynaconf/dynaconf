@@ -115,7 +115,8 @@ extend-select = [
     "N",
 ]
 ignore = [
-    "UP007", # Use `X | Y` for type annotations
+    "UP007",    # Use `X | Y` for type annotations
+    "UP045",    # Use `X | None` for type annotations
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -304,8 +305,8 @@ lint = [
     "mypy>=1.18.2",
     "pre-commit>=4.3.0",
     "radon>=6.0.1",
-    "ruff>=0.14.3",
-    "typos>=1.39.0",
+    "ruff>=0.14.6",
+    "typos>=1.39.2",
 ]
 test = [
     "boto3>=1.40.67",

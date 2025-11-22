@@ -161,7 +161,7 @@ def import_from_filename(obj, filename, silent=False):  # pragma: no cover
             exec(compile(config_file.read(), filename, "exec"), mod.__dict__)
     except OSError as e:
         e.strerror = (
-            f"py_loader: error loading file " f"({e.strerror} {filename})\n"
+            f"py_loader: error loading file ({e.strerror} {filename})\n"
         )
         if silent and e.errno in (errno.ENOENT, errno.EISDIR):
             return

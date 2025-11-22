@@ -77,7 +77,7 @@ def run_tests(show_list=False, test_filter=None):
     passed = 0
     root_directory = Path(__file__).parent
     print("Workdir:", root_directory.absolute())
-    functional_tests = sorted(list(root_directory.iterdir()))
+    functional_tests = sorted(root_directory.iterdir())
     print("Collected functional tests:", len(functional_tests))
     sleep(1)
 
@@ -95,7 +95,7 @@ def run_tests(show_list=False, test_filter=None):
                     continue
 
             # Now Subdirectories one level
-            subdirs = sorted(list(path.iterdir()))
+            subdirs = sorted(path.iterdir())
             for subdir in subdirs:
                 if subdir.is_dir():
                     if subdir.name in [".", "__pycache__"]:
@@ -133,7 +133,7 @@ if __name__ == "__main__":
         "--filter",
         dest="test_filter",
         action="append",
-        help="limt tests to those that contain a substring",
+        help="limit tests to those that contain a substring",
     )
     args = parser.parse_args()
     run_tests(show_list=args.show_list, test_filter=args.test_filter)

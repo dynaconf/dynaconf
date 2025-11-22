@@ -61,13 +61,13 @@ def test_ensure_serializable():
     )
     normal_list = _ensure_serializable(settings.listy)
     normal_dict = _ensure_serializable(settings.dicty)
-    assert normal_list.__class__ == list
-    assert normal_list[3].__class__ == dict
-    assert normal_list[3]["b"].__class__ == list
+    assert normal_list.__class__ is list
+    assert normal_list[3].__class__ is dict
+    assert normal_list[3]["b"].__class__ is list
 
-    assert normal_dict.__class__ == dict
-    assert normal_dict["b"].__class__ == list  # type: ignore
-    assert normal_dict["b"][3].__class__ == dict  # type: ignore
+    assert normal_dict.__class__ is dict
+    assert normal_dict["b"].__class__ is list  # type: ignore
+    assert normal_dict["b"][3].__class__ is dict  # type: ignore
 
 
 def test_get_data_by_key():
@@ -168,8 +168,8 @@ def test_get_history_general(tmp_path):
     ]
 
     # types has been normalized
-    assert history[2]["value"]["DICTY"].__class__ == dict
-    assert history[3]["value"]["LISTY"].__class__ == list
+    assert history[2]["value"]["DICTY"].__class__ is dict
+    assert history[3]["value"]["LISTY"].__class__ is list
 
 
 def test_get_history_env_false__file_plus_envvar(tmp_path):
