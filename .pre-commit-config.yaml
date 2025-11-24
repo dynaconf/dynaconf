@@ -1,6 +1,6 @@
 exclude: "(^dynaconf/vendor+.|^venv/+.|^.venv/+.|^env/+.|^.tox/+.|^build/+.|docs|CHANGELOG.md)"
 default_language_version:
-    python: python3.9
+    python: python3
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -16,7 +16,6 @@ repos:
         # Run the linter.
       - id: ruff-check
         args: [ --fix, --exit-non-zero-on-fix ]
-      - id: ruff-format
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.18.2
     hooks:
