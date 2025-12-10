@@ -1167,7 +1167,7 @@ def test_int_with_get_combo(settings):
 
 
 def test_parse_quoted_string_empty(settings):
-    """Test _parse_quoted_string with empty string - covers line 71"""
+    """Test _parse_quoted_string with empty string"""
     from dynaconf.utils.parse_conf import _parse_quoted_string
 
     result, remainder = _parse_quoted_string("")
@@ -1176,10 +1176,7 @@ def test_parse_quoted_string_empty(settings):
 
 
 def test_merge_kv_pattern_fallback(settings):
-    """Test @merge using old KV_PATTERN (no quotes) - covers lines 187-194"""
-    # To hit the KV_PATTERN fallback (lines 187-194), we need a pattern that:
-    # 1. Does NOT match KV_PATTERN_QUOTED (returns empty list)
-    # 2. DOES match KV_PATTERN (returns non-empty list)
+    """Test @merge using old KV_PATTERN (no quotes)"""
     # Pattern starting with '=' matches KV_PATTERN but not KV_PATTERN_QUOTED
     settings.set("FALLBACK_CONFIG", "@merge =value")
     # This creates a dict with empty key (though malformed)
@@ -1188,7 +1185,7 @@ def test_merge_kv_pattern_fallback(settings):
 
 
 def test_insert_with_remainder_not_number(settings):
-    """Test @insert when first token is not a number - covers line 261"""
+    """Test @insert when first token is not a number"""
     # When first token is not a number and remainder exists
     settings.set("ITEMS", [])
     settings.set("ITEMS", "@insert @json {}")
@@ -1197,7 +1194,7 @@ def test_insert_with_remainder_not_number(settings):
 
 
 def test_insert_value_error_handling(settings):
-    """Test @insert ValueError/IndexError handling - covers lines 265-268"""
+    """Test @insert ValueError/IndexError handling"""
     # Create edge case where int() or string access might fail
     settings.set("ITEMS", [1, 2])
     # Empty string after stripping negative sign triggers exception path
@@ -1207,7 +1204,7 @@ def test_insert_value_error_handling(settings):
 
 
 def test_base_formatter_key_error(settings):
-    """Test BaseFormatter KeyError handling - covers line 287"""
+    """Test BaseFormatter KeyError handling"""
     # Trigger KeyError in formatter
     settings.set("VAL", "@format {env[NONEXISTENT_KEY_XYZ123]}")
     with pytest.raises(DynaconfFormatError, match="can't interpolate"):
@@ -1215,7 +1212,7 @@ def test_base_formatter_key_error(settings):
 
 
 def test_base_formatter_attribute_error(settings):
-    """Test BaseFormatter AttributeError handling - covers line 287"""
+    """Test BaseFormatter AttributeError handling"""
     # Trigger AttributeError in formatter
     settings.set("VAL", "@format {this.NONEXISTENT_ATTR_XYZ123}")
     with pytest.raises(DynaconfFormatError, match="can't interpolate"):
@@ -1223,7 +1220,7 @@ def test_base_formatter_attribute_error(settings):
 
 
 def test_get_formatter_empty_remainder_break(settings):
-    """Test _get_formatter with empty remainder - covers line 335"""
+    """Test _get_formatter with empty remainder"""
     # When parsing @get with trailing spaces that become empty
     settings.set("FOO", "42")
     settings.set("VAL", "@get FOO   ")  # Trailing spaces
@@ -1235,7 +1232,7 @@ def test_get_formatter_empty_remainder_break(settings):
     reason="Permission tests don't work reliably on Windows",
 )
 def test_read_file_permission_error(tmp_path):
-    """Test @read_file with permission denied - covers line 416"""
+    """Test @read_file with permission denied"""
     import stat
 
     filename = tmp_path / "no_permission.txt"
@@ -1266,7 +1263,7 @@ def test_read_file_permission_error(tmp_path):
     reason="OSError simulation doesn't work on Windows",
 )
 def test_read_file_os_error(tmp_path, monkeypatch):
-    """Test @read_file with OSError - covers lines 421-423"""
+    """Test @read_file with OSError"""
     filename = tmp_path / "test.txt"
     create_file(filename, "data")
 
@@ -1295,7 +1292,7 @@ def test_read_file_os_error(tmp_path, monkeypatch):
 
 
 def test_lazy_with_custom_function_formatter():
-    """Test Lazy with custom function (not BaseFormatter) - covers line 457"""
+    """Test Lazy with custom function (not BaseFormatter)"""
     from dynaconf.utils.parse_conf import Lazy
 
     def custom_formatter(value, **context):
@@ -1308,7 +1305,7 @@ def test_lazy_with_custom_function_formatter():
 
 
 def test_safe_json_parse_extract_objects(settings):
-    """Test _safe_json_parse with extract_json_objects - covers line 576"""
+    """Test _safe_json_parse with extract_json_objects"""
     # Test case where extract_json_objects finds valid JSON
     # after Python boolean/None replacement
     # Using single quotes around keys/values to force extract path
@@ -1320,7 +1317,7 @@ def test_safe_json_parse_extract_objects(settings):
 
 
 def test_safe_json_parse_complete_failure():
-    """Test _safe_json_parse when all methods fail - covers line 585"""
+    """Test _safe_json_parse when all methods fail"""
     from dynaconf.utils.parse_conf import _safe_json_parse
 
     # Invalid JSON/Python syntax that fails all parsing methods
@@ -1329,7 +1326,7 @@ def test_safe_json_parse_complete_failure():
 
 
 def test_parse_conf_data_tomlfy_filter_none(settings):
-    """Test parse_conf_data with tomlfy_filter=None - covers line 769"""
+    """Test parse_conf_data with tomlfy_filter=None"""
     # When tomlfy_filter is None, in_tomlfy_filter should return False
     data = {"key": "value"}
     result = parse_conf_data(
@@ -1339,7 +1336,7 @@ def test_parse_conf_data_tomlfy_filter_none(settings):
 
 
 def test_parse_conf_data_tomlfy_filter_non_string(settings):
-    """Test parse_conf_data with non-string key in filter - covers lines 775-776"""
+    """Test parse_conf_data with non-string key in filter"""
     # When filter contains non-string keys (like int), it should compare directly
     data = {123: "value", "key": "456"}
     # Use a filter with an integer key
@@ -1354,8 +1351,7 @@ def test_parse_conf_data_tomlfy_filter_non_string(settings):
 
 
 def test_get_formatter_whitespace_becomes_empty(settings):
-    """Test _get_formatter where remainder has only whitespace - covers line 335"""
-    # Line 335 is hit when remainder.strip() becomes empty during loop iteration
+    """Test _get_formatter where remainder has only whitespace"""
     # This happens when there's whitespace between tokens that gets stripped
     settings.set("FOO", "bar")
     # Multiple spaces after key - should be stripped and hit the break
@@ -1364,7 +1360,7 @@ def test_get_formatter_whitespace_becomes_empty(settings):
 
 
 def test_json_extract_with_embedded_json(settings):
-    """Test _safe_json_parse with extract_json_objects - covers line 576"""
+    """Test _safe_json_parse with extract_json_objects"""
     from dynaconf.utils.parse_conf import _safe_json_parse
 
     # A case where extract_json_objects finds JSON after boolean replacement
@@ -1372,14 +1368,11 @@ def test_json_extract_with_embedded_json(settings):
     value = '{"key": True, "other": False}'
     result = _safe_json_parse(value)
     assert result == {"key": True, "other": False}
-    # Line 576 is the return statement when json_objects list is non-empty
 
 
 def test_tomlfy_filter_with_dotted_key(settings):
-    """Test parse_conf_data with dotted key in tomlfy_filter - covers lines 769, 772-774"""
-    # To hit line 769, we need in_tomlfy_filter to be called
-    # This requires processing a dict with tomlfy=True and tomlfy_filter set
-    # Line 772-774 handle dotted path comparison
+    """Test parse_conf_data with dotted key in tomlfy_filter"""
+    # This tests dotted path handling in tomlfy_filter
     data = {"mykey": "123", "other": "456"}
 
     # Use a dotted path in filter - should match the leaf key
@@ -1395,7 +1388,7 @@ def test_tomlfy_filter_with_dotted_key(settings):
 
 
 def test_merge_with_comma_list_fallback(settings):
-    """Test @merge with comma-separated values - covers line 195-202"""
+    """Test @merge with comma-separated values"""
     # When merge value is a string with commas but no key=value pairs
     # and not valid JSON, it splits on comma
     settings.set("COMMA_LIST", "@merge foo,bar,baz")
@@ -1403,7 +1396,7 @@ def test_merge_with_comma_list_fallback(settings):
 
 
 def test_merge_single_value_fallback(settings):
-    """Test @merge with single value - covers line 205"""
+    """Test @merge with single value"""
     # When merge value is a plain string (no JSON, no key=value, no commas)
     settings.set("SINGLE_VALUE", "@merge singlevalue")
     assert settings.SINGLE_VALUE == ["singlevalue"]
