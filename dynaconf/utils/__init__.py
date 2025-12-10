@@ -555,60 +555,6 @@ def extract_json_objects(
             pos = match + 1
 
 
-def recursively_evaluate_lazy_format(
-    value: Any,
-    settings: Settings | LazySettings,
-    _evaluation_stack: list | None = None,
-) -> Any:
-    """Given a value as a data structure, traverse all its members
-    to find Lazy values and evaluate it.
-
-    For example: Evaluate values inside lists and dicts
-
-    Includes circular reference detection to prevent infinite loops.
-    """
-    # Initialize evaluation stack on first call
-    if _evaluation_stack is None:
-        _evaluation_stack = []
-
-    # Check for circular reference
-    value_id = id(value)
-    if getattr(value, "_dynaconf_lazy_format", None):
-        if value_id in _evaluation_stack:
-            from dynaconf.utils.parse_conf import DynaconfFormatError
-
-            raise DynaconfFormatError(
-                "Circular reference detected in lazy formatting. "
-                "A value is referencing itself directly or indirectly."
-            )
-
-        # Add to stack before evaluation
-        _evaluation_stack.append(value_id)
-        try:
-            value = value(settings)
-        finally:
-            # Remove from stack after evaluation
-            _evaluation_stack.pop()
-
-    if isinstance(value, list):
-        # This must be the right way of doing it, but breaks validators
-        # To be changed on 4.0.0
-        # for idx, item in enumerate(value):
-        #     value[idx] = _recursively_evaluate_lazy_format(item, settings)
-
-        # Keep the original type, can be a BoxList
-        value = value.__class__(
-            [
-                recursively_evaluate_lazy_format(
-                    item, settings, _evaluation_stack
-                )
-                for item in value
-            ]
-        )
-
-    return value
-
-
 def isnamedtupleinstance(value):
     """Check if value is a namedtuple instance
 

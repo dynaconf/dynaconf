@@ -3,8 +3,8 @@ from __future__ import annotations
 import inspect
 from typing import Any
 
+from dynaconf.nodes import recursively_evaluate_lazy_format
 from dynaconf.utils import find_the_correct_casing
-from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils.functional import empty
 from dynaconf.vendor.box import Box
 
