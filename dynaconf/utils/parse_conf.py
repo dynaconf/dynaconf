@@ -8,10 +8,10 @@ from contextlib import suppress
 from functools import wraps
 
 from dynaconf.nodes import DataDict
+from dynaconf.nodes import recursively_evaluate_lazy_format
 from dynaconf.utils import extract_json_objects
 from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import multi_replace
-from dynaconf.utils import recursively_evaluate_lazy_format
 from dynaconf.utils.functional import empty
 from dynaconf.vendor import toml
 from dynaconf.vendor import tomllib

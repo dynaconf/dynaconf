@@ -747,11 +747,10 @@ def convert_containers(data: dict | list | DataNode, iter, core):
             data[key] = DataList(value, core=core)
 
 
-_eval_stack_storage = contextvars.ContextVar("_eval_stack", default=None)
+_eval_stack_ctx = contextvars.ContextVar("_eval_stack_ctx", default=None)
 
 
-# NOTE: Moved here due to circular imports. Will sort it out later
-def recursively_evaluate_lazy_format(value, settings, _evaluation_stack=None):
+def recursively_evaluate_lazy_format(value, settings):
     """Given a value as a data structure, traverse all its members
     to find Lazy values and evaluate it.
 
@@ -762,15 +761,15 @@ def recursively_evaluate_lazy_format(value, settings, _evaluation_stack=None):
     Uses contextvars for context-local storage, ensuring proper isolation
     in both threaded and async (asyncio) environments.
     """
-    # Use context-local storage for the evaluation stack
-    eval_stack = _eval_stack_storage.get()
-    if eval_stack is None:
-        eval_stack = []
-        _eval_stack_storage.set(eval_stack)
-
-    # Check for circular reference
-    value_id = id(value)
     if value.__class__.__name__ == "Lazy":
+        # Use context-local storage for the evaluation stack
+        eval_stack = _eval_stack_ctx.get()
+        if eval_stack is None:
+            eval_stack = []
+            _eval_stack_ctx.set(eval_stack)
+
+        # Check for circular reference
+        value_id = id(value)
         if value_id in eval_stack:
             raise __import__("dynaconf.utils.parse_conf").DynaconfFormatError(
                 "Circular reference detected in lazy formatting. "
