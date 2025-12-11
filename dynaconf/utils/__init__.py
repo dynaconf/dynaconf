@@ -10,6 +10,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 from typing import Literal
+from typing import Optional
 from typing import TYPE_CHECKING
 from typing import TypedDict
 from typing import TypeVar
@@ -36,13 +37,15 @@ if os.name == "nt":  # pragma: no cover
     # windows can't handle the above charmap
     BANNER = "DYNACONF"
 
+ListMergeOptions = Literal["merge", "shallow", "deep"]
+
 
 def object_merge(
     old: Any,
     new: Any,
     unique: bool = False,
-    full_path: list[str] = None,
-    list_merge: Literal["merge", "shallow", "deep"] = "merge",
+    full_path: Optional[list[str]] = None,
+    list_merge: ListMergeOptions = "merge",
 ) -> Any:
     """
     Recursively merge two data structures, new is mutated in-place.
@@ -74,7 +77,7 @@ def object_merge(
                 if unique and item in new:
                     continue
                 new.insert(0, item)
-        elif len(full_path) > 0:  # element-wise merge
+        elif list_merge == "deep" and len(full_path) > 0:  # element-wise merge
             new.extend([[]] * max(len(old) - len(new), 0))
             for ii, item in enumerate(old):
                 # replace at corresponding positions
@@ -155,9 +158,11 @@ def recursive_get(
     head, *tail = names
     if "[" not in head:
         result = getattr(obj, head, None)
-    else:
-        index = int(head.replace("[", "").replace("]", ""))
+    elif (index_string := head[1:-1]).isdigit():  # expect "[123]"
+        index = int(index_string)
         result = obj[index] if index < len(obj) else []
+    else:
+        result = getattr(obj, head, None)
 
     if not tail:
         return result
@@ -168,7 +173,7 @@ def recursive_get(
 def handle_metavalues(
     old: DataDict | dict[str, int] | dict[str, str | int],
     new: Any,
-    list_merge: Literal["merge", "shallow", "deep"] = "merge",
+    list_merge: ListMergeOptions = "merge",
 ) -> None:
     """
     Cleanup of MetaValues on new dict
