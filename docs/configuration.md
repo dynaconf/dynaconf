@@ -408,18 +408,20 @@ DATABASES = {
 !!! Warning
     On windows env vars are all transformed to upper case.
 
-### **index_separators**
+### **index_separator**
 
-> type=`str`, default=`"___"` (triple underescore) </br>
+> type=`str | None`, default=`None` </br>
 > env-var=`INDEX_SEPARATOR_FOR_DYNACONF`
 
-> New in **3.3.0 (tech preview)**
+> New in **3.3.0 (experimental)**
 
 Similar to [nested_separator](#nested_separators), but for dismbiguation of index keys.
+Disabled when it's value is `None`, which is the default.
 
 Example:
 
 ```bash
+export INDEX_SEPARATOR_FOR_DYNACONF="___"
 export DYNACONF_DATABASES__default__WORKERS___0__Address="1.1.1.1"
 export DYNACONF_DATABASES__default__WORKERS___1__Address="2.2.2.2"
 ```

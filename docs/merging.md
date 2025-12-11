@@ -475,14 +475,16 @@ DATABASES = {
 
 ### With lists
 
-> **New in 3.3.0 (tech preview)**
+> **New in 3.3.0 (experimental)**
 
-This works similarly to the case for dicionaries, but uses a different separator.
-For lists the separator is `___` (three underscores), and it can be configured via the [index_separator](../configuration/#index_separators) configuration.
+The feature for lists is in experimental phase and is disabled by default.
+To enable it, configure [`INDEX_SEPARATOR_FOR_DYNACONF`](../configuration/#index_separators) to something like `___` (three underscores).
 
+This works similarly to the case for dicionaries.
 Example:
 
 ```bash
+export INDEX_SEPARATOR_FOR_DYNACONF="___"
 export DYNACONF_DATABASES__default__WORKERS___0__Address="1.1.1.1"
 export DYNACONF_DATABASES__default__WORKERS___1__Address="2.2.2.2"
 ```

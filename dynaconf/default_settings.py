@@ -152,8 +152,8 @@ NESTED_SEPARATOR_FOR_DYNACONF = get("NESTED_SEPARATOR_FOR_DYNACONF", "__")
 #   "servers": ["server.com", "server.org"],
 #   "servers_2_0": "server.io"
 # }
-# To disable it one can set `INDEX_SEPARATOR_FOR_DYNACONF=false`
-INDEX_SEPARATOR_FOR_DYNACONF = get("INDEX_SEPARATOR_FOR_DYNACONF", "___")
+# To disable it one can set `INDEX_SEPARATOR_FOR_DYNACONF=None`
+INDEX_SEPARATOR_FOR_DYNACONF = get("INDEX_SEPARATOR_FOR_DYNACONF", None)
 
 # The env var specifying settings module
 ENVVAR_FOR_DYNACONF = get("ENVVAR_FOR_DYNACONF", "SETTINGS_FILE_FOR_DYNACONF")

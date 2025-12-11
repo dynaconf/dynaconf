@@ -36,6 +36,7 @@ from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils import BANNER
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import ensure_upperfied_list
+from dynaconf.utils import ListMergeOptions
 from dynaconf.utils import missing
 from dynaconf.utils import normalize_kwargs
 from dynaconf.utils import object_merge
@@ -1002,11 +1003,12 @@ class Settings:
 
     def _dotted_set(
         self,
-        dotted_key,
+        dotted_key: str,
         value,
         tomlfy=False,
         validate=empty,
         tomlfy_filter=None,
+        list_merge: ListMergeOptions = "shallow",
         **kwargs,
     ):
         """Sets dotted keys as nested dictionaries.
@@ -1014,22 +1016,21 @@ class Settings:
         Dotted set will always reassign the value, to merge use `@merge` token
 
         Arguments:
-            dotted_key {str} -- A traversal name e.g: foo.bar.zaz
-            value {Any} -- The value to set to the nested value.
+            dotted_key: A traversal name. E.g: foo.bar.zaz
+            value: The value to set to the nested value.
 
         Keyword Arguments:
-            tomlfy {bool} -- Perform toml parsing (default: {False})
-            validate {bool} --
+            tomlfy: Perform toml parsing (default: {False})
+            validate: Pass the flag to validate down
+            list_merge: The strategy used for list merging
         """
+        core = self.__core__
         if validate is empty:
             validate = self.get(
                 "VALIDATE_ON_UPDATE_FOR_DYNACONF"
             )  # pragma: nocover
 
-        # Add a "." before "[" to help splitting
-        split_keys = dotted_key.replace("[", ".[").split(".")
-        existing_data = self.get(split_keys[0], {})
-        if self.get("DYNABOXIFY", True):
+        if core.config.dynaboxify:
             new_data = tree = DataDict(box_settings=self)
         else:
             new_data = tree = {}
@@ -1040,38 +1041,51 @@ class Settings:
             tomlfy_filter=tomlfy_filter,
         )
 
-        for n, k in enumerate(split_keys):
-            is_not_end = n < (len(split_keys) - 1)
-            if is_not_end:
-                next_default = [] if "[" in split_keys[n + 1] else {}
+        # 'deep' strategy is the index merging behavior
+        if list_merge != "deep":
+            split_keys = dotted_key.split(".")
+            existing_data = self.get(split_keys[0], {})
+            for k in split_keys[:-1]:
+                tree = tree.setdefault(k, {})
+            value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
+            tree[split_keys[-1]] = value
+        else:
+            split_keys = dotted_key.replace("[", ".[").split(".")
+            existing_data = self.get(split_keys[0], {})
+            for n, k in enumerate(split_keys):
+                is_not_end = n < (len(split_keys) - 1)
+                if is_not_end:
+                    next_default = [] if "[" in split_keys[n + 1] else {}
 
-            if "[" not in k:  # accessing field of a dict
-                if is_not_end:
-                    tree = tree.setdefault(k, next_default)  # get next
-                else:
-                    tree[k] = value  # assign value
-            elif k.startswith("[") and k.endswith(
-                "]"
-            ):  # accessing index of a list
-                index = int(k.replace("[", "").replace("]", ""))
-                # if 'id(tree) == id(next_default)' we may get an infinite recursive list. Try:
-                # >>> li=[]
-                # >>> li.extend([li])
-                # >>> li[0][0]...[0]
-                # TODO @pbrochad: refactor this implementation, it's really cumbersome in general
-                # https://github.com/dynaconf/dynaconf/issues/todo
-                extended_list = [next_default.copy() for _ in range(index + 1)]
-                # This makes sure we can assign any arbitrary index
-                tree.extend(extended_list)
-                if is_not_end:
-                    tree = tree[index]  # get at index
-                else:
-                    tree[index] = value  # assign value
-            else:  # odd cases like [2]0
-                raise (ValueError("Invalid field:", k))
+                if "[" not in k:  # accessing field of a dict
+                    if is_not_end:
+                        tree = tree.setdefault(k, next_default)  # get next
+                    else:
+                        tree[k] = value  # assign value
+                elif k.startswith("[") and k.endswith(
+                    "]"
+                ):  # accessing index of a list
+                    index = int(k.replace("[", "").replace("]", ""))
+                    # if 'id(tree) == id(next_default)' we may get an infinite recursive list. Try:
+                    # >>> li=[]
+                    # >>> li.extend([li])
+                    # >>> li[0][0]...[0]
+                    # TODO @pbrochad: refactor this implementation, it's really cumbersome in general
+                    # https://github.com/dynaconf/dynaconf/issues/todo
+                    extended_list = [
+                        next_default.copy() for _ in range(index + 1)
+                    ]
+                    # This makes sure we can assign any arbitrary index
+                    tree.extend(extended_list)
+                    if is_not_end:
+                        tree = tree[index]  # get at index
+                    else:
+                        tree[index] = value  # assign value
+                else:  # odd cases like [2]0
+                    raise (ValueError("Invalid field:", k))
 
         if existing_data:
-            if self.get("DYNABOXIFY", True):
+            if core.config.dynaboxify:
                 old_data = DataDict(
                     {split_keys[0]: existing_data}, box_settings=self
                 )
@@ -1082,7 +1096,7 @@ class Settings:
                 old=old_data,
                 new=new_data,
                 full_path=split_keys,
-                list_merge="deep",  # when to use deep / shallow replace?
+                list_merge=list_merge,  # when to use deep / shallow replace?
             )
         self.update(
             data=new_data,
@@ -1136,10 +1150,13 @@ class Settings:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
 
         # Do index replacement first
+        list_merge = "shallow"  # default
         nested_ind = self.get("INDEX_SEPARATOR_FOR_DYNACONF")
-        # DYNACONF_DATA__a___0__key___2__subkey ->
-        # DYNACONF_DATA__a[0]__key[2]__subkey
-        if nested_ind and isinstance(key, str):
+        index_merge_enabled = bool(nested_ind)
+        if index_merge_enabled and isinstance(key, str):
+            list_merge = "deep"
+            # DYNACONF_DATA__a___0__key___2__subkey ->
+            # DYNACONF_DATA__a[0]__key[2]__subkey
             nested_ind = rf"{nested_ind}(\d+)"
             key = re.sub(nested_ind, r"[\1]", key)
 
@@ -1157,6 +1174,7 @@ class Settings:
                     tomlfy=tomlfy,
                     validate=validate,
                     tomlfy_filter=tomlfy_filter,
+                    list_merge=list_merge,
                 )
             key = upperfy(key.strip())
 

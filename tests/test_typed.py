@@ -352,7 +352,7 @@ def test_sub_types_works(monkeypatch):
         # and raise validation
         m.setenv("MYTYPEDAPP_database__extra__plugins___0__batata", "1")
 
-        settings = Settings()
+        settings = Settings(INDEX_SEPARATOR_FOR_DYNACONF="___")
         assert settings.database.port == 5000
         assert settings.database.host == "server.com"
         assert settings.database.engine == "postgres"
