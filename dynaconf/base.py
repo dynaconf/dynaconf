@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 from typing import Callable
 from typing import Optional
+from typing import Union
 
 from dynaconf import default_settings
 from dynaconf.loaders import default_loader
@@ -1024,16 +1025,17 @@ class Settings:
             validate: Pass the flag to validate down
             list_merge: The strategy used for list merging
         """
-        core = self.__core__
+        config = self.__core__.config
         if validate is empty:
             validate = self.get(
                 "VALIDATE_ON_UPDATE_FOR_DYNACONF"
             )  # pragma: nocover
 
-        if core.config.dynaboxify:
-            new_data = tree = DataDict(box_settings=self)
+        if config.dynaboxify:
+            new_data: dict | DataDict = DataDict(box_settings=self)
         else:
-            new_data = tree = {}
+            new_data = {}
+        tree = new_data
         value = parse_conf_data(
             value,
             tomlfy=tomlfy,
@@ -1050,30 +1052,36 @@ class Settings:
             value = parse_conf_data(value, tomlfy=tomlfy, box_settings=self)
             tree[split_keys[-1]] = value
         else:
+            # TODO @pbrochad: refactor this implementation, it's really cumbersome
+            # https://github.com/dynaconf/dynaconf/issues/todo
+            # Example in the `tree.extend` call in the block below:
+            # if 'id(tree) == id(next_default)' we may get an infinite recursive list. Try:
+            # >>> li=[]
+            # >>> li.extend([li])
+            # >>> li[0][0]...[0]
             split_keys = dotted_key.replace("[", ".[").split(".")
             existing_data = self.get(split_keys[0], {})
             for n, k in enumerate(split_keys):
                 is_not_end = n < (len(split_keys) - 1)
                 if is_not_end:
-                    next_default = [] if "[" in split_keys[n + 1] else {}
+                    next_default: Union[list, dict] = (
+                        [] if "[" in split_keys[n + 1] else {}
+                    )
 
                 if "[" not in k:  # accessing field of a dict
                     if is_not_end:
                         tree = tree.setdefault(k, next_default)  # get next
                     else:
                         tree[k] = value  # assign value
-                elif k.startswith("[") and k.endswith(
-                    "]"
+                elif (
+                    k.startswith("[")
+                    and k.endswith("]")
+                    and isinstance(tree, list)
                 ):  # accessing index of a list
                     index = int(k.replace("[", "").replace("]", ""))
-                    # if 'id(tree) == id(next_default)' we may get an infinite recursive list. Try:
-                    # >>> li=[]
-                    # >>> li.extend([li])
-                    # >>> li[0][0]...[0]
-                    # TODO @pbrochad: refactor this implementation, it's really cumbersome in general
-                    # https://github.com/dynaconf/dynaconf/issues/todo
                     extended_list = [
-                        next_default.copy() for _ in range(index + 1)
+                        next_default.copy()
+                        for _ in range(index + 1)  # type: ignore[attr-defined]
                     ]
                     # This makes sure we can assign any arbitrary index
                     tree.extend(extended_list)
@@ -1085,8 +1093,8 @@ class Settings:
                     raise (ValueError("Invalid field:", k))
 
         if existing_data:
-            if core.config.dynaboxify:
-                old_data = DataDict(
+            if config.dynaboxify:
+                old_data: dict | DataDict = DataDict(
                     {split_keys[0]: existing_data}, box_settings=self
                 )
             else:
@@ -1150,7 +1158,7 @@ class Settings:
             dotted_lookup = self.get("DOTTED_LOOKUP_FOR_DYNACONF")
 
         # Do index replacement first
-        list_merge = "shallow"  # default
+        list_merge: ListMergeOptions = "shallow"  # default
         nested_ind = self.get("INDEX_SEPARATOR_FOR_DYNACONF")
         index_merge_enabled = bool(nested_ind)
         if index_merge_enabled and isinstance(key, str):
