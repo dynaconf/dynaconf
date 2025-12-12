@@ -101,7 +101,7 @@ def object_merge(
         # data coming from source, in `new` can be mix case: KEY4|key4|Key4
         # data existing on `old` object has the correct case: key4|KEY4|Key4
         # So we need to ensure that new keys matches the existing keys
-        for new_key in list(new.keys()):
+        for new_key in tuple(new.keys()):
             correct_case_key = find_the_correct_casing(
                 new_key, tuple(old.keys())
             )
@@ -355,14 +355,14 @@ def normalize_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
         if misspell in kwargs:
             kwargs[correct] = kwargs.pop(misspell)
 
-    # Replace `_FOR_DYNACONF` alises. E.g:
+    # Replace `_FOR_DYNACONF` aliases. E.g:
     # "root_PATH" -> "ROOT_PATH_FOR_DYNACONF"
     for key in tuple(kwargs.keys()):
         normalized_key = f"{key.upper()}_FOR_DYNACONF"
         if normalized_key in for_dynaconf_keys:
             kwargs[normalized_key] = kwargs.pop(key)
 
-    # Keep backwards compat with renamed options. E.g:
+    # Keep backwards compatibility with renamed options. E.g:
     # "DYNACONF_NAMESPACE" -> "ENV_FOR_DYNACONF"
     warn_deprecations(kwargs)
     for old, new in RENAMED_VARS.items():
@@ -426,7 +426,7 @@ def warn_deprecations(data: Any) -> None:
 def trimmed_split(
     s: str, seps: str | tuple[str, str] = (";", ",")
 ) -> list[str]:
-    """Given a string s, split is by one of one of the seps."""
+    """Given a string s, split is by one of the seps."""
     for sep in seps:
         if sep not in s:
             continue
@@ -569,7 +569,7 @@ def isnamedtupleinstance(value):
 
     t = type(value)
     b = t.__bases__
-    if len(b) != 1 or b[0] != tuple:
+    if len(b) != 1 or b[0] is not tuple:
         return False
     f = getattr(t, "_fields", None)
     if not isinstance(f, tuple):

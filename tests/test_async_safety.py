@@ -94,9 +94,9 @@ async def test_contextvars_async_no_state_leakage():
     # Verify each task got its own value
     for task_id, result in results:
         expected = f"Task{task_id}-Value{task_id}"
-        assert (
-            result == expected
-        ), f"Task {task_id}: expected '{expected}', got '{result}'"
+        assert result == expected, (
+            f"Task {task_id}: expected '{expected}', got '{result}'"
+        )
 
 
 def test_threaded_isolation():
@@ -125,6 +125,6 @@ def test_threaded_isolation():
     # Verify each thread got its own value
     for thread_id, result in results.items():
         expected = f"Thread{thread_id}"
-        assert (
-            result == expected
-        ), f"Thread {thread_id}: expected '{expected}', got '{result}'"
+        assert result == expected, (
+            f"Thread {thread_id}: expected '{expected}', got '{result}'"
+        )

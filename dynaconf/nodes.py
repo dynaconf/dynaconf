@@ -803,7 +803,7 @@ def recursively_evaluate_lazy_format(value, settings):
 def ensure_containers(data, core):
     # NOTE: this is to ensure that the nodes nested dict and lists are always
     # converted to DataDict and DataList. However, that change is not compatible
-    # with what we had with DynaBox/BoxList. Leaving here for awarenes.
+    # with what we had with DynaBox/BoxList. Leaving here for awareness.
     #
     # if data.__class__ is dict:
     #     return DataDict(data, core=core)
