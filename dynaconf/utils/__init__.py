@@ -101,7 +101,7 @@ def object_merge(
         # data coming from source, in `new` can be mix case: KEY4|key4|Key4
         # data existing on `old` object has the correct case: key4|KEY4|Key4
         # So we need to ensure that new keys matches the existing keys
-        for new_key in new.keys():
+        for new_key in tuple(new.keys()):
             correct_case_key = find_the_correct_casing(
                 new_key, tuple(old.keys())
             )
