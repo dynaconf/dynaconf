@@ -1,0 +1,33 @@
+name: Create Release Commit
+
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: "Release tag (e.g. 3.2.1)"
+        required: true
+        type: string
+
+jobs:
+  release-commit:
+    name: "Create and push release commit, post-release"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: "Prepare release tools"
+        run: |
+          pip install --user git-changelog
+
+      - name: "Bump Versions, update changelog and create release-commit"
+        run: |
+          .github/scripts/create-release-commit.sh ${{ inputs.release }}
+
+      - name: "Push commit to master"
+        run: |
+          echo "Pushing commit to master"
+          git log --oneline -5
+          git show HEAD

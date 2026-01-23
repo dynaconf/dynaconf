@@ -1,0 +1,55 @@
+name: Publish to Netlify, PyPI and GitHub
+
+on:
+  workflow_call:
+    inputs:
+      release:
+        description: "The tag to be released. E.g. 3.2.1"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "The tag to be released. E.g. 3.2.1"
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: "Build distribution"
+    uses: ./.github/workflows/main/build.yml
+    with:
+      python_version: "3.9"
+      artifact_out: "dist-folder"
+
+  publish-pypi:
+    name: "Publish to PyPI"
+    needs: build
+    uses: ./.github/workflows/release/publish-pypi.yml
+    with:
+      artifact_in: "dist-folder"
+    secrets: inherit
+
+  publish-github:
+    name: "Publish to GitHub"
+    needs: publish-pypi
+    uses: ./.github/workflows/release/publish-github.yml
+    with:
+      dynaconf_ref: ${{ inputs.release }}
+    secrets: inherit
+
+  docs-build:
+    name: "Build documentation"
+    needs: publish-pypi
+    uses: ./.github/workflows/main/docs-build.yml
+    with:
+      artifact_out: "docs-site"
+
+  publish-docs:
+    name: "Publish documentation"
+    needs: docs-build
+    uses: ./.github/workflows/release/publish-docs.yml
+    with:
+      artifact_in: "docs-site"
+    secrets: inherit
+

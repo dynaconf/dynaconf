@@ -1,0 +1,42 @@
+name: Publish GitHub Release
+
+on:
+  workflow_call:
+    inputs:
+      dynaconf_ref:
+        description: "Git ref to checkout (branch, tag, or commit)"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  github-publish:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Customize checkout to use
+      if: ${{ inputs.dynaconf_ref != '' }}
+      run: |
+        git checkout ${{ inputs.dynaconf_ref }}
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+
+    - name: Install git-changelog
+      run: pip install git-changelog
+
+    - name: Prepare release notes
+      run: |
+        git-changelog --release-notes > release-notes.md
+        echo "Release notes being used:"
+        cat release-notes.md
+
+    # - name: Create GitHub release
+    #   uses: softprops/action-gh-release@v1
+    #   with:
+    #     body_path: release-notes.md

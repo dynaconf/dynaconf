@@ -1,29 +1,22 @@
-name: Build and Deploy to Netlify
+name: Deploy Documentation to Netlify
 
 on:
-  push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
-  workflow_dispatch:
+  workflow_call:
     inputs:
-      checkout_refspec:
-        description: "If provided, its passed to `git checkout <checkout_refspec>` before building."
+      artifact_in:
+        description: "Name of the artifact containing the built documentation"
+        required: true
+        type: string
 
 # https://github.com/marketplace/actions/netlify-actions#usage
 jobs:
-  build-docs:
-    uses: ./.github/workflows/main/docs-build.yml
-    with:
-      dynaconf_ref: ${{ github.event.inputs.checkout_refspec }}
-
   deploy:
-    needs: build-docs
     runs-on: ubuntu-latest
     steps:
       - name: Download documentation
         uses: actions/download-artifact@v4
         with:
-          name: docs-site
+          name: ${{ inputs.artifact_in }}
           path: site
 
       - name: Deploy to Netlify
