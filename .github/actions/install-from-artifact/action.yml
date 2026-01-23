@@ -1,7 +1,10 @@
-name: 'Install from wheel'
-description: 'Setup Python and install Dynaconf wheel with optional dependencies'
+name: 'Install from artifact'
+description: 'Setup Python and install Dynaconf wheel from artifact with optional dependencies'
 
 inputs:
+  artifact_in:
+    description: 'Name of the artifact containing the distribution'
+    required: true
   dependencies:
     description: 'Optional dependencies to install with the wheel'
     required: false
@@ -38,7 +41,7 @@ runs:
     - name: Download wheel
       uses: actions/download-artifact@v4
       with:
-        name: dynaconf_dist
+        name: ${{ inputs.artifact_in }}
         path: dist/
 
     - name: Install from wheel (Unix)

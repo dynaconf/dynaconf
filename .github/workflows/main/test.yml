@@ -3,6 +3,10 @@ name: Tests
 on:
   workflow_call:
     inputs:
+      artifact_in:
+        description: 'Name of the artifact containing the distribution'
+        required: true
+        type: string
       python_minimal:
         description: 'Minimal set of Python versions to test'
         required: false
@@ -30,8 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           os: ${{ runner.os }}
       - name: Install project and test cli
@@ -53,8 +58,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: linux
@@ -89,8 +95,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: macos
@@ -110,8 +117,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: linux
@@ -129,8 +137,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: windows
@@ -148,8 +157,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: windows
@@ -172,8 +182,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: linux
@@ -202,8 +213,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: linux
