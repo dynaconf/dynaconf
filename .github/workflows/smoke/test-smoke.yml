@@ -34,7 +34,7 @@ jobs:
 
       - name: Overwrite tox.ini
         run: |
-          cp .github/galaxy_tox.ini galaxy_repo/tox.ini
+          cp .github/workflows/smoke/galaxy_tox.ini galaxy_repo/tox.ini
 
       - name: run the unit tests
         run: tox --colored yes -e py311
