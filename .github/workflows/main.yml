@@ -28,6 +28,9 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  docs:
+    uses: ./.github/workflows/main/docs-build.yml
+
   lint:
     uses: ./.github/workflows/main/lint.yml
 
@@ -58,6 +61,7 @@ jobs:
     needs:
       - lint
       - build
+      - docs
       - tests
     steps:
       - name: All tests has passed

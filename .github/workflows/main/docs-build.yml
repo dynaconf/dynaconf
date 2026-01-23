@@ -1,0 +1,39 @@
+name: Build Documentation
+
+on:
+  workflow_call:
+    inputs:
+      dynaconf_ref:
+        description: "Git ref to checkout (branch, tag, or commit)"
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  docs-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Customize checkout to use
+        if: ${{ inputs.dynaconf_ref != '' }}
+        run: |
+          git checkout ${{ inputs.dynaconf_ref }}
+
+      - name: Build documentation
+        run: |
+          make install
+          make docs
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-site
+          path: site/
+          retention-days: 1

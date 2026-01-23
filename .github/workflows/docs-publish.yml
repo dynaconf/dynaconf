@@ -11,29 +11,21 @@ on:
 
 # https://github.com/marketplace/actions/netlify-actions#usage
 jobs:
-  build:
-    runs-on: ubuntu-22.04
+  build-docs:
+    uses: ./.github/workflows/main/docs-build.yml
+    with:
+      dynaconf_ref: ${{ github.event.inputs.checkout_refspec }}
+
+  deploy:
+    needs: build-docs
+    runs-on: ubuntu-latest
     steps:
-
-      # build docs
-      - uses: actions/setup-python@v5
+      - name: Download documentation
+        uses: actions/download-artifact@v4
         with:
-          python-version: "3.9"
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Customize checkout to use
-        run: |
-          checkout_refspec="${{ github.event.inputs.checkout_refspec }}"
-          if [[ -n $checkout_refspec ]]; then
-            git checkout $checkout_refspec;
-          fi
-      - name: Build documentation
-        run: |
-          make install
-          make docs
+          name: docs-site
+          path: site
 
-      # deploy
       - name: Deploy to Netlify
         uses: nwtgck/actions-netlify@v3.0
         with:
