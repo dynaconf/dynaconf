@@ -10,9 +10,9 @@ inputs:
     required: false
     default: ''
   os:
-    description: 'Operating system (Windows, Linux, macOS)'
+    description: 'Operating system (windows, linux, macos)'
     required: false
-    default: 'Linux'
+    default: 'linux'
   python-version:
     description: 'Python version to use'
     required: false
@@ -29,12 +29,12 @@ runs:
       uses: astral-sh/setup-uv@v6
 
     - name: Upgrade PIP
-      if: inputs.os != 'Windows'
+      if: inputs.os != 'windows'
       shell: bash
       run: pip install --user --upgrade pip
 
     - name: Upgrade PIP (Windows)
-      if: inputs.os == 'Windows'
+      if: inputs.os == 'windows'
       shell: bash
       run: python.exe -m pip install --user --upgrade pip
 
@@ -45,7 +45,7 @@ runs:
         path: dist/
 
     - name: Install from wheel (Unix)
-      if: inputs.os != 'Windows'
+      if: inputs.os != 'windows'
       shell: bash
       run: |
         PACKAGE=$(ls dist/*.whl)
@@ -57,7 +57,7 @@ runs:
         fi
 
     - name: Install from wheel (Windows)
-      if: inputs.os == 'Windows'
+      if: inputs.os == 'windows'
       shell: pwsh
       run: |
         $PACKAGE = (Get-ChildItem dist/*.whl).FullName

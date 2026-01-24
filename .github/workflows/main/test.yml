@@ -38,7 +38,7 @@ jobs:
         with:
           artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
-          os: ${{ runner.os }}
+          os: ${{ runner.os == 'Linux' && 'linux' || runner.os == 'macOS' && 'macos' || 'windows' }}
       - name: Install project and test cli
         run: |
           dynaconf init -v FOO=running_on_ci -y
@@ -67,7 +67,7 @@ jobs:
       - name: Run tests
         run: make citest
       - name: Publish Junit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         continue-on-error: true
         if: always()
         with:
@@ -122,7 +122,7 @@ jobs:
           artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
-          os: linux
+          os: ${{ matrix.os == 'macos-latest' && 'macos' || 'linux' }}
       - name: Run functional tests
         run: make test_functional
 
