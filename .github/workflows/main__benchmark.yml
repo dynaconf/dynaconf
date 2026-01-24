@@ -1,0 +1,36 @@
+name: Benchmark
+
+on:
+  workflow_call:
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history
+          ref: ${{ github.event.pull_request.head.sha }}  # get PR head instead of GH merge commit
+
+      - name: Setup upstream remote
+        run: |
+          git remote add upstream https://github.com/dynaconf/dynaconf.git
+          git fetch upstream
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Run benchmarks
+        run: |
+           make bench
+           git log --oneline refs/remotes/upstream/master~..HEAD
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: tmp-bench/
+          if-no-files-found: "warn"
+          retention-days: 7

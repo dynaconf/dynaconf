@@ -1,0 +1,42 @@
+name: Build Documentation
+
+on:
+  workflow_call:
+    inputs:
+      dynaconf_ref:
+        description: "Git ref to checkout (branch, tag, or commit)"
+        required: false
+        type: string
+        default: ""
+      artifact_out:
+        description: "Name for the uploaded documentation artifact"
+        required: false
+        type: string
+        default: "docs-site"
+
+jobs:
+  docs-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Customize checkout to use
+        if: ${{ inputs.dynaconf_ref != '' }}
+        run: |
+          git checkout ${{ inputs.dynaconf_ref }}
+
+      - name: Build documentation
+        run: |
+          make docs
+
+      - name: Upload documentation artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_out }}
+          path: site/
+          retention-days: 1

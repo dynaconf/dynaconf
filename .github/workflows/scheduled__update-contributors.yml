@@ -22,14 +22,14 @@ jobs:
           DIFF_STAT=$(git diff --stat | tail -1 | xargs)  # xargs trims leading spaces
           EXPECTED="1 file changed, 1 insertion(+), 1 deletion(-)"
           if [ "$DIFF_STAT" = "$EXPECTED" ]; then
-            echo "skip_pr=true" >> $GITHUB_OUTPUT
+            echo "skip_pr=true" >> "$GITHUB_OUTPUT"
           else
-            echo "skip_pr=false" >> $GITHUB_OUTPUT
+            echo "skip_pr=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Create a PR
         if: steps.check_diff.outputs.skip_pr == 'false'
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v7
         with:
           commit-message: Update Contributors
           title: "[automated] Update Contributors File"

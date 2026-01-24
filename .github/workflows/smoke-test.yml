@@ -7,16 +7,16 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Checkout galaxy
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           repository: ansible/galaxy_ng
           path: galaxy_repo
@@ -34,7 +34,7 @@ jobs:
 
       - name: Overwrite tox.ini
         run: |
-          cp .github/galaxy_tox.ini galaxy_repo/tox.ini
+          cp .github/workflows/galaxy_tox.ini galaxy_repo/tox.ini
 
       - name: run the unit tests
         run: tox --colored yes -e py311

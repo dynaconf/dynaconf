@@ -3,6 +3,10 @@ name: Tests
 on:
   workflow_call:
     inputs:
+      artifact_in:
+        description: 'Name of the artifact containing the distribution'
+        required: true
+        type: string
       python_minimal:
         description: 'Minimal set of Python versions to test'
         required: false
@@ -30,8 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           os: ${{ runner.os }}
       - name: Install project and test cli
@@ -53,15 +58,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
-          os: linux
+          os: ${{ runner.os }}
       - name: Run tests
         run: make citest
       - name: Publish Junit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
         continue-on-error: true
         if: always()
         with:
@@ -89,11 +95,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
-          os: macos
+          os: ${{ runner.os }}
       - name: Run tests
         run: py.test -v --cov-config .coveragerc --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml -m "not integration"
 
@@ -110,11 +117,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
-          os: linux
+          os: ${{ runner.os }}
       - name: Run functional tests
         run: make test_functional
 
@@ -129,11 +137,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
-          os: windows
+          os: ${{ runner.os }}
       - name: run tests
         run: py.test -v -l tests --junitxml=junit/test-results.xml -m "not integration"
 
@@ -148,11 +157,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
-          os: windows
+          os: ${{ runner.os }}
       - name: run tests
         run: python tests_functional/runtests.py
 
@@ -172,11 +182,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
-          os: linux
+          os: ${{ runner.os }}
       - name: Run functional tests
         run: make test_redis
 
@@ -202,10 +213,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install from wheel
-        uses: ./.github/actions/install-from-wheel
+        uses: ./.github/actions/install-from-artifact
         with:
+          artifact_in: ${{ inputs.artifact_in }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
-          os: linux
+          os: ${{ runner.os }}
       - name: Run functional tests
         run: make test_vault
