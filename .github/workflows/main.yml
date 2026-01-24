@@ -32,16 +32,13 @@ jobs:
 
   build:
     needs: lint
-    uses: ./.github/workflows/main__build.yml
-    with:
-      python_version: "3.9"
-      artifact_out: "dynaconf_dist"
+    uses: ./.github/workflows/main__build-dist.yml
 
   tests:
     needs: build
     uses: ./.github/workflows/main__test.yml
     with:
-      artifact_in: "dynaconf_dist"
+      dist-artifact: ${{ needs.build.outputs.dist-artifact }}
       python_minimal: '["3.9", "3.13"]'
       python_full: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
       python_latest: '3.13'
