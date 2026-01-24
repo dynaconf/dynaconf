@@ -1,0 +1,36 @@
+name: Publish GitHub Release
+
+on:
+  workflow_call:
+    inputs:
+      release-tag:
+        description: "Release tag (e.g. 3.2.1)"
+        required: true
+        type: string
+      release-notes-artifact:
+        description: "Name of the artifact containing the release notes"
+        required: true
+        type: string
+
+jobs:
+  github-publish:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download release notes
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.release-notes-artifact }}
+
+    - name: Show release notes (dry-run mode)
+      run: |
+        echo "DRY-RUN MODE: The following release notes would be used:"
+        cat release-notes.md
+
+    # NOTE: Commented out for dry-run mode testing
+    # Uncomment the following step to actually create the GitHub release
+    # - name: Create GitHub release
+    #   uses: softprops/action-gh-release@v1
+    #   with:
+    #     body_path: release-notes.md
+    #     tag_name: ${{ inputs.release-tag }}

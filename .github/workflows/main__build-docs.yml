@@ -3,16 +3,17 @@ name: Build Documentation
 on:
   workflow_call:
     inputs:
-      dynaconf_ref:
-        description: "Git ref to checkout (branch, tag, or commit)"
+      release-tag:
+        description: "Release tag (e.g. 3.2.1)"
         required: false
         type: string
-        default: ""
-      artifact_out:
-        description: "Name for the uploaded documentation artifact"
-        required: false
-        type: string
-        default: "docs-site"
+    outputs:
+      docs-artifact:
+        description: "Name of the uploaded documentation artifact"
+        value: "docs-build"
+      release-notes-artifact:
+        description: "Name of the uploaded release notes artifact"
+        value: "release-notes"
 
 jobs:
   docs-build:
@@ -25,10 +26,10 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v6
 
-      - name: Customize checkout to use
-        if: ${{ inputs.dynaconf_ref != '' }}
+      - name: Checkout release tag
+        if: ${{ inputs.release-tag != '' }}
         run: |
-          git checkout ${{ inputs.dynaconf_ref }}
+          git checkout ${{ inputs.release-tag }}
 
       - name: Build documentation
         run: |
@@ -37,6 +38,19 @@ jobs:
       - name: Upload documentation artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.artifact_out }}
+          name: "docs-build"
           path: site/
+          retention-days: 1
+
+      - name: Generate release notes
+        if: ${{ inputs.release-tag != '' }}
+        run: |
+          uv run --with git-changelog git-changelog --release-notes > release-notes.md
+
+      - name: Upload release notes artifact
+        if: ${{ inputs.release-tag != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: "release-notes"
+          path: release-notes.md
           retention-days: 1

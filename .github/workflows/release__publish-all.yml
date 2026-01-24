@@ -1,0 +1,64 @@
+name: Publish All
+
+on:
+  workflow_call:
+    inputs:
+      release-tag:
+        description: "Release tag (e.g. 3.2.1)"
+        required: true
+        type: string
+      dist-artifact:
+        description: "Name of the distribution artifact"
+        required: true
+        type: string
+      docs-artifact:
+        description: "Name of the documentation artifact"
+        required: true
+        type: string
+      release-notes-artifact:
+        description: "Name of the release notes artifact"
+        required: true
+        type: string
+      pypi-ok:
+        description: "Whether PyPI publishing is approved"
+        required: true
+        type: string
+      github-ok:
+        description: "Whether GitHub release is approved"
+        required: true
+        type: string
+      docs-ok:
+        description: "Whether documentation publishing is approved"
+        required: true
+        type: string
+
+jobs:
+  # Push to prod
+  publish-pypi:
+    name: "Publish to PyPI"
+    if: ${{ inputs.pypi-ok == 'true' }}
+    uses: ./.github/workflows/release__publish-pypi.yml
+    with:
+      release-tag: ${{ inputs.release-tag }}
+      dist-artifact: ${{ inputs.dist-artifact }}
+    secrets: inherit
+
+  publish-github:
+    name: "Publish to GitHub"
+    needs: publish-pypi
+    if: ${{ inputs.github-ok == 'true' }}
+    uses: ./.github/workflows/release__publish-github.yml
+    with:
+      release-tag: ${{ inputs.release-tag }}
+      release-notes-artifact: ${{ inputs.release-notes-artifact }}
+    secrets: inherit
+
+  publish-docs:
+    name: "Publish documentation"
+    needs: publish-pypi
+    if: ${{ inputs.docs-ok == 'true' }}
+    uses: ./.github/workflows/release__publish-docs.yml
+    with:
+      release-tag: ${{ inputs.release-tag }}
+      docs-artifact: ${{ inputs.docs-artifact }}
+    secrets: inherit

@@ -3,7 +3,7 @@ name: Tests
 on:
   workflow_call:
     inputs:
-      artifact_in:
+      dist-artifact:
         description: 'Name of the artifact containing the distribution'
         required: true
         type: string
@@ -36,7 +36,7 @@ jobs:
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
-          artifact_in: ${{ inputs.artifact_in }}
+          artifact_in: ${{ inputs.dist-artifact }}
           python-version: ${{ matrix.python-version }}
           os: ${{ runner.os }}
       - name: Install project and test cli
@@ -60,7 +60,7 @@ jobs:
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
-          artifact_in: ${{ inputs.artifact_in }}
+          artifact_in: ${{ inputs.dist-artifact }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: ${{ runner.os }}
@@ -97,7 +97,7 @@ jobs:
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
-          artifact_in: ${{ inputs.artifact_in }}
+          artifact_in: ${{ inputs.dist-artifact }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: ${{ runner.os }}
@@ -119,7 +119,7 @@ jobs:
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
-          artifact_in: ${{ inputs.artifact_in }}
+          artifact_in: ${{ inputs.dist-artifact }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: ${{ runner.os }}
@@ -139,7 +139,7 @@ jobs:
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
-          artifact_in: ${{ inputs.artifact_in }}
+          artifact_in: ${{ inputs.dist-artifact }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: ${{ runner.os }}
@@ -159,7 +159,7 @@ jobs:
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
-          artifact_in: ${{ inputs.artifact_in }}
+          artifact_in: ${{ inputs.dist-artifact }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: ${{ runner.os }}
@@ -184,7 +184,7 @@ jobs:
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
-          artifact_in: ${{ inputs.artifact_in }}
+          artifact_in: ${{ inputs.dist-artifact }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: ${{ runner.os }}
@@ -215,7 +215,7 @@ jobs:
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
-          artifact_in: ${{ inputs.artifact_in }}
+          artifact_in: ${{ inputs.dist-artifact }}
           python-version: ${{ matrix.python-version }}
           dependencies: test
           os: ${{ runner.os }}
