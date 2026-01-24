@@ -26,8 +26,14 @@ jobs:
         run: |
           .github/scripts/create-release-commit.sh ${{ inputs.release }}
 
-      - name: "Push commit to master"
+      # NOTE: Commented out for dry-run mode testing
+      # Uncomment the following step to actually push the release commit to the repository
+      # - name: "Push commit to master"
+      #   run: |
+      #     git push origin master
+
+      - name: "Show release commit (dry-run mode)"
         run: |
-          echo "Pushing commit to master"
+          echo "DRY-RUN MODE: The following commit would be pushed to master:"
           git log --oneline -5
           git show HEAD

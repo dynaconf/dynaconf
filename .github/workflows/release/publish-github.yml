@@ -33,9 +33,11 @@ jobs:
     - name: Prepare release notes
       run: |
         git-changelog --release-notes > release-notes.md
-        echo "Release notes being used:"
+        echo "DRY-RUN MODE: The following release notes would be used:"
         cat release-notes.md
 
+    # NOTE: Commented out for dry-run mode testing
+    # Uncomment the following step to actually create the GitHub release
     # - name: Create GitHub release
     #   uses: softprops/action-gh-release@v1
     #   with:

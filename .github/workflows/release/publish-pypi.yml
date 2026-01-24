@@ -24,9 +24,12 @@ jobs:
           name: ${{ inputs.artifact_in }}
           path: dist
 
-      - name: Test publish
+      - name: Show distribution contents (dry-run mode)
         run: |
+          echo "DRY-RUN MODE: The following distribution would be published to PyPI:"
           tree dist
 
+      # NOTE: Commented out for dry-run mode testing
+      # Uncomment the following step to actually publish to PyPI
       # - name: Publish package distributions to PyPI
       #   uses: pypa/gh-action-pypi-publish@release/v1
