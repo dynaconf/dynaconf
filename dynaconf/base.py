@@ -1776,12 +1776,14 @@ RESERVED_ATTRS = [
     "_REGISTERED_HOOKS",
 ]
 
+_INTERNAL_KEYS = set(RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS)
+
 
 @lru_cache
 def _is_key_internal(key: str | int) -> bool:
     return (
         isinstance(key, str) and key.startswith("__")
-    ) or key in RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS
+    ) or key in _INTERNAL_KEYS
 
 
 def _should_use_strict_uppercase(key, obj):
