@@ -1,0 +1,42 @@
+name: Build Distribution
+
+on:
+  workflow_call:
+    inputs:
+      python_version:
+        description: "Python version to use for building"
+        required: false
+        type: string
+        default: "3.9"
+      artifact_out:
+        description: "Name for the uploaded artifact"
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          # build requires the lowerbound python we support
+          python-version: ${{ inputs.python_version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Install build dependencies
+        run: |
+          uv export --no-hashes --only-group release > requirements-release.txt
+          pip install --user -r requirements-release.txt
+      - name: Build wheel
+        run: make dist
+      - name: Run health check
+        run: .github/scripts/dist-health-check.sh
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_out }}
+          path: dist/
+          if-no-files-found: "error"
+          overwrite: true
+          retention-days: 1
