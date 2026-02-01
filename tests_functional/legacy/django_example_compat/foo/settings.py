@@ -51,12 +51,12 @@ assert settings.FOO == "It overrides every other env"
 assert settings.DATABASES.DEFAULT.NAME == "db.sqlite3"
 
 
-assert settings.SETTINGS_FILE_FOR_DYNACONF == settings_location
-assert settings.SETTINGS_MODULE_FOR_DYNACONF == settings_location, (
+assert settings_location == settings.SETTINGS_FILE_FOR_DYNACONF
+assert settings_location == settings.SETTINGS_MODULE_FOR_DYNACONF, (
     settings.SETTINGS_MODULE_FOR_DYNACONF
 )
-assert settings.SETTINGS_MODULE == settings_location
-assert settings.DYNACONF_SETTINGS == settings_location, (
+assert settings_location == settings.SETTINGS_MODULE
+assert settings_location == settings.DYNACONF_SETTINGS, (
     settings.DYNACONF_SETTINGS
 )
 assert settings.settings_module == settings_location

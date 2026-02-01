@@ -14,6 +14,6 @@ config = Dynaconf(
 # ATC_BLE__DEVICE_ID=x and ATC_BLE__device_id=x are the same
 expected = os.environ.get("EXPECTED_VALUE", 0)
 
-# access is case insensitive
+# access is case-insensitive
 assert config.ble.device_id == int(expected)
 assert config.BLE.DEVICE_ID == int(expected)

@@ -15,7 +15,7 @@ all_secrets = []
 
 for env in available_envs:
     env_settings = settings.from_env(env)
-    assert env_settings.SECRET == f"redis_works_in_{env}", env_settings.SECRET
+    assert f"redis_works_in_{env}" == env_settings.SECRET, env_settings.SECRET
     assert env_settings.FOO == "foo_is_default", env_settings.FOO
     all_secrets.append(env_settings.SECRET)
 

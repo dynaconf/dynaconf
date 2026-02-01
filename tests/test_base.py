@@ -227,7 +227,7 @@ def test_bool(settings):
         settings.set("feature", true_value)
         config = settings.__core__.config
         assert settings.exists("FEATURE")
-        assert settings.FEATURE == true_value
+        assert true_value == settings.FEATURE
         assert settings.FEATURE is not True
         assert settings.store["FEATURE"] == true_value
         assert "FEATURE" not in config.deleted
@@ -240,7 +240,7 @@ def test_bool(settings):
     for false_value in false_values:
         settings.set("feature", false_value)
         assert settings.exists("FEATURE")
-        assert settings.FEATURE == false_value
+        assert false_value == settings.FEATURE
         assert settings.FEATURE is not False
         assert settings.store["FEATURE"] == false_value
         assert "FEATURE" not in config.deleted
@@ -924,49 +924,49 @@ def test_dotted_set_with_merge(settings):
     }
     settings.set("DATABASES", start_data)
 
-    assert settings.DATABASES == start_data
+    assert start_data == settings.DATABASES
 
     # Change DB name
     settings.set("DATABASES.default.NAME", "bladb")
-    assert settings.DATABASES != start_data
+    assert start_data != settings.DATABASES
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     settings.DATABASES.default.NAME == "bladb"
 
     # Replace items on a list
     assert settings.DATABASES.default.PARAMS == ["a", "b", "c"]
     settings.set("DATABASES.default.PARAMS", ["d", "e"])
-    assert settings.DATABASES != start_data
+    assert start_data != settings.DATABASES
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     assert settings.DATABASES.default.PARAMS == ["d", "e"]
 
     # Add new items to the list
     settings.set("DATABASES.default.PARAMS", '@merge ["e", "f", "g"]')
-    assert settings.DATABASES != start_data
+    assert start_data != settings.DATABASES
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     assert settings.DATABASES.default.PARAMS == ["d", "e", "e", "f", "g"]
 
     # Replace a dict
     assert settings.DATABASES.default.ATTRS == {"a": 1, "b": 2}
     settings.set("DATABASES.default.ATTRS", {"c": 3})
-    assert settings.DATABASES != start_data
+    assert start_data != settings.DATABASES
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     assert settings.DATABASES.default.ATTRS == {"c": 3}
 
     # Add new item to the dict
     settings.set("DATABASES.default.ATTRS", '@merge {"b": 2, "d": 4}')
-    assert settings.DATABASES != start_data
+    assert start_data != settings.DATABASES
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     assert settings.DATABASES.default.ATTRS == {"b": 2, "c": 3, "d": 4}
 
     # Replace the entire list
     settings.set("DATABASES.default.PARAMS", ["x", "y", "z"], tomlfy=True)
-    assert settings.DATABASES != start_data
+    assert start_data != settings.DATABASES
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     assert settings.DATABASES.default.PARAMS == ["x", "y", "z"]
 
     # Replace the entire dict
     settings.set("DATABASES.default.ATTRS", "{x=26}", tomlfy=True)
-    assert settings.DATABASES != start_data
+    assert start_data != settings.DATABASES
     assert settings.DATABASES["default"].keys() == start_data["default"].keys()
     assert settings.DATABASES.default.ATTRS == {"x": 26}
 
@@ -1419,8 +1419,8 @@ def test_list_entries_from_yaml_should_not_duplicate_when_merged(tmpdir):
         ["item_1", "item_2", "item_3", "item_4", "item_5"]
     )
 
-    assert settings.from_env("default").SOME_LIST == expected_default_value
-    assert settings.from_env("other").SOME_LIST == expected_other_value
+    assert expected_default_value == settings.from_env("default").SOME_LIST
+    assert expected_other_value == settings.from_env("other").SOME_LIST
 
 
 # #712

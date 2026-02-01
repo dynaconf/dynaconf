@@ -113,6 +113,7 @@ extend-select = [
     "UP",
     "I",
     "N",
+    "PLE",      # pylint (error)
 ]
 ignore = [
     "UP007",    # Use `X | Y` for type annotations
@@ -302,11 +303,11 @@ docs = [
     "pymdown-extensions>=10.16.1",
 ]
 lint = [
-    "mypy>=1.18.2",
+    "mypy>=1.19.1",
     "pre-commit>=4.3.0",
     "radon>=6.0.1",
-    "ruff>=0.14.6",
-    "typos>=1.39.2",
+    "ruff>=0.14.14",
+    "typos>=1.42.3",
 ]
 test = [
     "boto3>=1.40.67",

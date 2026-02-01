@@ -100,7 +100,7 @@ def test_annotated_with_dictvalue():
         # This is not allowed, should add validators on the dictvalue type itself
         plug: Annotated[Plugin, Validator(contains="name")]
 
-    msg = "plug.name must is_type_of.+Union\[str, int]"
+    msg = r"plug.name must is_type_of.+Union\[str, int]"
     with pytest.raises(ValidationError, match=msg):
         Settings(plug={"name": 4.2})
 
@@ -161,7 +161,7 @@ def test_union_enclosed_type_validates_type(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_NUMBERS", '["banana"]')
-        msg = "numbers must is_type_of list\[typing.Union\[int, float, bool]]"
+        msg = r"numbers must is_type_of list\[typing.Union\[int, float, bool]]"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -826,7 +826,7 @@ def test_notrequired():
         Settings(person={"name": "Bruno", "age": "too-old"})
 
     with pytest.raises(
-        ValidationError, match="person.team must is_in \['A', 'B']"
+        ValidationError, match=r"person.team must is_in \['A', 'B']"
     ):
         Settings(person={"name": "Bruno", "team": "C"})
 
@@ -1066,7 +1066,7 @@ def test_list_enclosed_type_annotated_notrequired():
     Settings()
     with pytest.raises(
         ValidationError,
-        match="colors must is_type_of.+list\[str]",
+        match=r"colors must is_type_of.+list\[str]",
     ):
         Settings(colors=[1, 2, 3])
     with pytest.raises(
@@ -1084,7 +1084,7 @@ def test_list_enclosed_type_notrequired():
     Settings()
     with pytest.raises(
         ValidationError,
-        match="colors must is_type_of.+list\[str]",
+        match=r"colors must is_type_of.+list\[str]",
     ):
         Settings(colors=[1, 2, 3])
 
@@ -1117,7 +1117,7 @@ def test_list_enclosed_type_with_optional():
 
     with pytest.raises(
         ValidationError,
-        match="colors must is_type_of.+Optional\[str]",
+        match=r"colors must is_type_of.+Optional\[str]",
     ):
         Settings(colors=["red", "#123", 3])
 
