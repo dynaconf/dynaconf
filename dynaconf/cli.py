@@ -386,9 +386,9 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
         gitignore_path = path.parent / ".gitignore"
     else:
         if fileformat == "env":
-            if str(path) in (".env", "./.env"):  # pragma: no cover
-                settings_path = path
-            elif str(path).endswith("/.env"):  # pragma: no cover
+            if str(path) in (".env", "./.env") or str(path).endswith(
+                "/.env"
+            ):  # pragma: no cover
                 settings_path = path
             elif str(path).endswith(".env"):  # pragma: no cover
                 settings_path = path.parent / ".env"
@@ -724,9 +724,9 @@ def write(to, _vars, _secrets, path, env, y):
             secrets_path = path.parent / f".secrets.{to}"
         else:
             if to == "env":
-                if str(path) in (".env", "./.env"):  # pragma: no cover
-                    settings_path = path
-                elif str(path).endswith("/.env"):
+                if str(path) in (".env", "./.env") or str(path).endswith(
+                    "/.env"
+                ):  # pragma: no cover
                     settings_path = path
                 elif str(path).endswith(".env"):
                     settings_path = path.parent / ".env"

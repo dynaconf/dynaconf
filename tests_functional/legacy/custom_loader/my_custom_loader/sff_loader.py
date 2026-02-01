@@ -28,7 +28,7 @@ def load(obj, env=None, silent=True, key=None, filename=None):
         return
 
     with open(found_file) as settings_file:
-        for line in settings_file.readlines():
+        for line in settings_file:
             if line.startswith("#"):
                 continue
             if line.startswith("KEYS:"):

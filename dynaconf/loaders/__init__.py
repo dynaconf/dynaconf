@@ -70,7 +70,7 @@ def default_loader(obj, defaults=None):
     )
 
     for key in all_keys:
-        if key not in default_settings_values.keys():
+        if key not in default_settings_values:
             continue
 
         env_value = obj.get_environ(
@@ -370,7 +370,7 @@ def settings_loader(
 def load_from_env_named_file(obj, env, key, validate, identifier, mod_file):
     """Load from env named file e.g: development_settings.py"""
     if mod_file.endswith(".py"):
-        if ".secrets.py" == mod_file:
+        if mod_file == ".secrets.py":
             tmpl = ".{0}_{1}{2}"
             mod_file = "secrets.py"
         else:

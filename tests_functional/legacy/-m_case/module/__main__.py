@@ -11,4 +11,4 @@ settings = Dynaconf(
 print(settings.WORKS)  # noqa
 
 
-assert "-m_case" == getattr(settings, "WORKS")
+assert getattr(settings, "WORKS") == "-m_case"
