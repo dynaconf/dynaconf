@@ -168,6 +168,7 @@ default_redis = {
     "password": get("REDIS_PASSWORD_FOR_DYNACONF", None),
 }
 REDIS_FOR_DYNACONF = get("REDIS_FOR_DYNACONF", default_redis)
+REDIS_URL_FOR_DYNACONF = get("REDIS_URL_FOR_DYNACONF", None)
 REDIS_ENABLED_FOR_DYNACONF = get("REDIS_ENABLED_FOR_DYNACONF", False)
 
 # Hashicorp Vault Project
