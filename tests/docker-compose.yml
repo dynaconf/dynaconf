@@ -4,6 +4,10 @@ services:
         image: redis:alpine
         ports:
             - 6379:6379
+    valkey:
+        image: valkey:8-alpine
+        ports:
+            - 16379:6379
     vault:
         image: hashicorp/vault:latest
         ports:
