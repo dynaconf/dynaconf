@@ -43,7 +43,7 @@ Homepage = "https://github.com/dynaconf/dynaconf"
 all = ["dynaconf[redis,valkey,vault,yaml,toml,ini]"]
 
 redis = ["redis"]
-valkey = ["valkey]
+valkey = ["valkey"]
 vault = ["hvac"]
 yaml = ["ruamel.yaml"]
 toml = ["toml"]
