@@ -171,6 +171,19 @@ REDIS_FOR_DYNACONF = get("REDIS_FOR_DYNACONF", default_redis)
 REDIS_URL_FOR_DYNACONF = get("REDIS_URL_FOR_DYNACONF", None)
 REDIS_ENABLED_FOR_DYNACONF = get("REDIS_ENABLED_FOR_DYNACONF", False)
 
+# Default values for valkey configs
+default_valkey = {
+    "host": get("VALKEY_HOST_FOR_DYNACONF", "localhost"),
+    "port": int(get("VALKEYS_PORT_FOR_DYNACONF", 6379)),
+    "db": int(get("VALKEY_DB_FOR_DYNACONF", 0)),
+    "decode_responses": get("VALKEY_DECODE_FOR_DYNACONF", True),
+    "username": get("VALKEY_USERNAME_FOR_DYNACONF", None),
+    "password": get("VALKEY_PASSWORD_FOR_DYNACONF", None),
+}
+VALKEY_FOR_DYNACONF = get("VALKEY_FOR_DYNACONF", default_redis)
+VALKEY_URL_FOR_DYNACONF = get("VLKEY_URL_FOR_DYNACONF", None)
+VALKEY_ENABLED_FOR_DYNACONF = get("VALKEY_ENABLED_FOR_DYNACONF", False)
+
 # Hashicorp Vault Project
 vault_scheme = get("VAULT_SCHEME_FOR_DYNACONF", "http")
 vault_host = get("VAULT_HOST_FOR_DYNACONF", "localhost")

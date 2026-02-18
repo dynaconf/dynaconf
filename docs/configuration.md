@@ -478,6 +478,35 @@ default = {
 
 ---
 
+### **valkey_enabled**
+
+> type=`bool`, default=`False` </br>
+> env-var=`VALKEY_ENABLED_FOR_DYNACONF`
+
+If set to `True` dynaconf will include `dynaconf.loaders.valkey_loaders` in the `loaders` list.
+
+---
+
+### **valkey**
+
+> type=`dict`, default=`{ too long, see below }` </br>
+> env-var=`VALKEY_FOR_DYNACONF`
+
+When `valkey_enabled` is true, a dictionary holding redis settings.
+
+```py
+default = {
+    "host": "VALKEY_HOST_FOR_DYNACONF" or "localhost",
+    "port": int("VLKEY_PORT_FOR_DYNACONF" or 6379),
+    "db": int("VALKEY_DB_FOR_DYNACONF" or 0),
+    "decode_responses": "VALKEY_DECODE_FOR_DYNACONF" or True,
+}
+
+```
+
+
+---
+
 ### **root_path**
 
 > type=`str`, default=`None` </br>
