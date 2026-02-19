@@ -174,7 +174,7 @@ REDIS_ENABLED_FOR_DYNACONF = get("REDIS_ENABLED_FOR_DYNACONF", False)
 # Default values for valkey configs
 default_valkey = {
     "host": get("VALKEY_HOST_FOR_DYNACONF", "localhost"),
-    "port": int(get("VALKEYS_PORT_FOR_DYNACONF", 6379)),
+    "port": int(get("VALKEY_PORT_FOR_DYNACONF", 6379)),
     "db": int(get("VALKEY_DB_FOR_DYNACONF", 0)),
     "decode_responses": get("VALKEY_DECODE_FOR_DYNACONF", True),
     "username": get("VALKEY_USERNAME_FOR_DYNACONF", None),
