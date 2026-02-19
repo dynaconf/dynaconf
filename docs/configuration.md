@@ -497,7 +497,7 @@ When `valkey_enabled` is true, a dictionary holding redis settings.
 ```py
 default = {
     "host": "VALKEY_HOST_FOR_DYNACONF" or "localhost",
-    "port": int("VLKEY_PORT_FOR_DYNACONF" or 6379),
+    "port": int("VALKEY_PORT_FOR_DYNACONF" or 6379),
     "db": int("VALKEY_DB_FOR_DYNACONF" or 0),
     "decode_responses": "VALKEY_DECODE_FOR_DYNACONF" or True,
 }
