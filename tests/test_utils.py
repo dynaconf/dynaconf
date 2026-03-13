@@ -406,6 +406,12 @@ def test_evaluate_lazy_format_decorator(settings):
                 return getattr(self, key)
             return parse_conf_data("@format {this.FOO}/bar", box_settings=self)
 
+        def __contains__(self, key):
+            value = getattr(self, key, missing)
+            if value is missing:
+                return False
+            return True
+
     settings = Settings()
     assert settings.get("foo") == "foo/bar"
 
