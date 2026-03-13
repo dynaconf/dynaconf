@@ -1,6 +1,13 @@
 from __future__ import annotations
 
 import os
+from contextlib import AbstractContextManager as ContextManager
+from contextlib import nullcontext
+
+import pytest
+
+from dynaconf.utils.parse_conf import DynaconfFormatError
+from dynaconf.utils.parse_conf import DynaconfParseError
 
 
 def test_end_to_end(settings):
@@ -65,3 +72,38 @@ def test_boxed_data_call(settings):
     assert settings("boxed_data").params.password == "secret"
     assert settings("boxed_data").params.token.type == 1
     assert settings("boxed_data").params.token.value == 2
+
+
+@pytest.mark.parametrize(
+    "template_string, expectation, warn",
+    [
+        pytest.param(
+            "@jinja {{ cycler.__init__.__globals__.os.popen('id').read() }}",
+            nullcontext(""),
+            pytest.warns(UserWarning, match="Unsafe"),
+            id="jinja-returns-empty-string",
+        ),
+        pytest.param(
+            "@format {this.__class__.__init__.__globals__[os].environ}",
+            pytest.raises(DynaconfFormatError),
+            nullcontext("no warning"),
+            id="format-raises",
+        ),
+        pytest.param(
+            "@get __class__.__init__.__globals__[os].environ",
+            pytest.raises(DynaconfParseError),
+            nullcontext("no warning"),
+            id="get-raises",
+        ),
+    ],
+)
+def test_templating_safety(
+    template_string: str, expectation: ContextManager, warn: ContextManager
+):
+    from dynaconf import Dynaconf
+
+    settings = Dynaconf(malicious=template_string)
+
+    with expectation as result:
+        with warn:
+            assert settings.malicious == result
