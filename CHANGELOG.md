@@ -2,6 +2,13 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.2.13](https://github.com/pedro-psb/dynaconf/releases/tag/3.2.13) - 2026-03-17
+
+### Bug Fixes
+
+- Fix @jinja and @format templating vulnerabilities. *By Pedro Brochado*.
+- Fix failing @get converter. *By Bruno Rocha*
+
 ## [3.2.12](https://github.com/pedro-psb/dynaconf/releases/tag/3.2.12) - 2025-10-10
 
 ### Bug Fixes
