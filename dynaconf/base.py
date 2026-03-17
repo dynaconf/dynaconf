@@ -1780,8 +1780,13 @@ RESERVED_ATTRS = [
 _INTERNAL_KEYS = set(RESERVED_ATTRS + UPPER_DEFAULT_SETTINGS)
 
 # These are special fields defined by Dynaconf, but users can access it
-_PUBLIC_PROPERTIES = [name for name, _ in inspect.getmembers(Settings, lambda
-  x: isinstance(x, property))]
+_PUBLIC_PROPERTIES = [
+    name
+    for name, _ in inspect.getmembers(
+        Settings, lambda x: isinstance(x, property)
+    )
+]
+
 
 @lru_cache
 def _is_key_internal(key: str | int) -> bool:
