@@ -2,6 +2,12 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.2.13](https://github.com/pedro-psb/dynaconf/releases/tag/3.2.13) - 2026-03-17
+
+### Chore
+
+- fix linting errors and pre-commit config. *By Pedro Brochado*.
+
 ## [3.2.12](https://github.com/pedro-psb/dynaconf/releases/tag/3.2.12) - 2025-10-10
 
 ### Bug Fixes
