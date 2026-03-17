@@ -1537,8 +1537,12 @@ RESERVED_ATTRS = (
 )
 
 # These are special fields defined by Dynaconf, but users can access it
-_PUBLIC_PROPERTIES = [name for name, _ in inspect.getmembers(Settings, lambda
-  x: isinstance(x, property))]
+_PUBLIC_PROPERTIES = [
+    name
+    for name, _ in inspect.getmembers(
+        Settings, lambda x: isinstance(x, property)
+    )
+]
 
 
 def _get_with_default(data: dict | list, key: str, default):
