@@ -448,7 +448,7 @@ class SafeFormatter(string.Formatter):
         field_name = field_name.replace("[", ".")
         field_name = field_name.replace("]", "")
         context_name, _, key = field_name.partition(".")
-        # these are accesible by the user, but are not considered setting keys
+        # these are accessible by the user, but are not considered setting keys
         # e.g, settings.current_env
         if key in _PUBLIC_PROPERTIES:
             return
