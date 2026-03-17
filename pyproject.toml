@@ -40,9 +40,10 @@ Homepage = "https://github.com/dynaconf/dynaconf"
 [project.optional-dependencies]
 
 # User Optional
-all = ["dynaconf[redis,vault,yaml,toml,ini]"]
+all = ["dynaconf[redis,valkey,vault,yaml,toml,ini]"]
 
 redis = ["redis"]
+valkey = ["valkey"]
 vault = ["hvac"]
 yaml = ["ruamel.yaml"]
 toml = ["toml"]
@@ -158,6 +159,7 @@ omit = [
     "dynaconf/test_settings.py",
     "dynaconf/utils/functional.py",
     "dynaconf/loaders/redis_loader.py",
+    "dynaconf/loaders/valkey_loader.py",
     "dynaconf/loaders/vault_loader.py",
     "dynaconf/loaders/__init__.py",
     "dynaconf/tests_functional/*",
@@ -327,6 +329,7 @@ test = [
     "python-dotenv>=1.2.1",
     "radon>=6.0.1",
     "redis>=7.0.1",
+    "valkey>=6.0.2",
     "toml>=0.10.2",
     "tox>=4.30.3",
     "ipdb>=0.13.13",
