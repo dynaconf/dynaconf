@@ -777,6 +777,33 @@ def write(to, _vars, _secrets, path, env, y):
         click.echo(f"Data successful written to {to}")
 
 
+def _validators_are_env_structured(data):
+    """Check if validation data is structured by environment sections.
+
+    Environment-structured means the top-level keys are env names mapping
+    to dicts of {field_name: {validator_conditions}}, e.g.:
+
+        [default]
+        name = {must_exist = true}
+
+        [production]
+        host = {is_not_in = ['test.com']}
+
+    Flat structure means the top-level keys are field names directly:
+
+        name = {must_exist = true}
+
+    The heuristic: data is env-structured if any top-level value is a dict
+    that itself contains at least one dict value (a nested field validator).
+    """
+    for value in data.values():
+        if isinstance(value, dict) and any(
+            isinstance(v, dict) for v in value.values()
+        ):
+            return True
+    return False
+
+
 @main.command()
 @click.option(
     "--path", "-p", default=CWD, help="defaults to current directory"
@@ -822,7 +849,7 @@ def validate(path):  # pragma: no cover
 
     # guarantee there is an environment
     validation_data = {k.lower(): v for k, v in validation_data.items()}
-    if not validation_data.get("default"):
+    if not _validators_are_env_structured(validation_data):
         validation_data = {"default": validation_data}
 
     success = True
