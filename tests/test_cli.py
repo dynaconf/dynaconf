@@ -591,7 +591,10 @@ endyear = 2025
     [
         # env-structured: sections contain nested field dicts
         (
-            {"default": {"name": {"must_exist": True}}, "prod": {"host": {"eq": "x"}}},
+            {
+                "default": {"name": {"must_exist": True}},
+                "prod": {"host": {"eq": "x"}},
+            },
             True,
         ),
         # env-structured: single non-default section
