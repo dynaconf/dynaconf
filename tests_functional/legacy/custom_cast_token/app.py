@@ -12,8 +12,8 @@ settings = Dynaconf(
 )
 
 # Add a custom casting token casting string to pathlib.Path object
-parse_conf.converters["@path"] = (
-    lambda value: value.set_casting(Path)
+parse_conf.converters["@path"] = lambda value: (
+    value.set_casting(Path)
     if isinstance(value, parse_conf.Lazy)
     else Path(value)
 )

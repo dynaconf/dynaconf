@@ -705,12 +705,14 @@ def add_converter(converter_key, func):
         converter_key = f"@{converter_key}"
 
     converters[converter_key] = wraps(func)(
-        lambda value: value.set_casting(func)
-        if isinstance(value, Lazy)
-        else Lazy(
-            value,
-            casting=func,
-            formatter=BaseFormatter(lambda x, **_: x, converter_key),
+        lambda value: (
+            value.set_casting(func)
+            if isinstance(value, Lazy)
+            else Lazy(
+                value,
+                casting=func,
+                formatter=BaseFormatter(lambda x, **_: x, converter_key),
+            )
         )
     )
 
