@@ -1500,6 +1500,19 @@ class Settings:
         core = self.__core__
         config = core.config
 
+        # Validate path type to prevent silent failures
+        if path is not None:
+            valid = isinstance(path, (str, os.PathLike))
+            if not valid and isinstance(path, (list, tuple, set)):
+                valid = all(
+                    isinstance(p, (str, os.PathLike)) for p in path
+                )
+            if not valid:
+                raise TypeError(
+                    f"load_file 'path' must be a string, os.PathLike, "
+                    f"or list thereof, got {type(path).__name__}"
+                )
+
         files = ensure_a_list(path)
         if not files:  # a glob pattern may return empty
             return
