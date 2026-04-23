@@ -176,7 +176,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     services:
       redis:
-        image: redis
+        image: redis:8.6-alpine
         ports:
           - 6379:6379
     steps:
@@ -201,7 +201,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     services:
       vault:
-        image: hashicorp/vault:latest
+        image: hashicorp/vault:1.21
         ports:
           - 8200:8200
         env:
