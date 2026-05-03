@@ -511,12 +511,14 @@ def test_validate(tmpdir):
 
 
 def test_validate_section_based_validators(tmpdir):
-    """Test that section-based validators in dynaconf_validators.toml work.
+    """Section-based validators in dynaconf_validators.toml work.
 
-    Regression test for https://github.com/dynaconf/dynaconf/issues/1368
-    When using a non-default section name (e.g. [main]), field names were
-    incorrectly treated as validator condition functions, causing
-    AttributeError on validator_conditions module.
+    Regression test for https://github.com/dynaconf/dynaconf/issues/1368.
+    With a non-default section name (e.g. [main]), field names were
+    previously treated as validator condition functions, causing
+    AttributeError on the validator_conditions module. This test
+    covers both the success path and the failure path so that the
+    parser is exercised end-to-end.
     """
     validation_file = tmpdir.join("dynaconf_validators.toml")
     validation_file.write(
@@ -526,15 +528,15 @@ startyear = {must_exist = true, is_type_of = "int", lte = 2050, gte = 2010}
 """
     )
 
-    settings_file = tmpdir.join("settings.toml")
-    settings_file.write(
+    # Success: value within range -> validation passes, no AttributeError.
+    ok_settings = tmpdir.join("ok_settings.toml")
+    ok_settings.write(
         """
 [main]
 startyear = 2020
 """
     )
-
-    result = run(
+    ok_result = run(
         [
             "-i",
             "tests.test_cli.settings",
@@ -542,36 +544,21 @@ startyear = 2020
             "-p",
             str(validation_file),
         ],
-        {"SETTINGS_FILE_FOR_DYNACONF": str(settings_file)},
+        {"SETTINGS_FILE_FOR_DYNACONF": str(ok_settings)},
     )
-    assert "Validation success!" in result
+    assert "AttributeError" not in ok_result
+    assert "Validation success!" in ok_result
 
-
-def test_validate_section_based_no_attribute_error(tmpdir):
-    """Ensure section-based validators don't raise AttributeError.
-
-    The bug caused field names to be passed as validator condition
-    functions (e.g. getattr(validator_conditions, 'startyear')).
-    """
-    validation_file = tmpdir.join("dynaconf_validators.toml")
-    validation_file.write(
+    # Failure: value out of range -> validator triggers a real failure
+    # (not an AttributeError on a missing condition function).
+    bad_settings = tmpdir.join("bad_settings.toml")
+    bad_settings.write(
         """
 [main]
-startyear = {must_exist = true, is_type_of = "int", lte = 2050, gte = 2010}
-endyear = {must_exist = true}
+startyear = 1999
 """
     )
-
-    settings_file = tmpdir.join("settings.toml")
-    settings_file.write(
-        """
-[main]
-startyear = 2020
-endyear = 2025
-"""
-    )
-
-    result = run(
+    bad_result = run(
         [
             "-i",
             "tests.test_cli.settings",
@@ -579,11 +566,10 @@ endyear = 2025
             "-p",
             str(validation_file),
         ],
-        {"SETTINGS_FILE_FOR_DYNACONF": str(settings_file)},
+        {"SETTINGS_FILE_FOR_DYNACONF": str(bad_settings)},
     )
-    # The key assertion: no AttributeError, and the validator ran
-    assert "AttributeError" not in result
-    assert "Validating" in result
+    assert "AttributeError" not in bad_result
+    assert "Validation success!" not in bad_result
 
 
 @pytest.mark.parametrize(
