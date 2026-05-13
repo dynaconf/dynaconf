@@ -45,6 +45,7 @@ from dynaconf.utils import RENAMED_VARS
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import glob
+from dynaconf.utils.files import has_magic
 from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import apply_converter
@@ -1546,6 +1547,14 @@ class Settings:
 
             paths = [p for p in sorted(glob(filepath)) if ".local." not in p]
             local_paths = [p for p in sorted(glob(filepath)) if ".local." in p]
+
+            if (
+                not silent
+                and not paths
+                and not local_paths
+                and not has_magic(filepath)
+            ):
+                raise FileNotFoundError(filepath)
 
             # Handle possible *.globs sorted alphanumeric
             for path in paths + local_paths:
