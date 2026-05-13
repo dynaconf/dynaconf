@@ -1103,6 +1103,29 @@ def test_envless_load_file(tmpdir):
     assert settings.VALUE == "Envless value"
 
 
+def test_load_file_missing_path_with_silent_false(tmpdir):
+    """load_file raises FileNotFoundError when path is missing and silent=False."""
+    settings = Dynaconf()
+    missing = str(tmpdir.join("does_not_exist.toml"))
+    with pytest.raises(FileNotFoundError):
+        settings.load_file(path=missing, silent=False)
+
+
+def test_load_file_missing_path_with_silent_true(tmpdir):
+    """load_file stays quiet when path is missing and silent=True (default)."""
+    settings = Dynaconf()
+    missing = str(tmpdir.join("does_not_exist.toml"))
+    settings.load_file(path=missing)
+    settings.load_file(path=missing, silent=True)
+
+
+def test_load_file_missing_glob_with_silent_false(tmpdir):
+    """load_file does not raise for unmatched glob even when silent=False."""
+    settings = Dynaconf()
+    missing_glob = str(tmpdir.join("*.toml"))
+    settings.load_file(path=missing_glob, silent=False)
+
+
 def test_from_env_method_with_prefix(clean_env, tmpdir):
     data = {
         "default": {"prefix_a_default": "From default env"},
