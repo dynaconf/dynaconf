@@ -10,6 +10,7 @@ import pytest
 
 from dynaconf import default_settings
 from dynaconf import LazySettings
+from dynaconf.cli import _validators_are_env_structured
 from dynaconf.cli import EXTS
 from dynaconf.cli import main
 from dynaconf.cli import read_file_in_root_directory
@@ -507,6 +508,102 @@ def test_validate(tmpdir):
         "production" in result
     )
     assert "Validation success!" not in result
+
+
+def test_validate_section_based_validators(tmpdir):
+    """Section-based validators in dynaconf_validators.toml work.
+
+    Regression test for https://github.com/dynaconf/dynaconf/issues/1368.
+    With a non-default section name (e.g. [main]), field names were
+    previously treated as validator condition functions, causing
+    AttributeError on the validator_conditions module. This test
+    covers both the success path and the failure path so that the
+    parser is exercised end-to-end.
+    """
+    validation_file = tmpdir.join("dynaconf_validators.toml")
+    validation_file.write(
+        """
+[main]
+startyear = {must_exist = true, is_type_of = "int", lte = 2050, gte = 2010}
+"""
+    )
+
+    # Success: value within range -> validation passes, no AttributeError.
+    ok_settings = tmpdir.join("ok_settings.toml")
+    ok_settings.write(
+        """
+[main]
+startyear = 2020
+"""
+    )
+    ok_result = run(
+        [
+            "-i",
+            "tests.test_cli.settings",
+            "validate",
+            "-p",
+            str(validation_file),
+        ],
+        {"SETTINGS_FILE_FOR_DYNACONF": str(ok_settings)},
+    )
+    assert "AttributeError" not in ok_result
+    assert "Validation success!" in ok_result
+
+    # Failure: value out of range -> validator triggers a real failure
+    # (not an AttributeError on a missing condition function).
+    bad_settings = tmpdir.join("bad_settings.toml")
+    bad_settings.write(
+        """
+[main]
+startyear = 1999
+"""
+    )
+    bad_result = run(
+        [
+            "-i",
+            "tests.test_cli.settings",
+            "validate",
+            "-p",
+            str(validation_file),
+        ],
+        {"SETTINGS_FILE_FOR_DYNACONF": str(bad_settings)},
+    )
+    assert "AttributeError" not in bad_result
+    assert "Validation success!" not in bad_result
+
+
+@pytest.mark.parametrize(
+    "data,expected",
+    [
+        # env-structured: sections contain nested field dicts
+        (
+            {
+                "default": {"name": {"must_exist": True}},
+                "prod": {"host": {"eq": "x"}},
+            },
+            True,
+        ),
+        # env-structured: single non-default section
+        (
+            {"main": {"startyear": {"must_exist": True, "gte": 2010}}},
+            True,
+        ),
+        # flat: field names with validator condition dicts (no nesting)
+        (
+            {"name": {"must_exist": True}, "age": {"gte": 10}},
+            False,
+        ),
+        # flat: single field
+        (
+            {"startyear": {"must_exist": True, "lte": 2050}},
+            False,
+        ),
+        # empty
+        ({}, False),
+    ],
+)
+def test_validators_are_env_structured(data, expected):
+    assert _validators_are_env_structured(data) is expected
 
 
 def create_file(filename: str | Path, data: str):
