@@ -805,9 +805,14 @@ class Settings:
                 }
             )
 
+        if getattr(self, "validators", None):
+            new_data.setdefault("validators", self.validators)
+
         new_data.update(kwargs)
         new_data["FORCE_ENV_FOR_DYNACONF"] = env
+        new_data.setdefault("dynaconf_skip_validators", True)
         new_settings = LazySettings(**new_data)
+        new_settings.unset("DYNACONF_SKIP_VALIDATORS")
         config.env_cache[cache_key] = new_settings
 
         # update source metadata for inspecting
