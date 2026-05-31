@@ -906,7 +906,6 @@ def test_validation_after_setenv_or_from_env(tmp_path):
     
     # 1. Test setenv
     settings.setenv("production")
-    print("FOO AFTER SETENV:", settings.get("foo"))
     with pytest.raises(ValidationError):
         settings.validators.validate_all()
         
