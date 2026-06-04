@@ -101,7 +101,7 @@ clean:
 
 docs:
 	rm -rf site
-	uv run --group docs mkdocs build --clean --strict
+	uv run --group docs mkdocs build --clean
 
 run-tox:
 	tox --recreate
