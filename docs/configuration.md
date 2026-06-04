@@ -246,7 +246,7 @@ ex: `MYPROGRAM_ENV=production`
 > type=`class`, default=`None` </br>
 > env-var=`FILTERING_STRATEGY_FOR_DYNACONF`
 
-Callable accepting data to be filtered, built-ins currently include [PrefixFilter](strategies.md#filtering).
+Callable accepting data to be filtered, built-ins currently include [PrefixFilter](strategies.md).
 
 ---
 
@@ -319,7 +319,7 @@ Dynaconf(includes="extra.yaml")
 > env-var=`LOADERS_FOR_DYNACONF`
 
 The list of loaders dynaconf will trigger after its core loaders, this list is useful to include
-[custom loaders](advanced.md/#custom loaders) and also to control the loading of env vars as the last step.
+[custom loaders](advanced.md#creating-new-loaders) and also to control the loading of env vars as the last step.
 
 !!! warning
     By default the `env_loader` will be latest on this list, so it ensures environment variables has the priority following the Unix philosophy.
@@ -492,7 +492,7 @@ Note that:
     - The place of the last loaded file, if any files were already loaded
     - CWD
 
-Read more on [settings_files](settings_files.md#load).
+Read more on [settings_files](settings_files.md#loading-setting-files).
 
 !!! note
      The `cwd` is from where the python interpreter was called.
