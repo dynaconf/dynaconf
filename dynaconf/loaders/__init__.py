@@ -373,7 +373,11 @@ def settings_loader(
                 # must be Python file or module
                 # load from default defined module settings.py or .secrets.py if exists
                 py_loader.load(
-                    obj, mod_file, key=key, validate=validate, identifier=identifier
+                    obj,
+                    mod_file,
+                    key=key,
+                    validate=validate,
+                    identifier=identifier,
                 )
 
                 # load from the current env e.g: development_settings.py
@@ -384,6 +388,7 @@ def settings_loader(
                         load_from_env_named_file(
                             obj, env_name, key, validate, identifier, mod_file
                         )
+
 
 def load_from_env_named_file(obj, env, key, validate, identifier, mod_file):
     """Load from env named file e.g: development_settings.py"""
