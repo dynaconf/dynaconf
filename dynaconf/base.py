@@ -1086,10 +1086,17 @@ class Settings:
                     and isinstance(tree, list)
                 ):  # accessing index of a list
                     index = int(k.replace("[", "").replace("]", ""))
-                    extended_list = [
-                        next_default.copy()
-                        for _ in range(index + 1)  # type: ignore[attr-defined]
-                    ]
+                    # Pad missing positions so we can assign any index.
+                    # On the last segment the slot holds the value itself, so
+                    # gaps should be empty (None) instead of a copy of
+                    # `next_default`, which still refers to the previous level.
+                    if is_not_end:
+                        extended_list = [
+                            next_default.copy()  # type: ignore[attr-defined]
+                            for _ in range(index + 1)
+                        ]
+                    else:
+                        extended_list = [None] * (index + 1)
                     # This makes sure we can assign any arbitrary index
                     tree.extend(extended_list)
                     if is_not_end:
