@@ -1853,6 +1853,25 @@ class TestIndexMerge:
         settings.set("nested_5.nested_6_0", "World")
         assert settings.NESTED_5.NESTED_6_0 == "World"
 
+    def test_dotted_set_scalar_list_pads_with_none(self, settings):
+        settings.set("INDEX_SEPARATOR_FOR_DYNACONF", "___")
+
+        # Assigning an index of a plain list should leave the skipped
+        # positions empty (None), not nested empty containers.
+        settings.set("ports[2]", 9090)
+        assert list(settings.PORTS) == [None, None, 9090]
+
+        # Nesting is preserved: only the leaf gap becomes None, the outer
+        # list still pads with an empty list.
+        settings.set("matrix[1][1]", "x")
+        assert list(settings.MATRIX) == [[], [None, "x"]]
+
+    def test_environ_dunder_set_scalar_list_pads_with_none(self):
+        os.environ["DYNACONF_PORTS___2"] = "9090"
+        settings = Dynaconf(INDEX_SEPARATOR_FOR_DYNACONF="___")
+        assert list(settings.PORTS) == [None, None, 9090]
+        del os.environ["DYNACONF_PORTS___2"]
+
     def test_environ_dunder_set_with_index_merge_disabled(self):
         os.environ["DYNACONF_NESTED_A__nested_1__nested_2"] = "new_conf"
         os.environ[
