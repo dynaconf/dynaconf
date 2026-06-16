@@ -163,7 +163,8 @@ export DYNACONF_PLUGINS='["ci_plugin", "dynaconf_merge"]'
 Then the end result on `[development]` is:
 
 ```python
-settings.PLUGINS == ["ci_plugin", "debug_toolbar", "core"]
+$ dynaconf -i main.settings get -e development plugins
+["core", "debug_toolbar", "ci_plugins"]
 ```
 
 If your value is a dictionary:
@@ -635,7 +636,7 @@ assert settings.PEOPLE == [{name="Alice"}, {name="Charlie"}, {name="Bob"}]
 
 ## More examples
 
-Take a look at the [example](https://github.com/dynaconf/dynaconf/tree/master/example) folder to see some examples of use with different file formats and features.
+Take a look at the [example](https://github.com/dynaconf/dynaconf/tree/master/tests_functional) folder to see some examples of use with different file formats and features.
 
 
 ## Known caveats
