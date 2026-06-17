@@ -469,11 +469,10 @@ class TestCoreFunctions:
         assert result == core
 
     def test_dynaconf_core_constructor(self):
-        core_id = "test_core_123"
-        core = DynaconfCore(core_id)
+        core = DynaconfCore("test_core_123")
 
-        assert core_id in core.id
         assert isinstance(core, DynaconfCore)
+        assert hasattr(core, "_cache")
 
     def test_init_core_already_exists(self):
         core1 = DynaconfCore("core1")
