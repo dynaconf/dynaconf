@@ -980,7 +980,24 @@ def test_deepcopy_settings():
     s2 = copy.deepcopy(s1)
     assert id(s1) != id(s2)
     assert id(s1.__core__) != id(s2.__core__)
-    assert s1.__core__.id != s2.__core__.id
+    assert s1.__core__._cache is not s2.__core__._cache
+
+
+def test_cache_is_isolated_per_instance():
+    s1 = Dynaconf()
+    s2 = Dynaconf()
+
+    s1.set("KEY", "value1")
+    s2.set("KEY", "value2")
+
+    _ = s1.KEY
+    _ = s2.KEY
+
+    assert "KEY" in s2.__core__._cache
+
+    s1.__core__.clear_cache()
+
+    assert "KEY" in s2.__core__._cache
 
 
 def test_from_env_method(clean_env, tmpdir):

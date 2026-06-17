@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import importlib
 import inspect
-import multiprocessing
 import os
 import re
 import warnings
@@ -12,7 +11,6 @@ from contextlib import contextmanager
 from contextlib import suppress
 from dataclasses import dataclass
 from dataclasses import field
-from functools import cached_property
 from functools import lru_cache
 from functools import wraps
 from pathlib import Path
@@ -57,9 +55,7 @@ from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
 
-cache: dict = {}
 cache_enabled = True  # disable if something weird happen
-id_counter = multiprocessing.Value("i", 0)
 
 
 class LazySettings(LazyObject):
@@ -225,7 +221,7 @@ class DynaconfCore:
         store = kwargs.pop("_store", default_store)
         validators = kwargs.pop("validators", None)
 
-        self._id = id
+        self._cache: dict = {}
         self.obj = obj
         self.config = config
         self.store = store
@@ -236,7 +232,7 @@ class DynaconfCore:
     def get_cached(self, key):
         if not cache_enabled:
             raise KeyError  # communicates "cache not found"
-        return cache[(self.id, key)]
+        return self._cache[key]
 
     def set_cached(self, key, value):
         if not cache_enabled:
@@ -244,35 +240,26 @@ class DynaconfCore:
         fresh_vars = self.config.fresh_vars
         is_lazy = value.__class__.__name__ == "Lazy"
         if key not in fresh_vars and not is_lazy:
-            cache[(self.id, key)] = value
+            self._cache[key] = value
 
-    def clear_cache(self, key=None):
+    def clear_cache(self):
         if not cache_enabled:
             return
-        cache.clear()
+        self._cache.clear()
 
     # COPYING
 
-    @cached_property
-    def id(self):
-        return f"{self._id}-{get_unique_id()}"
-
     def __deepcopy__(self, memo):
-        """Custom deepcopy to ensure unique id generation for copied cores."""
         import copy
 
-        # Create a new instance without calling __init__
         new_instance = self.__class__.__new__(self.__class__)
-
-        # Add it to memo to handle circular references
         memo[id(self)] = new_instance
 
-        # Deepcopy all attributes
         for key, value in self.__dict__.items():
-            # Skip the cached 'id' property so it regenerates with a new unique value
-            if key != "id":
+            if key != "_cache":
                 setattr(new_instance, key, copy.deepcopy(value, memo))
 
+        new_instance._cache = {}
         return new_instance
 
 
@@ -1861,10 +1848,3 @@ def _get_with_default(data: dict | list, key: str, default):
             return default
     else:
         raise AttributeError(f"Unknown data container type: {type(data)}")
-
-
-def get_unique_id():
-    # thread-safe, just in case
-    with id_counter.get_lock():
-        id_counter.value += 1
-        return id_counter.value
