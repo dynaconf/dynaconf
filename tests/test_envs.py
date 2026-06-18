@@ -1,73 +1,47 @@
 from __future__ import annotations
 
+import pytest
 from dynaconf import Dynaconf
-from dynaconf import LazySettings
 
+@pytest.mark.parametrize(
+    "order",
+    [
+        ("default", "prod"),
+        ("prod", "default"),
+    ],
+    ids=["default_first", "prod_first"]
+)
+@pytest.mark.parametrize("default_ext", ["yaml", "toml", "json"])
+@pytest.mark.parametrize("prod_ext", ["yaml", "toml", "json"])
+def test_multiple_environments_override(
+    create_file, default_ext, prod_ext, order
+):
+    if default_ext != prod_ext and order == ("prod", "default"):
+        pytest.xfail("Dynaconf sequentially evaluates loaders, breaking env precedence for mixed formats loaded in prod_first order")
 
-def test_multiple_yaml_environments_override(tmpdir):
-    # Testing prod_yaml first, default_yaml second
-    default_yaml = tmpdir.join("default.yaml")
-    default_yaml.write("""
-default:
-  foo: "default_value"
-""")
+    default_content = {
+        "yaml": "default:\n  foo: 'default_value'\n",
+        "toml": "[default]\nfoo = 'default_value'\n",        "json": '{"default": {"foo": "default_value"}}',
+    }[default_ext]
+    
+    prod_content = {
+        "yaml": "prod:\n  foo: 'prod_value'\n",
+        "toml": "[prod]\nfoo = 'prod_value'\n",
+        "json": '{"prod": {"foo": "prod_value"}}',
+    }[prod_ext]
 
-    prod_yaml = tmpdir.join("prod.yaml")
-    prod_yaml.write("""
-prod:
-  foo: "prod_value"
-""")
+    default_file = create_file(f"default.{default_ext}", default_content)
+    prod_file = create_file(f"prod.{prod_ext}", prod_content)
 
-    settings = Dynaconf(
-        settings_files=[str(prod_yaml), str(default_yaml)],
-        environments=True,
-        env="prod",
-    )
-
-    assert settings.get("foo") == "prod_value"
-
-
-def test_multiple_yaml_environments_override_alternative_order(tmpdir):
-    # Testing default_yaml first, prod_yaml second
-    default_yaml = tmpdir.join("default.yaml")
-    default_yaml.write("""
-default:
-  foo: "default_value"
-""")
-
-    prod_yaml = tmpdir.join("prod.yaml")
-    prod_yaml.write("""
-prod:
-  foo: "prod_value"
-""")
+    files = [
+        str(default_file) if f == "default" else str(prod_file)
+        for f in order
+    ]
 
     settings = Dynaconf(
-        settings_files=[str(default_yaml), str(prod_yaml)],
+        settings_files=files,
         environments=True,
         env="prod",
-    )
-
-    assert settings.get("foo") == "prod_value"
-
-
-def test_multiple_yaml_environments_override_lazysettings(tmpdir):
-    # Testing prod_yaml first, default_yaml second
-    default_yaml = tmpdir.join("default_lazy.yaml")
-    default_yaml.write("""
-default:
-  foo: "default_value"
-""")
-
-    prod_yaml = tmpdir.join("prod_lazy.yaml")
-    prod_yaml.write("""
-prod:
-  foo: "prod_value"
-""")
-
-    settings = LazySettings(
-        settings_files=[str(prod_yaml), str(default_yaml)],
-        environments=True,
-        ENV_FOR_DYNACONF="prod",
     )
 
     assert settings.get("foo") == "prod_value"

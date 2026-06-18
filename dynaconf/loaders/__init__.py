@@ -278,6 +278,8 @@ def settings_loader(
 
     files.extend(ensure_a_list(obj.get("SECRETS_FOR_DYNACONF", None)))
 
+    # Evaluate glob patterns and build a list of existing files and
+    # modules that will be used to load the settings.
     found_files = []
     modules_names = []
     for item in files:
@@ -322,6 +324,9 @@ def settings_loader(
         {"ext": ct.JSON_EXTENSIONS, "name": "JSON", "loader": json_loader},
     ]
 
+    # Group files by their loader type to optimize bulk loading.
+    # Instead of parsing and loading files individually, we pass a list
+    # of files of the same format to the specific loader.
     file_groups = []
     current_group = {"loader": None, "files": []}
 
@@ -344,6 +349,7 @@ def settings_loader(
     if current_group["files"]:
         file_groups.append(current_group)
 
+    # Execute each loader passing the grouped files.
     for group in file_groups:
         loader = group["loader"]
         files = group["files"]
@@ -362,10 +368,10 @@ def settings_loader(
                 identifier=loader_identifier,
             )
         else:
+            # Module fallback: if no specific loader is found, assume it is a Python module.
             for mod_file in files:
                 if mod_file.endswith(ct.ALL_EXTENSIONS):
                     continue
-
                 if "PY" not in enabled_core_loaders:
                     # pyloader is disabled
                     continue
