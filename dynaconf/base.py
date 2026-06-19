@@ -1107,11 +1107,17 @@ class Settings:
                 full_path=split_keys,
                 list_merge=list_merge,  # when to use deep / shallow replace?
             )
+        # `new_data` is keyed by the already-resolved top level key
+        # (`split_keys[0]`). With index merge disabled a bracket is a literal
+        # key, so that key can still contain `[` (e.g. `servers[0]`). Writing
+        # it with dotted_lookup on would route it back into `_dotted_set` and
+        # recurse forever, so set the resolved keys literally.
         self.update(
             data=new_data,
             tomlfy=tomlfy,
             validate=validate,
             tomlfy_filter=tomlfy_filter,
+            dotted_lookup=False,
             **kwargs,
         )
 

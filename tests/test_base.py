@@ -1828,6 +1828,20 @@ class TestIndexMerge:
         with pytest.raises(AttributeError):
             settings.nested_a.nested_b
 
+    def test_dotted_set_bracket_first_segment_disabled(self):
+        # With index merge disabled a bracket is a literal key. When the
+        # bracket is in the first (top-level) segment the resolved key still
+        # holds the `[` and used to be re-routed into _dotted_set, recursing
+        # forever. It should just be stored as a literal key.
+        settings = Dynaconf()
+        assert bool(settings.get("INDEX_SEPARATOR_FOR_DYNACONF")) is False
+
+        settings.set("a[1]", "v")
+        assert settings.get("a[1]") == "v"
+
+        settings.set("servers[0].name", "web1")
+        assert settings.get("servers[0]") == {"name": "web1"}
+
     def test_dotted_set(self, settings):
         settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
         settings.set("INDEX_SEPARATOR_FOR_DYNACONF", "___")
