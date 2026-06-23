@@ -32,7 +32,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
@@ -56,7 +56,7 @@ jobs:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
@@ -76,7 +76,7 @@ jobs:
 
       - name: "Upload coverage to Codecov"
         if: ${{ matrix.python-version == inputs.python_latest }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         continue-on-error: true
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -93,7 +93,7 @@ jobs:
         os: [macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
@@ -115,7 +115,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
@@ -135,7 +135,7 @@ jobs:
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
@@ -155,7 +155,7 @@ jobs:
         os: [windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
@@ -180,7 +180,7 @@ jobs:
         ports:
           - 6379:6379
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Install from wheel
         uses: ./.github/actions/install-from-artifact
         with:
@@ -208,8 +208,8 @@ jobs:
           VAULT_DEV_ROOT_TOKEN_ID: myroot
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install from wheel

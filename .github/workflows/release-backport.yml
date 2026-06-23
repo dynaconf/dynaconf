@@ -1,0 +1,62 @@
+name: Backport Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected-release:
+        description: "Backport release version. Must match the version calculated on the backport branch."
+        required: true
+        type: string
+
+jobs:
+  backport-release:
+    name: "Validate, commit, and push backport release"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - uses: actions/checkout@v7
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          python-version: "3.9"
+      - name: Install release tools
+        run: |
+          uv sync --only-group release
+          # Install the release utility as a package from master so the installed
+          # command is unaffected by the backport branch checkout that follows.
+          uv pip install .github/scripts/
+      - name: Resolve backport branch
+        id: branch
+        run: |
+          BRANCH=$(uv run release-utility get backport-branch "${{ inputs.expected-release }}")
+          echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
+      - name: Check out backport branch
+        run: |
+          git checkout "${{ steps.branch.outputs.name }}"
+      - name: Set up git identity
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+      - name: Validate release
+        run: |
+          uv run release-utility validate "${{ inputs.expected-release }}" --backport
+      - name: Create backport release commits
+        run: |
+          uv run release-utility backport-release -y
+      - name: Push backport release
+        run: |
+          # --atomic ensures both refs land together or none do.
+          # backport branch: the X.Y maintenance branch advanced by the release + post-release commits.
+          # tag: the annotated release tag created locally by backport-release.
+          git push --atomic origin \
+            "${{ steps.branch.outputs.name }}" \
+            "refs/tags/${{ inputs.expected-release }}"

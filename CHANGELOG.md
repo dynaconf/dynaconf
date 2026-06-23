@@ -2,7 +2,7 @@ Changelog
 =========
 
 <!-- insertion marker -->
-## [3.2.5](https://github.com/pedro-psb/dynaconf/releases/tag/3.2.5) - 2024-03-18
+## [3.2.5](https://github.com/dynaconf/dynaconf/releases/tag/3.2.5) - 2024-03-18
 
 ### Bug Fixes
 

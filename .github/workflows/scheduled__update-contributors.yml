@@ -8,7 +8,7 @@ jobs:
   main:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: "Update a projects CONTRIBUTORS file"
         uses: minicli/action-contributors@v3.3
@@ -29,7 +29,7 @@ jobs:
 
       - name: Create a PR
         if: steps.check_diff.outputs.skip_pr == 'false'
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: Update Contributors
           title: "[automated] Update Contributors File"

@@ -1,4 +1,4 @@
-name: Build Distribution
+name: Build Package Distribution
 
 on:
   workflow_call:
@@ -16,23 +16,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
         with:
-          # build requires the lowerbound python we support
-          python-version: "3.9"
+          ref: ${{ inputs.release-tag || github.ref }}
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          python-version: "3.9"
       - name: Install build dependencies
-        run: |
-          uv export --no-hashes --only-group release > requirements-release.txt
-          pip install --user -r requirements-release.txt
+        run: uv sync --only-group release
       - name: Build wheel
-        run: make dist
+        run: uv run make dist
       - name: Run health check
         run: .github/scripts/dist-health-check.sh
       - name: Upload wheel artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "dist-build"
           path: dist/

@@ -170,6 +170,7 @@ omit = [
 # ======
 
 [tool.pytest.ini_options]
+pythonpath = [".github/scripts"]
 markers = [
     "integration: marks tests as integration (deselect with '-m \"not integration\"')",
 ]
@@ -228,14 +229,14 @@ replace = "{new_version}"
 regex = false
 ignore_missing_version = false
 ignore_missing_files = false
-allow_dirty = true
+allow_dirty = false
 
 tag = false
 sign_tags = false
 tag_name = "v{new_version}"
 tag_message = "Bump version: {current_version} → {new_version}"
 commit = false
-message = "Bump to version {new_version}"
+message = "chore: bump version to {new_version}"
 commit_args = ""
 
 [tool.bumpversion.parts.pre]
