@@ -25,18 +25,18 @@ concurrency:
 
 jobs:
   docs:
-    uses: ./.github/workflows/main__build-docs.yml
+    uses: ./.github/workflows/build-docs.yml
 
   lint:
-    uses: ./.github/workflows/main__lint.yml
+    uses: ./.github/workflows/lint.yml
 
   build:
     needs: lint
-    uses: ./.github/workflows/main__build-dist.yml
+    uses: ./.github/workflows/build-dist.yml
 
   tests:
     needs: build
-    uses: ./.github/workflows/main__test.yml
+    uses: ./.github/workflows/test.yml
     with:
       dist-artifact: ${{ needs.build.outputs.dist-artifact }}
       python_minimal: '["3.9", "3.13"]'
@@ -47,7 +47,7 @@ jobs:
   benchmark:
     needs: build
     if: github.event_name == 'pull_request'
-    uses: ./.github/workflows/main__benchmark.yml
+    uses: ./.github/workflows/benchmark.yml
 
   checkpoint:
     runs-on: ubuntu-latest

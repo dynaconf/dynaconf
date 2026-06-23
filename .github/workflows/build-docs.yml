@@ -19,24 +19,19 @@ jobs:
   docs-build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
-
-      - name: Checkout release tag
-        if: ${{ inputs.release-tag != '' }}
-        run: |
-          git checkout ${{ inputs.release-tag }}
+        uses: astral-sh/setup-uv@v8.2.0
 
       - name: Build documentation
-        run: |
-          make docs
+        run: uv run make docs
 
       - name: Upload documentation artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "docs-build"
           path: site/
@@ -44,12 +39,11 @@ jobs:
 
       - name: Generate release notes
         if: ${{ inputs.release-tag != '' }}
-        run: |
-          uv run --with git-changelog git-changelog --release-notes > release-notes.md
+        run: uv run --with git-changelog git-changelog --release-notes > release-notes.md
 
       - name: Upload release notes artifact
         if: ${{ inputs.release-tag != '' }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: "release-notes"
           path: release-notes.md

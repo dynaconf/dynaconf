@@ -1,5 +1,5 @@
 SHELL := /bin/bash
-.PHONY: all citest clean mypy dist docs install publish run-pre-commit run-tox setup-pre-commit test test_functional test_only test_redis test_vault help coverage-report watch_test bench
+.PHONY: all check-releases citest clean mypy dist docs install publish run-pre-commit run-tox setup-pre-commit test test_functional test_only test_redis test_vault help coverage-report watch_test bench
 help:
 	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
 
@@ -78,22 +78,12 @@ dist: clean
 	@python -m build
 	@make source_vendor
 
-# Bump
-# Used if we want a minor release.
+check-releases:
+	uv run --isolated python .github/scripts/release_utility.py check
+
+# Bump X.Y.Z.dev to X.Y+1.0.dev
 bump-minor:
-	bump-my-version bump minor
-
-# Release
-# 1. Create release-commit: bump-version to stable + changelog-update + build package
-# 2. Create bump-commit: bump-version to next cycle
-release: clean
-	./scripts/release-main.sh
-
-# Publish
-# 1. Publish to PiPY
-# 2. TODO: Publish to Github (Github Release)
-publish:
-	@twine upload dist/*
+	uv run bump-my-version bump minor --commit
 
 clean:
 	@find ./ -name '*.pyc' -exec rm -f {} \;
