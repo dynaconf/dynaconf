@@ -1,0 +1,39 @@
+name: Build Package Distribution
+
+on:
+  workflow_call:
+    inputs:
+      release-tag:
+        description: "Release tag (e.g. 3.2.1)"
+        required: false
+        type: string
+    outputs:
+      dist-artifact:
+        description: "Name of the uploaded distribution artifact"
+        value: "dist-build"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.release-tag || github.ref }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          python-version: "3.9"
+      - name: Install build dependencies
+        run: uv sync --only-group release
+      - name: Build wheel
+        run: uv run make dist
+      - name: Run health check
+        run: .github/scripts/dist-health-check.sh
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: "dist-build"
+          path: dist/
+          if-no-files-found: "error"
+          overwrite: true
+          retention-days: 1

@@ -1,0 +1,72 @@
+name: 'Install from artifact'
+description: 'Setup Python and install Dynaconf wheel from artifact with optional dependencies'
+
+inputs:
+  artifact_in:
+    description: 'Name of the artifact containing the distribution'
+    required: true
+  dependencies:
+    description: 'Optional dependencies to install with the wheel'
+    required: false
+    default: ''
+  os:
+    description: 'Operating system (Windows, Linux, macOS)'
+    required: false
+    default: 'Linux'
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.9'
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v6
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v8.2.0
+      with:
+        enable-cache: true
+
+    - name: Upgrade PIP
+      if: inputs.os != 'Windows'
+      shell: bash
+      run: pip install --user --upgrade pip
+
+    - name: Upgrade PIP (Windows)
+      if: inputs.os == 'Windows'
+      shell: bash
+      run: python.exe -m pip install --user --upgrade pip
+
+    - name: Download wheel
+      uses: actions/download-artifact@v8
+      with:
+        name: ${{ inputs.artifact_in }}
+        path: dist/
+
+    - name: Install from wheel (Unix)
+      if: inputs.os != 'Windows'
+      shell: bash
+      run: |
+        PACKAGE=$(ls dist/*.whl)
+        if [ -n "${{ inputs.dependencies }}" ]; then
+          uv export --no-hashes --only-group ${{ inputs.dependencies }} > requirements-tmp.txt
+          pip install "$PACKAGE" -r requirements-tmp.txt
+        else
+          pip install "$PACKAGE"
+        fi
+
+    - name: Install from wheel (Windows)
+      if: inputs.os == 'Windows'
+      shell: pwsh
+      run: |
+        $PACKAGE = (Get-ChildItem dist/*.whl).FullName
+        if ("${{ inputs.dependencies }}" -ne "") {
+          uv export  --no-hashes --only-group ${{ inputs.dependencies }} > requirements-tmp.txt
+          pip install --use-deprecated=legacy-resolver --user "$PACKAGE" -r requirements-tmp.txt 
+        } else {
+          pip install --use-deprecated=legacy-resolver --user "$PACKAGE"
+        }
