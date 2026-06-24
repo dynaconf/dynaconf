@@ -419,12 +419,13 @@ class RollingReleaser(Releaser):
         current_version = self._cut_release(previous)
 
         major, minor, patch = Version(current_version).release
-        if patch == 0 and minor > 0:
-            # New minor release: create the X.(Y-1) maintenance branch anchored at
-            # the post-release bump of the last X.(Y-1) tag, not at the current HEAD.
-            branch = self._create_backport_branch(major, minor)
-            if branch:
-                _write_github_output("backport-branch", branch)
+        # Last tag from 3.2 is broken (not in a branch). Revert after 3.3.0 release
+        # if patch == 0 and minor > 0:
+        #     # New minor release: create the X.(Y-1) maintenance branch anchored at
+        #     # the post-release bump of the last X.(Y-1) tag, not at the current HEAD.
+        #     branch = self._create_backport_branch(major, minor)
+        #     if branch:
+        #         _write_github_output("backport-branch", branch)
 
         info("[COMMIT] Done.")
 
