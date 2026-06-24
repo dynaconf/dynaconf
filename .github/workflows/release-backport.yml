@@ -32,6 +32,7 @@ jobs:
         run: |
           # Install the release utility as a package from master so the installed
           # command is unaffected by the backport branch checkout that follows.
+          uv venv
           uv pip install .github/scripts/
       - name: Resolve backport branch
         id: branch

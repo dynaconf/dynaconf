@@ -32,6 +32,7 @@ jobs:
         run: |
           # Install the release utility as a package from master so the command
           # is always the canonical version regardless of how the workflow was triggered.
+          uv venv
           uv pip install .github/scripts/
       - name: Set up git identity
         run: |
