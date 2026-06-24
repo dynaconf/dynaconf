@@ -30,7 +30,7 @@ jobs:
           python-version: "3.9"
       - name: Install release tools
         run: |
-          uv sync --only-group release
+          uv sync --only-group release --no-lock
           # Install the release utility as a package from master so the installed
           # command is unaffected by the backport branch checkout that follows.
           uv pip install .github/scripts/
