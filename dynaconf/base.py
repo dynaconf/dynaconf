@@ -1200,10 +1200,12 @@ class Settings:
             tomlfy_filter=tomlfy_filter,
         )
 
-        # Fix for #869 - The call to getattr trigger early evaluation
-        existing = (
-            self.store.get(key, None) if not isinstance(parsed, Lazy) else None
-        )
+        # Fix for #869 - Evaluating an existing lazy value during set can
+        # fail before a complete replacement value is stored.
+        existing = None
+        if not isinstance(parsed, Lazy):
+            with suppress(AttributeError, KeyError):
+                existing = self.store.get(key, bypass_eval=True)
 
         if getattr(parsed, "_dynaconf_insert", False):
             # `@insert` calls insert in a list by index
