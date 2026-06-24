@@ -33,7 +33,6 @@ jobs:
           python-version: "3.9"
       - name: Install release tools
         run: |
-          uv sync --only-group release --no-lock
           # Install from master before switching branches so the command survives checkout.
           uv pip install .github/scripts/
       - name: Set up git identity
