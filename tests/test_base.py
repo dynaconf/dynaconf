@@ -1076,6 +1076,49 @@ def test_from_env_method(clean_env, tmpdir):
     assert settings.A_DEFAULT == "From default env"
 
 
+def test_env_override_nested_lazy_value_from_included_file(
+    clean_env, monkeypatch, tmpdir
+):
+    data_1 = {
+        "default": {
+            "from_1": "from 1",
+            "nested_from_1": {"from_1": "nested from 1"},
+        }
+    }
+    data_2 = {
+        "default": {
+            "dynaconf_include": ["configuration_1.yaml"],
+            "with_jinja_from_1": "@jinja hello {{this.from_1}}",
+            "with_jinja_from_nested_1": (
+                "@jinja hello {{this.nested_from_1.from_1}}"
+            ),
+        }
+    }
+    yaml_loader.write(str(tmpdir.join("configuration_1.yaml")), data_1)
+    yaml_loader.write(str(tmpdir.join("configuration_2.yaml")), data_2)
+
+    settings = Dynaconf(
+        settings_files=["configuration_2.yaml"],
+        environments=True,
+        root_path=str(tmpdir),
+        settings_file_required=True,
+    )
+    assert settings.with_jinja_from_1 == "hello from 1"
+    assert settings.with_jinja_from_nested_1 == "hello nested from 1"
+
+    monkeypatch.setenv(
+        "DYNACONF_with_jinja_from_nested_1", "complete override"
+    )
+    settings = Dynaconf(
+        settings_files=["configuration_2.yaml"],
+        environments=True,
+        root_path=str(tmpdir),
+        settings_file_required=True,
+    )
+
+    assert settings.with_jinja_from_nested_1 == "complete override"
+
+
 def test_envless_load_file(tmpdir):
     """Ensure passing settings.load_file accepts env argument.
 
