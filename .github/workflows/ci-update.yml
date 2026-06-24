@@ -34,19 +34,20 @@ jobs:
       - name: Install release tools
         run: |
           # Install from master before switching branches so the command survives checkout.
-          uv tool install .github/scripts/
+          uv sync --only-group release
+          uv pip install .github/scripts/
       - name: Set up git identity
         run: |
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
       - name: Create sync PRs
         run: |
-          BRANCHES=$(release-utility get backport-branches)
+          BRANCHES=$(uv run release-utility get backport-branches)
           for BRANCH in $BRANCHES; do
             SYNC_BRANCH="bot/ci_update/$BRANCH"
             # Create or force-reset the sync branch to the remote backport branch tip.
             git checkout -B "$SYNC_BRANCH" "origin/$BRANCH"
-            if ! release-utility update-github; then
+            if ! uv run release-utility update-github; then
               echo "No .github/ changes for $BRANCH, skipping"
               continue
             fi
