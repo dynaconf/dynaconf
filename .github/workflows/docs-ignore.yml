@@ -1,0 +1,26 @@
+# This overrides main.yml when doc-only changes or tag pushed are made.
+#
+# Because the workflow "CI" is required, that is, it cannot be skipped,
+# we use this placeholder workflow to bypass the required-check.
+# see: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/troubleshooting-required-status-checks#handling-skipped-but-required-checks
+
+name: CI
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches: [master]
+    paths:  # run only if one of these is modified
+      - "docs/**"
+      - "mkdocs.yml"
+
+  pull_request:
+    branches: [master]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - run: 'echo "No build required"'

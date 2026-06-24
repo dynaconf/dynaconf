@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dynaconf-release-utility"
+version = "0"
+requires-python = ">=3.9"
+dependencies = ["bump-my-version", "git-changelog", "packaging"]
+
+[project.scripts]
+release-utility = "release_utility:main"
+
+[tool.hatch.build.targets.wheel]
+include = ["release_utility.py"]

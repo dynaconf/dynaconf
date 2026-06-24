@@ -1,0 +1,61 @@
+name: Rolling Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected-release:
+        description: "Expected next release version. Must match the version calculated from main."
+        required: true
+        type: string
+
+jobs:
+  rolling-release:
+    name: "Validate, commit, and push release"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+      - uses: actions/checkout@v7
+        with:
+          ref: master
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.2.0
+        with:
+          python-version: "3.9"
+      - name: Install release tools
+        run: |
+          # Install the release utility as a package from master so the command
+          # is always the canonical version regardless of how the workflow was triggered.
+          uv sync --only-group release
+          uv pip install .github/scripts/
+      - name: Set up git identity
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
+      - name: Validate release
+        run: |
+          uv run release-utility validate "${{ inputs.expected-release }}"
+      - name: Create release commits
+        id: release
+        run: |
+          # For new minor releases (X.Y.0), sets the 'backport-branch' output with the
+          # name of the X.(Y-1) maintenance branch created locally (e.g. '3.5' after 3.6.0).
+          # Not set for patch releases.
+          uv run release-utility rolling-release -y
+      - name: Push release
+        run: |
+          # --atomic ensures all refs land together or none do.
+          # master: the release commit + post-release bump commit.
+          # tag: the annotated release tag created locally by rolling-release.
+          # backport branch: only pushed for new minor releases (X.(Y-1) branch).
+          REFS="master refs/tags/${{ inputs.expected-release }}"
+          if [[ -n "${{ steps.release.outputs.backport-branch }}" ]]; then
+            REFS="$REFS ${{ steps.release.outputs.backport-branch }}"
+          fi
+          git push --atomic origin $REFS  # intentional word-splitting on space-separated refs
