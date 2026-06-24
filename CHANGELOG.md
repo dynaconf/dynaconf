@@ -2,6 +2,102 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.3.0](https://github.com/dynaconf/dynaconf/releases/tag/3.3.0) - 2026-06-24
+
+### Bug Fixes
+
+- Fix index merge padding scalar lists with empty lists instead of None (#1380). *By Sarath Francis*.
+- raise FileNotFoundError from load_file on missing path when silent=False. *By Sai Asish Y*.
+- support Redis URL scheme for TLS connections (#1343). *By Varun Chawla*.
+- support async contexts. *By Bruno Rocha*.
+- codacy suggestions. *By Bruno Rocha*.
+- more improvements on edge cases of converters. *By Bruno Rocha*.
+- Extra improvements on converters. *By Bruno Rocha*.
+- Replace regex on read_file converter. *By Bruno Rocha*.
+- replace regex with simple if on get converter. *By Bruno Rocha*.
+- 1307 run fix_absolute_urls eagerly for Django. *By Bruno Rocha*.
+- make DataDict.__dir__ compatible with Box. *By Pedro Brochado*.
+- get method to return Any type. (#1315). *By Bruno Cesar Rocha*.
+- remove unnecessary recursive evaluation call on Settings.get. *By Pedro Brochado*.
+- `-k` must exit code 1 when key do not exist (#1293). *By Bruno Rocha*.
+- use sys.argv instead of click.get_os_args (#1292). *By Bruno Rocha*.
+- make raw variables private (#1287). *By Fabricio Aguiar*.
+- Better way for CLI to find the Django Settings. *By Bruno Rocha*.
+- handle empty hooks and boolean environments.. *By Bruno Rocha*.
+- Hotfix hook collector to avoid eager evaluation. (#1255) (#1256). *By Bruno Rocha*.
+- Ensure an error is raised when loading files with syntax errors (#1243). *By Pedro Brochado*.
+- using merge with comma separated values will infer type [port of #1240]. *By Bruno Rocha*.
+- Handle `@insert` with `-1`. *By Bruno Rocha*.
+- Redis loader must handle an empty prefix. *By Bruno Rocha*.
+- Ensure CLI can load settings from a base DJANGO_SETTINGS_MODULE. *By Bruno Rocha*.
+- When `--json` is used in CLI list, does not print `django app detected`. *By Bruno Rocha*.
+- when using load_file method, inspect will save module:linenumber from the caller.. *By Bruno Rocha*.
+- Implement repr for combined validators (#1200). *By Bruno Rocha*.
+- lazy validator's default value would evalute early (#1197). *By Pedro Brochado*.
+- Fixed an error that would raise when using get_history() with lazy values (#1184). *By Pedro Brochado*.
+- del attr wouldnt work with lowercase (#1168). *By Pedro Brochado*.
+- Improve performance of Access Hooks (#1164). *By Bruno Rocha*.
+- Ignore if file doesn't exist (#1159). *By Bruno Rocha*.
+- Enable merge on settings.populate_obj (#1118). *By Bruno Rocha*.
+- Add Django 5 transformation of STATIC_URL (#1117). *By Bruno Rocha*.
+- Allow disabling transformation of dict to Dynabox (#1115). *By Bruno Rocha*.
+- Support Nested Subtypes and Enclosed types (#1109). *By Bruno Rocha*.
+- #1088 fresh vars definition case insensitive (#1091). *By Bruno Rocha*.
+- Allow multiple validators with cast for the same field (#1080). *By Bruno Rocha*.
+- Stop converting default when is_type_of is set to str (#1066). *By Bruno Rocha*.
+
+### Features
+
+- add Settings-level caching mechanism. *By Pedro Brochado*.
+- Add `@read_file` converter (#1291). *By Bruno Rocha*.
+- envless load file (#1295). *By Bruno Rocha*.
+- Run CLI as module with `python -m dynaconf` (#1290). *By Bruno Rocha*.
+- Migrate project to pyproject.toml for modern Python packaging (#1269). *By Pedro Brochado*.
+- Add CLI command `inspect -m debug` (#1251) (#1254). *By Bruno Rocha*.
+- Add support for decorated hooks on settings files (#1246) (#1249). *By Bruno Rocha*.
+- populate_obj now takes convert_to_dict (#1238). *By Bruno Rocha*.
+- Allow multiple current_envs at the same time. *By Bruno Rocha*.
+- Allow loading envvars from multiple prefixes in order. *By Bruno Rocha*.
+- populate_obj now allow filtering out internal attributes.. *By Bruno Rocha*.
+- Add `@insert` token to trigger list.insert. *By Bruno Rocha*.
+- Implement items_validators and more complete type checking. *By Bruno Rocha*.
+- Add Typed Settings support (tech preview) (#1107). *By Bruno Rocha*.
+- dynaconf list with `--json` will print valid JSON to stdout (#1106). *By Bruno Rocha*.
+- Add VAULT_TOKEN_RENEW_FOR_DYNACONF config/code (#1094). *By Bruno Bonfils*.
+
+### Docs
+
+- Fix broken links and wrong merge behavior. *By Pedro Brochado*.
+- Some basic doco typos/updates. (#1316). *By Jason Lingohr*.
+- clarification on redis hash title when using custom envvar prefixes (#1266). *By FM-17*.
+- Docs for `@insert`, Multiple envvar_prefixes and composed current envs. *By Bruno Rocha*.
+- Fix missing quote in doc (#1100). *By kgolawski*.
+- Add section about new release-process and improve overall docs structure (#1096). *By Pedro Brochado*.
+
+### Chore
+
+- disable backport creation for 3.3.0 release only. *By Pedro Brochado*.
+- go back to using uv sync + uv run. *By Pedro Brochado*.
+- update to use uv tool install. *By Pedro Brochado*.
+- add missing venv creation to uv install. *By Pedro Brochado*.
+- remove unnecessary uv install from workflows. *By Pedro Brochado*.
+- don't generate uv.lock for release/publish workflows. *By Pedro Brochado*.
+- add new release 'framework' to the CI. *By Pedro Brochado*.
+- fix linting errors. *By Pedro Brochado*.
+- add pylint(errors) ruff rule and fixed in code. *By vyuroshchin*.
+- refactor CI workflows into reusable components (#1359). *By Pedro Brochado*.
+- refactor release workflow into reusable components. *By Pedro Brochado*.
+- update precommit versions and fix warnings (#1351). *By Vladimir*.
+- Preparations for 3.3.0 release (#1344). *By Pedro Brochado*.
+- update bench script and scenarios. *By Pedro Brochado*.
+- round up the bench_tool and scenarios implementation. *By Pedro Brochado*.
+- implement proper setup for timeit. *By Pedro Brochado*.
+- Update python versions usage on metadata and CI (#1281). *By Pedro Brochado*.
+- Install dynaconf from distribution wheels used by 'make dist'. *By Pedro Brochado*.
+- Improve package build robustness. *By Pedro Brochado (aider)*.
+- ensure JSON can be inserted using `@insert`. *By Bruno Rocha*.
+- Add workflow to publish docs to netlify (#1079). *By Pedro Brochado*.
+
 ## [3.2.5](https://github.com/dynaconf/dynaconf/releases/tag/3.2.5) - 2024-03-18
 
 ### Bug Fixes
