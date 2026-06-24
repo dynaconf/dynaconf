@@ -32,22 +32,21 @@ jobs:
         run: |
           # Install the release utility as a package from master so the command
           # is always the canonical version regardless of how the workflow was triggered.
-          uv venv
-          uv pip install .github/scripts/
+          uv tool install .github/scripts/
       - name: Set up git identity
         run: |
           git config user.name "${{ github.actor }}"
           git config user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
       - name: Validate release
         run: |
-          uv run release-utility validate "${{ inputs.expected-release }}"
+          release-utility validate "${{ inputs.expected-release }}"
       - name: Create release commits
         id: release
         run: |
           # For new minor releases (X.Y.0), sets the 'backport-branch' output with the
           # name of the X.(Y-1) maintenance branch created locally (e.g. '3.5' after 3.6.0).
           # Not set for patch releases.
-          uv run release-utility rolling-release -y
+          release-utility rolling-release -y
       - name: Push release
         run: |
           # --atomic ensures all refs land together or none do.
