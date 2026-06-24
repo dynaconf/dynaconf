@@ -11,12 +11,12 @@ on:
         description: 'Minimal set of Python versions to test'
         required: false
         type: string
-        default: '["3.9", "3.13"]'
+        default: '["3.10", "3.13"]'
       python_full:
         description: 'Full set of Python versions to test'
         required: false
         type: string
-        default: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
+        default: '["3.10", "3.11", "3.12", "3.13"]'
       python_latest:
         description: 'Latest Python version'
         required: false

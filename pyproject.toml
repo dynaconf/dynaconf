@@ -11,7 +11,7 @@ authors = [
     {name = "Bruno Rocha", email = "rochacbruno@gmail.com"},
 ]
 license = {text = "MIT"}
-requires-python = ">=3.9,<3.14"
+requires-python = ">=3.10,<3.14"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Django",
@@ -23,7 +23,6 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -101,7 +100,7 @@ ba = "ba"
 # ====
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 79
 exclude = ["dynaconf/vendor*"]
 
@@ -256,7 +255,7 @@ optional_value = "final"
 # ===
 
 [tool.tox]
-envlist = ["py39", "py310", "py311", "py312", "py313"]
+envlist = ["py310", "py311", "py312", "py313"]
 whitelist_externals = ["make"]
 
 [tool.tox.testenv]

@@ -7,6 +7,7 @@ import os
 import re
 import warnings
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import contextmanager
 from contextlib import suppress
 from dataclasses import dataclass
@@ -15,7 +16,6 @@ from functools import lru_cache
 from functools import wraps
 from pathlib import Path
 from typing import Any
-from typing import Callable
 from typing import Optional
 from typing import Union
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from collections.abc import Callable
 from collections.abc import Sequence
 from contextlib import suppress
 from copy import deepcopy
 from itertools import chain
 from types import MappingProxyType
 from typing import Any
-from typing import Callable
 from typing import get_args
 from typing import TYPE_CHECKING
 

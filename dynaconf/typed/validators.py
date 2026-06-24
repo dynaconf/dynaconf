@@ -1,8 +1,8 @@
 from __future__ import annotations  # WARNING: remove this when debugging
 
+from collections.abc import Callable
 from collections.abc import Sequence
 from typing import Any
-from typing import Callable
 
 from dynaconf.utils.functional import Empty
 from dynaconf.utils.functional import empty

@@ -2,11 +2,9 @@ from __future__ import annotations
 
 # WARNING: remove the import above when debugging on Python 3.12
 # otherwise type annotations will be stringified.
-import sys
 from dataclasses import asdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 from typing import cast
 
 from dynaconf.base import LazySettings
@@ -20,10 +18,7 @@ from . import types as ty
 from . import utils as ut
 from .compat import get_annotations
 
-if sys.version_info < (3, 10):
-    dclass_args: dict[str, Any] = {}
-else:
-    dclass_args = {"kw_only": True}
+dclass_args = {"kw_only": True}
 
 
 @dataclass(**dclass_args)

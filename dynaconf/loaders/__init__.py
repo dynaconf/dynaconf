@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import importlib
 import os
+from collections.abc import Callable
 from contextlib import suppress
-from typing import Callable
 from typing import TYPE_CHECKING
 
 from dynaconf import constants as ct

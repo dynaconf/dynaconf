@@ -39,8 +39,8 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       dist-artifact: ${{ needs.build.outputs.dist-artifact }}
-      python_minimal: '["3.9", "3.13"]'
-      python_full: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
+      python_minimal: '["3.10", "3.13"]'
+      python_full: '["3.10", "3.11", "3.12", "3.13"]'
       python_latest: '3.13'
     secrets: inherit
 
