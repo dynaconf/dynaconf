@@ -30,12 +30,11 @@ jobs:
         run: |
           # Install the release utility as a package from master so the command
           # is always the canonical version regardless of how the workflow was triggered.
-          uv venv
-          uv pip install .github/scripts/
+          uv tool install .github/scripts/
       - name: Detect release type
         id: release-type
         run: |
-          TYPE=$(uv run release-utility get release-type "${{ inputs.release-tag || github.ref_name }}")
+          TYPE=$(release-utility get release-type "${{ inputs.release-tag || github.ref_name }}")
           echo "value=$TYPE" >> "$GITHUB_OUTPUT"
       - name: Check out release tag
         run: |
@@ -43,14 +42,14 @@ jobs:
       - name: Validate release
         run: |
           if [[ "${{ steps.release-type.outputs.value }}" == "backport" ]]; then
-            uv run release-utility validate --pre-publish --backport "${{ inputs.release-tag || github.ref_name }}"
+            release-utility validate --pre-publish --backport "${{ inputs.release-tag || github.ref_name }}"
           else
-            uv run release-utility validate --pre-publish "${{ inputs.release-tag || github.ref_name }}"
+            release-utility validate --pre-publish "${{ inputs.release-tag || github.ref_name }}"
           fi
       - name: Check if latest release
         id: is-latest
         run: |
-          VALUE=$(uv run release-utility get is-latest "${{ inputs.release-tag || github.ref_name }}")
+          VALUE=$(release-utility get is-latest "${{ inputs.release-tag || github.ref_name }}")
           echo "value=$VALUE" >> "$GITHUB_OUTPUT"
 
   build-dist:
