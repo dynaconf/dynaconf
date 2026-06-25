@@ -54,10 +54,10 @@ class DataDict(dict):
         convert_containers(self, self.items(), core)
 
     def update(self, data):
-        super().update(ensure_containers(data, self.__meta__.core))
+        super().update(data)
 
     def setdefault(self, k, v):
-        return super().setdefault(k, ensure_containers(v, self.__meta__.core))
+        return super().setdefault(k, v)
 
     def copy(self, bypass_eval=False):
         if not bypass_eval:
@@ -121,8 +121,7 @@ class DataDict(dict):
             )
 
     def __setitem__(self, k, v):
-        result = ensure_containers(v, self.__meta__.core)
-        super().__setitem__(k, result)
+        super().__setitem__(k, v)
 
     def __setattr__(self, k, v):
         # NOTE: We shouldnt use setattr to store items. If an item was assigned with setatttr
@@ -410,27 +409,9 @@ class DataList(list):
     def copy(self):
         return DataList((x for x in self), core=self.__meta__.core)
 
-    def append(self, v):
-        super().append(ensure_containers(v, self.__meta__.core))
-
-    def insert(self, i, v):
-        super().insert(i, ensure_containers(v, self.__meta__.core))
-
-    def extend(self, data):
-        super().extend(ensure_containers(data, self.__meta__.core))
-
     def __getitem__(self, index):
         result = super().__getitem__(index)
         return recursively_evaluate_lazy_format(result, self.__meta__.core)
-
-    def __setitem__(self, k, v):
-        super().__setitem__(k, ensure_containers(v, self.__meta__.core))
-
-    def __add__(self, v):
-        return super().__add__(ensure_containers(v, self.__meta__.core))
-
-    def __iadd__(self, v):
-        return super().__iadd__(ensure_containers(v, self.__meta__.core))
 
     def __repr__(self):
         # NOTE: debatable choice: same representation of list
@@ -802,17 +783,6 @@ def recursively_evaluate_lazy_format(value, settings):
 
     return value
 
-
-def ensure_containers(data, core):
-    # NOTE: this is to ensure that the nodes nested dict and lists are always
-    # converted to DataDict and DataList. However, that change is not compatible
-    # with what we had with DynaBox/BoxList. Leaving here for awareness.
-    #
-    # if data.__class__ is dict:
-    #     return DataDict(data, core=core)
-    # elif data.__class__ is list:
-    #     return DataList(data, core=core)
-    return data
 
 
 def box_deprecation_warning(
