@@ -11,6 +11,8 @@ from dynaconf import ValidationError
 from dynaconf import Validator
 from dynaconf.validator import ValidatorList
 
+pytestmark = pytest.mark.usefixtures("no_deprecations")
+
 TOML = """
 [default]
 EXAMPLE = true

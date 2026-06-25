@@ -447,7 +447,7 @@ class TestBoxCompatibility:
             method = getattr(DataList, method_name)
             assert method(filename=filename) == test_data
 
-    def test_box_list_copying(self, deprecated_context):
+    def test_box_list_copying(self):
         test_data = [{"a": [1, 2, 3]}, {"a": [4, 5, 6]}]
         datalist_origin = DataList(test_data)
         boxlist_origin = BoxList(test_data)

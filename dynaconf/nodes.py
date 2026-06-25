@@ -171,15 +171,7 @@ class DataDict(dict):
         box_deprecation_warning(
             "to_dict", "DataDict", "Use dict(data_dict) instead."
         )  # pragma: nocover
-        out_dict = dict(self)
-        for k, v in out_dict.items():
-            if v is self:
-                out_dict[k] = out_dict
-            elif isinstance(v, DataDict):
-                out_dict[k] = v.to_dict()
-            elif isinstance(v, DataList):
-                out_dict[k] = v.to_list()
-        return out_dict
+        return ut.to_dict(self)
 
     def merge_update(self, __m=None, **kwargs):  # pragma: nocover
         """Merge update with another dict"""
@@ -408,20 +400,22 @@ class DataList(list):
         # NOTE: debatable choice: same representation of list
         return f"{list(self)!r}"
 
-    # Box compatibility. Remove in 4.0
-
     def __copy__(self):  # pragma: nocover
-        box_deprecation_warning("__copy__", "DataList")
+        # Not part of the plain list API, but needed to propagate core.
+        # Consider removing in the future if we can
         return self.copy()
 
     def __deepcopy__(self, memo=None):  # pragma: nocover
-        box_deprecation_warning("__deepcopy__", "DataList")
+        # Not part of the plain list API, but needed to propagate core.
+        # Consider removing in the future if we can
         out = self.__class__(core=self.__meta__.core)
         memo = memo or {}
         memo[id(self)] = out
         for k in self:
             out.append(copy.deepcopy(k, memo=memo))
         return out
+
+    # Box compatibility. Remove in 4.0
 
     def to_list(self):  # pragma: nocover
         """
@@ -432,17 +426,7 @@ class DataList(list):
         box_deprecation_warning(
             "to_list", "DataList", "Use list(data_list) instead."
         )
-        new_list = []
-        for x in self:
-            if x is self:
-                new_list.append(new_list)
-            elif isinstance(x, DataDict):
-                new_list.append(x.to_dict())
-            elif isinstance(x, DataList):
-                new_list.append(x.to_list())
-            else:
-                new_list.append(x)
-        return new_list
+        return ut.to_dict(self)
 
     def to_json(
         self,

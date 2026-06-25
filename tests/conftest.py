@@ -3,12 +3,20 @@ from __future__ import annotations
 import copy
 import os
 import sys
+import warnings
 from pathlib import Path
 from textwrap import dedent
 
 import pytest
 
 from dynaconf.base import LazySettings
+
+
+@pytest.fixture
+def no_deprecations():
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", DeprecationWarning)
+        yield
 
 
 @pytest.fixture(scope="module")

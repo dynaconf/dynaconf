@@ -40,6 +40,7 @@ from dynaconf.utils import missing
 from dynaconf.utils import normalize_kwargs
 from dynaconf.utils import object_merge
 from dynaconf.utils import RENAMED_VARS
+from dynaconf.utils import to_dict
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import glob
@@ -502,7 +503,7 @@ class Settings:
         """
         ctx_mgr = suppress() if env is None else self.using_env(env)
         with ctx_mgr:
-            data = self.store.to_dict().copy()
+            data = to_dict(self.store)
             # if not internal remove internal settings
             if not internal:
                 for name in UPPER_DEFAULT_SETTINGS:
@@ -787,7 +788,7 @@ class Settings:
             new_data.update(
                 {
                     key: value
-                    for key, value in self.store.to_dict().copy().items()
+                    for key, value in to_dict(self.store).items()
                     if key.isupper() and key not in RENAMED_VARS
                 }
             )

@@ -4,6 +4,8 @@ import pytest
 
 from dynaconf.base import LazySettings
 
+pytestmark = pytest.mark.usefixtures("no_deprecations")
+
 TOML = """
 [default]
 dynaconf_include = ["plugin1.toml", "plugin2.toml", "plugin2.toml"]
