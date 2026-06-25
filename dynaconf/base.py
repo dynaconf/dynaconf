@@ -1205,7 +1205,10 @@ class Settings:
         existing = None
         if not isinstance(parsed, Lazy):
             with suppress(AttributeError, KeyError):
-                existing = self.store.get(key, bypass_eval=True)
+                if isinstance(self.store, DataDict):
+                    existing = self.store.get(key, bypass_eval=True)
+                else:
+                    existing = self.store.get(key)
 
         if getattr(parsed, "_dynaconf_insert", False):
             # `@insert` calls insert in a list by index
