@@ -101,7 +101,7 @@ def test_annotated_with_dictvalue():
         # This is not allowed, should add validators on the dictvalue type itself
         plug: Annotated[Plugin, Validator(contains="name")]
 
-    msg = r"plug.name must is_type_of.+Union\[str, int]"
+    msg = r"plug.name must is_type_of.+(Union\[str, int]|str \| int)"
     with pytest.raises(ValidationError, match=msg):
         Settings(plug={"name": 4.2})
 
@@ -161,7 +161,7 @@ def test_union_enclosed_type_validates_type(monkeypatch):
 
     with monkeypatch.context() as m:
         m.setenv("DYNACONF_NUMBERS", '["banana"]')
-        msg = r"numbers must is_type_of list\[typing.Union\[int, float, bool]]"
+        msg = r"numbers must is_type_of list\[(typing\.Union\[int, float, bool]|int \| float \| bool)]"
         with pytest.raises(ValidationError, match=msg):
             Settings()
 
@@ -1116,7 +1116,7 @@ def test_list_enclosed_type_with_optional():
 
     with pytest.raises(
         ValidationError,
-        match=r"colors must is_type_of.+Optional\[str]",
+        match=r"colors must is_type_of.+(Optional\[str]|str \| None)",
     ):
         Settings(colors=["red", "#123", 3])
 
