@@ -53,12 +53,6 @@ class DataDict(dict):
         self.__meta__ = NodeMetadata(core=core)
         convert_containers(self, self.items(), core)
 
-    def update(self, data):
-        super().update(data)
-
-    def setdefault(self, k, v):
-        return super().setdefault(k, v)
-
     def copy(self, bypass_eval=False):
         if not bypass_eval:
             return self.__class__(
@@ -119,9 +113,6 @@ class DataDict(dict):
             yield from (
                 (k, self.get(k, bypass_eval=True)) for k in self.keys()
             )
-
-    def __setitem__(self, k, v):
-        super().__setitem__(k, v)
 
     def __setattr__(self, k, v):
         # NOTE: We shouldnt use setattr to store items. If an item was assigned with setatttr
@@ -782,7 +773,6 @@ def recursively_evaluate_lazy_format(value, settings):
         )
 
     return value
-
 
 
 def box_deprecation_warning(
