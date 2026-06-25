@@ -6,6 +6,7 @@ from collections import namedtuple
 import pytest
 
 from dynaconf.base import DynaconfCore
+from dynaconf.nodes import AccessError
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
 from dynaconf.nodes import DynaconfNotInitialized
@@ -188,57 +189,129 @@ DataDict and Datalist. We may wanna do that, but it breaks behavior.
 """
 
 
-@pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
-def test_dict_methods():
-    core = DynaconfCore("test")
-    di = DataDict(core=core)
+class TestDataDict:
+    @pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
+    def test_dict_methods(self):
+        core = DynaconfCore("test")
+        di = DataDict(core=core)
 
-    data0 = {"a": [1, {"b": [2]}]}
-    data1 = {"c": [3, {"d": [4]}]}
+        data0 = {"a": [1, {"b": [2]}]}
+        data1 = {"c": [3, {"d": [4]}]}
 
-    def assert_fn(container):
-        assert container.__class__ in (DataDict, DataList)
-        assert get_core(container) == core
+        def assert_fn(container):
+            assert container.__class__ in (DataDict, DataList)
+            assert get_core(container) == core
 
-    di["a"] = data0["a"]
-    recursive_walk(di, assert_fn)
+        di["a"] = data0["a"]
+        recursive_walk(di, assert_fn)
 
-    di.update(data1)
-    recursive_walk(di, assert_fn)
+        di.update(data1)
+        recursive_walk(di, assert_fn)
 
-    popped = di.pop("a")
-    assert isinstance(popped, DataList)
+        popped = di.pop("a")
+        assert isinstance(popped, DataList)
 
-    d_copy = di.copy()
-    assert isinstance(d_copy, DataDict)
-    di.clear()
-    assert len(di) == 0
+        d_copy = di.copy()
+        assert isinstance(d_copy, DataDict)
+        di.clear()
+        assert len(di) == 0
+
+    def test_items(self):
+        di = DataDict({"a": 1, "b": 2})
+        assert len(list(di.items())) == 2
+        assert len(list(di.items(bypass_eval=True))) == 2
+        assert dict(di.items(bypass_eval=True)) == {"a": 1, "b": 2}
+
+    def test_delitem(self):
+        di = DataDict({"a": 1, "b": 2})
+        del di["a"]
+        assert "a" not in di
+        assert len(di) == 1
+
+    def test_delitem_case_insensitive(self):
+        di = DataDict({"FOO": 1})
+        del di["foo"]
+        assert len(di) == 0
+
+    def test_delattr(self):
+        di = DataDict({"a": 1})
+        del di.a
+        assert len(di) == 0
+
+    def test_contains(self):
+        di = DataDict({"FOO": 1, "bar": 2})
+        assert "FOO" in di
+        assert "foo" in di
+        assert "BAR" in di
+        assert "missing" not in di
+
+    def test_getattr_missing_raises(self):
+        di = DataDict({"a": 1})
+        with pytest.raises(AccessError):
+            _ = di.nonexistent_key
 
 
-@pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
-def test_list_methods():
-    li = DataList()
+class TestDataList:
+    @pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
+    def test_list_methods(self):
+        li = DataList()
 
-    li.append({"x": 1})
-    assert isinstance(li[0], DataDict)
+        li.append({"x": 1})
+        assert isinstance(li[0], DataDict)
 
-    li.extend([{"y": 2}, [1, 2]])
-    assert isinstance(li[1], DataDict)
-    assert isinstance(li[2], DataList)
+        li.extend([{"y": 2}, [1, 2]])
+        assert isinstance(li[1], DataDict)
+        assert isinstance(li[2], DataList)
 
-    li.insert(0, {"z": 3})
-    assert isinstance(li[0], DataDict)
+        li.insert(0, {"z": 3})
+        assert isinstance(li[0], DataDict)
 
-    popped = li.pop()
-    assert isinstance(popped, DataList)
+        popped = li.pop()
+        assert isinstance(popped, DataList)
 
-    li[1:1] = [{"w": 4}]
-    assert isinstance(li[1], DataDict)
+        li[1:1] = [{"w": 4}]
+        assert isinstance(li[1], DataDict)
 
-    d_copy = li.copy()
-    assert isinstance(d_copy, DataList)
-    li.clear()
-    assert len(li) == 0
+        d_copy = li.copy()
+        assert isinstance(d_copy, DataList)
+        li.clear()
+        assert len(li) == 0
+
+    def test_append(self):
+        li = DataList()
+        li.append(1)
+        assert list(li) == [1]
+
+    def test_insert(self):
+        li = DataList([1, 3])
+        li.insert(1, 2)
+        assert list(li) == [1, 2, 3]
+
+    def test_extend(self):
+        li = DataList([1])
+        li.extend([2, 3])
+        assert list(li) == [1, 2, 3]
+
+    def test_copy(self):
+        li = DataList([1, 2, 3])
+        li_copy = li.copy()
+        assert isinstance(li_copy, DataList)
+        assert list(li_copy) == [1, 2, 3]
+        assert li_copy is not li
+
+    def test_setitem(self):
+        li = DataList([1, 2, 3])
+        li[1] = 99
+        assert li[1] == 99
+
+    def test_add(self):
+        x = DataList(["a"])
+        assert list(x + ["b"]) == ["a", "b"]
+
+    def test_iadd(self):
+        li = DataList([1])
+        li += [2, 3]
+        assert list(li) == [1, 2, 3]
 
 
 def test_nested_structures():

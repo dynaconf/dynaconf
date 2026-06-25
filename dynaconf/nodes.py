@@ -115,7 +115,10 @@ class DataDict(dict):
     def items(self, bypass_eval=False):
         if not bypass_eval:
             yield from super().items()
-        yield from ((k, self.get(k, bypass_eval=True)) for k in self.keys())
+        else:
+            yield from (
+                (k, self.get(k, bypass_eval=True)) for k in self.keys()
+            )
 
     def __setitem__(self, k, v):
         result = ensure_containers(v, self.__meta__.core)
@@ -424,7 +427,7 @@ class DataList(list):
         super().__setitem__(k, ensure_containers(v, self.__meta__.core))
 
     def __add__(self, v):
-        super().__add__(ensure_containers(v, self.__meta__.core))
+        return super().__add__(ensure_containers(v, self.__meta__.core))
 
     def __iadd__(self, v):
         return super().__iadd__(ensure_containers(v, self.__meta__.core))
