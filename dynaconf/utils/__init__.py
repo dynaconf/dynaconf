@@ -141,6 +141,16 @@ def object_merge(
                         full_path=full_path[1:] if full_path else None,
                         list_merge=list_merge,
                     )
+
+            # Restore old key order: keys that exist in old keep old's
+            # relative order; keys that are new-only come last.
+            old_keys = list(safe_items(old))
+            old_key_set = {k for k, _ in old_keys}
+            new_only = [k for k in new if k not in old_key_set]
+            ordered = [k for k, _ in old_keys if k in new] + new_only
+            for k in ordered:
+                new[k] = new.pop(k)
+
         handle_metavalues(old, new, list_merge=list_merge)
 
     return new

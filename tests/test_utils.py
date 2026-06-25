@@ -305,6 +305,25 @@ def test_merge_existing_dict():
     assert new == {"host": "localhost", "port": 666, "user": "admin"}
 
 
+def test_merge_dict_preserves_old_key_order():
+    # When merging old into new (which contains only a subset of old's keys),
+    # the resulting dict must retain old's key order.  Previously, keys that
+    # existed in new were kept at the front while old-only keys were appended,
+    # causing sibling keys to be reordered.  See #1183.
+    old = {"a": 1, "b": 2, "c": 3}
+    new = {"b": 99}  # only the middle key is updated
+    object_merge(old, new)
+    assert list(new.keys()) == ["a", "b", "c"]
+    assert new == {"a": 1, "b": 99, "c": 3}
+
+    # Keys genuinely new to `new` (not in old) are placed at the end.
+    old2 = {"x": 10, "y": 20}
+    new2 = {"z": 30, "x": 99}
+    object_merge(old2, new2)
+    assert list(new2.keys()) == ["x", "y", "z"]
+    assert new2 == {"x": 99, "y": 20, "z": 30}
+
+
 def test_merge_dict_with_meta_values(settings):
     existing = {"A": 1, "B": 2, "C": 3}
     new = {
