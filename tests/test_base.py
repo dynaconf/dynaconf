@@ -158,8 +158,8 @@ def test_populate_obj_convert_to_dict(settings):
     # now make sure convert_to_dict=True brings in dict and list
     obj = Obj()
     settings.populate_obj(obj, convert_to_dict=True)
-    assert isinstance(obj.ADICT, dict)
-    assert isinstance(obj.ALIST, list)
+    assert type(obj.ADICT) is dict
+    assert type(obj.ALIST) is list
 
 
 def test_call_works_as_get(settings):

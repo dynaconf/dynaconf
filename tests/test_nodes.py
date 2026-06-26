@@ -17,6 +17,8 @@ from dynaconf.utils import data_print
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.box import BoxList
 
+pytestmark = pytest.mark.usefixtures("no_deprecations")
+
 # DynaBox compatibility tests
 # Copied from tests/test_dynabox.py
 

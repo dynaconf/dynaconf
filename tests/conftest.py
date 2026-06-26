@@ -15,7 +15,9 @@ from dynaconf.base import LazySettings
 @pytest.fixture
 def no_deprecations():
     with warnings.catch_warnings():
-        warnings.simplefilter("error", DeprecationWarning)
+        warnings.filterwarnings(
+            "error", category=DeprecationWarning, module="dynaconf"
+        )
         yield
 
 

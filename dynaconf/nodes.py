@@ -426,6 +426,7 @@ class DataList(list):
         box_deprecation_warning(
             "to_list", "DataList", "Use list(data_list) instead."
         )
+        # to_dict recursively converts to both dicts and lists
         return ut.to_dict(self)
 
     def to_json(
