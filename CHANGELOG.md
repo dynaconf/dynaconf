@@ -2,6 +2,22 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.3.1](https://github.com/dynaconf/dynaconf/releases/tag/3.3.1) - 2026-06-26
+
+### Bug Fixes
+
+- Remove call to deprecated functions on public APIs (#1404). *By Pedro Brochado*.
+- Improve converage of DataList and DataDict (#1403). *By Pedro Brochado*.
+- support Python 3.14 Union type repr and dict iteration changes. *By Pedro Brochado*.
+- preserve nested dict key order when object_merge merges old into new. *By Vincent Gao*.
+- prevent RecursionError on dotted set with bracket in first segment. *By Sarath Francis*.
+
+### Chore
+
+- Remove support for EOL python 3.9 (#1396). *By Pedro Brochado*.
+- Add support for python 3.14. *By Pedro Brochado*.
+- bump version to 3.3.1-dev0. *By pedro-psb*.
+
 ## [3.3.0](https://github.com/dynaconf/dynaconf/releases/tag/3.3.0) - 2026-06-24
 
 ### Bug Fixes
