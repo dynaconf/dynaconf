@@ -17,6 +17,8 @@ from dynaconf.utils import data_print
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.vendor.box import BoxList
 
+pytestmark = pytest.mark.usefixtures("no_deprecations")
+
 # DynaBox compatibility tests
 # Copied from tests/test_dynabox.py
 
@@ -447,7 +449,7 @@ class TestBoxCompatibility:
             method = getattr(DataList, method_name)
             assert method(filename=filename) == test_data
 
-    def test_box_list_copying(self, deprecated_context):
+    def test_box_list_copying(self):
         test_data = [{"a": [1, 2, 3]}, {"a": [4, 5, 6]}]
         datalist_origin = DataList(test_data)
         boxlist_origin = BoxList(test_data)

@@ -14,6 +14,8 @@ from dynaconf.typed import Options
 from dynaconf.typed import ValidationError
 from dynaconf.typed import Validator
 
+pytestmark = pytest.mark.usefixtures("no_deprecations")
+
 
 def test_immediate_validation():
     class Settings(Dynaconf):

@@ -12,6 +12,8 @@ from dynaconf.loaders.env_loader import load
 from dynaconf.loaders.env_loader import load_from_env
 from dynaconf.loaders.env_loader import write
 
+pytestmark = pytest.mark.usefixtures("no_deprecations")
+
 # GLOBAL ENV VARS
 environ["DYNACONF_HOSTNAME"] = "host.com"
 environ["DYNACONF_PORT"] = "@int 5000"

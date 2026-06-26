@@ -5,6 +5,8 @@ import pytest
 
 from dynaconf import Dynaconf
 
+pytestmark = pytest.mark.usefixtures("no_deprecations")
+
 
 @pytest.fixture
 def file_factory(tmp_path: Path):

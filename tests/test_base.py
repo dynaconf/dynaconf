@@ -14,7 +14,10 @@ from dynaconf.loaders import yaml_loader
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
 from dynaconf.strategies.filtering import PrefixFilter
+from dynaconf.utils import to_dict
 from dynaconf.utils.parse_conf import true_values
+
+pytestmark = pytest.mark.usefixtures("no_deprecations")
 
 
 def test_deleted_raise(settings):
@@ -151,15 +154,12 @@ def test_populate_obj_convert_to_dict(settings):
     settings.populate_obj(obj)
     assert isinstance(obj.ADICT, DataDict)
     assert isinstance(obj.ALIST, DataList)
-    assert isinstance(obj.ADICT.to_yaml(), str)
 
     # now make sure convert_to_dict=True brings in dict and list
     obj = Obj()
     settings.populate_obj(obj, convert_to_dict=True)
-    assert isinstance(obj.ADICT, dict)
-    assert isinstance(obj.ALIST, list)
-    with pytest.raises(AttributeError):
-        assert isinstance(obj.ADICT.to_yaml(), str)
+    assert type(obj.ADICT) is dict
+    assert type(obj.ALIST) is list
 
 
 def test_call_works_as_get(settings):
@@ -878,14 +878,14 @@ def test_dotted_set(settings):
     settings.set("nested_1.nested_2.nested_3.nested_4", "secret")
 
     assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "secret"
-    assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {
+    assert to_dict(settings.NESTED_1.NESTED_2.NESTED_3) == {
         "nested_4": "secret"
     }
-    assert settings.NESTED_1.NESTED_2.to_dict() == {
+    assert to_dict(settings.NESTED_1.NESTED_2) == {
         "nested_3": {"nested_4": "secret"}
     }
 
-    assert settings.get("nested_1").to_dict() == {
+    assert to_dict(settings.get("nested_1")) == {
         "nested_2": {"nested_3": {"nested_4": "secret"}}
     }
 
@@ -897,14 +897,14 @@ def test_dotted_set(settings):
 
     settings.set("nested_1.nested_2.nested_3.nested_4", "Updated Secret")
     assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "Updated Secret"
-    assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {
+    assert to_dict(settings.NESTED_1.NESTED_2.NESTED_3) == {
         "nested_4": "Updated Secret"
     }
-    assert settings.NESTED_1.NESTED_2.to_dict() == {
+    assert to_dict(settings.NESTED_1.NESTED_2) == {
         "nested_3": {"nested_4": "Updated Secret"}
     }
 
-    assert settings.get("nested_1").to_dict() == {
+    assert to_dict(settings.get("nested_1")) == {
         "nested_2": {"nested_3": {"nested_4": "Updated Secret"}},
         "nested_2_0": "Hello",
     }

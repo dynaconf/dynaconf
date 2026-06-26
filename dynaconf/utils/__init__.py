@@ -634,6 +634,15 @@ def prepare_json(data: Any) -> Any:
     return data
 
 
+def to_dict(obj: Any) -> Any:
+    """Recursively convert dict/list subclasses to plain Python types."""
+    if isinstance(obj, dict):
+        return {k: to_dict(obj[k]) for k in obj}
+    elif isinstance(obj, list):
+        return [to_dict(x) for x in obj]
+    return obj
+
+
 def container_items(container: dict | list):
     if isinstance(container, dict):
         return container.items()
