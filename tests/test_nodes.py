@@ -6,6 +6,7 @@ from collections import namedtuple
 import pytest
 
 from dynaconf.base import DynaconfCore
+from dynaconf.nodes import AccessError
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
 from dynaconf.nodes import DynaconfNotInitialized
@@ -182,63 +183,98 @@ def test_data_containers_init(input):
     recursive_walk(data, assert_fn)
 
 
-CAST_ON_INITIALIZATION_ASSUMPTION = """
-This assumes the DataDict will recursively transform nested dict/list in
-DataDict and Datalist. We may wanna do that, but it breaks behavior.
-"""
+class TestDataDict:
+    def test_init_converts_nested(self):
+        di = DataDict({"a": {"b": [1, 2]}})
+        assert isinstance(di["a"], DataDict)
+        assert isinstance(di["a"]["b"], DataList)
+
+    def test_mutation_does_not_convert(self):
+        di = DataDict()
+        di["a"] = {"x": 1}
+        assert type(di["a"]) is dict
+
+    def test_items(self):
+        di = DataDict({"a": 1, "b": 2})
+        assert len(list(di.items())) == 2
+        assert len(list(di.items(bypass_eval=True))) == 2
+        assert dict(di.items(bypass_eval=True)) == {"a": 1, "b": 2}
+
+    def test_delitem(self):
+        di = DataDict({"a": 1, "b": 2})
+        del di["a"]
+        assert "a" not in di
+        assert len(di) == 1
+
+    def test_delitem_case_insensitive(self):
+        di = DataDict({"FOO": 1})
+        del di["foo"]
+        assert len(di) == 0
+
+    def test_delattr(self):
+        di = DataDict({"a": 1})
+        del di.a
+        assert len(di) == 0
+
+    def test_contains(self):
+        di = DataDict({"FOO": 1, "bar": 2})
+        assert "FOO" in di
+        assert "foo" in di
+        assert "BAR" in di
+        assert "missing" not in di
+
+    def test_getattr_missing_raises(self):
+        di = DataDict({"a": 1})
+        with pytest.raises(AccessError):
+            _ = di.nonexistent_key
 
 
-@pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
-def test_dict_methods():
-    core = DynaconfCore("test")
-    di = DataDict(core=core)
+class TestDataList:
+    def test_init_converts_nested(self):
+        li = DataList([{"a": 1}, [2, 3]])
+        assert isinstance(li[0], DataDict)
+        assert isinstance(li[1], DataList)
 
-    data0 = {"a": [1, {"b": [2]}]}
-    data1 = {"c": [3, {"d": [4]}]}
+    def test_mutation_does_not_convert(self):
+        li = DataList()
+        li.append({"x": 1})
+        assert type(li[0]) is dict
 
-    def assert_fn(container):
-        assert container.__class__ in (DataDict, DataList)
-        assert get_core(container) == core
+    def test_append(self):
+        li = DataList()
+        li.append(1)
+        assert list(li) == [1]
 
-    di["a"] = data0["a"]
-    recursive_walk(di, assert_fn)
+    def test_insert(self):
+        li = DataList([1, 3])
+        li.insert(1, 2)
+        assert list(li) == [1, 2, 3]
 
-    di.update(data1)
-    recursive_walk(di, assert_fn)
+    def test_extend(self):
+        li = DataList([1])
+        li.extend([2, 3])
+        assert list(li) == [1, 2, 3]
 
-    popped = di.pop("a")
-    assert isinstance(popped, DataList)
+    def test_copy(self):
+        li = DataList([1, 2, 3])
+        li_copy = li.copy()
+        assert isinstance(li_copy, DataList)
+        assert list(li_copy) == [1, 2, 3]
+        assert li_copy is not li
 
-    d_copy = di.copy()
-    assert isinstance(d_copy, DataDict)
-    di.clear()
-    assert len(di) == 0
+    def test_setitem(self):
+        li = DataList([1, 2, 3])
+        li[1] = 99
+        assert li[1] == 99
 
+    def test_add(self):
+        x = DataList(["a"])
+        assert list(x + ["b"]) == ["a", "b"]
 
-@pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
-def test_list_methods():
-    li = DataList()
-
-    li.append({"x": 1})
-    assert isinstance(li[0], DataDict)
-
-    li.extend([{"y": 2}, [1, 2]])
-    assert isinstance(li[1], DataDict)
-    assert isinstance(li[2], DataList)
-
-    li.insert(0, {"z": 3})
-    assert isinstance(li[0], DataDict)
-
-    popped = li.pop()
-    assert isinstance(popped, DataList)
-
-    li[1:1] = [{"w": 4}]
-    assert isinstance(li[1], DataDict)
-
-    d_copy = li.copy()
-    assert isinstance(d_copy, DataList)
-    li.clear()
-    assert len(li) == 0
+    def test_iadd(self):
+        li = DataList([1])
+        li += [2, 3]
+        assert list(li) == [1, 2, 3]
 
 
 def test_nested_structures():
@@ -268,28 +304,6 @@ def test_method_preservation():
     li = DataList([{"x": 2}, {"x": 1}])
     li.sort(key=lambda x: x["x"])
     assert li[0]["x"] == 1
-
-
-@pytest.mark.skip(CAST_ON_INITIALIZATION_ASSUMPTION)
-def test_mutable_operations():
-    di = DataDict()
-    # Test setdefault
-    item = di.setdefault("a", {"x": 1})
-    assert isinstance(item, DataDict)
-
-    # Test dict comprehension conversion
-    di = DataDict({k: {"val": v} for k, v in [("a", 1), ("b", 2)]})
-    assert all(isinstance(v, DataDict) for v in di.values())
-    assert all(isinstance(v, DataDict) for k, v in di.items())
-
-    # Test list concatenation
-    li = DataList()
-    li += [{"x": 1}]
-    assert isinstance(li[0], DataDict)
-
-    # Test multiply
-    li = DataList([{"x": 1}]) * 2
-    assert isinstance(li[0], DataDict) and isinstance(li[1], DataDict)
 
 
 def test_repr():
