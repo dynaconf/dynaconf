@@ -1,5 +1,4 @@
 import os
-import sys
 from typing import Annotated
 from typing import Optional
 from typing import Union
@@ -143,7 +142,6 @@ def test_union_type_validates(monkeypatch):
             Settings()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 10), reason="not supported on 3.9")
 def test_new_union_validates(monkeypatch):
     class Settings(Dynaconf):
         number: int | float | bool
@@ -976,7 +974,6 @@ def test_list_enclosed_type_annotated_with_union():
         Settings(colors=[])
 
 
-@pytest.mark.skipif(sys.version_info < (3, 10), reason="not supported on 3.9")
 def test_list_enclosed_type_annotated_with_new_union():
     # Annotated and Unionized
     class Settings(Dynaconf):

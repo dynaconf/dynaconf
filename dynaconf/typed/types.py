@@ -1,5 +1,6 @@
 from __future__ import annotations  # WARNING: remove this when debugging
 
+from types import NoneType
 from typing import Annotated
 from typing import TypeVar
 from typing import Union
@@ -71,7 +72,6 @@ Str = str
 Int = int
 Float = float
 Bool = bool
-NoneType = type(None)  # python 3.9 doesn't have types.NoneType
 List = list
 Tuple = tuple
 Dict = dict

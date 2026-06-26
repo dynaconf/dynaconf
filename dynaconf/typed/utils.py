@@ -1,7 +1,7 @@
 from __future__ import annotations  # WARNING: remove this when debugging
 
+from collections.abc import Callable
 from typing import Annotated
-from typing import Callable
 from typing import get_args
 from typing import get_origin
 from typing import Union
