@@ -921,3 +921,19 @@ def test_validation_after_setenv_or_from_env(tmp_path):
     with pytest.raises(ValidationError):
         other_settings = settings.from_env("production")
         other_settings.validators.validate_all()
+
+
+def test_from_env_with_validate_on_update_does_not_recurse():
+    """from_env must not infinitely recurse via current_env -> validation."""
+    from dynaconf import Dynaconf
+    from dynaconf import Validator
+
+    settings = Dynaconf(
+        environments=True,
+        validate_on_update=True,
+        validators=[Validator("FOO", default="bar")],
+    )
+
+    # Before the fix this raised RecursionError.
+    other_settings = settings.from_env("development")
+    assert other_settings.current_env.lower() == "development"
