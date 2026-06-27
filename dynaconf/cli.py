@@ -820,9 +820,9 @@ def validate(path):  # pragma: no cover
         )
         sys.exit(1)
 
-    # guarantee there is an environment
     validation_data = {k.lower(): v for k, v in validation_data.items()}
-    if not validation_data.get("default"):
+    if not settings.ENVIRONMENTS_FOR_DYNACONF:
+        # flat file: top-level keys are field names, not environments
         validation_data = {"default": validation_data}
 
     success = True

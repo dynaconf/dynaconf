@@ -136,7 +136,7 @@ It is possible to define validators in a `TOML` file called `dynaconf_validators
 
 `dynaconf_validators.toml` is equivalent to the program below:
 
-```ini
+```toml
 [default]
 
 version = {must_exist=true}
