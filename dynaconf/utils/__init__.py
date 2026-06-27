@@ -237,7 +237,7 @@ def handle_metavalues(
                     value.remove("dynaconf_merge_unique")
                     unique = True
 
-                for item in old.get(key)[::-1]:
+                for item in (old.get(key) or [])[::-1]:
                     if unique and item in value:
                         continue
                     value.insert(0, item)

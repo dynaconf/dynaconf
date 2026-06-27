@@ -334,6 +334,22 @@ def test_merge_dict_with_meta_values(settings):
     assert new == {"A": 1, "C": 4}
 
 
+def test_merge_list_token_when_key_absent_in_old():
+    # A list carrying the `dynaconf_merge` marker must not crash when the key
+    # holding it is absent from the existing data (there is nothing to merge
+    # into).  The marker is consumed and the provided list is kept as-is.
+    old = {"existing": 1}
+    new = {"ports": [8080, "dynaconf_merge"]}
+    object_merge(old, new)
+    assert new == {"existing": 1, "ports": [8080]}
+
+    # Same for the `dynaconf_merge_unique` marker.
+    old = {"existing": 1}
+    new = {"ports": [8080, "dynaconf_merge_unique"]}
+    object_merge(old, new)
+    assert new == {"existing": 1, "ports": [8080]}
+
+
 def test_trimmed_split():
     # No sep
     assert trimmed_split("hello") == ["hello"]
