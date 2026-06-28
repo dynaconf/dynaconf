@@ -346,11 +346,24 @@ Options:
 
 Starting on version 1.0.1 it is possible to define validators in **TOML** file called **dynaconf_validators.toml** placed in the same folder as your settings files.
 
-`dynaconf_validators.toml` equivalent to program above
+The format depends on whether your settings use [`environments`](configuration.md#environments).
 
-```ini
+**Without environments** (`environments=False`):
+
+Top-level keys are field names. No section headers are needed.
+
+```toml
+version = {must_exist=true}
+name = {must_exist=true}
+password = {must_exist=false}
+```
+
+**With environments** (`environments=True`):
+
+Section headers are environment names. Each section scopes its validators to that environment.
+
+```toml
 [default]
-
 version = {must_exist=true}
 name = {must_exist=true}
 password = {must_exist=false}
