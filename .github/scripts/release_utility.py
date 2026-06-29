@@ -9,6 +9,7 @@ Exit codes:
 
 import argparse
 import datetime
+import functools
 import json
 import os
 import subprocess
@@ -20,6 +21,8 @@ from abc import abstractmethod
 from typing import NamedTuple
 from typing import Optional
 
+from git_changelog import build_and_render
+from git_changelog import read_config
 from packaging.version import InvalidVersion
 from packaging.version import Version
 
@@ -31,9 +34,47 @@ BUMP_FILES = [
 ]
 RELEASE_COMMIT_MSG = "Release version {version}"
 CI_UPDATE_MSG = "chore(ci): CI update from master ({sha})"
-REPO_URL = "https://github.com/dynaconf/dynaconf.git"
+GITHUB_REPO = "dynaconf/dynaconf"
+GITHUB_API = "https://api.github.com"
+REPO_URL = f"https://github.com/{GITHUB_REPO}.git"
 PYPI_URL = "https://pypi.org/pypi/dynaconf/json"
 RUNNING_CI = bool(os.getenv("CI"))
+
+
+@functools.cache
+def _fetch_github_login(sha: str) -> Optional[str]:
+    """Return the GitHub login for a commit SHA, or None on any failure."""
+    url = f"{GITHUB_API}/repos/{GITHUB_REPO}/commits/{sha}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    )
+    token = os.getenv("GITHUB_API_TOKEN") or os.getenv("GITHUB_TOKEN")
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+    debug(
+        "github_login_fetch",
+        f"{'authenticated' if token else 'unauthenticated'} [{sha[:7]}]",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+        author = data.get("author")
+        return author["login"] if author else None
+    except Exception as e:
+        debug("github_login_fetch_error", f"{sha[:7]}: {e}")
+        return None
+
+
+def github_author_link(commit) -> str:
+    """Return a markdown GitHub profile link, falling back to the git author name."""
+    login = _fetch_github_login(commit.hash)
+    if login:
+        return f"@{login}"
+    return commit.author_name
 
 
 def _write_github_output(key: str, value: str) -> None:
@@ -289,9 +330,12 @@ class VersionBumper:
         self._bmv("bump", "patch", "--commit")
 
     def update_changelog(self, version: str) -> None:
-        subprocess.run(
-            ["git-changelog", "--in-place", "--bump", version], check=True
+        settings = read_config()
+        settings["bump"] = version
+        settings.setdefault("jinja_context", {})["github_author_link"] = (
+            github_author_link
         )
+        build_and_render(**settings)
 
 
 class Releaser(ABC):
