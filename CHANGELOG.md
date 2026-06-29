@@ -2,6 +2,31 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.3.2](https://github.com/dynaconf/dynaconf/releases/tag/3.3.2) - 2026-06-29
+
+### Bug Fixes
+
+
+- Don't treat a string sharing a converter prefix as a cast (#1412). By @sarathfrancis90.
+
+
+- Fixed 'dynaconf validate' edge cases with validation_file.toml (#1411). By @pedro-psb.
+
+
+- Avoid RecursionError in from_env with validate_on_update (#1409). By @Redbot.
+
+
+- Avoid crash merging a dynaconf_merge list into a missing key (#1410). By @sarathfrancis90.
+
+
+### Chore
+
+
+- Fix check-release command from release utility. By @pedro-psb.
+
+
+- Improve changelog generation output. By @pedro-psb.
+
 ## [3.3.1](https://github.com/dynaconf/dynaconf/releases/tag/3.3.1) - 2026-06-26
 
 ### Bug Fixes
