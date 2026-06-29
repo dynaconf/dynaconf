@@ -128,6 +128,39 @@ def test_casting_str(settings):
     assert isinstance(res, str) and res == "7"
 
 
+def test_string_starting_with_converter_prefix_is_not_cast(settings):
+    """A plain string that merely shares a prefix with a converter token
+    (e.g. ``@interface`` starts with ``@int``) must be kept verbatim, not
+    treated as a cast. Previously this raised ``KeyError``.
+    """
+    # these all start with a real converter token as a *prefix* only
+    for value in (
+        "@interface",  # @int
+        "@integer",  # @int
+        "@formatter",  # @format
+        "@gettext",  # @get
+        "@uppercase",  # @upper
+        "@stringify",  # @str
+        "@noneofthat",  # @none
+    ):
+        assert parse_conf_data(value, box_settings=settings) == value
+        assert (
+            parse_conf_data(value, tomlfy=True, box_settings=settings) == value
+        )
+
+    # a prefix collision followed by more words must also pass through
+    assert (
+        parse_conf_data("@formatter blah", tomlfy=True, box_settings=settings)
+        == "@formatter blah"
+    )
+
+    # real converter tokens must still cast (regression guard)
+    assert parse_conf_data("@int 5", box_settings=settings) == 5
+    assert parse_conf_data("@none", box_settings=settings) is None
+    settings.set("value", 5)
+    assert parse_conf_data("@int @format {this.value}")(settings) == 5
+
+
 def test_casting_int(settings):
     res = parse_conf_data("@int 2")
     assert isinstance(res, int) and res == 2
