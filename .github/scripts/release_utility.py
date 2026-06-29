@@ -188,26 +188,30 @@ class Repository:
         return tags
 
     def remote_version_tags(self, url: str) -> list[str]:
+        return list(self.remote_version_tag_to_sha(url).keys())
+
+    def remote_version_tag_to_sha(self, url: str) -> dict[str, str]:
         # Queries the remote directly over the git protocol without touching
         # any local clone state, so the result always reflects the server.
-        # Non-version tags are silently skipped.
+        # ^{} lines dereference annotated tags to their commit SHA; they take
+        # precedence over the tag-object SHA on the plain line.
         output, _ = self._git("ls-remote", "--tags", url)
-        tags = []
+        shas: dict[str, str] = {}
         no_version_tags = []
         for line in output.splitlines():
-            ref = line.split("\t")[1]
-            if ref.endswith("^{}"):
-                continue
-            tag = ref.removeprefix("refs/tags/")
+            sha, ref = line.split("\t")
+            is_deref = ref.endswith("^{}")
+            tag = ref.removesuffix("^{}").removeprefix("refs/tags/")
             try:
                 Version(tag)
-                tags.append(tag)
+                if tag not in shas or is_deref:
+                    shas[tag] = sha
             except InvalidVersion:
-                no_version_tags.append(tag)
-                pass
+                if not is_deref:
+                    no_version_tags.append(tag)
         debug("remote_not_version_tags", sorted(no_version_tags))
-        debug("remote_version_tags", sorted(tags, key=Version))
-        return tags
+        debug("remote_version_tags", sorted(shas, key=Version))
+        return shas
 
     def commits_between(self, from_ref: str, to_ref: str) -> list[str]:
         # --format=%H emits one bare hash per line with no decorations,
@@ -776,29 +780,29 @@ def get_backport_branches(repo: Repository) -> list[str]:
 
 
 def _collect_branch_statuses(
-    repo: Repository, branches: list[str], local_tags: list[str]
+    repo: Repository, branches: list[str], tag_to_sha: dict[str, str]
 ) -> list[BranchStatus]:
     statuses = []
     for branch in branches:
         if branch == DEFAULT_BRANCH:
-            local_series = local_tags
+            series = tag_to_sha
         else:
             major, minor = (int(x) for x in branch.split("."))
-            local_series = [
-                t
-                for t in local_tags
+            series = {
+                t: sha
+                for t, sha in tag_to_sha.items()
                 if Version(t).release[:2] == (major, minor)
-            ]
+            }
 
-        if not local_series:
+        if not series:
             statuses.append(BranchStatus(branch, None, None, 0))
             continue
 
-        current = max(local_series, key=Version)
+        current = max(series, key=Version)
         tip = repo.fetch_branch_tip(REPO_URL, branch)
         raw = repo.show_file("FETCH_HEAD", "dynaconf/VERSION")
         next_v = Version(raw).base_version
-        commits = repo.commits_between(current, tip)
+        commits = repo.commits_between(series[current], tip)
         count = max(
             0, len(commits) - 1
         )  # exclude the post-release bump commit
@@ -829,12 +833,11 @@ def _print_branch_table(statuses: list[BranchStatus]) -> None:
 
 def check_release_status(repo: Repository) -> None:
     """Print available releases and unpublished tags."""
-    repo.fetch(REPO_URL, tags=True)
-    local_tags = repo.local_version_tags()
+    tag_to_sha = repo.remote_version_tag_to_sha(REPO_URL)
     pypi_versions = fetch_pypi_versions()
     branches = [DEFAULT_BRANCH] + get_backport_branches(repo)
 
-    statuses = _collect_branch_statuses(repo, branches, local_tags)
+    statuses = _collect_branch_statuses(repo, branches, tag_to_sha)
     _print_branch_table(statuses)
 
     info("Unpublished releases")
@@ -846,7 +849,7 @@ def check_release_status(repo: Repository) -> None:
     unpublished = sorted(
         [
             t
-            for t in local_tags
+            for t in tag_to_sha
             if t not in pypi_versions
             and Version(t).release[:2] in active_series
         ],

@@ -79,7 +79,7 @@ dist: clean
 	@make source_vendor
 
 check-releases:
-	uv run --isolated python .github/scripts/release_utility.py check
+	uv run --isolated --with-editable .github/scripts/ release-utility check
 
 # Bump X.Y.Z.dev to X.Y+1.0.dev
 bump-minor:
