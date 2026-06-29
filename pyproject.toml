@@ -208,7 +208,7 @@ ignore_missing_imports = true
 # ===========
 
 [tool.bumpversion]
-current_version = "3.3.2"
+current_version = "3.3.3-dev0"
 parse = """(?x)
     (?P<major>0|[1-9]\\d*)\\.
     (?P<minor>0|[1-9]\\d*)\\.
