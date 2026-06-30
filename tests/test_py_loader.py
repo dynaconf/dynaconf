@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import os
+import sys
+import types
 
 import pytest
 
 from dynaconf import default_settings
 from dynaconf import LazySettings
+from dynaconf.loaders.py_loader import get_module
 from dynaconf.loaders.py_loader import load
 from dynaconf.loaders.py_loader import try_to_load_from_py_module_name
 from dynaconf.utils import DynaconfDict
@@ -275,3 +278,37 @@ def test_post_load_hooks(clean_env, tmpdir):
             "INSTALLED_APPS": ["dummyplugin"],
         }
     }
+
+
+def test_get_module_reraises_import_error_from_module_content(tmpdir):
+    """get_module() must propagate ImportError caused by content inside the
+    settings module (e.g. cyclic imports), not just swallow it as 'not found'.
+
+    Regression test for https://github.com/dynaconf/dynaconf/issues/1308
+    """
+    settings = DynaconfDict()
+
+    # Register a fake top-level module whose import triggers an ImportError
+    # from inside its body (simulating a cyclic-import scenario).
+    module_name = "fake_cyclic_settings"
+    fake_mod = types.ModuleType(module_name)
+
+    def broken_getattr(name):
+        raise ImportError("cannot import name 'X' from 'fake_cyclic_settings'")
+
+    fake_mod.__spec__ = None  # make importlib think it's a real module
+    # Patch sys.modules so importlib.import_module finds it, then immediately
+    # raise an ImportError as if the module body has a bad circular import.
+    original = sys.modules.get(module_name)
+
+    import importlib
+    import unittest.mock as mock
+
+    with mock.patch(
+        "importlib.import_module",
+        side_effect=ImportError(
+            "cannot import name 'circular' from 'fake_cyclic_settings'"
+        ),
+    ):
+        with pytest.raises(ImportError):
+            get_module(settings, module_name, silent=False)
