@@ -1,8 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import os
 import sys
-import types
 
 import pytest
 
@@ -280,37 +279,46 @@ def test_post_load_hooks(clean_env, tmpdir):
     }
 
 
-def test_get_module_reraises_import_error_from_module_content(create_file, tmp_path):
+@pytest.fixture
+def with_importable_tmp_path(tmp_path):
+    sys.path.insert(0, str(tmp_path))
+    yield tmp_path
+    sys.path.remove(str(tmp_path))
+    for key in list(sys.modules.keys()):
+        mod = sys.modules[key]
+        if getattr(mod, "__file__", None) and str(tmp_path) in mod.__file__:
+            del sys.modules[key]
+
+
+def test_get_module_reraises_import_error_from_module_content(
+    create_file, with_importable_tmp_path
+):
     """get_module() must propagate ImportError caused by content inside the
     settings module (e.g. cyclic imports), not just swallow it as 'not found'.
 
     Regression test for https://github.com/dynaconf/dynaconf/issues/1308
-    Uses real on-disk modules (via create_file) to exercise the actual import path.
+    Uses real on-disk modules in a genuine A-imports-B / B-imports-A cyclic
+    setup to exercise the actual import path.
     """
-    # A helper module that is importable but missing the requested name.
+    # Module A imports from B, and B imports from A — a real cyclic import.
+    # Python raises: ImportError: cannot import name 'X' from partially
+    # initialized module 'Y' (most likely due to a circular import)
     create_file(
-        "cyclic_helper.py",
+        "cyclic_a.py",
         """
-        READY = True
+        from cyclic_b import B_VALUE
+        A_VALUE = 1
         """,
     )
-
-    # The settings module tries to import a name that does not exist -
-    # exactly the ImportError Python raises in a real cyclic-import scenario.
     create_file(
-        "cyclic_settings.py",
+        "cyclic_b.py",
         """
-        from cyclic_helper import DOES_NOT_EXIST
+        from cyclic_a import A_VALUE
+        B_VALUE = 2
         """,
     )
 
     settings = DynaconfDict()
 
-    sys.path.insert(0, str(tmp_path))
-    try:
-        with pytest.raises(ImportError):
-            get_module(settings, "cyclic_settings", silent=False)
-    finally:
-        sys.path.remove(str(tmp_path))
-        for mod in ("cyclic_settings", "cyclic_helper"):
-            sys.modules.pop(mod, None)
+    with pytest.raises(ImportError):
+        get_module(settings, "cyclic_a", silent=False)
