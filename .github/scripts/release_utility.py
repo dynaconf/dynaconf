@@ -16,15 +16,11 @@ import subprocess
 import sys
 import urllib.error
 import urllib.request
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import NamedTuple
-from typing import Optional
 
-from git_changelog import build_and_render
-from git_changelog import read_config
-from packaging.version import InvalidVersion
-from packaging.version import Version
+from git_changelog import build_and_render, read_config
+from packaging.version import InvalidVersion, Version
 
 BUMP_FILES = [
     "CHANGELOG.md",
@@ -42,7 +38,7 @@ RUNNING_CI = bool(os.getenv("CI"))
 
 
 @functools.cache
-def _fetch_github_login(sha: str) -> Optional[str]:
+def _fetch_github_login(sha: str) -> str | None:
     """Return the GitHub login for a commit SHA, or None on any failure."""
     url = f"{GITHUB_API}/repos/{GITHUB_REPO}/commits/{sha}"
     req = urllib.request.Request(
@@ -436,7 +432,7 @@ class RollingReleaser(Releaser):
 
         info(f"[OK] Release {expected!r} passed all validation checks.")
 
-    def _create_backport_branch(self, major: int, minor: int) -> Optional[str]:
+    def _create_backport_branch(self, major: int, minor: int) -> str | None:
         prev_branch = f"{major}.{minor - 1}"
         prev_tags = [
             t
@@ -483,8 +479,8 @@ class BackportReleaser(Releaser):
     def _filter_series(
         versions: list[str],
         *,
-        by_xy: Optional[tuple[int, int]] = None,
-        exclude: Optional[list[str]] = None,
+        by_xy: tuple[int, int] | None = None,
+        exclude: list[str] | None = None,
     ) -> list[str]:
         if by_xy is not None and exclude is not None:
             raise ValueError("by_xy and exclude are mutually exclusive")
@@ -763,8 +759,8 @@ def update_github_files(repo: Repository) -> bool:
 
 class BranchStatus(NamedTuple):
     branch: str
-    current: Optional[str]
-    next_version: Optional[str]
+    current: str | None
+    next_version: str | None
     unreleased: int
 
 

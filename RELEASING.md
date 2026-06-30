@@ -60,6 +60,7 @@ To do so, run `Actions → Publish → Run workflow` with the tag.
 - The publication uses [Trusted Publishing](https://docs.pypi.org/trusted-publishers/), which must be configured in PyPI.
 - The release requires content write permissions (push tags). A [Github App](https://docs.github.com/en/apps/overview)
   (DynaconfBot) was created to enable emitting short-lived tokens with well-scoped permission.
+- Docs publish can be triggered separately via `publish-docs.yml` workflow if required.
 
 ### Glossary
 

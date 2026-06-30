@@ -1,0 +1,37 @@
+name: Publish Documentation
+
+on:
+  workflow_call:
+    inputs:
+      release-tag:
+        description: "Release tag (e.g. 3.2.1)"
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      release-tag:
+        description: "Release tag (e.g. 3.2.1)"
+        required: true
+        type: string
+
+jobs:
+  build-docs:
+    uses: ./.github/workflows/build-docs.yml
+    with:
+      release-tag: ${{ inputs.release-tag }}
+
+  publish-docs:
+    needs: [build-docs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download documentation
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ needs.build-docs.outputs.docs-artifact }}
+          path: site
+      - name: Deploy to Netlify
+        run: npx netlify-cli deploy --prod --dir=site --message "Deploy from GitHub Actions"
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 5

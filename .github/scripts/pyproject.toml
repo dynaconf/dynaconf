@@ -13,3 +13,15 @@ release-utility = "release_utility:main"
 
 [tool.hatch.build.targets.wheel]
 include = ["release_utility.py"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 79
+
+[tool.ruff.lint]
+extend-select = [
+    "I",    # isort
+    "UP",   # pyupgrade
+    "N",    # pep8-naming
+    "PLE",  # pylint errors
+]
