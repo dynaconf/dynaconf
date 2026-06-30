@@ -9,6 +9,7 @@ Exit codes:
 
 import argparse
 import datetime
+import functools
 import json
 import os
 import subprocess
@@ -20,6 +21,8 @@ from abc import abstractmethod
 from typing import NamedTuple
 from typing import Optional
 
+from git_changelog import build_and_render
+from git_changelog import read_config
 from packaging.version import InvalidVersion
 from packaging.version import Version
 
@@ -31,9 +34,47 @@ BUMP_FILES = [
 ]
 RELEASE_COMMIT_MSG = "Release version {version}"
 CI_UPDATE_MSG = "chore(ci): CI update from master ({sha})"
-REPO_URL = "https://github.com/dynaconf/dynaconf.git"
+GITHUB_REPO = "dynaconf/dynaconf"
+GITHUB_API = "https://api.github.com"
+REPO_URL = f"https://github.com/{GITHUB_REPO}.git"
 PYPI_URL = "https://pypi.org/pypi/dynaconf/json"
 RUNNING_CI = bool(os.getenv("CI"))
+
+
+@functools.cache
+def _fetch_github_login(sha: str) -> Optional[str]:
+    """Return the GitHub login for a commit SHA, or None on any failure."""
+    url = f"{GITHUB_API}/repos/{GITHUB_REPO}/commits/{sha}"
+    req = urllib.request.Request(
+        url,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        },
+    )
+    token = os.getenv("GITHUB_API_TOKEN") or os.getenv("GITHUB_TOKEN")
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+    debug(
+        "github_login_fetch",
+        f"{'authenticated' if token else 'unauthenticated'} [{sha[:7]}]",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+        author = data.get("author")
+        return author["login"] if author else None
+    except Exception as e:
+        debug("github_login_fetch_error", f"{sha[:7]}: {e}")
+        return None
+
+
+def github_author_link(commit) -> str:
+    """Return a markdown GitHub profile link, falling back to the git author name."""
+    login = _fetch_github_login(commit.hash)
+    if login:
+        return f"@{login}"
+    return commit.author_name
 
 
 def _write_github_output(key: str, value: str) -> None:
@@ -147,26 +188,30 @@ class Repository:
         return tags
 
     def remote_version_tags(self, url: str) -> list[str]:
+        return list(self.remote_version_tag_to_sha(url).keys())
+
+    def remote_version_tag_to_sha(self, url: str) -> dict[str, str]:
         # Queries the remote directly over the git protocol without touching
         # any local clone state, so the result always reflects the server.
-        # Non-version tags are silently skipped.
+        # ^{} lines dereference annotated tags to their commit SHA; they take
+        # precedence over the tag-object SHA on the plain line.
         output, _ = self._git("ls-remote", "--tags", url)
-        tags = []
+        shas: dict[str, str] = {}
         no_version_tags = []
         for line in output.splitlines():
-            ref = line.split("\t")[1]
-            if ref.endswith("^{}"):
-                continue
-            tag = ref.removeprefix("refs/tags/")
+            sha, ref = line.split("\t")
+            is_deref = ref.endswith("^{}")
+            tag = ref.removesuffix("^{}").removeprefix("refs/tags/")
             try:
                 Version(tag)
-                tags.append(tag)
+                if tag not in shas or is_deref:
+                    shas[tag] = sha
             except InvalidVersion:
-                no_version_tags.append(tag)
-                pass
+                if not is_deref:
+                    no_version_tags.append(tag)
         debug("remote_not_version_tags", sorted(no_version_tags))
-        debug("remote_version_tags", sorted(tags, key=Version))
-        return tags
+        debug("remote_version_tags", sorted(shas, key=Version))
+        return shas
 
     def commits_between(self, from_ref: str, to_ref: str) -> list[str]:
         # --format=%H emits one bare hash per line with no decorations,
@@ -289,9 +334,12 @@ class VersionBumper:
         self._bmv("bump", "patch", "--commit")
 
     def update_changelog(self, version: str) -> None:
-        subprocess.run(
-            ["git-changelog", "--in-place", "--bump", version], check=True
+        settings = read_config()
+        settings["bump"] = version
+        settings.setdefault("jinja_context", {})["github_author_link"] = (
+            github_author_link
         )
+        build_and_render(**settings)
 
 
 class Releaser(ABC):
@@ -732,29 +780,29 @@ def get_backport_branches(repo: Repository) -> list[str]:
 
 
 def _collect_branch_statuses(
-    repo: Repository, branches: list[str], local_tags: list[str]
+    repo: Repository, branches: list[str], tag_to_sha: dict[str, str]
 ) -> list[BranchStatus]:
     statuses = []
     for branch in branches:
         if branch == DEFAULT_BRANCH:
-            local_series = local_tags
+            series = tag_to_sha
         else:
             major, minor = (int(x) for x in branch.split("."))
-            local_series = [
-                t
-                for t in local_tags
+            series = {
+                t: sha
+                for t, sha in tag_to_sha.items()
                 if Version(t).release[:2] == (major, minor)
-            ]
+            }
 
-        if not local_series:
+        if not series:
             statuses.append(BranchStatus(branch, None, None, 0))
             continue
 
-        current = max(local_series, key=Version)
+        current = max(series, key=Version)
         tip = repo.fetch_branch_tip(REPO_URL, branch)
         raw = repo.show_file("FETCH_HEAD", "dynaconf/VERSION")
         next_v = Version(raw).base_version
-        commits = repo.commits_between(current, tip)
+        commits = repo.commits_between(series[current], tip)
         count = max(
             0, len(commits) - 1
         )  # exclude the post-release bump commit
@@ -785,12 +833,11 @@ def _print_branch_table(statuses: list[BranchStatus]) -> None:
 
 def check_release_status(repo: Repository) -> None:
     """Print available releases and unpublished tags."""
-    repo.fetch(REPO_URL, tags=True)
-    local_tags = repo.local_version_tags()
+    tag_to_sha = repo.remote_version_tag_to_sha(REPO_URL)
     pypi_versions = fetch_pypi_versions()
     branches = [DEFAULT_BRANCH] + get_backport_branches(repo)
 
-    statuses = _collect_branch_statuses(repo, branches, local_tags)
+    statuses = _collect_branch_statuses(repo, branches, tag_to_sha)
     _print_branch_table(statuses)
 
     info("Unpublished releases")
@@ -802,7 +849,7 @@ def check_release_status(repo: Repository) -> None:
     unpublished = sorted(
         [
             t
-            for t in local_tags
+            for t in tag_to_sha
             if t not in pypi_versions
             and Version(t).release[:2] in active_series
         ],

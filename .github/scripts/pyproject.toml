@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "dynaconf-release-utility"
 version = "0"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = ["bump-my-version", "git-changelog", "packaging"]
 
 [project.scripts]

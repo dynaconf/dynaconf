@@ -1,37 +1,49 @@
 name: CI
 
 on:
-  # Triggers the workflow on push event for the master branch
+  # Triggers the workflow on push/pull_request for the master and backport branches
   push:
-    branches: [master]
-    paths-ignore: # run if anything different from these is modified
-      - "docs/**"
-      - "mkdocs.yml"
-  # Triggers the workflow on pull_request event for the master branch
+    branches: [master, "[0-9]+.[0-9]+"]
   pull_request:
-    branches: [master]
-    paths-ignore:
-      - "docs/**"
-      - "mkdocs.yml"
+    branches: [master, "[0-9]+.[0-9]+"]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# When a Push is made on an existing branch/PR
-# it cancels any pre running job and
+# When a Push is made on an existing branch/PR it cancels any pre running job and
 # let only the latest executing
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
 jobs:
+  # Detects whether non-doc files changed so downstream jobs can skip when only
+  # docs were modified, while still satisfying the required status check.
+  # Defaults to true on workflow_dispatch.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      code_changed: ${{ steps.filter.outputs.code_changed }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            code_changed:
+              - '**'
+              - '!docs/**'
+              - '!mkdocs.yml'
+
   docs:
+    needs: changes
     uses: ./.github/workflows/build-docs.yml
 
   lint:
     uses: ./.github/workflows/lint.yml
 
   build:
-    needs: lint
+    needs: [lint, changes]
+    if: needs.changes.outputs.code_changed == 'true'
     uses: ./.github/workflows/build-dist.yml
 
   tests:
@@ -39,9 +51,9 @@ jobs:
     uses: ./.github/workflows/test.yml
     with:
       dist-artifact: ${{ needs.build.outputs.dist-artifact }}
-      python_minimal: '["3.9", "3.13"]'
-      python_full: '["3.9", "3.10", "3.11", "3.12", "3.13"]'
-      python_latest: '3.13'
+      python_minimal: '["3.10", "3.14"]'
+      python_full: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
+      python_latest: '3.14'
     secrets: inherit
 
   benchmark:
@@ -49,8 +61,11 @@ jobs:
     if: github.event_name == 'pull_request'
     uses: ./.github/workflows/benchmark.yml
 
+  # Runs unconditionally so the required status check always resolves.
+  # Fails if any dependency failed or was cancelled; passes if all succeeded or were skipped.
   checkpoint:
     runs-on: ubuntu-latest
+    if: always()
     needs:
       - lint
       - build
@@ -58,4 +73,7 @@ jobs:
       - tests
     steps:
       - name: All tests has passed
-        run: echo "All tests has passed"
+        run: |
+          if echo "${{ join(needs.*.result, ' ') }}" | grep -qE 'failure|cancelled'; then
+            exit 1
+          fi
