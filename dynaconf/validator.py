@@ -89,9 +89,14 @@ class Validator:
         # When the very first thing to be performed when passed.
         # if no env is passed to `when` it is inherited
 
-    `must_exist` is alias to `required` requirement. (executed after when)::
+    `must_exist` controls existence checking (executed after when)::
 
-       settings.get(value, empty) returns non empty
+        must_exist=True  — variable must be present; raises if absent
+        must_exist=False — variable must be absent; raises if present
+        must_exist=None  — no existence rule (default); absent variables
+                           skip all further checks on that name
+
+    `required` is an alias for `must_exist`.
 
     condition is a callable to be executed and return boolean::
 
@@ -214,11 +219,11 @@ class Validator:
         return _repr
 
     @property
-    def required(self) -> bool:
-        return bool(self.must_exist)
+    def required(self) -> bool | None:
+        return self.must_exist
 
     @required.setter
-    def required(self, value: bool):
+    def required(self, value: bool | None):
         self.must_exist = value
 
     @property
@@ -387,21 +392,32 @@ class Validator:
             else:
                 value = settings.get(name, default_value)
 
-            # is name required but not exists?
-            if self.must_exist is True and value is empty:
-                _message = self.messages["must_exist_true"].format(
-                    name=name, env=env
+            # Existence checks
+            if self.must_exist is None:  # must_exist is unset
+                if value is empty:
+                    continue  #  no further checks required, as there is nothing to check
+                else:
+                    pass  # proceed with further checks
+            elif self.must_exist is True:
+                if value is empty:
+                    _message = self.messages["must_exist_true"].format(
+                        name=name, env=env
+                    )
+                    raise ValidationError(_message, details=[(self, _message)])
+                else:
+                    pass
+            elif self.must_exist is False:
+                if value is empty:
+                    continue  # value absent as required — nothing further to check
+                else:
+                    _message = self.messages["must_exist_false"].format(
+                        name=name, env=env
+                    )
+                    raise ValidationError(_message, details=[(self, _message)])
+            else:
+                raise ValueError(
+                    f"must_exist must be True, False, or None, got {self.must_exist!r}"
                 )
-                raise ValidationError(_message, details=[(self, _message)])
-
-            if self.must_exist is False and value is not empty:
-                _message = self.messages["must_exist_false"].format(
-                    name=name, env=env
-                )
-                raise ValidationError(_message, details=[(self, _message)])
-
-            if self.must_exist in (False, None) and value is empty:
-                continue
 
             # value or default value already set
             # by settings.setdefault above

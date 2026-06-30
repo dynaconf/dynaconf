@@ -572,11 +572,13 @@ Validator('DATABASE.HOST', 'DATABASE.PORT'),
 Validator('DATABASE.HOST', 'DATABASE.PORT'),
 
 
-# must_exist: bool (alias: required)
-# Check whether variable must or not exist
+# must_exist: bool | None (alias: required)
+# True  → variable must exist (non-empty); raises if absent
+# False → variable must not exist; raises if present
+# None  → no existence rule (default); absent variables skip all further checks
 Validator('VERSION', must_exist=True),
 Validator('PASSWORD', must_exist=False),
-# there is an alias for must_exist called `required`
+# `required` is an alias for `must_exist`
 Validator('VERSION', required=True),
 
 # condition: callable
