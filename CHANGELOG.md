@@ -189,7 +189,7 @@ Changelog
 
 ## [3.2.3]() - 2023-09-13
 
-- Release version 3.2.3. [Bruno Rocha]
+- Release version 3.2.3. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -210,7 +210,7 @@ Changelog
 
       pedro-psb (1):
             Release version 3.2.2
-- Fix(django): fix #1000 AttributeError on admin (#1002) [Bruno Rocha]
+- Fix(django): fix #1000 AttributeError on admin (#1002) \[Bruno Rocha\]
 
   fix #1000
 - Chore(lint): pep8 errors (#995) [Anderson Sousa]
@@ -250,13 +250,13 @@ Changelog
   * expose 'get_history'
   * refactor 'test_cli.py': use more robust test isolation strategy
   * add data return to 'inspect_settings' for cleaner testing
-- Docker compose is available on CI no need to install. [Bruno Rocha]
-- Fix #982 glob on settings_files (#987) [Bruno Rocha]
+- Docker compose is available on CI no need to install. \[Bruno Rocha\]
+- Fix #982 glob on settings_files (#987) \[Bruno Rocha\]
 - Fix #976 from envvars parse True/False as booleans (#983) [Bruno
   Rocha]
 
   Only when reading from envvars True and False will be transformed to lowercase to allow toml parser.
-- Hotfix bypass evaluation #984 (#985) [Bruno Rocha]
+- Hotfix bypass evaluation #984 (#985) \[Bruno Rocha\]
 - Hooking: Add support for changing the wrapped class (#975) [Bruno
   Rocha]
 
@@ -274,7 +274,7 @@ Changelog
       - `_get_data_by_key` refactored for dotted path traversal
       - access to integer indexes on dotted path removed, we gonna implement later as `key._1_`
       - Fixed the acceptance of keys with other types
-- Release version 3.2.1. [Bruno Rocha]
+- Release version 3.2.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -319,7 +319,7 @@ Fix
 
 Other
 ~~~~~
-- Release version 3.2.1. [Bruno Rocha]
+- Release version 3.2.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -374,7 +374,7 @@ Other
   * try using latest docker-compose binary
 
   * add note about docker-compose on contributing.md
-- Build docs. [Bruno Rocha]
+- Build docs. \[Bruno Rocha\]
 - Release version 3.2.0. [pedro-psb]
 
   Shortlog of commits since last release:
@@ -395,7 +395,7 @@ Other
             Fix hooks not re-running on reload #850 (#953)
             update vault and redis warning recommendations. fix #950 (#954)
             Fix - Enable merge equal False (#957)
-- Add tech preview note to inspect docs (#961) [Bruno Rocha]
+- Add tech preview note to inspect docs (#961) \[Bruno Rocha\]
 - Fix #959 cli get will exit code 1 in case of KeyError. (#960) [Bruno
   Rocha]
 - Fix - Enable merge equal False (#957) [Pedro Pessoa]
@@ -405,9 +405,9 @@ Other
 
   * fix hooks not re-running on reload #850 by clearing `settings._loaded_hooks`
 - Cancel any running CI job when a Push is made to an existing PR or
-  branch (#952) [Bruno Rocha]
+  branch (#952) \[Bruno Rocha\]
 - Fix - Django functions with `add_converter` (#951) [Pedro Pessoa]
-- Ignore docs build without a tag. [Bruno Rocha]
+- Ignore docs build without a tag. \[Bruno Rocha\]
 - Fix infinite recursions in special case of django app #867 (#947)
   [Pedro Pessoa]
 - Assert #658 works (#945) [Pedro Pessoa]
@@ -507,7 +507,7 @@ Other
   * doc: add clarification on root_path, load_file and related
 
   * add complementary info at  docstrings
-- Update FUNDING.yml. [Bruno Rocha]
+- Update FUNDING.yml. \[Bruno Rocha\]
 - Feature - Allow system environment fallback in `get()` #742 (#916)
   [Pedro Pessoa]
 
@@ -518,7 +518,7 @@ Other
   * fix formmating
 
   * remove linux-specific test for sysenv_fallback
-- Remove codecov (#918) [Bruno Rocha]
+- Remove codecov (#918) \[Bruno Rocha\]
 - Fix - Add support for lowercase `envvar_prefix` in DynaconfFlask (Fix
   #848) (#915) [Pedro Pessoa]
 
@@ -687,8 +687,8 @@ Other
   * add clarification on preferred way of loading settings
 
   ---------
-- Update doc-ignore.yml. [Bruno Rocha]
-- Update doc-ignore.yml. [Bruno Rocha]
+- Update doc-ignore.yml. \[Bruno Rocha\]
+- Update doc-ignore.yml. \[Bruno Rocha\]
 
   I guess name must be the same as the required on main
 - Add workflow to run when only docs change. fix #886 (#888) [Pedro
@@ -704,7 +704,7 @@ Other
   * add faq page to docs
 
   * add faq page to docs. fix #880
-- Fix #876 - avoid failure on deleted cwd (#877) [Bruno Rocha]
+- Fix #876 - avoid failure on deleted cwd (#877) \[Bruno Rocha\]
 
   * Fix #876 no error if cwd is deleted and file is abs
 
@@ -720,7 +720,7 @@ Other
   * Pass merge argument from `loaders.write` to `loader.write` reflect the expected behavior described in the documentation
 
   * Change argument order
-- Release version 3.1.12. [Bruno Rocha]
+- Release version 3.1.12. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -775,7 +775,7 @@ Fix
 
 Other
 ~~~~~
-- Release version 3.1.12. [Bruno Rocha]
+- Release version 3.1.12. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -819,11 +819,11 @@ Other
 
       jmeichle (1):
             Add support for VAULT_NAMESPACE_FOR_DYNACONF (#854)
-- Fix casting on Validator and improve docs (#873) [Bruno Rocha]
+- Fix casting on Validator and improve docs (#873) \[Bruno Rocha\]
 
   fix: #823
   fix: #834
-- Fix lint error. [Bruno Rocha]
+- Fix lint error. \[Bruno Rocha\]
 - Small typo fix. (#822) [Bruno Rocha, Florian Apolloner]
 - Fix typos in envvars docs (#840) [Bruno Rocha, Bryan Weber]
 - Include license files for vendored deps (#841) [Bruno Rocha, Maxwell
@@ -854,14 +854,14 @@ Other
 - #817 Add note about defining root_path when testing (#818) [Tetiana]
 
   fix #817
-- Hotfix func tests (#816) [Bruno Rocha]
-- [bugfix] Fix access of keys with spaces (#815) [Bruno Rocha]
+- Hotfix func tests (#816) \[Bruno Rocha\]
+- [bugfix] Fix access of keys with spaces (#815) \[Bruno Rocha\]
 
   Fix #814
 - Ensure `dynaconf get` returns a valid json string. (#813) [Bruno
   Rocha]
-- Bump dev version to 3.1.12. [Bruno Rocha]
-- Release version 3.1.11. [Bruno Rocha]
+- Bump dev version to 3.1.12. \[Bruno Rocha\]
+- Release version 3.1.11. \[Bruno Rocha\]
 
   This release is a hotfix on top of 3.1.10
 
@@ -876,7 +876,7 @@ Other
 
 3.1.11 (2022-09-22)
 -------------------
-- Release version 3.1.11. [Bruno Rocha]
+- Release version 3.1.11. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -884,8 +884,8 @@ Other
             Release version 3.1.10
             Release hotfix (no need to run coverage or include tests_functional)
 - Release hotfix (no need to run coverage or include tests_functional)
-  [Bruno Rocha]
-- Release version 3.1.10. [Bruno Rocha]
+  \[Bruno Rocha\]
+- Release version 3.1.10. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -961,7 +961,7 @@ Fix
 
 Other
 ~~~~~
-- Release version 3.1.10. [Bruno Rocha]
+- Release version 3.1.10. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1026,9 +1026,9 @@ Other
 
       Vicente Marçal (1):
             docs(pt-br): Docs Translation to brazilian portugues. (#787)
-- Add missing tomllib to monify script. [Bruno Rocha]
-- Ensure pyminify is on release script. [Bruno Rocha]
-- AUTO_CAST can be enabled on instance (#811) [Bruno Rocha]
+- Add missing tomllib to monify script. \[Bruno Rocha\]
+- Ensure pyminify is on release script. \[Bruno Rocha\]
+- AUTO_CAST can be enabled on instance (#811) \[Bruno Rocha\]
 
   Fix #772
 - Rebind current env when forced for Pytest Fix #728 (#809) [Bruno
@@ -1044,32 +1044,32 @@ Other
   Found via this command:
 
       codespell -S "./dynaconf/vendor/*,./docs/pt-br/*,./.mypy_cache/*,*.svg" -L hashi
-- Test runner docs and styling (#806) [Bruno Rocha]
+- Test runner docs and styling (#806) \[Bruno Rocha\]
 
   * Test runner docs and styling
 
   * No emojis on windows
-- Add a functional test runner (#805) [Bruno Rocha]
+- Add a functional test runner (#805) \[Bruno Rocha\]
 
   * Add a functional test runner
 
   * Renamed example/ to tests_functional/
-- Fix get command with Django (#804) [Bruno Rocha]
+- Fix get command with Django (#804) \[Bruno Rocha\]
 
   Fix #789
 - Parse negative numbers from envvar Fix #799 and Fix #585 (#802) [Bruno
   Rocha]
-- Fix codecov (#801) [Bruno Rocha]
+- Fix codecov (#801) \[Bruno Rocha\]
 
   * Fix codecov
 
   * call coverage xml
-- Replacing rochacbruno/ with dynaconf/ (#800) [Bruno Rocha]
+- Replacing rochacbruno/ with dynaconf/ (#800) \[Bruno Rocha\]
 
   * Replacing rochacbruno/ with dynaconf/
 
   * xscode doesn't exist anymore
-- Removed vendor_src folder (#798) [Bruno Rocha]
+- Removed vendor_src folder (#798) \[Bruno Rocha\]
 
   * Removed vendor_src folder
 
@@ -1084,7 +1084,7 @@ Other
   - tomlib follows 1.0.0 spec
   - toml allows emojis and unicode chars unencoded
   - tomllib foolows the spec where only encoded chars are allowed
-- Add test and docs about includes (#796) [Bruno Rocha]
+- Add test and docs about includes (#796) \[Bruno Rocha\]
 
   closes #794
 - New data key casing must adapt to existing key casing (#795) [Bruno
@@ -1100,9 +1100,9 @@ Other
   * Put header one level down in  docs.
 - Feature/detect casting comb token from converters (#784) [Joren Retel]
 - Envars.md typo fix (#786) [Amadou Crookes]
-- Fix CI. [Bruno Rocha]
-- Demo repo will be replaced by a video tutorial soon. [Bruno Rocha]
-- Update badges. [Bruno Rocha]
+- Fix CI. \[Bruno Rocha\]
+- Demo repo will be replaced by a video tutorial soon. \[Bruno Rocha\]
+- Update badges. \[Bruno Rocha\]
 - Documentation fixes (#771) [Bruno Rocha, Pedro de Medeiros]
 - Add a Gitter chat badge to README.md (#776) [Bruno Rocha, The Gitter
   Badger]
@@ -1124,8 +1124,8 @@ Other
   * add `from __future__ import annotations` across the codebase
 
   * add `from __future__ import annotations` in examples
-- Bump dev version to 3.1.10. [Bruno Rocha]
-- Release version 3.1.9. [Bruno Rocha]
+- Bump dev version to 3.1.10. \[Bruno Rocha\]
+- Release version 3.1.9. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1144,7 +1144,7 @@ Other
 
 3.1.9 (2022-06-06)
 ------------------
-- Release version 3.1.9. [Bruno Rocha]
+- Release version 3.1.9. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1159,13 +1159,13 @@ Other
 
       dependabot[bot] (1):
             Bump django from 2.2.27 to 2.2.28 in /example/django_pytest_pure (#743)
-- Update docs site (#758) [Bruno Rocha]
+- Update docs site (#758) \[Bruno Rocha\]
 - Organize pre-commit setup (#757) [João Gustavo A. Amorim]
-- Multiple fixes for 3.19 (#756) [Bruno Rocha]
+- Multiple fixes for 3.19 (#756) \[Bruno Rocha\]
 - Bump django from 2.2.27 to 2.2.28 in /example/django_pytest_pure
   (#743) [dependabot[bot], dependabot[bot]]
-- Bye py 3.7. [Bruno Rocha]
-- Release version 3.1.8. [Bruno Rocha]
+- Bye py 3.7. \[Bruno Rocha\]
+- Release version 3.1.8. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1237,7 +1237,7 @@ Other
 
 3.1.8 (2022-04-15)
 ------------------
-- Release version 3.1.8. [Bruno Rocha]
+- Release version 3.1.8. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1310,8 +1310,8 @@ Other
   Benassayag, Ugo Benassayag]
 - [automated] Update Contributors File (#732) [github-actions[bot],
   rochacbruno]
-- Added `dynaconf get` command to cli (#730) [Bruno Rocha]
-- Fixing pre-coomit and docs CI. [Bruno Rocha]
+- Added `dynaconf get` command to cli (#730) \[Bruno Rocha\]
+- Fixing pre-coomit and docs CI. \[Bruno Rocha\]
 - Fix typo in error message. [Armin Berres]
 
   It is, e.g., REDIS_HOST_FOR_DYNACONF - not REDIS_FOR_DYNACONF_HOST.
@@ -1335,7 +1335,7 @@ Other
   EdwardCuiPeacock]
 - Document the usage with python -m (#710) [Anderson Sousa, Bruno Rocha]
 - Fix FlaskConfig.setdefault (#706) [Eitan Mosenkis]
-- Create update_contributors.yml. [Bruno Rocha]
+- Create update_contributors.yml. \[Bruno Rocha\]
 - Improvement: update socialcard to match the python way (#687) [Caneco]
 - Improvement: add brand new logo to the project (#686) [Caneco]
 - Edit: move discussions to github tab (#682) [Enderson Menezes (Mr.
@@ -1348,17 +1348,17 @@ Other
 - Fix Issue 662 Lazy validation (#675) [Gibran Herrera]
 - Force PYTHONIOENCODING to utf-8 to fix #664 (#672) [Enderson Menezes
   (Mr. Enderson)]
-- Attempt to fix #555 (#669) [Bruno Rocha]
+- Attempt to fix #555 (#669) \[Bruno Rocha\]
 - Add new validation to fix issue #585 (#667) [Andressa Cabistani,
   andressa.cabistani]
-- Add support for Python 3.10 (#665) [Bruno Rocha]
+- Add support for Python 3.10 (#665) \[Bruno Rocha\]
 
   Python 3.10 supported and tested
 - Found this bug that was duplicating the generated envlist (#663)
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 - Add unique label when merging lists to fix issue #653 (#661) [Andressa
   Cabistani, andressa.cabistani]
-- Release version 3.1.7. [Bruno Rocha]
+- Release version 3.1.7. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1369,15 +1369,15 @@ Other
 
 3.1.7 (2021-09-09)
 ------------------
-- Release version 3.1.7. [Bruno Rocha]
+- Release version 3.1.7. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
       Bruno Rocha (2):
             Release version 3.1.6
             Add missing docs and missing python_requires (#659)
-- Add missing docs and missing python_requires (#659) [Bruno Rocha]
-- Release version 3.1.6. [Bruno Rocha]
+- Add missing docs and missing python_requires (#659) \[Bruno Rocha\]
+- Release version 3.1.6. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1446,7 +1446,7 @@ Other
 
 3.1.6 (2021-09-09)
 ------------------
-- Release version 3.1.6. [Bruno Rocha]
+- Release version 3.1.6. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1511,11 +1511,11 @@ Other
 
       puntonim (1):
             Fix typo (#588)
-- Bump dev version. [Bruno Rocha]
+- Bump dev version. \[Bruno Rocha\]
 
   [skip ci]
-- Bye Azure (#657) [Bruno Rocha]
-- Move to Github Actions (#656) [Bruno Rocha]
+- Bye Azure (#657) \[Bruno Rocha\]
+- Move to Github Actions (#656) \[Bruno Rocha\]
 
   * Move to Github Actions
 
@@ -1524,21 +1524,21 @@ Other
   Fix #640
 
   * Enabled Vault and REdis
-- Add support for dynaconf_hooks(post) issue #654 (#655) [Bruno Rocha]
-- Update FUNDING.yml. [Bruno Rocha]
+- Add support for dynaconf_hooks(post) issue #654 (#655) \[Bruno Rocha\]
+- Update FUNDING.yml. \[Bruno Rocha\]
 - Fix a typo in the docs. [Linus Torvalds]
 - Fix typo (#647) [Ambient Lighter]
-- Delete requirements.txt. [Bruno Rocha]
-- Fix #491 pytest django Fix #491 pytest and django (#646) [Bruno Rocha]
-- Fix #596 django override (#645) [Bruno Rocha]
+- Delete requirements.txt. \[Bruno Rocha\]
+- Fix #491 pytest django Fix #491 pytest and django (#646) \[Bruno Rocha\]
+- Fix #596 django override (#645) \[Bruno Rocha\]
 
   * Fix #596 django.test.override issue
 
   * Fix CI side effects
-- Remove dependabot (this project has no dependencies) [Bruno Rocha]
-- Update codaci badge (#636) [Bruno Rocha]
-- Add myoy and pre-commit to CI (#635) [Bruno Rocha]
-- Description and type annotation for validator (#634) [Bruno Rocha]
+- Remove dependabot (this project has no dependencies) \[Bruno Rocha\]
+- Update codaci badge (#636) \[Bruno Rocha\]
+- Add myoy and pre-commit to CI (#635) \[Bruno Rocha\]
+- Description and type annotation for validator (#634) \[Bruno Rocha\]
 - Add a warning if `--env` is passed to `init` (#629) [Bruno Rocha,
   Bruno Rocha, Robert Rosca]
 
@@ -1573,8 +1573,8 @@ Other
   fixes #569
 
   * Fix test coverage and added some comments.
-- Update FUNDING.yml. [Bruno Rocha]
-- Fix black issues (#631) [Bruno Rocha]
+- Update FUNDING.yml. \[Bruno Rocha\]
+- Fix black issues (#631) \[Bruno Rocha\]
 - Feat: add filter strategy with PrefixFilter (#625) [Nicholas Dentandt]
 - Fix typo (#588) [Bruno Rocha, puntonim]
 - Added an example using FastAPI (#571) [Bruno Rocha, Yusuf Kaka]
@@ -1592,7 +1592,7 @@ Other
 - Update configuration.md (#553) [Bruno Rocha, Konstantin]
 
   Change spelling error
-- HOTFIX: Add coverage for 2 lines on validators. [Bruno Rocha]
+- HOTFIX: Add coverage for 2 lines on validators. \[Bruno Rocha\]
 - Add the ability for selective validation (#549) [Bruno Rocha, Jacob
   Callahan]
 
@@ -1619,21 +1619,21 @@ Other
   - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
   - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
   - [Commits](https://github.com/squidfunk/mkdocs-material/compare/7.0.5...7.0.6)
-- Removed release_notes from the docs. (#550) [Bruno Rocha]
+- Removed release_notes from the docs. (#550) \[Bruno Rocha\]
 
   * removed release_notes from the docs.
 
   towncrier will be implemented soon
 
   * fix #551
-- Demo link (#546) [Bruno Rocha]
+- Demo link (#546) \[Bruno Rocha\]
 
   * Add demo link, add better docstring.
 
   > **DEMO:** You can see a working demo here: https://github.com/rochacbruno/learndynaconf
 
   * add reference to Rust hydroconf
-- Release version 3.1.4. [Bruno Rocha]
+- Release version 3.1.4. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1649,7 +1649,7 @@ Other
 
 3.1.5 (2021-08-20)
 ------------------
-- Release version 3.1.5. [Bruno Rocha]
+- Release version 3.1.5. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1667,9 +1667,9 @@ Other
 
       Tanya Tereshchenko (1):
             Do not search anywhere if the absolute path to a file provided (#570)
-- Delete requirements.txt. [Bruno Rocha]
-- Fix #491 pytest django Fix #491 pytest and django (#646) [Bruno Rocha]
-- Fix #596 django override (#645) [Bruno Rocha]
+- Delete requirements.txt. \[Bruno Rocha\]
+- Fix #491 pytest django Fix #491 pytest and django (#646) \[Bruno Rocha\]
+- Fix #596 django override (#645) \[Bruno Rocha\]
 
   * Fix #596 django.test.override issue
 
@@ -1704,7 +1704,7 @@ Other
 
 3.1.4 (2021-03-08)
 ------------------
-- Release version 3.1.4. [Bruno Rocha]
+- Release version 3.1.4. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1717,7 +1717,7 @@ Other
             Bump mkdocs-material from 6.1.6 to 7.0.4 (#537)
             Bump mkdocs-material from 7.0.4 to 7.0.5 (#539)
 - HOTFIX for 462 related issue, `default` on .get should be parsed as
-  Box (#541) [Bruno Rocha]
+  Box (#541) \[Bruno Rocha\]
 
   objects
 
@@ -1725,7 +1725,7 @@ Other
   and converted to Boxed objects.
 
   https://github.com/rochacbruno/dynaconf/issues/462
-- HOTFIX for 501 (#540) [Bruno Rocha]
+- HOTFIX for 501 (#540) \[Bruno Rocha\]
 
   Flask still missing __contains__
 - Bump mkdocs-material from 7.0.4 to 7.0.5 (#539) [dependabot-
@@ -1742,7 +1742,7 @@ Other
   - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
   - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
   - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.1.6...7.0.4)
-- Release version 3.1.3. [Bruno Rocha]
+- Release version 3.1.3. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1762,7 +1762,7 @@ Fix
 
 Other
 ~~~~~
-- Release version 3.1.3. [Bruno Rocha]
+- Release version 3.1.3. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1771,7 +1771,7 @@ Other
             Fix #462 make DynaBox nested List to use DynaBox as default class (#533)
             Fix #478 Make alias for environment -> environments (#534)
             Test to ensure #467 is not an issue (#535)
-- Test to ensure #467 is not an issue (#535) [Bruno Rocha]
+- Test to ensure #467 is not an issue (#535) \[Bruno Rocha\]
 
   Closes #467
 - Fix #478 Make alias for environment -> environments (#534) [Bruno
@@ -1781,10 +1781,10 @@ Other
 
   Fix #478
 - Fix #462 make DynaBox nested List to use DynaBox as default class
-  (#533) [Bruno Rocha]
+  (#533) \[Bruno Rocha\]
 
   Fix #462
-- Release version 3.1.3rc1. [Bruno Rocha]
+- Release version 3.1.3rc1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1825,7 +1825,7 @@ Other
       mirrorrim (1):
             Fix reading secret from Vault kv v2 (#483) (#487)
 - Fix #511 allow user to specify loaders argument to execute_loaders
-  (#531) [Bruno Rocha]
+  (#531) \[Bruno Rocha\]
 
   Fix #511
 
@@ -1836,31 +1836,31 @@ Other
   Rocha]
 
   I can't reproduce the bug #492 but I added a test to ensure.
-- Fix #449 - Django lazy templating Fix #449 (#528) [Bruno Rocha]
+- Fix #449 - Django lazy templating Fix #449 (#528) \[Bruno Rocha\]
 
   * Fix django laxy templates fix #449
 
   * Delete unused files
 
   * Fix LOADERS enabling
-- Fix #482 - formatter case insensitive (#527) [Bruno Rocha]
+- Fix #482 - formatter case insensitive (#527) \[Bruno Rocha\]
 
   * Fix #482 - formatter using both upper and lowercase access
 
   Fix #482
 
   * add more testes covering nested formatting
-- Allow Title case lookup and validation. (#526) [Bruno Rocha]
+- Allow Title case lookup and validation. (#526) \[Bruno Rocha\]
 
   Fix #486
-- Allow load_file to accept pathlib.Path (#525) [Bruno Rocha]
+- Allow load_file to accept pathlib.Path (#525) \[Bruno Rocha\]
 
   * Allow load_file to accept pathlib.Path
 
   Fix #494
 
   * python 3.6 can't handle Pathlib base path addition to os.path
-- Case insensitive envvar traversal (#524) [Bruno Rocha]
+- Case insensitive envvar traversal (#524) \[Bruno Rocha\]
 
   * Envvar traversal is now case insensitive - Fix #519 and fix #516
 
@@ -1876,7 +1876,7 @@ Other
 
   * Add functional test for issue #519
 - Fix #521 - FlaskDynaconf should raise KeyError for non existing keys
-  (#522) [Bruno Rocha]
+  (#522) \[Bruno Rocha\]
 
   * Fix #521 - FlaskDynaconf should raise KeyError for non existing keys
 
@@ -1890,7 +1890,7 @@ Other
   * Remove duplicated contains from dynaconf
 - Fix reading secret from Vault kv v2 (#483) (#487) [Alexey Tylindus,
   mirrorrim]
-- Fix docs regarding --django argument on cli (#477) [Bruno Rocha]
+- Fix docs regarding --django argument on cli (#477) \[Bruno Rocha\]
 
   fix #465
   fix #451
@@ -1949,7 +1949,7 @@ Other
   - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
   - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
   - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.0.2...6.1.0)
-- Fix #445 casting on dottet get. (#446) [Bruno Rocha]
+- Fix #445 casting on dottet get. (#446) \[Bruno Rocha\]
 
   * Fix #445 casting on dottet get.
 
@@ -1958,7 +1958,7 @@ Other
   Fix #445
 
   * better handling of casting data
-- Release version 3.1.2. [Bruno Rocha]
+- Release version 3.1.2. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -1988,7 +1988,7 @@ Other
 
 3.1.2 (2020-10-08)
 ------------------
-- Release version 3.1.2. [Bruno Rocha]
+- Release version 3.1.2. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2029,16 +2029,16 @@ Other
   - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
   - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
   - [Commits](https://github.com/squidfunk/mkdocs-material/compare/6.0.1...6.0.2)
-- Close #284 not a bug (#440) [Bruno Rocha]
+- Close #284 not a bug (#440) \[Bruno Rocha\]
 
   284 is not a bug but a missing of explicit merge tokens
-- Add test to ensure fix #430 (#439) [Bruno Rocha]
+- Add test to ensure fix #430 (#439) \[Bruno Rocha\]
 
   I could not reproduce the problem resported on #430
   considering it close #430
   reopen as needed.
 - Fix #432 no need for warning when env is missing on a file (#438)
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   When env is missing on a file there is no need to output
   a warning.
@@ -2046,7 +2046,7 @@ Other
   All envs are optional on files.
 
   Fix #432
-- Fix #434 setenv failing to unset LazyValues (#437) [Bruno Rocha]
+- Fix #434 setenv failing to unset LazyValues (#437) \[Bruno Rocha\]
 
   Fix #434
 - Bump mkdocs-material from 5.5.13 to 6.0.1 (#436) [dependabot-
@@ -2062,8 +2062,8 @@ Other
   Bumps [pymdown-extensions](https://github.com/facelessuser/pymdown-extensions) from 8.0 to 8.0.1.
   - [Release notes](https://github.com/facelessuser/pymdown-extensions/releases)
   - [Commits](https://github.com/facelessuser/pymdown-extensions/compare/8.0...8.0.1)
-- Fix colors and KEyError handling on cli.py (#429) [Bruno Rocha]
-- Remove links to outdated issues from guidelines. [Bruno Rocha]
+- Fix colors and KEyError handling on cli.py (#429) \[Bruno Rocha\]
+- Remove links to outdated issues from guidelines. \[Bruno Rocha\]
 - Bump mkdocs-material-extensions from 1.0 to 1.0.1 (#427) [dependabot-
   preview[bot]]
 
@@ -2088,17 +2088,17 @@ Other
   - [Release notes](https://github.com/squidfunk/mkdocs-material/releases)
   - [Changelog](https://github.com/squidfunk/mkdocs-material/blob/master/docs/changelog.md)
   - [Commits](https://github.com/squidfunk/mkdocs-material/compare/5.3.2...5.5.13)
-- Fix mkdocs config problem found in #423. [Bruno Rocha]
+- Fix mkdocs config problem found in #423. \[Bruno Rocha\]
 
   Fix #mkdocs-material/1941
-- Fixing prospector warnings. (#425) [Bruno Rocha]
+- Fixing prospector warnings. (#425) \[Bruno Rocha\]
 
   * Fixing prospector warnings
 
   * Used vulture to detect and remove dead code
-- Update docs/release_notes. [Bruno Rocha]
-- Update diagram images. [Bruno Rocha]
-- Release version 3.1.1. [Bruno Rocha]
+- Update docs/release_notes. \[Bruno Rocha\]
+- Update diagram images. \[Bruno Rocha\]
+- Release version 3.1.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2109,23 +2109,23 @@ Other
 
 3.1.1 (2020-09-21)
 ------------------
-- Release version 3.1.1. [Bruno Rocha]
+- Release version 3.1.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
       Bruno Rocha (2):
             Release version 3.1.1rc6
             HOTFIX: Cli now accepts dotter keys
-- HOTFIX: Cli now accepts dotter keys. [Bruno Rocha]
-- Release version 3.1.1rc6. [Bruno Rocha]
+- HOTFIX: Cli now accepts dotter keys. \[Bruno Rocha\]
+- Release version 3.1.1rc6. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
       Bruno Rocha (2):
             Release version 3.1.1rc5
             Do not include vendor_src on wheel target (#420)
-- Do not include vendor_src on wheel target (#420) [Bruno Rocha]
-- Release version 3.1.1rc5. [Bruno Rocha]
+- Do not include vendor_src on wheel target (#420) \[Bruno Rocha\]
+- Release version 3.1.1rc5. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2133,7 +2133,7 @@ Other
             Release version 3.1.1rc4
             Small fix on release script
             Minification of vendored modules (#419)
-- Minification of vendored modules (#419) [Bruno Rocha]
+- Minification of vendored modules (#419) \[Bruno Rocha\]
 
   * Minified all the vendor folder saving 50% od disk space
 
@@ -2141,10 +2141,10 @@ Other
 
   vendor_src is not included in the build, only the results of its
   minification
-- Small fix on release script. [Bruno Rocha]
+- Small fix on release script. \[Bruno Rocha\]
 
   Correct path for mkdocs.yml
-- Release version 3.1.1rc4. [Bruno Rocha]
+- Release version 3.1.1rc4. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2152,9 +2152,9 @@ Other
             Release version 3.1.1rc3
             HOTFIX: Add missing instruction to release.sh
             Added full Dynaconf Diagram and few fizes. (#418)
-- Added full Dynaconf Diagram and few fizes. (#418) [Bruno Rocha]
-- HOTFIX: Add missing instruction to release.sh. [Bruno Rocha]
-- Release version 3.1.1rc3. [Bruno Rocha]
+- Added full Dynaconf Diagram and few fizes. (#418) \[Bruno Rocha\]
+- HOTFIX: Add missing instruction to release.sh. \[Bruno Rocha\]
+- Release version 3.1.1rc3. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2170,12 +2170,12 @@ Other
 
       Mirek Długosz (1):
             Fix #407 - add proper equality test for CombinedValidator (#413)
-- HOTFIX 414 update docs version on release. [Bruno Rocha]
+- HOTFIX 414 update docs version on release. \[Bruno Rocha\]
 
   Fix #414
 - Fix #404 no more dup message on combined validators (#417) [Bruno
   Rocha]
-- 384 fix tail and dotted merge (#415) [Bruno Rocha]
+- 384 fix tail and dotted merge (#415) \[Bruno Rocha\]
 
   * attempt to fix tail call on object_merge Fix #384
 
@@ -2187,7 +2187,7 @@ Other
   * Fix #407 - add proper equality test for CombinedValidator
 
   * Update after review
-- Fix set attribute directly and fresh vars (#412) [Bruno Rocha]
+- Fix set attribute directly and fresh vars (#412) \[Bruno Rocha\]
 
   * Fix set attribute directly and fresh vars
 
@@ -2195,7 +2195,7 @@ Other
   Fix #395
 
   * No need to check for default_settings in setattr
-- Release version 3.1.1rc2. [Bruno Rocha]
+- Release version 3.1.1rc2. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2208,7 +2208,7 @@ Other
   Dynaconf was trying to detect a lazy value by the existence
   of `formatter` attribute but in Django when the value is a logging
   it has `.formatter` attribute.
-- Release version 3.1.1rc1. [Bruno Rocha]
+- Release version 3.1.1rc1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2251,12 +2251,12 @@ Other
 
       whg517 (1):
             docs: Fixed filename error in the case of the index page (#396)
-- Included example of custom SOPS loader to the docs. [Bruno Rocha]
+- Included example of custom SOPS loader to the docs. \[Bruno Rocha\]
 - Add auth username and password for redis settings (#378) [Bruno Rocha,
   Jiranun Jiratrakanvong, Jiranun Jiratrakanvong]
-- Merge branch 'vault' into master. [Bruno Rocha]
-- Boto is optional. [Bruno Rocha]
-- Merge branch 'master' into vault. [Bruno Rocha]
+- Merge branch 'vault' into master. \[Bruno Rocha\]
+- Boto is optional. \[Bruno Rocha\]
+- Merge branch 'master' into vault. \[Bruno Rocha\]
 - Fix a typo (#393) [Bruno Rocha, Nikolai Bessonov]
 - Fix typo in Validation docs (#394) [Bruno Rocha, Christoph Schmatzler]
 - Correct typos in documentation and README (#400) [Bruno Rocha, Martijn
@@ -2282,14 +2282,14 @@ Other
   `Validator("foo", "bar", must_exist=False)` would **not** raise
   ValidationError - it would return after checking that first name
   indeed is not defined.
-- Allow nested Lazy Values (#405) [Bruno Rocha]
+- Allow nested Lazy Values (#405) \[Bruno Rocha\]
 
   Fix #392
   Fix #402
 - Merge branch 'master' into vault. [Peng Yin]
-- HOTFIX: Add missing vendor.txt. [Bruno Rocha]
+- HOTFIX: Add missing vendor.txt. \[Bruno Rocha\]
 - Fix #391 make box_settings optional, change vendoring strategy (#398)
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   - Revert DynaBox box_settings to be optional
   - Change vendoring strategy
@@ -2300,8 +2300,8 @@ Other
 - Fix format. [Peng Yin]
 - Add option to auth vault with iam role. [Peng Yin]
 - Read all secrets under a vault path. [Peng Yin]
-- Create FUNDING.yml. [Bruno Rocha]
-- Release version 3.1.0. [Bruno Rocha]
+- Create FUNDING.yml. \[Bruno Rocha\]
+- Release version 3.1.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2329,7 +2329,7 @@ Other
 
 3.1.0 (2020-08-14)
 ------------------
-- Release version 3.1.0. [Bruno Rocha]
+- Release version 3.1.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2356,21 +2356,21 @@ Other
 - Allow importing SEARCHTREE before settings are configured (#383)
   [Andreas Poehlmann]
 - Allow testing against local redis server (#387) [John Vandenberg]
-- Fix #382 add is_overridden method (#390) [Bruno Rocha]
+- Fix #382 add is_overridden method (#390) \[Bruno Rocha\]
 
   Fix #382 add is_overridden method for DJDT
-- Fix #388 URL reference for custom loaders (#389) [Bruno Rocha]
+- Fix #388 URL reference for custom loaders (#389) \[Bruno Rocha\]
 
   Fix #388 URL reference for custom loaders
-- Fix #377 allow computed values (#386) [Bruno Rocha]
+- Fix #377 allow computed values (#386) \[Bruno Rocha\]
 
   This fixes #377 by allowing Validator to provide default values.
-- Fix #379 dict like iteration (#385) [Bruno Rocha]
+- Fix #379 dict like iteration (#385) \[Bruno Rocha\]
 
   * Fix #379 add missing __iter__ and items
 
   * Fix docs
-- Flask fizes and other issues included. (#376) [Bruno Rocha]
+- Flask fizes and other issues included. (#376) \[Bruno Rocha\]
 
   Fix #323
   Fix #325
@@ -2386,7 +2386,7 @@ Other
 - Fix #359 lazy template substitution on nested keys (#375) [Bruno
   Rocha]
 - Removing invalid links, adding allert on old docs  fix #369 and fix
-  #371 (#372) [Bruno Rocha]
+  #371 (#372) \[Bruno Rocha\]
 - Merge branch 'master' of github.com:rochacbruno/dynaconf. [Bruno
   Rocha]
 - Fix validation of optional fields (#370) [Bruno Rocha
@@ -2396,8 +2396,8 @@ Other
   * Fix validation of optional fields
 
   * More concise code
-- Hot fix removing unused imports. [Bruno Rocha]
-- Release version 3.0.0. [Bruno Rocha]
+- Hot fix removing unused imports. \[Bruno Rocha\]
+- Release version 3.0.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2411,7 +2411,7 @@ Other
 
 3.0.0 (2020-06-29)
 ------------------
-- Release version 3.0.0. [Bruno Rocha]
+- Release version 3.0.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2421,17 +2421,17 @@ Other
             Writing new docs page 1 (#364)
             Add netlify (#366)
             Add netlify runtime file...
-- Add netlify runtime file... [Bruno Rocha]
-- Add netlify (#366) [Bruno Rocha]
-- Writing new docs page 1 (#364) [Bruno Rocha]
+- Add netlify runtime file... \[Bruno Rocha\]
+- Add netlify (#366) \[Bruno Rocha\]
+- Writing new docs page 1 (#364) \[Bruno Rocha\]
 
   * porting docs to mkdocs
 
   * Docs First Page
 
   * New docs ok
-- Improvements on CLI and init command (#363) [Bruno Rocha]
-- Release version 3.0.0rc2. [Bruno Rocha]
+- Improvements on CLI and init command (#363) \[Bruno Rocha\]
+- Release version 3.0.0rc2. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2473,14 +2473,14 @@ Other
 
       sfunkhouser (1):
             Add option to override default mount_point for vault (#349)
-- NO more logger and debug messages (#362) [Bruno Rocha]
+- NO more logger and debug messages (#362) \[Bruno Rocha\]
 
   * logger and DEBUG_LEVEL has gone.
 
   * Add logger as a backwards compat method
-- No more loading of `settings.*` by default (#361) [Bruno Rocha]
-- Dotenv is no more loaded by default (#360) [Bruno Rocha]
-- Envless by default - breaking change ⚠️ (#358) [Bruno Rocha]
+- No more loading of `settings.*` by default (#361) \[Bruno Rocha\]
+- Dotenv is no more loaded by default (#360) \[Bruno Rocha\]
+- Envless by default - breaking change ⚠️ (#358) \[Bruno Rocha\]
 
   * ⚠️ Turning the default to be the envless mode (this is breaking change) ⚠️
 
@@ -2493,43 +2493,43 @@ Other
   * CLI default to global instance with warnings
 - Merge branch 'master' of github.com:rochacbruno/dynaconf. [Bruno
   Rocha]
-- Lowecase read allowed by default (#357) [Bruno Rocha]
+- Lowecase read allowed by default (#357) \[Bruno Rocha\]
 
   * DEPRECATED global settings object.
 
   No more `from dynaconf import settings`
 
   * Lower case first level keys are now allowed by default
-- DEPRECATED global settings object. (#356) [Bruno Rocha]
+- DEPRECATED global settings object. (#356) \[Bruno Rocha\]
 
   No more `from dynaconf import settings`
-- DEPRECATED global settings object. [Bruno Rocha]
+- DEPRECATED global settings object. \[Bruno Rocha\]
 
   No more `from dynaconf import settings`
-- Add note about quoting in env vars (#347) [Bruno Rocha]
-- Validator improvements on conditions (#353) [Bruno Rocha]
+- Add note about quoting in env vars (#347) \[Bruno Rocha\]
+- Validator improvements on conditions (#353) \[Bruno Rocha\]
 
   * Validators improvements
 
   * add cast argument to validators
 - Add option to override default mount_point for vault (#349)
   [sfunkhouser]
-- Clean tox installation for local testing (#346) [Bruno Rocha]
-- Vendoring dependencies Fix #301 (#345) [Bruno Rocha]
+- Clean tox installation for local testing (#346) \[Bruno Rocha\]
+- Vendoring dependencies Fix #301 (#345) \[Bruno Rocha\]
 - Fix #298 allow auto complete for editors and console (#339) [Bruno
   Rocha]
 
   implemented `__dir__` on Settings and Dynabox
-- Fix #272 allow access of lowercase keys (#338) [Bruno Rocha]
+- Fix #272 allow access of lowercase keys (#338) \[Bruno Rocha\]
 
   - `settings.lowercase_key` is allowed
   - `settings.dynaconf` is a proxy to internal methods
   - `settings.__reserved_attributes` validates key names
   - `LazySettings __init__ parameters can receive lower case configs`
-- Add ENVLESS_MODE (#337) [Bruno Rocha]
+- Add ENVLESS_MODE (#337) \[Bruno Rocha\]
 - S/DYNACONF_ENV/ENV_FOR_DYNACONF (#335) [Jeff Wayne]
 - Fixed comma typo (#334) [Nicholas Nadeau, Ph.D., P.Eng]
-- Add support for config aliases (#332) [Bruno Rocha]
+- Add support for config aliases (#332) \[Bruno Rocha\]
 
   All _FOR_DYNACONF can now be aliased when passing to LazySettings.
 - Insert news validator conditions: (len_eq, len_ne, len_min, len_max,
@@ -2548,7 +2548,7 @@ Other
   * Black sugest
 
   * Change of the term contd to cont, in order to avoid false interpretation.
-- Better exception handling on env_loader (#316) [Bruno Rocha]
+- Better exception handling on env_loader (#316) \[Bruno Rocha\]
 - Added little information about how dev into this project. (#321)
   [Bernardo Gomes]
 - Adding f string (#319) [Bernardo Gomes]
@@ -2571,7 +2571,7 @@ Other
 
   * Little bugfix f of f-string inside of the string.
 - Fix minor typo in Flask extension docs (#318) [Marcos Benevides]
-- Release version 3.0.0rc1. [Bruno Rocha]
+- Release version 3.0.0rc1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2593,25 +2593,25 @@ Other
 
       dependabot-preview[bot] (1):
             Unpinning python-box, removing box_it_up and default_box arguments (#279)
-- HOTFIX - tox.ini drops 3.5. [Bruno Rocha]
+- HOTFIX - tox.ini drops 3.5. \[Bruno Rocha\]
 - Fix #306 - does not defaults to merge, deprecated reset - [Breaking
-  Change] (#315) [Bruno Rocha]
+  Change] (#315) \[Bruno Rocha\]
 
   - Don't default to `merge` for `__` variables
   - Made `@merge` more explicit and smart
   - Deprecated `@reset`
 - Unpinning python-box, removing box_it_up and default_box arguments
   (#279) [Bruno Rocha, dependabot-preview[bot]]
-- Default to ruamel.yaml when it is available. (#313) [Bruno Rocha]
-- Fix #288 - Nullable values (#300) [Bruno Rocha]
+- Default to ruamel.yaml when it is available. (#313) \[Bruno Rocha\]
+- Fix #288 - Nullable values (#300) \[Bruno Rocha\]
 
   * Attempt to fix #288 (needs more debugging)
 
   * Fixing bug on DynaBox.get
 - Fix issue #305 - printing and exporting LazyFormat (#312) [Bruno
   Rocha]
-- Merge branch '304-ShowDataTypeListCli' [Bruno Rocha]
-- Changed text format and fixed tests. [Bruno Rocha]
+- Merge branch '304-ShowDataTypeListCli' \[Bruno Rocha\]
+- Changed text format and fixed tests. \[Bruno Rocha\]
 - Changed CLI list to show data type of the envvars to fix #304.
   [Vicente Marçal]
 - Added OSX builds to the Azure Pipeline (#307) [Tiago Cordeiro]
@@ -2621,7 +2621,7 @@ Other
   * Added OSX builds to the Azure Pipeline
 
   * skip docker tests on macOS
-- Release version 2.2.3. [Bruno Rocha]
+- Release version 2.2.3. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2648,7 +2648,7 @@ Other
 
 2.2.3 (2020-02-28)
 ------------------
-- Release version 2.2.3. [Bruno Rocha]
+- Release version 2.2.3. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2671,7 +2671,7 @@ Other
       dependabot-preview[bot] (2):
             Update python-dotenv requirement from <=0.10.3 to <0.10.6
             Update python-dotenv requirement from <0.10.6 to <0.11.1
-- Unpin dependencies. [Bruno Rocha]
+- Unpin dependencies. \[Bruno Rocha\]
 - Update python-dotenv requirement from <0.10.6 to <0.11.1. [dependabot-
   preview[bot]]
 
@@ -2679,12 +2679,12 @@ Other
   - [Release notes](https://github.com/theskumar/python-dotenv/releases)
   - [Changelog](https://github.com/theskumar/python-dotenv/blob/master/CHANGELOG.md)
   - [Commits](https://github.com/theskumar/python-dotenv/compare/v0.1.1...v0.11.0)
-- Fix #203 document the usage with pytest (with examples) [Bruno Rocha]
-- Overriding strategy test. [Bruno Rocha]
+- Fix #203 document the usage with pytest (with examples) \[Bruno Rocha\]
+- Overriding strategy test. \[Bruno Rocha\]
 - Fix #145 allow lazy format using os.environ and settings values.
-  [Bruno Rocha]
-- Add t.me badge fix #262. [Bruno Rocha]
-- Fix #273 add Flask load extensions method. [Bruno Rocha]
+  \[Bruno Rocha\]
+- Add t.me badge fix #262. \[Bruno Rocha\]
+- Fix #273 add Flask load extensions method. \[Bruno Rocha\]
 
   - This commit adds a new method `load_extensions` to
   `FlaskDynaconf` class.
@@ -2700,7 +2700,7 @@ Other
 
   Fix pre-commit to run python3 rather than python3.7
 - Fix pre-commit to run python3 rather than python3.7. [Hildeberto]
-- Release version 2.2.2. [Bruno Rocha]
+- Release version 2.2.2. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2715,7 +2715,7 @@ Other
 
 2.2.2 (2019-12-26)
 ------------------
-- Release version 2.2.2. [Bruno Rocha]
+- Release version 2.2.2. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2726,7 +2726,7 @@ Other
 
       Hildeberto (1):
             Close #178. Included integration tests redis/vault
-- Pin python-box version because of a breaking release. [Bruno Rocha]
+- Pin python-box version because of a breaking release. \[Bruno Rocha\]
 
   The release of python-box https://github.com/cdgriffith/Box/pull/116
   is a breaking change.
@@ -2734,9 +2734,9 @@ Other
   So pinning this until this project adapts.
 
   Also pinning other direct deps.
-- Fix #258 custom message for validators. [Bruno Rocha]
+- Fix #258 custom message for validators. \[Bruno Rocha\]
 - Close #178. Included integration tests redis/vault. [Hildeberto]
-- Release version 2.2.1. [Bruno Rocha]
+- Release version 2.2.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2775,7 +2775,7 @@ Fix
 
 Other
 ~~~~~
-- Release version 2.2.1. [Bruno Rocha]
+- Release version 2.2.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2803,9 +2803,9 @@ Other
             fix str comparison
             changing quote logic
             fix open error @py3.5
-- Fix coverage for validators. [Bruno Rocha]
+- Fix coverage for validators. \[Bruno Rocha\]
 - Fix #266 created new variable FORCE_ENV to override ENV_FOR_DYNACONF.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 - Adjust remote upstream URL. [Hildeberto]
 - Update sensitive_secrets.md. [Emmanuel Nosa Evbuomwan]
 
@@ -2824,7 +2824,7 @@ Other
   NOTE to SELF: Never! use a mutable memoized data
                 Always use `==` to compare when you dont know the types
 - Add ara as a user of dynaconf (#252) [David Moreau Simard]
-- Release version 2.2.0. [Bruno Rocha]
+- Release version 2.2.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2844,7 +2844,7 @@ Other
 
 2.2.0 (2019-10-09)
 ------------------
-- Release version 2.2.0. [Bruno Rocha]
+- Release version 2.2.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2860,8 +2860,8 @@ Other
 
       paskozdilar (1):
             fix crash on empty settings (#242)
-- Add support for PRELOAD_ setting. (#244) [Bruno Rocha]
-- Fix #241 new merge standards (#243) [Bruno Rocha]
+- Add support for PRELOAD_ setting. (#244) \[Bruno Rocha\]
+- Fix #241 new merge standards (#243) \[Bruno Rocha\]
 
   Adds dynaconf_merge and @merge for better merge standards. ref #241
 - Fix crash on empty settings (#242) [paskozdilar]
@@ -2872,13 +2872,13 @@ Other
 
   * fix PEP 8 issue (expected 2 blank lines, found 1)
 - Replace key.upper with `upperfy` function that keeps `__` attributes
-  (#240) [Bruno Rocha]
+  (#240) \[Bruno Rocha\]
 - Fix #236 added .local. files loading and module impersonation docs
-  (#239) [Bruno Rocha]
+  (#239) \[Bruno Rocha\]
 
   also MERGE_ENABLED is no more deprecated.
 - Fixing how filename.local.* files are loaded (#238) [Kedar Kulkarni]
-- Release version 2.1.1. [Bruno Rocha]
+- Release version 2.1.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2900,7 +2900,7 @@ Other
 
 2.1.1 (2019-09-16)
 ------------------
-- Release version 2.1.1. [Bruno Rocha]
+- Release version 2.1.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2919,21 +2919,21 @@ Other
       Kedar Kulkarni (1):
             Fixing self._root_path to fall back to os.getcwd() only when `settings.load_file` is called directly or from includes (#232)
 - When both enabled, Vault has the priority over Redis for overriding
-  (#234) [Bruno Rocha]
+  (#234) \[Bruno Rocha\]
 - Dynaconf init will not write all possible envs, only [default] (#233)
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 - Fixing self._root_path to fall back to os.getcwd() only when
   `settings.load_file` is called directly or from includes (#232) [Kedar
   Kulkarni]
 - Improvement to close #230 - do not throw error for base envs. (#231)
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 - Fix #228 add `ignore` argument to Django explicit mode. (#229) [Bruno
   Rocha]
 - Fix typo in CLI init (#227) [Dave Barnow]
 - Add info about dunder envvars on django.md docs guide (#226) [Bruno
   Rocha]
-- Improve validators to use `from_env` method (#225) [Bruno Rocha]
-- Release version 2.1.0. [Bruno Rocha]
+- Improve validators to use `from_env` method (#225) \[Bruno Rocha\]
+- Release version 2.1.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2961,7 +2961,7 @@ Other
 
 2.1.0 (2019-09-05)
 ------------------
-- Release version 2.1.0. [Bruno Rocha]
+- Release version 2.1.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -2986,15 +2986,15 @@ Other
             Added responsive table fix
             Fix format
 - Fix #221 removed JSON,YAML,INI,TOML cosntants from default_settings
-  (#223) [Bruno Rocha]
+  (#223) \[Bruno Rocha\]
 
   Default settings should hold only constants ending in _FOR_DYNACONF
 - Fix `make test_examples` to use better assertions, redis and vault
-  loader now respects `envs` (#222) [Bruno Rocha]
+  loader now respects `envs` (#222) \[Bruno Rocha\]
 - Hotfix: next release will be 2.1.0 because new features added. (#220)
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 - Adds `from_env` method and change `_store` to be a `DynaBox` (#219)
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 - Add `list_envs` function to vault loader and now envs can have `_` on
   its name. [Kedar Kulkarni]
 
@@ -3008,18 +3008,18 @@ Other
   ```bash
   dynaconf list -o path/to/file.yaml --output-flat
   ```
-- Fix #197 add support for DOTTED__ENV__VARS (#215) [Bruno Rocha]
+- Fix #197 add support for DOTTED__ENV__VARS (#215) \[Bruno Rocha\]
 
   * Fix #197 add support for DOTTED__ENV__VARS
 
   * Full support for `__` - @reset and @del markers
-- Merge branch 'dgarcia360-master' [Bruno Rocha]
+- Merge branch 'dgarcia360-master' \[Bruno Rocha\]
 - Fix format. [dgarcia360]
 - Added responsive table fix. [dgarcia360]
 - Updated configuration options table to csv table. [dgarcia360]
 - Fix typo in documentation for a Validator class (#213) [Pavel
   Alimpiev]
-- Release version 2.0.4. [Bruno Rocha]
+- Release version 2.0.4. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3041,7 +3041,7 @@ Other
 
 2.0.4 (2019-08-22)
 ------------------
-- Release version 2.0.4. [Bruno Rocha]
+- Release version 2.0.4. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3090,7 +3090,7 @@ Other
   * Fix code style
 - Update usage.md (#195) [Tanveer Alam]
 - Update usage.md (#196) [Tanveer Alam]
-- Release version 2.0.3. [Bruno Rocha]
+- Release version 2.0.3. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3107,7 +3107,7 @@ Other
 
 2.0.3 (2019-06-27)
 ------------------
-- Release version 2.0.3. [Bruno Rocha]
+- Release version 2.0.3. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3120,7 +3120,7 @@ Other
 
       Raoul Snyman (1):
             Use the Key Value API rather than the old 'read' and 'write' methods (#198)
-- Fix #194 flask.app.config __setitem__ (#199) [Bruno Rocha]
+- Fix #194 flask.app.config __setitem__ (#199) \[Bruno Rocha\]
 
   Flask.config was not proxying __setitem__ attribute so this
   change adds a call to __setitem__ on contrib/flask_dynaconf
@@ -3128,7 +3128,7 @@ Other
   (#198) [Raoul Snyman]
 - Catch BoxKeyError when contents are TOML parsable but not keyable
   (#192) [Jan Willhaus]
-- Release version 2.0.2. [Bruno Rocha]
+- Release version 2.0.2. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3151,7 +3151,7 @@ Other
 
 2.0.2 (2019-04-29)
 ------------------
-- Release version 2.0.2. [Bruno Rocha]
+- Release version 2.0.2. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3171,11 +3171,11 @@ Other
             Hide DeprecationWarning from Pytest when testing for them (#186)
             Replace logging.basicConfig with handler on logger (#187)
 - Fix #189 added `settings.as_dict()` and `dynaconf list -o file.json`
-  (#191) [Bruno Rocha]
+  (#191) \[Bruno Rocha\]
 - Fix #184 - workdir should walk to root in ipython REPL (#190) [Bruno
   Rocha]
 - Fix #179 dynaconf cli shows only user defined vars unless -a used
-  (#188) [Bruno Rocha]
+  (#188) \[Bruno Rocha\]
 
   Command `dynaconf list` will show only user defined vars
   IF `--all|-a` is passed then it includes internal variables.
@@ -3197,14 +3197,14 @@ Other
   * Fix mistaken reference to ENVVAR_PREFIX
 
   * Fix typo
-- Add example and test for issue #182 (#183) [Bruno Rocha]
+- Add example and test for issue #182 (#183) \[Bruno Rocha\]
 
   * Add working example for issue 182
 
   * Option 2 added
 
   * Allowed `settings.load_file` programmatically
-- Removed pytest-xdist (#181) [Bruno Rocha]
+- Removed pytest-xdist (#181) \[Bruno Rocha\]
 
   Now tests run in a separate tmpdir so xdist is not needed anymore
 - Fix `False` not being an acceptable env (#176) [Jan Willhaus]
@@ -3214,9 +3214,9 @@ Other
   * Additional testcase for prefix being false from envvar
 
   * unset envvar_prefix after test
-- Adhering to Github Community Standards (#175) [Bruno Rocha]
-- Add note to release script. [Bruno Rocha]
-- Release version 2.0.1. [Bruno Rocha]
+- Adhering to Github Community Standards (#175) \[Bruno Rocha\]
+- Add note to release script. \[Bruno Rocha\]
+- Release version 2.0.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3249,7 +3249,7 @@ Other
 
 2.0.1 (2019-04-22)
 ------------------
-- Release version 2.0.1. [Bruno Rocha]
+- Release version 2.0.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3278,30 +3278,30 @@ Other
       Jan Willhaus (2):
             Skip reloading envs for validators that only apply to current_env (#162)
             Fix #163 Allow disabling env prefix (#164)
-- Fix release script. [Bruno Rocha]
+- Fix release script. \[Bruno Rocha\]
 - Add CONTRIBUTING.md, contrib instructions and Black badge (#174)
-  [Bruno Rocha]
-- Fix #151 setup pre-commit and black (#173) [Bruno Rocha]
+  \[Bruno Rocha\]
+- Fix #151 setup pre-commit and black (#173) \[Bruno Rocha\]
 
   * Add pre-commit to makefile
 
   * Fix #151 setup pre-commit and black
 - Fix some open file descriptors on exampls and tests (#172) [Bruno
   Rocha]
-- HOTFIX config.md on docs [skip ci] (#171) [Bruno Rocha]
+- HOTFIX config.md on docs [skip ci] (#171) \[Bruno Rocha\]
 - Fix #169 renamed SETTINGS_MODULE_ to SETTINGS_FILE_ (#170) [Bruno
   Rocha]
 
   Backwards compatibility maintained!
-- Fix #166 renamed GLOBAL_ENV_ to ENVVAR_PREFIX_ (#168) [Bruno Rocha]
+- Fix #166 renamed GLOBAL_ENV_ to ENVVAR_PREFIX_ (#168) \[Bruno Rocha\]
 
   * Fix #166 renamed GLOBAL_ENV_ to ENVVAR_PREFIX_
 
   See #166
 
   * Added django compat example
-- Generate coverage.xml file (#167) [Bruno Rocha]
-- Add explicit call to main() on cli.py (#165) [Bruno Rocha]
+- Generate coverage.xml file (#167) \[Bruno Rocha\]
+- Add explicit call to main() on cli.py (#165) \[Bruno Rocha\]
 
   To use click-web tool the module should be able to be explicitly called. `python -m dynaconf.cli`
 - Fix #163 Allow disabling env prefix (#164) [Jan Willhaus, janw
@@ -3330,12 +3330,12 @@ Other
 
   * Change mock call assertions for support in Py3.5
 - Fix #160 - invoking directory should not be search breaking point.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   Search should stop at breaking point  only if ROOT_PATH is defined
-- Fix Typo in issue template. [Bruno Rocha]
-- Adjusts issue templates. [Bruno Rocha]
-- Update issue templates. [Bruno Rocha]
+- Fix Typo in issue template. \[Bruno Rocha\]
+- Adjusts issue templates. \[Bruno Rocha\]
+- Update issue templates. \[Bruno Rocha\]
 - Logger is now cached (removed logging import time overhead) [Bruno
   Rocha]
 
@@ -3349,9 +3349,9 @@ Other
 
   - improved docs and badges.
 - Fix typos in bash export examples. [David Moreau Simard]
-- HOTIX: Django doc. [Bruno Rocha]
-- Added Django explicit mode to docs (#149) [Bruno Rocha]
-- Release version 2.0.0. [Bruno Rocha]
+- HOTIX: Django doc. \[Bruno Rocha\]
+- Added Django explicit mode to docs (#149) \[Bruno Rocha\]
+- Release version 2.0.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3413,7 +3413,7 @@ Other
 
 2.0.0 (2019-04-09)
 ------------------
-- Release version 2.0.0. [Bruno Rocha]
+- Release version 2.0.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3471,7 +3471,7 @@ Other
       mspinelli (2):
             fixed infinite recursion caused by copy()
             add tests for dynabox fix
-- Preparing for 2.0.0. [Bruno Rocha]
+- Preparing for 2.0.0. \[Bruno Rocha\]
 
   Dynaconf 2.0.0
 
@@ -3500,7 +3500,7 @@ Other
   - Added new _FOR_DYNACONF config options ENV_SWITCHER, SKIP_FILES, INCLUDES & SECRETS
   - Renamed config PROJECT_ROOT -> ROOT_PATH
 - Add dynaconf_merge functionality for dict and list settings. (#139)
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   If your settings has existing variables of types `list` or `dict` and you want to `merge` instead of `override` then
   the `dynaconf_merge` and `dynaconf_merge_unique` stanzas can mark that variable as a candidate for merging.
@@ -3595,17 +3595,17 @@ Other
   > Note that `deploy.sh` is set 3 times but it is not repeated in the final settings.
 
   The **dynaconf_merge** functionality works only for the first level keys, it will not merge subdicts or nested lists (yet).
-- Set up CI with Azure Pipelines (#142) [Bruno Rocha]
+- Set up CI with Azure Pipelines (#142) \[Bruno Rocha\]
 
   - setup azure pipelines ci
   - remove travis
   - fix windows support
-- Add dynaconf_include examples. [Bruno Rocha]
-- Fix #110 add docs for dynaconf_include. [Bruno Rocha]
+- Add dynaconf_include examples. \[Bruno Rocha\]
+- Fix #110 add docs for dynaconf_include. \[Bruno Rocha\]
 
   fix #110
 - Fix #117 add support for extra secrets file (like for jenkins CI)
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   Now it is possible to export SECRETS_FOR_DYNACONF and have this
   extra point loaded, like in a Jenkins CI you can specify on job.
@@ -3620,16 +3620,16 @@ Other
   ```
 
   That variable can also be a list of paths.
-- Fix #122 allow disable of core loaders, added examples. [Bruno Rocha]
+- Fix #122 allow disable of core loaders, added examples. \[Bruno Rocha\]
 - Fix #127 add configurable yaml loader method, default to full_load.
-  [Bruno Rocha]
-- Fix #125 settings_module not being set on .configure() [Bruno Rocha]
+  \[Bruno Rocha\]
+- Fix #125 settings_module not being set on .configure() \[Bruno Rocha\]
 - Fix #129 on settings file, single keys should be case insensitive.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 - GH-111: Fix MERGE_ENABLED merging settings with themselves. [Aaron
   DeVore]
-- Add top contributors. [Bruno Rocha]
-- Release version 1.2.1. [Bruno Rocha]
+- Add top contributors. \[Bruno Rocha\]
+- Release version 1.2.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3676,7 +3676,7 @@ Other
 
 1.2.1 (2019-03-11)
 ------------------
-- Release version 1.2.1. [Bruno Rocha]
+- Release version 1.2.1. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3736,9 +3736,9 @@ Other
 - Add environments into the path in Vault so that the same Vault server
   can be used for multiple environments. [Raoul Snyman]
 - Fix typo. [Byungjin Park]
-- Drop Python 3.4. [Bruno Rocha]
-- Tox is now part of pre-publish command. [Bruno Rocha]
-- Release version 1.2.0. [Bruno Rocha]
+- Drop Python 3.4. \[Bruno Rocha\]
+- Tox is now part of pre-publish command. \[Bruno Rocha\]
+- Release version 1.2.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3773,7 +3773,7 @@ Other
 
 1.2.0 (2018-11-30)
 ------------------
-- Release version 1.2.0. [Bruno Rocha]
+- Release version 1.2.0. \[Bruno Rocha\]
 
   Shortlog of commits since last release:
 
@@ -3804,13 +3804,13 @@ Other
       mspinelli (2):
             fixed infinite recursion caused by copy()
             add tests for dynabox fix
-- Add release script and CHANGELOG in place of history. [Bruno Rocha]
+- Add release script and CHANGELOG in place of history. \[Bruno Rocha\]
 - Add tests for dynabox fix. [mspinelli]
 - Update dynaconf/utils/boxing.py. [Bruno Rocha, mspinelli]
 - Update dynaconf/utils/boxing.py. [Bruno Rocha, mspinelli]
 - Fixed infinite recursion caused by copy() [mspinelli]
 - Fix #106 make PROJECT_ROOT_FOR_DYNACONF to work with custom paths.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   Added example/project_root and entry on Makefile:test_examples
 - Update django.md. [Jaepil Koh]
@@ -3848,7 +3848,7 @@ Other
     test anything and I found, that `dynaconf validate` command don't even
     work and raises ValidationError if there are any validation errors.
     Changed that to cli friendly error message.
-- Merge branch 'jperras-merge-multiple-settings-files' [Bruno Rocha]
+- Merge branch 'jperras-merge-multiple-settings-files' \[Bruno Rocha\]
 - Remove extraneous lines. [Joel Perras]
 - Handle nested includes in settings files. [Joel Perras]
 
@@ -3921,14 +3921,14 @@ Other
 
 1.1.0 (2018-10-26)
 ------------------
-- Released 1.1.0. [Bruno Rocha]
+- Released 1.1.0. \[Bruno Rocha\]
 
   - Added `MERGE_ENABLED_FOR_DYNACONF` with ability to merge nested dictionaries instead of replacing PR #88
   - Support for dot notation to access nested dictionaries like `settings['KEY.OTHER.NESTED.DEEPER']` PR #93
   - Support dotted notation for validators PR #98
   - Fixed a bug in SETTINGS_MODULE cleanup when `.setenv` method was called PR #97
   - Added Python 3.7 to test matrix PR #99
-- Fixing new flake8 warnings. [Bruno Rocha]
+- Fixing new flake8 warnings. \[Bruno Rocha\]
 - Update py.test command in tox to allow passing positional arguments.
   [Joel Perras]
 
@@ -3950,7 +3950,7 @@ Other
   Adds some additional tests for the `Missing` class and singleton
   instance usage to ensure it returns equality only for comparisons to
   itself and not `None`, or `False`, or `True`.
-- Merge branch 'jperras-dotted-validators' [Bruno Rocha]
+- Merge branch 'jperras-dotted-validators' \[Bruno Rocha\]
 - Updates Missing singleton with __eq__ dunder. [Joel Perras]
 
   Adds some additional tests for the `Missing` class and singleton
@@ -3990,11 +3990,11 @@ Other
   definition in action.
 
   Closes rochacbruno/dynaconf#85.
-- Fix #94 setenv cleans SETTINGS_MODULE attribute. [Bruno Rocha]
-- Merge branch 'jperras-dot-traversal-access' [Bruno Rocha]
+- Fix #94 setenv cleans SETTINGS_MODULE attribute. \[Bruno Rocha\]
+- Merge branch 'jperras-dot-traversal-access' \[Bruno Rocha\]
 - Merge branch 'dot-traversal-access' of
   https://github.com/jperras/dynaconf into jperras-dot-traversal-access.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 - Allow dot-traversal access to nested dictionaries. [Joel Perras]
 
   A simple memoized recursion has been added to `get()` if the key
@@ -4020,8 +4020,8 @@ Other
   - Examples added [✓]
 
   Closes rochacbruno/dynaconf#84
-- Merge branch 'rsnyman-merge-settings' [Bruno Rocha]
-- Add example for merge_configs. [Bruno Rocha]
+- Merge branch 'rsnyman-merge-settings' \[Bruno Rocha\]
+- Add example for merge_configs. \[Bruno Rocha\]
 - Add setting merging. [Raoul Snyman]
 
   - Add the ability to merge nested structures instead of completely overwriting them
@@ -4031,11 +4031,11 @@ Other
 
 1.0.6 (2018-09-13)
 ------------------
-- Release 1.0.6. [Bruno Rocha]
+- Release 1.0.6. \[Bruno Rocha\]
 
   Fixed issue #81 -  added ENCODING_FOR_DYNACONF to handle different settings files encodings specially on Windows
 - Add ENCODING_FOR_DYNACONF to handle different file encoding Fix #81.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   By default ENCODING_FOR_DYNACONF is utf-8 (recommended to always write settings files in utf-8)
   If you need to change the format of settings file set the variable:
@@ -4047,16 +4047,16 @@ Other
 
 1.0.5 (2018-09-07)
 ------------------
-- Bump dev version. [Bruno Rocha]
+- Bump dev version. \[Bruno Rocha\]
 - Added few more enhancements to django and flask extensions + docs.
-  [Bruno Rocha]
-- Bump dev version. [Bruno Rocha]
+  \[Bruno Rocha\]
+- Bump dev version. \[Bruno Rocha\]
 
 
 1.0.4 (2018-09-07)
 ------------------
-- Fix the definition of Django prefixed variable. [Bruno Rocha]
-- Merge pull request #78 from mattkatz/patch-1. [Bruno Rocha]
+- Fix the definition of Django prefixed variable. \[Bruno Rocha\]
+- Merge pull request #78 from mattkatz/patch-1. \[Bruno Rocha\]
 
   small corrections for usage.md
 - Small corrections for usage.md. [Matt Katz]
@@ -4066,14 +4066,14 @@ Other
   There must be AT LEAST one default section.
 
   Changed **ATTENTION** to **ATTENTION**: to match with the style of **NOTE:**
-- Merge pull request #75 from yoyonel/master. [Bruno Rocha]
+- Merge pull request #75 from yoyonel/master. \[Bruno Rocha\]
 
   Fix in 'dynaconf/base.py' for __getitem__ method
 - Bump version. [latty]
 - [Fix] in 'dynaconf/base.py' for __getitem__ method, change (fix) the
   condition to raise a exception. Update unit tests. Bump version.
   [latty]
-- Release 1.0.3. [Bruno Rocha]
+- Release 1.0.3. \[Bruno Rocha\]
 
   - Excluded example and tests from release dist
   - removed root logger configuration
@@ -4081,23 +4081,23 @@ Other
 
 1.0.3 (2018-06-26)
 ------------------
-- Merge pull request #72 from chobeat/issue_71. [Bruno Rocha]
+- Merge pull request #72 from chobeat/issue_71. \[Bruno Rocha\]
 
   Removed root config
 - Removed root config. [Simone Robutti]
-- Merge pull request #70 from allan-silva/master. [Bruno Rocha]
+- Merge pull request #70 from allan-silva/master. \[Bruno Rocha\]
 
   Exclude example and tests folders from setup (twitter help wanted)
 - Exclude example and tests folders from setup (twitter help wanted)
   [allan.silva]
-- Merge pull request #67 from cassiobotaro/patch-1. [Bruno Rocha]
+- Merge pull request #67 from cassiobotaro/patch-1. \[Bruno Rocha\]
 
   Incorrect help
 - Fix docs. [cassiobotaro]
 - Incorrect help. [Cássio Botaro]
 
   For while is impossible to use --to as argument.
-- Merge pull request #66 from gpkc/patch-1. [Bruno Rocha]
+- Merge pull request #66 from gpkc/patch-1. \[Bruno Rocha\]
 
   Fixing typos
 - Merge pull request #1 from gpkc/patch-2. [Guilherme Caminha]
@@ -4105,8 +4105,8 @@ Other
   Update README.md
 - Update README.md. [Guilherme Caminha]
 - Update usage.md. [Guilherme Caminha]
-- Adjust logs to include python module names. [Bruno Rocha]
-- Fix sphinx aafig syntax for python 3.x. [Bruno Rocha]
+- Adjust logs to include python module names. \[Bruno Rocha\]
+- Fix sphinx aafig syntax for python 3.x. \[Bruno Rocha\]
 
 
 1.0.2 (2018-05-31)
@@ -4115,82 +4115,82 @@ Other
   Rocha]
 
   Add install test stage
-- Add -y. [Bruno Rocha]
-- Add install test stage. [Bruno Rocha]
-- Fix loader import error and improved logs. [Bruno Rocha]
-- Clean up [skip ci] [Bruno Rocha]
-- Fix URL generation in markdown for sphinx [skip ci] [Bruno Rocha]
-- Merge pull request #64 from rochacbruno/improve_docs. [Bruno Rocha]
+- Add -y. \[Bruno Rocha\]
+- Add install test stage. \[Bruno Rocha\]
+- Fix loader import error and improved logs. \[Bruno Rocha\]
+- Clean up [skip ci] \[Bruno Rocha\]
+- Fix URL generation in markdown for sphinx [skip ci] \[Bruno Rocha\]
+- Merge pull request #64 from rochacbruno/improve_docs. \[Bruno Rocha\]
 
   Improved documentation
-- Improved documentation. [Bruno Rocha]
-- [skip ci] [Bruno Rocha]
+- Improved documentation. \[Bruno Rocha\]
+- [skip ci] \[Bruno Rocha\]
 
 
 1.0.1 (2018-05-30)
 ------------------
 - Merge pull request #63 from rochacbruno/adds_more_python_versions.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   Adds more python versions
-- Cover. [Bruno Rocha]
-- Cover. [Bruno Rocha]
-- Skip 3.7-dev. [Bruno Rocha]
-- More trabis build stages. [Bruno Rocha]
-- Add missing .env. [Bruno Rocha]
-- Fix #60 CLI validator command. [Bruno Rocha]
-- Fix #59 cli commands working for Flask and Django apps. [Bruno Rocha]
-- Fixes to support Python 3.4, 3.5 and 3.6 Fix #62. [Bruno Rocha]
-- Strict use of _FOR_DYNACONF envvars. [Bruno Rocha]
-- Aafigure. [Bruno Rocha]
-- Pinned docutils. [Bruno Rocha]
-- Rtfd fix. [Bruno Rocha]
-- Add rtfd yml. [Bruno Rocha]
-- Added init file to docs. [Bruno Rocha]
-- Add import path. [Bruno Rocha]
-- Docs. [Bruno Rocha]
-- Finished README with all the new implementations. [Bruno Rocha]
+- Cover. \[Bruno Rocha\]
+- Cover. \[Bruno Rocha\]
+- Skip 3.7-dev. \[Bruno Rocha\]
+- More trabis build stages. \[Bruno Rocha\]
+- Add missing .env. \[Bruno Rocha\]
+- Fix #60 CLI validator command. \[Bruno Rocha\]
+- Fix #59 cli commands working for Flask and Django apps. \[Bruno Rocha\]
+- Fixes to support Python 3.4, 3.5 and 3.6 Fix #62. \[Bruno Rocha\]
+- Strict use of _FOR_DYNACONF envvars. \[Bruno Rocha\]
+- Aafigure. \[Bruno Rocha\]
+- Pinned docutils. \[Bruno Rocha\]
+- Rtfd fix. \[Bruno Rocha\]
+- Add rtfd yml. \[Bruno Rocha\]
+- Added init file to docs. \[Bruno Rocha\]
+- Add import path. \[Bruno Rocha\]
+- Docs. \[Bruno Rocha\]
+- Finished README with all the new implementations. \[Bruno Rocha\]
 
 
 1.0.0 (2018-05-28)
 ------------------
 - Merge pull request #56 from
-  rochacbruno/all_the_namespace_changed_to_env. [Bruno Rocha]
+  rochacbruno/all_the_namespace_changed_to_env. \[Bruno Rocha\]
 
   Major Breaking Refactor related to #54
-- Travis fix 2. [Bruno Rocha]
-- Travis global fix. [Bruno Rocha]
-- Travis fix for new style toml envvars. [Bruno Rocha]
+- Travis fix 2. \[Bruno Rocha\]
+- Travis global fix. \[Bruno Rocha\]
+- Travis fix for new style toml envvars. \[Bruno Rocha\]
 - Deprecated `@type` casting in favor of TOML syntax, rewriting readme.
-  [Bruno Rocha]
-- Add `settings.flag` [Bruno Rocha]
-- Using `dynaconf write` in test_redis|vault. [Bruno Rocha]
-- Added `dynaconf --docs` [Bruno Rocha]
-- Added `dynaconf --version` [Bruno Rocha]
-- Removed transformators. [Bruno Rocha]
-- 100% coverage for validators. [Bruno Rocha]
-- Increase cli test coverage. [Bruno Rocha]
-- Dynaconf variables in blue and user variables in green. [Bruno Rocha]
-- Added `dynaconf list` and `dynaconf write` subcommands. [Bruno Rocha]
-- More cli commands list and write. [Bruno Rocha]
-- Added more tests for cli and py loader. [Bruno Rocha]
-- Replaced coveralls with codecov #57. [Bruno Rocha]
-- Modularized the loaders, added `dynaconf init` command. [Bruno Rocha]
+  \[Bruno Rocha\]
+- Add `settings.flag` \[Bruno Rocha\]
+- Using `dynaconf write` in test_redis|vault. \[Bruno Rocha\]
+- Added `dynaconf --docs` \[Bruno Rocha\]
+- Added `dynaconf --version` \[Bruno Rocha\]
+- Removed transformators. \[Bruno Rocha\]
+- 100% coverage for validators. \[Bruno Rocha\]
+- Increase cli test coverage. \[Bruno Rocha\]
+- Dynaconf variables in blue and user variables in green. \[Bruno Rocha\]
+- Added `dynaconf list` and `dynaconf write` subcommands. \[Bruno Rocha\]
+- More cli commands list and write. \[Bruno Rocha\]
+- Added more tests for cli and py loader. \[Bruno Rocha\]
+- Replaced coveralls with codecov #57. \[Bruno Rocha\]
+- Modularized the loaders, added `dynaconf init` command. \[Bruno Rocha\]
 - As environment variable the only prefix allowed is the GLOBAL_ENV..
-  default to DYNACONF_ [Bruno Rocha]
-- Added more examples/tests and test_cli. [Bruno Rocha]
-- Removed cleaners. [Bruno Rocha]
-- Major Breaking Refactor related to #54. [Bruno Rocha]
+  default to DYNACONF_ \[Bruno Rocha\]
+- Added more examples/tests and test_cli. \[Bruno Rocha\]
+- Removed cleaners. \[Bruno Rocha\]
+- Major Breaking Refactor related to #54. \[Bruno Rocha\]
 
 
 0.7.6 (2018-05-21)
 ------------------
 - Merge pull request #52 from rochacbruno/fix_namespace_in_django.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   Fix namespace switch in django apps
-- Add missing .env. [Bruno Rocha]
-- Fix namespace switch in django apps. [Bruno Rocha]
+- Add missing .env. \[Bruno Rocha\]
+- Fix namespace switch in django apps. \[Bruno Rocha\]
 
 
 0.7.5 (2018-05-20)
@@ -4199,57 +4199,57 @@ Other
   Rocha]
 
   Added django extension
-- 0.7.5 release with Django extension (experimental) [Bruno Rocha]
-- Dont commit dbs. [Bruno Rocha]
-- Added Django extension tests and example app. [Bruno Rocha]
-- Added Django extension. [Bruno Rocha]
+- 0.7.5 release with Django extension (experimental) \[Bruno Rocha\]
+- Dont commit dbs. \[Bruno Rocha\]
+- Added Django extension tests and example app. \[Bruno Rocha\]
+- Added Django extension. \[Bruno Rocha\]
 
 
 0.7.4 (2018-05-19)
 ------------------
-- Merge pull request #50 from rochacbruno/074. [Bruno Rocha]
+- Merge pull request #50 from rochacbruno/074. \[Bruno Rocha\]
 
   Fix precedence of namespace in loaders
-- Fix precedence of namespace in loaders. [Bruno Rocha]
-- Merge pull request #49 from thekashifmalik/patch-1. [Bruno Rocha]
+- Fix precedence of namespace in loaders. \[Bruno Rocha\]
+- Merge pull request #49 from thekashifmalik/patch-1. \[Bruno Rocha\]
 
   Fix typo in README.
 - Fix typo in README. [Kashif Malik]
-- HOTFIX: redis config. [Bruno Rocha]
-- Merge pull request #48 from rochacbruno/redis_tests. [Bruno Rocha]
+- HOTFIX: redis config. \[Bruno Rocha\]
+- Merge pull request #48 from rochacbruno/redis_tests. \[Bruno Rocha\]
 
   Added tests for Redis loader
-- Added tests for Redis loader. [Bruno Rocha]
-- Merge pull request #47 from rochacbruno/vault_tests. [Bruno Rocha]
+- Added tests for Redis loader. \[Bruno Rocha\]
+- Merge pull request #47 from rochacbruno/vault_tests. \[Bruno Rocha\]
 
   Added test for vaultproject
-- Fix deadlock in vault writer. [Bruno Rocha]
-- Added test for vaultproject. [Bruno Rocha]
+- Fix deadlock in vault writer. \[Bruno Rocha\]
+- Added test for vaultproject. \[Bruno Rocha\]
 
 
 0.7.3 (2018-05-13)
 ------------------
-- Merge pull request #45 from rochacbruno/vault_loader. [Bruno Rocha]
+- Merge pull request #45 from rochacbruno/vault_loader. \[Bruno Rocha\]
 
   Added support for vaultproject (hashi corp) loader
-- Added README section. [Bruno Rocha]
-- Added note to readme. [Bruno Rocha]
-- Added tests. [Bruno Rocha]
-- Fixing for python-box 3.2.0. [Bruno Rocha]
+- Added README section. \[Bruno Rocha\]
+- Added note to readme. \[Bruno Rocha\]
+- Added tests. \[Bruno Rocha\]
+- Fixing for python-box 3.2.0. \[Bruno Rocha\]
 - Added config AUTO_CAST_FOR_DYNACONF=off|0|disabled|false Suggested by
-  @danilobellini. [Bruno Rocha]
+  @danilobellini. \[Bruno Rocha\]
 - Fixed env variable for debug level in README.md. [Simone Robutti]
-- Implementation of Vault loader. [Bruno Rocha]
-- Vaultproject loader implementation. [Bruno Rocha]
-- Merge pull request #46 from rochacbruno/disable_cast. [Bruno Rocha]
+- Implementation of Vault loader. \[Bruno Rocha\]
+- Vaultproject loader implementation. \[Bruno Rocha\]
+- Merge pull request #46 from rochacbruno/disable_cast. \[Bruno Rocha\]
 
   Added config AUTO_CAST_FOR_DYNACONF=off|0|disabled|false
-- Added note to readme. [Bruno Rocha]
-- Added tests. [Bruno Rocha]
-- Fixing for python-box 3.2.0. [Bruno Rocha]
+- Added note to readme. \[Bruno Rocha\]
+- Added tests. \[Bruno Rocha\]
+- Fixing for python-box 3.2.0. \[Bruno Rocha\]
 - Added config AUTO_CAST_FOR_DYNACONF=off|0|disabled|false Suggested by
-  @danilobellini. [Bruno Rocha]
-- Merge pull request #44 from chobeat/patch-1. [Bruno Rocha]
+  @danilobellini. \[Bruno Rocha\]
+- Merge pull request #44 from chobeat/patch-1. \[Bruno Rocha\]
 
   Fixed env variable for debug level in README.md
 - Fixed env variable for debug level in README.md. [Simone Robutti]
@@ -4257,11 +4257,11 @@ Other
 
 0.7.2 (2018-05-07)
 ------------------
-- Added test for compat. [Bruno Rocha]
+- Added test for compat. \[Bruno Rocha\]
 - Added SETTINGS_MODULE to SETTINGS_MODULE_FOR_DYNACONF in compat.
-  [Bruno Rocha]
-- Added backwards compatibility for old style kwargs. [Bruno Rocha]
-- Merge pull request #30 from vladcalin/add-docs. [Bruno Rocha]
+  \[Bruno Rocha\]
+- Added backwards compatibility for old style kwargs. \[Bruno Rocha\]
+- Merge pull request #30 from vladcalin/add-docs. \[Bruno Rocha\]
 
   Add docs skeleton with autogenerated module docs
 - Add docs skeleton with autogenerated module docs. [Vlad Calin]
@@ -4269,68 +4269,68 @@ Other
 
 0.7.0 (2018-05-07)
 ------------------
-- README updates [ci skip] [Bruno Rocha]
-- Added support for `.secrets` files. [Bruno Rocha]
-- Merge pull request #43 from rochacbruno/test_coverage. [Bruno Rocha]
+- README updates [ci skip] \[Bruno Rocha\]
+- Added support for `.secrets` files. \[Bruno Rocha\]
+- Merge pull request #43 from rochacbruno/test_coverage. \[Bruno Rocha\]
 
   Adjusting ENVVARS names and better test coverage
-- Travis testing. [Bruno Rocha]
-- Adjust travis.yml for muultiple jobs. [Bruno Rocha]
-- Never cleans default keys. [Bruno Rocha]
-- Refactoring for better test cov. [Bruno Rocha]
-- Adjusting ENVVARS names and better test coverage. [Bruno Rocha]
+- Travis testing. \[Bruno Rocha\]
+- Adjust travis.yml for muultiple jobs. \[Bruno Rocha\]
+- Never cleans default keys. \[Bruno Rocha\]
+- Refactoring for better test cov. \[Bruno Rocha\]
+- Adjusting ENVVARS names and better test coverage. \[Bruno Rocha\]
 
 
 0.6.0 (2018-05-04)
 ------------------
-- Release of 0.6.0. [Bruno Rocha]
-- Merge pull request #42 from rochacbruno/fix41. [Bruno Rocha]
+- Release of 0.6.0. \[Bruno Rocha\]
+- Merge pull request #42 from rochacbruno/fix41. \[Bruno Rocha\]
 
   Fix #41
-- Fix #41. [Bruno Rocha]
-- Merge pull request #40 from rochacbruno/inifiles. [Bruno Rocha]
+- Fix #41. \[Bruno Rocha\]
+- Merge pull request #40 from rochacbruno/inifiles. \[Bruno Rocha\]
 
   ini and json files + parseconf recursive and find_file function
 - Ini and json files + parseconf recursive and find_file function.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 
   - Added support for .ini and .json files
   - parse conf is now recursive to parse dict inner data
   - Cloned find_file function from dotenv
-- Merge pull request #38 from rochacbruno/flask_dot_env. [Bruno Rocha]
+- Merge pull request #38 from rochacbruno/flask_dot_env. \[Bruno Rocha\]
 
   Added Flask 1.0 dotenv support
-- IMplemented TOML loader. [Bruno Rocha]
-- Adjusted MARKDOWN. [Bruno Rocha]
-- Added Flask 1.0 dotenv support. [Bruno Rocha]
+- IMplemented TOML loader. \[Bruno Rocha\]
+- Adjusted MARKDOWN. \[Bruno Rocha\]
+- Added Flask 1.0 dotenv support. \[Bruno Rocha\]
 
 
 0.5.2 (2017-10-03)
 ------------------
-- Small fix on 0.5.2 :hamster: [Bruno Rocha]
+- Small fix on 0.5.2 :hamster: \[Bruno Rocha\]
 - 0.5.1 with YAML hotfixes and allowing multiple yaml files. [Bruno
   Rocha]
 
 
 0.5.0 (2017-09-26)
 ------------------
-- Drop 3.4 and 3.5. [Bruno Rocha]
-- Silent errors on YAML missing namespace by default. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Merge branch 'Sytten-expand-yaml-config' [Bruno Rocha]
+- Drop 3.4 and 3.5. \[Bruno Rocha\]
+- Silent errors on YAML missing namespace by default. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Merge branch 'Sytten-expand-yaml-config' \[Bruno Rocha\]
 - Specialized Box as Dynabox to allow upper and lower case access.
-  [Bruno Rocha]
+  \[Bruno Rocha\]
 - Use box. [Emile Fugulin]
 - Add expanded object for yaml. [Emile Fugulin]
 
 
 0.4.5 (2017-05-30)
 ------------------
-- Update README.md. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Merge pull request #20 from douglas/master. [Bruno Rocha]
+- Update README.md. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Merge pull request #20 from douglas/master. \[Bruno Rocha\]
 
   Upgrade dynaconf to 0.4.5 =)
 - Upgrade dynaconf to 0.4.5 =) [Douglas Soares de Andrade]
@@ -4344,24 +4344,24 @@ Other
 - Add m2r and Flask to Pipenv. [Douglas Soares de Andrade]
 - Removing pdbpp as it breaks with Python 3.3. [Douglas Soares de
   Andrade]
-- Update readme. [Bruno Rocha]
-- Update README. [Bruno Rocha]
+- Update readme. \[Bruno Rocha\]
+- Update README. \[Bruno Rocha\]
 
 
 0.4.4 (2017-03-21)
 ------------------
 - HOTFIX: Flask templates always expects `None` for KeyError or
-  AttrError. [Bruno Rocha]
-- Bump version. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Added FlaskDynaconf to readme. [Bruno Rocha]
+  AttrError. \[Bruno Rocha\]
+- Bump version. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Added FlaskDynaconf to readme. \[Bruno Rocha\]
 - Merge pull request #16 from rochacbruno/added_flaskdynaconf. [Bruno
   Rocha]
 
   Added FlaskDynaconf
-- Added FlaskDynaconf. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Merge pull request #15 from douglas/master. [Bruno Rocha]
+- Added FlaskDynaconf. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Merge pull request #15 from douglas/master. \[Bruno Rocha\]
 
   Make the project work both on Python2 and Python3
 - PEP8/Pylint and fixes equality operators. [Douglas Soares de Andrade]
@@ -4392,83 +4392,83 @@ Other
 
   - To allow us to use: https://github.com/kennethreitz/pipenv
 - Adding Tox to helps us test the library. [Douglas Soares de Andrade]
-- Fix #14 casting bool for booleans tks to @dbstraffin. [Bruno Rocha]
+- Fix #14 casting bool for booleans tks to @dbstraffin. \[Bruno Rocha\]
 - Fix yaml cleaner, renamed `defined` to `must_exist` in validator.
-  [Bruno Rocha]
-- Added validators. [Bruno Rocha]
+  \[Bruno Rocha\]
+- Added validators. \[Bruno Rocha\]
 
 
 0.4.1 (2017-02-12)
 ------------------
-- Bump 0.4.1. [Bruno Rocha]
+- Bump 0.4.1. \[Bruno Rocha\]
 - Merge pull request #13 from rochacbruno/add_yaml_support. [Bruno
   Rocha]
 
   Added YAML support
-- Added YAML support. [Bruno Rocha]
-- Force pip upgrade in travis. [Bruno Rocha]
-- Drop support to Python 2.x - #MoveToPython3 Now! [Bruno Rocha]
-- Add 'decode_responses': True note. [Bruno Rocha]
-- Fix travis error. [Bruno Rocha]
-- Python 3 support. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
+- Added YAML support. \[Bruno Rocha\]
+- Force pip upgrade in travis. \[Bruno Rocha\]
+- Drop support to Python 2.x - #MoveToPython3 Now! \[Bruno Rocha\]
+- Add 'decode_responses': True note. \[Bruno Rocha\]
+- Fix travis error. \[Bruno Rocha\]
+- Python 3 support. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
 
 
 0.3.0 (2016-01-14)
 ------------------
 - Fix error when envvar key has leading or trailing spaces. [Bruno
   Rocha]
-- Pip released. [Bruno Rocha]
-- Pypi is in troublr to release. [Bruno Rocha]
-- Bump. [Bruno Rocha]
-- If 'settings.py' is found on PROJECT_ROOT it is read. [Bruno Rocha]
-- Make release. [Bruno Rocha]
-- Path_for returns rooted path if starts with / [Bruno Rocha]
-- Added settings.path_for. [Bruno Rocha]
-- Ignore functional styling smells. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Travis envvars matrix. [Bruno Rocha]
-- Update .travis.yml. [Bruno Rocha]
-- Starting to write tests :) [Bruno Rocha]
+- Pip released. \[Bruno Rocha\]
+- Pypi is in troublr to release. \[Bruno Rocha\]
+- Bump. \[Bruno Rocha\]
+- If 'settings.py' is found on PROJECT_ROOT it is read. \[Bruno Rocha\]
+- Make release. \[Bruno Rocha\]
+- Path_for returns rooted path if starts with / \[Bruno Rocha\]
+- Added settings.path_for. \[Bruno Rocha\]
+- Ignore functional styling smells. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Travis envvars matrix. \[Bruno Rocha\]
+- Update .travis.yml. \[Bruno Rocha\]
+- Starting to write tests :) \[Bruno Rocha\]
 - Simplified objects, removed UserSettings, removed exceptions. [Bruno
   Rocha]
 
 
 0.2.7 (2015-12-23)
 ------------------
-- Removed six and used obj.set. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Added png. [Bruno Rocha]
-- Redis loader uses hash. [Bruno Rocha]
+- Removed six and used obj.set. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Added png. \[Bruno Rocha\]
+- Redis loader uses hash. \[Bruno Rocha\]
 - Using HASH to store data, added always_fresh vars and context thanks
-  to @dmoliveira and @ederfmartins. [Bruno Rocha]
-- Added settings_module as cached property. [Bruno Rocha]
-- Added delete function to redis_writer. [Bruno Rocha]
-- Added note about get_fresh in readme. [Bruno Rocha]
+  to @dmoliveira and @ederfmartins. \[Bruno Rocha\]
+- Added settings_module as cached property. \[Bruno Rocha\]
+- Added delete function to redis_writer. \[Bruno Rocha\]
+- Added note about get_fresh in readme. \[Bruno Rocha\]
 - Better namespace management, get_fresh(key) to access redis. [Bruno
   Rocha]
-- Now it can be used programmatically. [Bruno Rocha]
+- Now it can be used programmatically. \[Bruno Rocha\]
 
 
 0.2.1 (2015-12-20)
 ------------------
-- Added redis_writer. [Bruno Rocha]
-- Update readme. [Bruno Rocha]
+- Added redis_writer. \[Bruno Rocha\]
+- Update readme. \[Bruno Rocha\]
 
 
 0.2.0 (2015-12-20)
 ------------------
-- Can also load from arbitrary filepath. [Bruno Rocha]
-- Renamed var, added loaders, bump version. [Bruno Rocha]
+- Can also load from arbitrary filepath. \[Bruno Rocha\]
+- Renamed var, added loaders, bump version. \[Bruno Rocha\]
 
 
 0.1.2 (2015-08-20)
 ------------------
-- Format on readme. [Bruno Rocha]
-- More casting options. [Bruno Rocha]
-- Fix #1 multiple namespaces. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Update README.md. [Bruno Rocha]
-- Added default. [Bruno Rocha]
-- Initial commit. [Bruno Rocha]
+- Format on readme. \[Bruno Rocha\]
+- More casting options. \[Bruno Rocha\]
+- Fix #1 multiple namespaces. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Update README.md. \[Bruno Rocha\]
+- Added default. \[Bruno Rocha\]
+- Initial commit. \[Bruno Rocha\]
