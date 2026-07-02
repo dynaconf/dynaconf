@@ -34,8 +34,10 @@ jobs:
               - '!docs/**'
               - '!mkdocs.yml'
 
+  # Run only for the main branch, no backports
   docs:
     needs: changes
+    if: github.ref == 'refs/heads/master' || github.base_ref == 'master'
     uses: ./.github/workflows/build-docs.yml
 
   lint:
