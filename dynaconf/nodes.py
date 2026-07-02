@@ -24,6 +24,7 @@ from typing import Union
 
 import dynaconf.utils as ut
 from dynaconf.utils.functional import empty
+from dynaconf.utils.functional import is_lazy
 from dynaconf.vendor.box import converters
 
 if TYPE_CHECKING:
@@ -721,7 +722,7 @@ def recursively_evaluate_lazy_format(value, settings):
     Uses contextvars for context-local storage, ensuring proper isolation
     in both threaded and async (asyncio) environments.
     """
-    if value.__class__.__name__ == "Lazy":
+    if is_lazy(value):
         # Use context-local storage for the evaluation stack
         eval_stack = _eval_stack_ctx.get()
         if eval_stack is None:
