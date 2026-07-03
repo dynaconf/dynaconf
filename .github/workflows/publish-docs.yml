@@ -30,7 +30,7 @@ jobs:
           name: ${{ needs.build-docs.outputs.docs-artifact }}
           path: site
       - name: Deploy to Netlify
-        run: npx netlify-cli deploy --prod --dir=site --message "Deploy from GitHub Actions"
+        run: npx netlify-cli deploy --prod --no-build --dir=site --message "Deploy from GitHub Actions"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
