@@ -14,7 +14,7 @@ from dynaconf.nodes import get_core
 from dynaconf.nodes import init_core
 from dynaconf.utils import container_items
 from dynaconf.utils import data_print
-from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils.boxing import _DynaBox
 from dynaconf.vendor.box import BoxList
 
 pytestmark = pytest.mark.usefixtures("no_deprecations")
@@ -366,7 +366,7 @@ class TestBoxCompatibility:
         test_data = {"name": "test", "nested": {"value": 42}}
         data_dict = DataDict(test_data.copy())
 
-        dyna_box = DynaBox(test_data.copy())
+        dyna_box = _DynaBox(test_data.copy())
         # Test merge_update method works the same
         data_dict.merge_update({"new_key": "new_value"})
         dyna_box.merge_update({"new_key": "new_value"})
@@ -378,7 +378,7 @@ class TestBoxCompatibility:
         """
         test_data = {"name": "test", "nested": {"value": 42}}
         data_dict = DataDict(test_data.copy())
-        dyna_box = DynaBox(test_data.copy())
+        dyna_box = _DynaBox(test_data.copy())
 
         # Test to_yaml, to_json, etc
         contents_of = {}
@@ -399,7 +399,7 @@ class TestBoxCompatibility:
             assert isinstance(content, str)
             file.write_text(content)
             filename = str(file.absolute())
-            box_method = getattr(DynaBox, method_name)
+            box_method = getattr(_DynaBox, method_name)
             assert box_method(filename=filename) == test_data
             method = getattr(DataDict, method_name)
             assert method(filename=filename) == test_data
