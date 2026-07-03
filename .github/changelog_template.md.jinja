@@ -1,6 +1,7 @@
 {#- macro: render_commit -#}
 {%- macro render_commit(commit) -%}
-- {{ commit.convention.subject|default(commit.subject) }}. *By {{ commit.author_name }}*.
+{%- set subject = commit.convention.subject|default(commit.subject) -%}
+- {{ (subject[:1]|upper) ~ subject[1:] }}. By {{ jinja_context.github_author_link(commit) }}.
 {%- if commit.text_refs.issues_not_in_subject %} Related issues/PRs: {% for issue in commit.text_refs.issues_not_in_subject -%}
 {% if issue.url %}[{{ issue.ref }}]({{ issue.url }}){% else %}{{ issue.ref }}{% endif %}{% if not loop.last %}, {% endif -%}
 {%- endfor -%}{%- endif -%}
@@ -16,7 +17,10 @@
 ### {{ section.type or "Misc" }}
 
 {% for commit in section.commits|sort(attribute='author_date',reverse=true)|unique(attribute='subject') -%}
+{#- skip post-release bump commits -#}
+{%- if not commit.subject.startswith('chore: bump version to') %}
 {{ render_commit(commit) }}
+{% endif %}
 {% endfor %}
 {%- endmacro -%}
 
