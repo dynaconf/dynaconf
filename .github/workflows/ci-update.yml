@@ -30,7 +30,7 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v8.2.0
         with:
-          python-version: "3.9"
+          python-version: "3.10"
       - name: Install release tools
         run: |
           # Install from master before switching branches so the command survives checkout.
