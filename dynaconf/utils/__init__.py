@@ -382,6 +382,14 @@ def normalize_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
             for c_old, c_new in RENAMED_VARS.items():
                 if c_new == new:
                     kwargs[c_old] = kwargs[new]
+
+    # `env` (aliased to ENV_FOR_DYNACONF) selects a single environment and must
+    # be a string. A non-string value (e.g. a list) would otherwise fail later
+    # with a cryptic ``'...' object has no attribute 'upper'`` error. See #1278.
+    env = kwargs.get("ENV_FOR_DYNACONF")
+    if env is not None and not isinstance(env, str):
+        raise TypeError(f"'env' must be a string, not {type(env).__name__}")
+
     return kwargs
 
 

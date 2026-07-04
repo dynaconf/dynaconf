@@ -277,6 +277,21 @@ def test_env_should_be_string(settings):
         settings.setenv(123456)
 
 
+def test_env_kwarg_must_be_a_string():
+    # A non-string ``env`` (e.g. a list) used to fail later with a cryptic
+    # ``'DataList' object has no attribute 'upper'``. See #1278.
+    with pytest.raises(TypeError, match="'env' must be a string"):
+        Dynaconf(environments=True, env=["test", "dev"])
+    # The ENV_FOR_DYNACONF alias is validated too.
+    with pytest.raises(TypeError, match="'env' must be a string"):
+        Dynaconf(environments=True, ENV_FOR_DYNACONF=["test"])
+    # A string env still works.
+    assert (
+        Dynaconf(environments=True, env="production").current_env
+        == "production"
+    )
+
+
 def test_env_should_allow_underline(settings):
     settings.setenv("COOL_env")
     assert settings.current_env == "COOL_ENV"
