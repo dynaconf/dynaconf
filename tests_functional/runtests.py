@@ -133,7 +133,7 @@ if __name__ == "__main__":
         "--filter",
         dest="test_filter",
         action="append",
-        help="limt tests to those that contain a substring",
+        help="limit tests to those that contain a substring",
     )
     args = parser.parse_args()
     run_tests(show_list=args.show_list, test_filter=args.test_filter)

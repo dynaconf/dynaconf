@@ -575,7 +575,7 @@ def _list(
     Lists user defined settings or all (including internal configs).
 
     By default, shows only user defined. If `--all` is passed it also shows
-    dynaconf internal variables aswell.
+    dynaconf internal variables as well.
     """
     if env:
         env = env.strip()

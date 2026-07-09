@@ -566,7 +566,7 @@ def tests_get_history_with_variable_interpolation():
     https://github.com/dynaconf/dynaconf/issues/1180
 
     The original issue was about an exception being raised when there was
-    variable interpolation involved. But in the end, the get_history shouldnt
+    variable interpolation involved. But in the end, the get_history shouldn't
     evaluate the interpolations:
 
     - History should accurately inform the order and content of what the user loaded.

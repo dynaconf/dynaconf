@@ -142,8 +142,8 @@ class Validator:
 
         # in the case that:
         # * default is a Lazy object AND
-        # * there isnt any validate operation to perform (that would require knowing the lazy value)
-        # Then we shouldnt trigger the Lazy evaluation
+        # * there isn't any validate operation to perform (that would require knowing the lazy value)
+        # Then we shouldn't trigger the Lazy evaluation
         self.should_call_lazy = not all(
             (
                 default,

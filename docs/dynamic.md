@@ -266,7 +266,7 @@ NOTES:
 
 - You must define the logic of each hook, dynaconf just calls it
 - You must take care of caching and caching invalidation
-- This may introduce overhead dependending on how the hook function is
+- This may introduce overhead depending on how the hook function is
     implemented
 
 To register an access hook, you need to wrap the `Dynaconf` instance with

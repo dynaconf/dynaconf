@@ -279,7 +279,7 @@ Usage: dynaconf list [OPTIONS]
   Lists user defined settings or all (including internal configs).
 
   By default, shows only user defined. If `--all` is passed it also shows
-  dynaconf internal variables aswell.
+  dynaconf internal variables as well.
 
 Options:
   -e, --env TEXT     Filters the env to get the values

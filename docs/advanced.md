@@ -111,7 +111,7 @@ def set_debugging_database_url(settings):
 
 Dynaconf will collect the decorated functions and execute them after the settings file is loaded.
 
-The hook decorator can only be applied to functions that are defined withing the same settings file, in the
+The hook decorator can only be applied to functions that are defined within the same settings file, in the
 need to use external functions, wrap it in a local decorated function.
 
 When using `load_file` to load a python file, hooks will also be collected and immediately executed after the file is loaded, unless the `run_hooks` argument is set to `False`, this is useful when calling `load_file` multiple times and have the hooks to be all executed together at a certain point later.

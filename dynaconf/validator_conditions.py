@@ -65,7 +65,7 @@ def identity(value, other) -> bool:
 
 def is_type_of(value, other) -> bool:
     """Type check that performs lookup on parameterized generic types.
-    For singular primary types this check is very fast ans just
+    For singular primary types this check is very fast and just
     calls isinstance.
     For SpecialForm annotations like Union and Parametrized types like T[T]
     or T[T, T] then this is a bit more costly.

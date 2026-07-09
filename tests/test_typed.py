@@ -704,7 +704,7 @@ def test_extracted_validators_from_annotated(monkeypatch):
     ids=lambda value: str(value),
 )
 def test_some_arguments_forbid_on_validators(invalid_arg):
-    """these arguments doesnt make sense on a typed dynaconf"""
+    """these arguments don't make sense on a typed dynaconf"""
     with pytest.raises(TypeError):
         Validator(**invalid_arg)
 

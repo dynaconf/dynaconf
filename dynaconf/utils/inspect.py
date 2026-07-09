@@ -337,7 +337,7 @@ def _get_data_by_key(
         key_dotted_path = key_dotted_path.replace(sep, ".")
 
     def handle_repr(value):
-        # lazy values shouldnt be evaluated for inspecting
+        # lazy values shouldn't be evaluated for inspecting
         if isinstance(value, Lazy):
             return value._dynaconf_encode()
         return value
