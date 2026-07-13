@@ -277,19 +277,39 @@ def test_env_should_be_string(settings):
         settings.setenv(123456)
 
 
-def test_env_kwarg_must_be_a_string():
-    # A non-string ``env`` (e.g. a list) used to fail later with a cryptic
-    # ``'DataList' object has no attribute 'upper'``. See #1278.
-    with pytest.raises(TypeError, match="'env' must be a string"):
-        Dynaconf(environments=True, env=["test", "dev"])
-    # The ENV_FOR_DYNACONF alias is validated too.
-    with pytest.raises(TypeError, match="'env' must be a string"):
-        Dynaconf(environments=True, ENV_FOR_DYNACONF=["test"])
-    # A string env still works.
-    assert (
-        Dynaconf(environments=True, env="production").current_env
-        == "production"
+@pytest.mark.parametrize("env_kwarg", ["env", "ENV_FOR_DYNACONF"])
+def test_env_kwarg_accepts_a_list(tmp_path, env_kwarg):
+    settings_file = tmp_path / "settings.toml"
+    settings_file.write_text(
+        """
+[default]
+issue_1278_value = "default"
+
+[test]
+issue_1278_value = "test"
+issue_1278_from_test = true
+
+[dev]
+issue_1278_value = "dev"
+issue_1278_from_dev = true
+"""
     )
+
+    settings = Dynaconf(
+        settings_files=[settings_file],
+        environments=True,
+        **{env_kwarg: ["test", "dev"]},
+    )
+
+    assert settings.current_env == "test,dev"
+    assert settings.issue_1278_value == "dev"
+    assert settings.issue_1278_from_test is True
+    assert settings.issue_1278_from_dev is True
+
+
+def test_env_kwarg_rejects_a_list_with_non_strings():
+    with pytest.raises(TypeError, match="string or a list of strings"):
+        Dynaconf(environments=True, env=["test", 1])
 
 
 def test_env_should_allow_underline(settings):
