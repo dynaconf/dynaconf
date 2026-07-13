@@ -282,17 +282,17 @@ def test_env_kwarg_accepts_a_list(create_file, env_kwarg):
     settings_file = create_file(
         "settings.toml",
         """
-[default]
-issue_1278_value = "default"
+        [default]
+        issue_1278_value = "default"
 
-[test]
-issue_1278_value = "test"
-issue_1278_from_test = true
+        [test]
+        issue_1278_value = "test"
+        issue_1278_from_test = true
 
-[dev]
-issue_1278_value = "dev"
-issue_1278_from_dev = true
-""",
+        [dev]
+        issue_1278_value = "dev"
+        issue_1278_from_dev = true
+        """,
     )
 
     settings = Dynaconf(
