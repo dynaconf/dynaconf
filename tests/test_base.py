@@ -278,9 +278,9 @@ def test_env_should_be_string(settings):
 
 
 @pytest.mark.parametrize("env_kwarg", ["env", "ENV_FOR_DYNACONF"])
-def test_env_kwarg_accepts_a_list(tmp_path, env_kwarg):
-    settings_file = tmp_path / "settings.toml"
-    settings_file.write_text(
+def test_env_kwarg_accepts_a_list(create_file, env_kwarg):
+    settings_file = create_file(
+        "settings.toml",
         """
 [default]
 issue_1278_value = "default"
@@ -292,7 +292,7 @@ issue_1278_from_test = true
 [dev]
 issue_1278_value = "dev"
 issue_1278_from_dev = true
-"""
+""",
     )
 
     settings = Dynaconf(
