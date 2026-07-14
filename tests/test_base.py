@@ -307,9 +307,10 @@ def test_env_kwarg_accepts_a_list(create_file, env_kwarg):
     assert settings.issue_1278_from_dev is True
 
 
-def test_env_kwarg_rejects_a_list_with_non_strings():
+@pytest.mark.parametrize("env", [["test", 1], 1])
+def test_env_kwarg_rejects_invalid_values(env):
     with pytest.raises(TypeError, match="string or a list of strings"):
-        Dynaconf(environments=True, env=["test", 1])
+        Dynaconf(environments=True, env=env)
 
 
 def test_env_should_allow_underline(settings):
