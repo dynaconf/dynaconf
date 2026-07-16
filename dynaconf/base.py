@@ -635,8 +635,16 @@ class Settings:
             return default
 
         if (
-            fresh or config.fresh or key in config.fresh_vars
-        ) and key not in UPPER_DEFAULT_SETTINGS:
+            (fresh or config.fresh or key in config.fresh_vars)
+            and key not in UPPER_DEFAULT_SETTINGS
+            and parent is None
+        ):
+            # `parent` is only set when resolving a child segment of a
+            # dotted key against an already-fetched nested container
+            # (see `_dotted_get`). Such a `key` is not a real top-level
+            # setting, so it must not be unset/reloaded here: doing so
+            # would mark it as deleted permanently and break every
+            # future lookup of the dotted key.
             self.unset(key)
             self.execute_loaders(key=key)
 

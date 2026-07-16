@@ -872,6 +872,42 @@ def test_dotted_traversal_access(settings):
     assert settings.get("ME__NUMBER") == "42"
 
 
+def test_dotted_get_fresh(tmpdir):
+    """Regression test for issue #1187.
+
+    `get`/`get_fresh` with a dot separated key must keep returning the
+    value on repeated calls, reloading it fresh from the source every
+    time instead of returning None after the first call.
+    """
+    settings_file = tmpdir.join("settings.toml")
+    toml_loader.write(str(settings_file), {"foo": {"bar": "baz"}}, merge=False)
+    settings = LazySettings(settings_file="settings.toml")
+
+    assert settings.get("foo.bar", fresh=True) == "baz"
+    # second and third calls used to return None (issue #1187)
+    assert settings.get("foo.bar", fresh=True) == "baz"
+    assert settings.get("foo.bar", fresh=True) == "baz"
+
+    assert settings.get_fresh("foo.bar") == "baz"
+    assert settings.get_fresh("foo.bar") == "baz"
+
+    # fresh must actually reload the value from the source
+    toml_loader.write(
+        str(settings_file), {"foo": {"bar": "changed"}}, merge=False
+    )
+    assert settings.get("foo.bar", fresh=True) == "changed"
+
+    # deeper nesting keeps working across repeated fresh calls too
+    toml_loader.write(
+        str(tmpdir.join("settings2.toml")),
+        {"foo": {"baz": {"qux": "v1"}}},
+        merge=False,
+    )
+    settings2 = LazySettings(settings_file="settings2.toml")
+    assert settings2.get("foo.baz.qux", fresh=True) == "v1"
+    assert settings2.get("foo.baz.qux", fresh=True) == "v1"
+
+
 def test_dotted_set(settings):
     settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
 
