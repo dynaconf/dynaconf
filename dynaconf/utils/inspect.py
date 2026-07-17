@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import json
 import sys
+from collections.abc import Callable
 from contextlib import suppress
 from functools import partial
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version
 from pathlib import PosixPath
 from typing import Any
-from typing import Callable
 from typing import Literal
 from typing import Protocol
 from typing import TextIO

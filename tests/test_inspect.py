@@ -21,6 +21,8 @@ from dynaconf.utils.inspect import KeyNotFoundError
 from dynaconf.utils.inspect import OutputFormatError
 from dynaconf.validator import Validator
 
+pytestmark = pytest.mark.usefixtures("no_deprecations")
+
 
 def create_file(filename: str, data: str) -> str:
     with open(filename, "w") as f:

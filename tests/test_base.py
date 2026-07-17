@@ -14,7 +14,10 @@ from dynaconf.loaders import yaml_loader
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
 from dynaconf.strategies.filtering import PrefixFilter
+from dynaconf.utils import to_dict
 from dynaconf.utils.parse_conf import true_values
+
+pytestmark = pytest.mark.usefixtures("no_deprecations")
 
 
 def test_deleted_raise(settings):
@@ -151,15 +154,12 @@ def test_populate_obj_convert_to_dict(settings):
     settings.populate_obj(obj)
     assert isinstance(obj.ADICT, DataDict)
     assert isinstance(obj.ALIST, DataList)
-    assert isinstance(obj.ADICT.to_yaml(), str)
 
     # now make sure convert_to_dict=True brings in dict and list
     obj = Obj()
     settings.populate_obj(obj, convert_to_dict=True)
-    assert isinstance(obj.ADICT, dict)
-    assert isinstance(obj.ALIST, list)
-    with pytest.raises(AttributeError):
-        assert isinstance(obj.ADICT.to_yaml(), str)
+    assert type(obj.ADICT) is dict
+    assert type(obj.ALIST) is list
 
 
 def test_call_works_as_get(settings):
@@ -878,14 +878,14 @@ def test_dotted_set(settings):
     settings.set("nested_1.nested_2.nested_3.nested_4", "secret")
 
     assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "secret"
-    assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {
+    assert to_dict(settings.NESTED_1.NESTED_2.NESTED_3) == {
         "nested_4": "secret"
     }
-    assert settings.NESTED_1.NESTED_2.to_dict() == {
+    assert to_dict(settings.NESTED_1.NESTED_2) == {
         "nested_3": {"nested_4": "secret"}
     }
 
-    assert settings.get("nested_1").to_dict() == {
+    assert to_dict(settings.get("nested_1")) == {
         "nested_2": {"nested_3": {"nested_4": "secret"}}
     }
 
@@ -897,14 +897,14 @@ def test_dotted_set(settings):
 
     settings.set("nested_1.nested_2.nested_3.nested_4", "Updated Secret")
     assert settings.NESTED_1.NESTED_2.NESTED_3.NESTED_4 == "Updated Secret"
-    assert settings.NESTED_1.NESTED_2.NESTED_3.to_dict() == {
+    assert to_dict(settings.NESTED_1.NESTED_2.NESTED_3) == {
         "nested_4": "Updated Secret"
     }
-    assert settings.NESTED_1.NESTED_2.to_dict() == {
+    assert to_dict(settings.NESTED_1.NESTED_2) == {
         "nested_3": {"nested_4": "Updated Secret"}
     }
 
-    assert settings.get("nested_1").to_dict() == {
+    assert to_dict(settings.get("nested_1")) == {
         "nested_2": {"nested_3": {"nested_4": "Updated Secret"}},
         "nested_2_0": "Hello",
     }
@@ -980,7 +980,24 @@ def test_deepcopy_settings():
     s2 = copy.deepcopy(s1)
     assert id(s1) != id(s2)
     assert id(s1.__core__) != id(s2.__core__)
-    assert s1.__core__.id != s2.__core__.id
+    assert s1.__core__._cache is not s2.__core__._cache
+
+
+def test_cache_is_isolated_per_instance():
+    s1 = Dynaconf()
+    s2 = Dynaconf()
+
+    s1.set("KEY", "value1")
+    s2.set("KEY", "value2")
+
+    _ = s1.KEY
+    _ = s2.KEY
+
+    assert "KEY" in s2.__core__._cache
+
+    s1.__core__.clear_cache()
+
+    assert "KEY" in s2.__core__._cache
 
 
 def test_from_env_method(clean_env, tmpdir):
@@ -1059,6 +1076,49 @@ def test_from_env_method(clean_env, tmpdir):
     assert settings.A_DEFAULT == "From default env"
 
 
+def test_env_override_nested_lazy_value_from_included_file(
+    clean_env, monkeypatch, tmpdir
+):
+    data_1 = {
+        "default": {
+            "from_1": "from 1",
+            "nested_from_1": {"from_1": "nested from 1"},
+        }
+    }
+    data_2 = {
+        "default": {
+            "dynaconf_include": ["configuration_1.yaml"],
+            "with_jinja_from_1": "@jinja hello {{this.from_1}}",
+            "with_jinja_from_nested_1": (
+                "@jinja hello {{this.nested_from_1.from_1}}"
+            ),
+        }
+    }
+    yaml_loader.write(str(tmpdir.join("configuration_1.yaml")), data_1)
+    yaml_loader.write(str(tmpdir.join("configuration_2.yaml")), data_2)
+
+    settings = Dynaconf(
+        settings_files=["configuration_2.yaml"],
+        environments=True,
+        root_path=str(tmpdir),
+        settings_file_required=True,
+    )
+    assert settings.with_jinja_from_1 == "hello from 1"
+    assert settings.with_jinja_from_nested_1 == "hello nested from 1"
+
+    monkeypatch.setenv(
+        "DYNACONF_with_jinja_from_nested_1", "complete override"
+    )
+    settings = Dynaconf(
+        settings_files=["configuration_2.yaml"],
+        environments=True,
+        root_path=str(tmpdir),
+        settings_file_required=True,
+    )
+
+    assert settings.with_jinja_from_nested_1 == "complete override"
+
+
 def test_envless_load_file(tmpdir):
     """Ensure passing settings.load_file accepts env argument.
 
@@ -1101,6 +1161,29 @@ def test_envless_load_file(tmpdir):
     # load the envless file
     settings.load_file(toml_path_envless, env=False)
     assert settings.VALUE == "Envless value"
+
+
+def test_load_file_missing_path_with_silent_false(tmpdir):
+    """load_file raises FileNotFoundError when path is missing and silent=False."""
+    settings = Dynaconf()
+    missing = str(tmpdir.join("does_not_exist.toml"))
+    with pytest.raises(FileNotFoundError):
+        settings.load_file(path=missing, silent=False)
+
+
+def test_load_file_missing_path_with_silent_true(tmpdir):
+    """load_file stays quiet when path is missing and silent=True (default)."""
+    settings = Dynaconf()
+    missing = str(tmpdir.join("does_not_exist.toml"))
+    settings.load_file(path=missing)
+    settings.load_file(path=missing, silent=True)
+
+
+def test_load_file_missing_glob_with_silent_false(tmpdir):
+    """load_file does not raise for unmatched glob even when silent=False."""
+    settings = Dynaconf()
+    missing_glob = str(tmpdir.join("*.toml"))
+    settings.load_file(path=missing_glob, silent=False)
 
 
 def test_from_env_method_with_prefix(clean_env, tmpdir):
@@ -1788,6 +1871,20 @@ class TestIndexMerge:
         with pytest.raises(AttributeError):
             settings.nested_a.nested_b
 
+    def test_dotted_set_bracket_first_segment_disabled(self):
+        # With index merge disabled a bracket is a literal key. When the
+        # bracket is in the first (top-level) segment the resolved key still
+        # holds the `[` and used to be re-routed into _dotted_set, recursing
+        # forever. It should just be stored as a literal key.
+        settings = Dynaconf()
+        assert bool(settings.get("INDEX_SEPARATOR_FOR_DYNACONF")) is False
+
+        settings.set("a[1]", "v")
+        assert settings.get("a[1]") == "v"
+
+        settings.set("servers[0].name", "web1")
+        assert settings.get("servers[0]") == {"name": "web1"}
+
     def test_dotted_set(self, settings):
         settings.set("MERGE_ENABLED_FOR_DYNACONF", False)
         settings.set("INDEX_SEPARATOR_FOR_DYNACONF", "___")
@@ -1829,6 +1926,25 @@ class TestIndexMerge:
         # __(\d+) pattern instead of _(\d+)_
         settings.set("nested_5.nested_6_0", "World")
         assert settings.NESTED_5.NESTED_6_0 == "World"
+
+    def test_dotted_set_scalar_list_pads_with_none(self, settings):
+        settings.set("INDEX_SEPARATOR_FOR_DYNACONF", "___")
+
+        # Assigning an index of a plain list should leave the skipped
+        # positions empty (None), not nested empty containers.
+        settings.set("ports[2]", 9090)
+        assert list(settings.PORTS) == [None, None, 9090]
+
+        # Nesting is preserved: only the leaf gap becomes None, the outer
+        # list still pads with an empty list.
+        settings.set("matrix[1][1]", "x")
+        assert list(settings.MATRIX) == [[], [None, "x"]]
+
+    def test_environ_dunder_set_scalar_list_pads_with_none(self):
+        os.environ["DYNACONF_PORTS___2"] = "9090"
+        settings = Dynaconf(INDEX_SEPARATOR_FOR_DYNACONF="___")
+        assert list(settings.PORTS) == [None, None, 9090]
+        del os.environ["DYNACONF_PORTS___2"]
 
     def test_environ_dunder_set_with_index_merge_disabled(self):
         os.environ["DYNACONF_NESTED_A__nested_1__nested_2"] = "new_conf"

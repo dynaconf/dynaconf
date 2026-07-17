@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
 from functools import wraps
 from typing import Any
-from typing import Callable
 
 from dynaconf.base import Settings
 from dynaconf.loaders.base import SourceMetadata

@@ -6,16 +6,10 @@ Implement basic assertions to be used in assertion action
 from __future__ import annotations
 
 import re
+from types import UnionType
 from typing import get_args
 from typing import get_origin
 from typing import Union
-
-# NOTE: Remove when dropping 3.9
-try:
-    from types import UnionType  # type: ignore
-except ImportError:
-    UnionType = Union  # type: ignore
-# /NOTE
 
 
 def eq(value, other) -> bool:

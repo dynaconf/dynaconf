@@ -11,10 +11,20 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.14
     hooks:
-        # Run the formatter.
       - id: ruff-format
-        # Run the linter.
+        exclude: ^\.github/scripts/
       - id: ruff-check
+        exclude: ^\.github/scripts/
+        args: [--show-fixes, --fix, --exit-non-zero-on-fix]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.14
+    hooks:
+      - id: ruff-format
+        name: ruff-format (.github/scripts)
+        files: ^\.github/scripts/
+      - id: ruff-check
+        name: ruff-check (.github/scripts)
+        files: ^\.github/scripts/
         args: [--show-fixes, --fix, --exit-non-zero-on-fix]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.19.1

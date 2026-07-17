@@ -761,7 +761,7 @@ def _parse_conf_data(data, tomlfy=False, box_settings=None):
         castenabled
         and data
         and isinstance(data, str)
-        and data.startswith(tuple(converters.keys()))
+        and data.partition(" ")[0] in converters
     ):
         # Check combination token is used
         comb_token = re.match(

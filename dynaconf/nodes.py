@@ -53,12 +53,6 @@ class DataDict(dict):
         self.__meta__ = NodeMetadata(core=core)
         convert_containers(self, self.items(), core)
 
-    def update(self, data):
-        super().update(ensure_containers(data, self.__meta__.core))
-
-    def setdefault(self, k, v):
-        return super().setdefault(k, ensure_containers(v, self.__meta__.core))
-
     def copy(self, bypass_eval=False):
         if not bypass_eval:
             return self.__class__(
@@ -115,11 +109,10 @@ class DataDict(dict):
     def items(self, bypass_eval=False):
         if not bypass_eval:
             yield from super().items()
-        yield from ((k, self.get(k, bypass_eval=True)) for k in self.keys())
-
-    def __setitem__(self, k, v):
-        result = ensure_containers(v, self.__meta__.core)
-        super().__setitem__(k, result)
+        else:
+            yield from (
+                (k, self.get(k, bypass_eval=True)) for k in self.keys()
+            )
 
     def __setattr__(self, k, v):
         # NOTE: We shouldnt use setattr to store items. If an item was assigned with setatttr
@@ -178,15 +171,7 @@ class DataDict(dict):
         box_deprecation_warning(
             "to_dict", "DataDict", "Use dict(data_dict) instead."
         )  # pragma: nocover
-        out_dict = dict(self)
-        for k, v in out_dict.items():
-            if v is self:
-                out_dict[k] = out_dict
-            elif isinstance(v, DataDict):
-                out_dict[k] = v.to_dict()
-            elif isinstance(v, DataList):
-                out_dict[k] = v.to_list()
-        return out_dict
+        return ut.to_dict(self)
 
     def merge_update(self, __m=None, **kwargs):  # pragma: nocover
         """Merge update with another dict"""
@@ -407,46 +392,30 @@ class DataList(list):
     def copy(self):
         return DataList((x for x in self), core=self.__meta__.core)
 
-    def append(self, v):
-        super().append(ensure_containers(v, self.__meta__.core))
-
-    def insert(self, i, v):
-        super().insert(i, ensure_containers(v, self.__meta__.core))
-
-    def extend(self, data):
-        super().extend(ensure_containers(data, self.__meta__.core))
-
     def __getitem__(self, index):
         result = super().__getitem__(index)
         return recursively_evaluate_lazy_format(result, self.__meta__.core)
-
-    def __setitem__(self, k, v):
-        super().__setitem__(k, ensure_containers(v, self.__meta__.core))
-
-    def __add__(self, v):
-        super().__add__(ensure_containers(v, self.__meta__.core))
-
-    def __iadd__(self, v):
-        return super().__iadd__(ensure_containers(v, self.__meta__.core))
 
     def __repr__(self):
         # NOTE: debatable choice: same representation of list
         return f"{list(self)!r}"
 
-    # Box compatibility. Remove in 4.0
-
     def __copy__(self):  # pragma: nocover
-        box_deprecation_warning("__copy__", "DataList")
+        # Not part of the plain list API, but needed to propagate core.
+        # Consider removing in the future if we can
         return self.copy()
 
     def __deepcopy__(self, memo=None):  # pragma: nocover
-        box_deprecation_warning("__deepcopy__", "DataList")
+        # Not part of the plain list API, but needed to propagate core.
+        # Consider removing in the future if we can
         out = self.__class__(core=self.__meta__.core)
         memo = memo or {}
         memo[id(self)] = out
         for k in self:
             out.append(copy.deepcopy(k, memo=memo))
         return out
+
+    # Box compatibility. Remove in 4.0
 
     def to_list(self):  # pragma: nocover
         """
@@ -457,17 +426,8 @@ class DataList(list):
         box_deprecation_warning(
             "to_list", "DataList", "Use list(data_list) instead."
         )
-        new_list = []
-        for x in self:
-            if x is self:
-                new_list.append(new_list)
-            elif isinstance(x, DataDict):
-                new_list.append(x.to_dict())
-            elif isinstance(x, DataList):
-                new_list.append(x.to_list())
-            else:
-                new_list.append(x)
-        return new_list
+        # to_dict recursively converts to both dicts and lists
+        return ut.to_dict(self)
 
     def to_json(
         self,
@@ -798,18 +758,6 @@ def recursively_evaluate_lazy_format(value, settings):
         )
 
     return value
-
-
-def ensure_containers(data, core):
-    # NOTE: this is to ensure that the nodes nested dict and lists are always
-    # converted to DataDict and DataList. However, that change is not compatible
-    # with what we had with DynaBox/BoxList. Leaving here for awareness.
-    #
-    # if data.__class__ is dict:
-    #     return DataDict(data, core=core)
-    # elif data.__class__ is list:
-    #     return DataList(data, core=core)
-    return data
 
 
 def box_deprecation_warning(

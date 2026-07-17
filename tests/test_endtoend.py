@@ -6,8 +6,11 @@ from contextlib import nullcontext
 
 import pytest
 
+from dynaconf.utils import to_dict
 from dynaconf.utils.parse_conf import DynaconfFormatError
 from dynaconf.utils.parse_conf import DynaconfParseError
+
+pytestmark = pytest.mark.usefixtures("no_deprecations")
 
 
 def test_end_to_end(settings):
@@ -87,7 +90,7 @@ def test_359_jinja_interpolation():
 
     expected = {"main": "hello world"}
     assert settings.get("a.main") == "hello world"
-    assert settings.get("a").to_dict() == expected
+    assert to_dict(settings.get("a")) == expected
 
 
 def test_392_interpolation_inside_list():

@@ -7,7 +7,7 @@ Scenarios are auto-discovered from the scripts/scenarios/ directory.
 
 Requirements (uv will resolve these from comments):
 # /// script
-# requires-python = ">=3.9"
+# requires-python = ">=3.10"
 # dependencies = [
 #     "pyinstrument>=4.0.0",
 #     "dynaconf",

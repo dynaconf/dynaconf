@@ -88,7 +88,7 @@ def raise_for_optional_without_none(
 
 def raise_for_invalid_class_variable(cls):
     """typed.Dynaconf only allows typed variables or dynaconf_options attr"""
-    for name, value in vars(cls).items():
+    for name, value in list(vars(cls).items()):
         if (
             name.startswith(("_", "dynaconf_options"))
             or name in cls.__annotations__

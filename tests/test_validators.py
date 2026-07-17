@@ -11,6 +11,8 @@ from dynaconf import ValidationError
 from dynaconf import Validator
 from dynaconf.validator import ValidatorList
 
+pytestmark = pytest.mark.usefixtures("no_deprecations")
+
 TOML = """
 [default]
 EXAMPLE = true
@@ -885,3 +887,53 @@ def test_is_type_of__raises__with_type_error():
 
     with pytest.raises(ValidationError):
         settings.validators.validate()
+
+
+def test_validation_after_setenv_or_from_env(tmp_path):
+    import pytest
+
+    from dynaconf import Dynaconf
+    from dynaconf import ValidationError
+    from dynaconf import Validator
+
+    # Create a dummy toml file
+    settings_file = tmp_path / "settings.toml"
+    settings_file.write_text(
+        "[development]\nfoo='bar'\n[production]\n# foo is missing\n"
+    )
+
+    settings = Dynaconf(
+        environments=True,
+        env="development",
+        settings_files=[str(settings_file)],
+        validators=[Validator("foo", must_exist=True)],
+    )
+
+    settings.validators.validate_all()
+
+    # 1. Test setenv
+    settings.setenv("production")
+    with pytest.raises(ValidationError):
+        settings.validators.validate_all()
+
+    # 2. Test from_env
+    settings.setenv("development")
+    with pytest.raises(ValidationError):
+        other_settings = settings.from_env("production")
+        other_settings.validators.validate_all()
+
+
+def test_from_env_with_validate_on_update_does_not_recurse():
+    """from_env must not infinitely recurse via current_env -> validation."""
+    from dynaconf import Dynaconf
+    from dynaconf import Validator
+
+    settings = Dynaconf(
+        environments=True,
+        validate_on_update=True,
+        validators=[Validator("FOO", default="bar")],
+    )
+
+    # Before the fix this raised RecursionError.
+    other_settings = settings.from_env("development")
+    assert other_settings.current_env.lower() == "development"

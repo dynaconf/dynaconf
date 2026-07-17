@@ -7,7 +7,7 @@ jobs:
   benchmark:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # full history
           ref: ${{ github.event.pull_request.head.sha }}  # get PR head instead of GH merge commit
@@ -18,7 +18,7 @@ jobs:
           git fetch upstream
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           version: "latest"
 
@@ -28,7 +28,7 @@ jobs:
            git log --oneline refs/remotes/upstream/master~..HEAD
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-results
           path: tmp-bench/

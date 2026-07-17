@@ -7,7 +7,7 @@ Create box plots from TSV benchmark data.
 
 Requirements (uv will resolve these from comments):
 # /// script
-# requires-python = ">=3.9"
+# requires-python = ">=3.10"
 # dependencies = [
 #     "pandas>=2.0.0",
 #     "matplotlib>=3.5.0",

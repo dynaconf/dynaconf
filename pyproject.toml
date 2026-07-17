@@ -11,7 +11,7 @@ authors = [
     {name = "Bruno Rocha", email = "rochacbruno@gmail.com"},
 ]
 license = {text = "MIT"}
-requires-python = ">=3.9,<3.14"
+requires-python = ">=3.10,<3.15"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Django",
@@ -23,11 +23,11 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Utilities",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -102,7 +102,7 @@ ba = "ba"
 # ====
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 line-length = 79
 exclude = ["dynaconf/vendor*"]
 
@@ -210,7 +210,7 @@ ignore_missing_imports = true
 # ===========
 
 [tool.bumpversion]
-current_version = "3.3.0-dev0"
+current_version = "3.3.3-dev0"
 parse = """(?x)
     (?P<major>0|[1-9]\\d*)\\.
     (?P<minor>0|[1-9]\\d*)\\.
@@ -230,14 +230,14 @@ replace = "{new_version}"
 regex = false
 ignore_missing_version = false
 ignore_missing_files = false
-allow_dirty = true
+allow_dirty = false
 
 tag = false
 sign_tags = false
 tag_name = "v{new_version}"
 tag_message = "Bump version: {current_version} → {new_version}"
 commit = false
-message = "Bump to version {new_version}"
+message = "chore: bump version to {new_version}"
 commit_args = ""
 
 [tool.bumpversion.parts.pre]
@@ -257,7 +257,7 @@ optional_value = "final"
 # ===
 
 [tool.tox]
-envlist = ["py39", "py310", "py311", "py312", "py313"]
+envlist = ["py310", "py311", "py312", "py313"]
 whitelist_externals = ["make"]
 
 [tool.tox.testenv]
@@ -312,6 +312,7 @@ lint = [
     "typos>=1.42.3",
 ]
 test = [
+    "dynaconf-release-utility",
     "boto3>=1.40.67",
     "commentjson>=0.9.0",
     "configobj>=5.0.9",
@@ -344,3 +345,6 @@ release = [
     "toml>=0.10.2",
     "twine>=6.2.0",
 ]
+
+[tool.uv.sources]
+dynaconf-release-utility = { path = ".github/scripts/", editable = true }

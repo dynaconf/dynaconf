@@ -1,0 +1,27 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dynaconf-release-utility"
+version = "0"
+requires-python = ">=3.10"
+dependencies = ["bump-my-version", "git-changelog", "packaging"]
+
+[project.scripts]
+release-utility = "release_utility:main"
+
+[tool.hatch.build.targets.wheel]
+include = ["release_utility.py"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 79
+
+[tool.ruff.lint]
+extend-select = [
+    "I",    # isort
+    "UP",   # pyupgrade
+    "N",    # pep8-naming
+    "PLE",  # pylint errors
+]

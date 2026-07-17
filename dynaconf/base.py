@@ -3,21 +3,19 @@ from __future__ import annotations
 import copy
 import importlib
 import inspect
-import multiprocessing
 import os
 import re
 import warnings
 from collections import defaultdict
+from collections.abc import Callable
 from contextlib import contextmanager
 from contextlib import suppress
 from dataclasses import dataclass
 from dataclasses import field
-from functools import cached_property
 from functools import lru_cache
 from functools import wraps
 from pathlib import Path
 from typing import Any
-from typing import Callable
 from typing import Optional
 from typing import Union
 
@@ -42,9 +40,11 @@ from dynaconf.utils import missing
 from dynaconf.utils import normalize_kwargs
 from dynaconf.utils import object_merge
 from dynaconf.utils import RENAMED_VARS
+from dynaconf.utils import to_dict
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import find_file
 from dynaconf.utils.files import glob
+from dynaconf.utils.files import has_magic
 from dynaconf.utils.functional import empty
 from dynaconf.utils.functional import LazyObject
 from dynaconf.utils.parse_conf import apply_converter
@@ -56,9 +56,7 @@ from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
 
-cache: dict = {}
 cache_enabled = True  # disable if something weird happen
-id_counter = multiprocessing.Value("i", 0)
 
 
 class LazySettings(LazyObject):
@@ -224,7 +222,7 @@ class DynaconfCore:
         store = kwargs.pop("_store", default_store)
         validators = kwargs.pop("validators", None)
 
-        self._id = id
+        self._cache: dict = {}
         self.obj = obj
         self.config = config
         self.store = store
@@ -235,7 +233,7 @@ class DynaconfCore:
     def get_cached(self, key):
         if not cache_enabled:
             raise KeyError  # communicates "cache not found"
-        return cache[(self.id, key)]
+        return self._cache[key]
 
     def set_cached(self, key, value):
         if not cache_enabled:
@@ -243,35 +241,26 @@ class DynaconfCore:
         fresh_vars = self.config.fresh_vars
         is_lazy = value.__class__.__name__ == "Lazy"
         if key not in fresh_vars and not is_lazy:
-            cache[(self.id, key)] = value
+            self._cache[key] = value
 
-    def clear_cache(self, key=None):
+    def clear_cache(self):
         if not cache_enabled:
             return
-        cache.clear()
+        self._cache.clear()
 
     # COPYING
 
-    @cached_property
-    def id(self):
-        return f"{self._id}-{get_unique_id()}"
-
     def __deepcopy__(self, memo):
-        """Custom deepcopy to ensure unique id generation for copied cores."""
         import copy
 
-        # Create a new instance without calling __init__
         new_instance = self.__class__.__new__(self.__class__)
-
-        # Add it to memo to handle circular references
         memo[id(self)] = new_instance
 
-        # Deepcopy all attributes
         for key, value in self.__dict__.items():
-            # Skip the cached 'id' property so it regenerates with a new unique value
-            if key != "id":
+            if key != "_cache":
                 setattr(new_instance, key, copy.deepcopy(value, memo))
 
+        new_instance._cache = {}
         return new_instance
 
 
@@ -514,7 +503,7 @@ class Settings:
         """
         ctx_mgr = suppress() if env is None else self.using_env(env)
         with ctx_mgr:
-            data = self.store.to_dict().copy()
+            data = to_dict(self.store)
             # if not internal remove internal settings
             if not internal:
                 for name in UPPER_DEFAULT_SETTINGS:
@@ -799,14 +788,19 @@ class Settings:
             new_data.update(
                 {
                     key: value
-                    for key, value in self.store.to_dict().copy().items()
+                    for key, value in to_dict(self.store).items()
                     if key.isupper() and key not in RENAMED_VARS
                 }
             )
 
+        if getattr(self, "validators", None):
+            new_data.setdefault("validators", self.validators)
+
         new_data.update(kwargs)
         new_data["FORCE_ENV_FOR_DYNACONF"] = env
+        new_data.setdefault("dynaconf_skip_validators", True)
         new_settings = LazySettings(**new_data)
+        new_settings.unset("DYNACONF_SKIP_VALIDATORS")
         config.env_cache[cache_key] = new_settings
 
         # update source metadata for inspecting
@@ -886,8 +880,9 @@ class Settings:
             return self.MAIN_ENV_FOR_DYNACONF.lower()
 
         if self.FORCE_ENV_FOR_DYNACONF is not None:
-            self.ENV_FOR_DYNACONF = self.FORCE_ENV_FOR_DYNACONF
-            return self.FORCE_ENV_FOR_DYNACONF
+            forced = self.FORCE_ENV_FOR_DYNACONF
+            self.set("ENV_FOR_DYNACONF", forced, validate=False)
+            return forced
 
         try:
             return self.loaded_envs[-1]
@@ -1080,10 +1075,17 @@ class Settings:
                     and isinstance(tree, list)
                 ):  # accessing index of a list
                     index = int(k.replace("[", "").replace("]", ""))
-                    extended_list = [
-                        next_default.copy()
-                        for _ in range(index + 1)  # type: ignore[attr-defined]
-                    ]
+                    # Pad missing positions so we can assign any index.
+                    # On the last segment the slot holds the value itself, so
+                    # gaps should be empty (None) instead of a copy of
+                    # `next_default`, which still refers to the previous level.
+                    if is_not_end:
+                        extended_list = [
+                            next_default.copy()  # type: ignore[attr-defined]
+                            for _ in range(index + 1)
+                        ]
+                    else:
+                        extended_list = [None] * (index + 1)
                     # This makes sure we can assign any arbitrary index
                     tree.extend(extended_list)
                     if is_not_end:
@@ -1107,11 +1109,17 @@ class Settings:
                 full_path=split_keys,
                 list_merge=list_merge,  # when to use deep / shallow replace?
             )
+        # `new_data` is keyed by the already-resolved top level key
+        # (`split_keys[0]`). With index merge disabled a bracket is a literal
+        # key, so that key can still contain `[` (e.g. `servers[0]`). Writing
+        # it with dotted_lookup on would route it back into `_dotted_set` and
+        # recurse forever, so set the resolved keys literally.
         self.update(
             data=new_data,
             tomlfy=tomlfy,
             validate=validate,
             tomlfy_filter=tomlfy_filter,
+            dotted_lookup=False,
             **kwargs,
         )
 
@@ -1194,10 +1202,15 @@ class Settings:
             tomlfy_filter=tomlfy_filter,
         )
 
-        # Fix for #869 - The call to getattr trigger early evaluation
-        existing = (
-            self.store.get(key, None) if not isinstance(parsed, Lazy) else None
-        )
+        # Fix for #869 - Evaluating an existing lazy value during set can
+        # fail before a complete replacement value is stored.
+        existing = None
+        if not isinstance(parsed, Lazy):
+            with suppress(AttributeError, KeyError):
+                if isinstance(self.store, DataDict):
+                    existing = self.store.get(key, bypass_eval=True)
+                else:
+                    existing = self.store.get(key)
 
         if getattr(parsed, "_dynaconf_insert", False):
             # `@insert` calls insert in a list by index
@@ -1547,6 +1560,14 @@ class Settings:
             paths = [p for p in sorted(glob(filepath)) if ".local." not in p]
             local_paths = [p for p in sorted(glob(filepath)) if ".local." in p]
 
+            if (
+                not silent
+                and not paths
+                and not local_paths
+                and not has_magic(filepath)
+            ):
+                raise FileNotFoundError(filepath)
+
             # Handle possible *.globs sorted alphanumeric
             for path in paths + local_paths:
                 if path in already_loaded:  # pragma: no cover
@@ -1840,10 +1861,3 @@ def _get_with_default(data: dict | list, key: str, default):
             return default
     else:
         raise AttributeError(f"Unknown data container type: {type(data)}")
-
-
-def get_unique_id():
-    # thread-safe, just in case
-    with id_counter.get_lock():
-        id_counter.value += 1
-        return id_counter.value
