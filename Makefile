@@ -57,16 +57,13 @@ citest:
 	make coverage-report
 
 ciinstall:
-	uv export --no-hashes --group ci > /tmp/requirements-ci.txt  # lets move all uv soon
-	python -m pip install --upgrade pip
-	python -m pip install -r /tmp/requirements-ci.txt
+	uv pip install --upgrade -e . --group ci
 
 test_all: test_functional test_integration test_redis test_vault test
 	@coverage html
 
 install:
-	uv export --no-hashes --group dev > /tmp/requirements-dev.txt  # lets move all uv soon
-	python -m pip install -r /tmp/requirements-dev.txt
+	uv pip install -e . --group dev
 
 run-pre-commit:
 	rm -rf .tox/
