@@ -1399,6 +1399,31 @@ def test_safe_json_parse_complete_failure():
         _safe_json_parse("not valid { json or python }")
 
 
+def test_safe_json_parse_non_string_input():
+    """_safe_json_parse must raise DynaconfParseError on non-string input.
+
+    A non-string value can't be JSON parsed, so it should fail the same way
+    @int/@float do (DynaconfParseError), instead of leaking a raw
+    AttributeError from the internal string replacement step.
+    """
+    from dynaconf.utils.parse_conf import _safe_json_parse
+
+    for value in (None, 123, 1.5, ["a"], {"key": "value"}, True):
+        with pytest.raises(DynaconfParseError, match="Cannot parse as JSON"):
+            _safe_json_parse(value)
+
+
+def test_json_cast_on_missing_key_raises_parse_error(settings):
+    """get(key, cast="@json") on a missing key raises DynaconfParseError.
+
+    The value is None, so the cast fails - but it should fail with the same
+    DynaconfParseError that cast="@int"/cast="@float" raise, not a raw
+    AttributeError.
+    """
+    with pytest.raises(DynaconfParseError, match="Cannot parse as JSON"):
+        settings.get("THIS_KEY_DOES_NOT_EXIST", cast="@json")
+
+
 def test_parse_conf_data_tomlfy_filter_none(settings):
     """Test parse_conf_data with tomlfy_filter=None"""
     # When tomlfy_filter is None, in_tomlfy_filter should return False
