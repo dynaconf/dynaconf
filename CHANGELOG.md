@@ -2,6 +2,31 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.3.3](https://github.com/dynaconf/dynaconf/releases/tag/3.3.3) - 2026-07-22
+
+### Bug Fixes
+
+
+- Fixed regression on lazy evaluation when using dynaboxify=False (#1429). By @pedro-psb.
+
+
+### Docs
+
+
+- Clarify the values of True, False and None for must_exist check (#1416). By @pedro-psb.
+
+
+### Chore
+
+
+- Fix netlify deploy command on publish workflow (#1420). By @pedro-psb.
+
+
+- Consolidate docs-publishing workflow for rolling-release (#1417). By @pedro-psb.
+
+
+- Simplify docs-only skip and include backport branches on main CI (#1415). By @pedro-psb.
+
 ## [3.3.2](https://github.com/dynaconf/dynaconf/releases/tag/3.3.2) - 2026-06-29
 
 ### Bug Fixes
