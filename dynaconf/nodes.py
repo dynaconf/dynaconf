@@ -757,6 +757,12 @@ def recursively_evaluate_lazy_format(value, settings):
             ]
         )
 
+    elif type(value) is dict:
+        value = {
+            k: recursively_evaluate_lazy_format(v, settings)
+            for k, v in value.items()
+        }
+
     return value
 
 

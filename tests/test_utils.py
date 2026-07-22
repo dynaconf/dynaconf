@@ -455,85 +455,104 @@ def test_upperfy():
     assert upperfy("foo_BAR") == "FOO_BAR"
 
 
-def test_lazy_format_class():
-    value = Lazy("{this[FOO]}/bar")
-    settings = {"FOO": "foo"}
-    assert value(settings) == "foo/bar"
-    assert str(value) == value.value
-    assert repr(value) == f"'@{value.formatter} {value.value}'"
+class TestLazyInternal:
+    def test_format_class(self):
+        value = Lazy("{this[FOO]}/bar")
+        settings = {"FOO": "foo"}
+        assert value(settings) == "foo/bar"
+        assert str(value) == value.value
+        assert repr(value) == f"'@{value.formatter} {value.value}'"
+
+    def test_format_class_jinja(self):
+        value = Lazy(
+            "{{this['FOO']}}/bar", formatter=Formatters.jinja_formatter
+        )
+        settings = {"FOO": "foo"}
+        assert value(settings) == "foo/bar"
+
+    def test_custom_function_formatter(self):
+        def custom_formatter(value, **context):
+            return f"custom:{value}"
+
+        lazy_val = Lazy("test", formatter=custom_formatter)
+        assert lazy_val({}) == "custom:test"
+
+    def test_json_serializable(self):
+        value = Lazy("{this[FOO]}/bar")
+        assert (
+            json.dumps({"val": value}, cls=DynaconfEncoder)
+            == '{"val": "@format {this[FOO]}/bar"}'
+        )
 
 
-def test_evaluate_lazy_format_decorator(settings):
-    class Settings:
-        FOO = "foo"
-        AUTO_CAST_FOR_DYNACONF = True
+class TestLazyDecorator:
+    def _make_settings(self, template):
+        class Settings:
+            FOO = "foo"
+            AUTO_CAST_FOR_DYNACONF = True
 
-        @evaluate_lazy_format
-        def get(self, key, default=None):
-            if key.endswith("_FOR_DYNACONF"):
-                return getattr(self, key)
-            return parse_conf_data("@format {this.FOO}/bar", box_settings=self)
+            @evaluate_lazy_format
+            def get(self, key, default=None):
+                if key.endswith("_FOR_DYNACONF"):
+                    return getattr(self, key)
+                return parse_conf_data(template, box_settings=self)
 
-        def __contains__(self, key):
-            value = getattr(self, key, missing)
-            if value is missing:
-                return False
-            return True
+            def __contains__(self, key):
+                value = getattr(self, key, missing)
+                if value is missing:
+                    return False
+                return True
 
-    settings = Settings()
-    assert settings.get("foo") == "foo/bar"
+        return Settings()
 
+    def test_format(self):
+        settings = self._make_settings("@format {this.FOO}/bar")
+        assert settings.get("foo") == "foo/bar"
 
-def test_lazy_format_on_settings(settings):
-    os.environ["ENV_THING"] = "LazyFormat"
-    settings.set("set_1", "really")
-    settings.set("lazy", "@format {env[ENV_THING]}/{this[set_1]}/{this.SET_2}")
-    settings.set("set_2", "works")
-
-    assert settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
-
-
-def test_lazy_format_class_jinja():
-    value = Lazy("{{this['FOO']}}/bar", formatter=Formatters.jinja_formatter)
-    settings = {"FOO": "foo"}
-    assert value(settings) == "foo/bar"
+    def test_jinja(self):
+        settings = self._make_settings("@jinja {{this.FOO}}/bar")
+        assert settings.get("foo") == "foo/bar"
 
 
-def test_evaluate_lazy_format_decorator_jinja(settings):
-    class Settings:
-        FOO = "foo"
+class TestLazyUsage:
+    @pytest.fixture(params=[True, False], ids=["dynaboxify", "no_dynaboxify"])
+    def settings(self, request):
+        return Dynaconf(dynaboxify=request.param)
 
-        AUTO_CAST_FOR_DYNACONF = True
+    def test_format(self, settings):
+        os.environ["ENV_THING"] = "LazyFormat"
+        settings.set("set_1", "really")
+        settings.set(
+            "lazy", "@format {env[ENV_THING]}/{this[set_1]}/{this.SET_2}"
+        )
+        settings.set("set_2", "works")
 
-        @evaluate_lazy_format
-        def get(self, key, default=None):
-            if key.endswith("_FOR_DYNACONF"):
-                return getattr(self, key)
-            return parse_conf_data(
-                "@jinja {{this.FOO}}/bar", box_settings=settings
-            )
+        assert (
+            settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
+        )
 
-    settings = Settings()
-    assert settings.get("foo") == "foo/bar"
+    def test_format_nested_dict(self, settings):
+        settings.set("BASE_VALUE", "hello")
+        settings.set("NESTED", {"inner": "@format {this[BASE_VALUE]}/world"})
+        assert settings.get("NESTED")["inner"] == "hello/world"
 
+    def test_jinja(self, settings):
+        os.environ["ENV_THING"] = "LazyFormat"
+        settings.set("set_1", "really")
+        settings.set(
+            "lazy",
+            "@jinja {{env.ENV_THING}}/{{this['set_1']}}/{{this.SET_2}}",
+        )
+        settings.set("set_2", "works")
 
-def test_lazy_format_on_settings_jinja(settings):
-    os.environ["ENV_THING"] = "LazyFormat"
-    settings.set("set_1", "really")
-    settings.set(
-        "lazy", "@jinja {{env.ENV_THING}}/{{this['set_1']}}/{{this.SET_2}}"
-    )
-    settings.set("set_2", "works")
+        assert (
+            settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
+        )
 
-    assert settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
-
-
-def test_lazy_format_is_json_serializable():
-    value = Lazy("{this[FOO]}/bar")
-    assert (
-        json.dumps({"val": value}, cls=DynaconfEncoder)
-        == '{"val": "@format {this[FOO]}/bar"}'
-    )
+    def test_jinja_nested_dict(self, settings):
+        settings.set("BASE_VALUE", "hello")
+        settings.set("NESTED", {"inner": "@jinja {{this.BASE_VALUE}}/world"})
+        assert settings.get("NESTED")["inner"] == "hello/world"
 
 
 def test_try_to_encode():
@@ -1363,19 +1382,6 @@ def test_read_file_os_error(tmp_path, monkeypatch):
         m.setattr("builtins.open", mock_open)
         with pytest.raises(DynaconfFormatError, match="Error reading"):
             settings.SECRET
-
-
-def test_lazy_with_custom_function_formatter():
-    """Test Lazy with custom function (not BaseFormatter)"""
-    from dynaconf.utils.parse_conf import Lazy
-
-    def custom_formatter(value, **context):
-        return f"custom:{value}"
-
-    lazy_val = Lazy("test", formatter=custom_formatter)
-    settings = {}
-    result = lazy_val(settings)
-    assert result == "custom:test"
 
 
 def test_safe_json_parse_extract_objects(settings):

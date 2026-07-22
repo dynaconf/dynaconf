@@ -31,6 +31,7 @@ from dynaconf.loaders import yaml_loader
 from dynaconf.loaders.base import SourceMetadata
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
+from dynaconf.nodes import recursively_evaluate_lazy_format
 from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils import BANNER
 from dynaconf.utils import ensure_a_list
@@ -641,6 +642,8 @@ class Settings:
             self.execute_loaders(key=key)
 
         data = _get_with_default(parent or core.store, key, default)
+        if config.dynaboxify is False:
+            data = recursively_evaluate_lazy_format(data, self)
         if cast:
             data = apply_converter(cast, data, box_settings=self)
         return data
