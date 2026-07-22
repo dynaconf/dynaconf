@@ -18,7 +18,14 @@ EXPECTED = {
     "ENVVAR_FOR_DYNACONF": "SETTINGS_FILE_FOR_DYNACONF",
     "REDIS_FOR_DYNACONF": {},
     "REDIS_ENABLED_FOR_DYNACONF": False,
-    "VALKEY_FOR_DYNACONF": {},
+    "VALKEY_FOR_DYNACONF": {
+        'host': 'localhost', 
+        'port': 6379, 
+        'db': 0, 
+        'decode_responses': True, 
+        'username': None, 
+        'password': None
+    },
     "VALKEY_ENABLED_FOR_DYNACONF": False,
     "VAULT_FOR_DYNACONF": {
         "url": "http://localhost:8200",
