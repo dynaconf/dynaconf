@@ -730,14 +730,20 @@ def recursively_evaluate_lazy_format(value, settings):
 
         # Check for circular reference
         value_id = id(value)
-        if value_id in eval_stack:
-            raise __import__("dynaconf.utils.parse_conf").DynaconfFormatError(
-                "Circular reference detected in lazy formatting. "
-                "A value is referencing itself directly or indirectly."
+        if any(value_id == entry[0] for entry in eval_stack):
+            chain = " -> ".join(
+                entry[1] for entry in eval_stack
+            )
+            expr = f"@{value.formatter} {value.value}"
+            from dynaconf.utils.parse_conf import DynaconfFormatError
+
+            raise DynaconfFormatError(
+                f"Circular reference detected in lazy formatting: "
+                f"{chain} -> {expr}"
             )
 
         # Add to stack before evaluation
-        eval_stack.append(value_id)
+        eval_stack.append((value_id, f"@{value.formatter} {value.value}"))
         try:
             value = value(settings)
         finally:

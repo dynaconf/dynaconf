@@ -555,6 +555,37 @@ class TestLazyUsage:
         assert settings.get("NESTED")["inner"] == "hello/world"
 
 
+def test_lazy_circular_reference_error_message():
+    settings = Dynaconf()
+    settings.set("A", "@format {this.B}")
+    settings.set("B", "@format {this.A}")
+
+    with pytest.raises(
+        DynaconfFormatError,
+        match=r"@format \{this.B\} -> @format \{this.A\}",
+    ):
+        settings.A
+
+
+def test_lazy_self_referencing_cast_not_circular(tmp_path):
+    """https://github.com/dynaconf/dynaconf/issues/1425
+
+    Overriding a key with a lazy expression that references itself
+    (e.g. to cast the type) should not raise a circular reference error.
+    """
+    settings_file = tmp_path / "settings.toml"
+    settings_file.write_text('[main]\nstartyear = "2015"\n')
+    includes_file = tmp_path / "config_post.toml"
+    includes_file.write_text(
+        'MAIN__STARTYEAR = "@int @jinja {{this.main.startyear | int}}"\n'
+    )
+    settings = Dynaconf(
+        settings_files=[str(settings_file)],
+        includes=[str(includes_file)],
+    )
+    assert settings.main.startyear == 2015
+
+
 def test_try_to_encode():
     value = Lazy("{this[FOO]}/bar")
     assert try_to_encode(value) == "@format {this[FOO]}/bar"
