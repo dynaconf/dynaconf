@@ -57,8 +57,6 @@ from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
 
-cache_enabled = True  # disable if something weird happen
-
 
 class LazySettings(LazyObject):
     """Loads settings lazily from multiple sources:
@@ -224,6 +222,7 @@ class DynaconfCore:
         validators = kwargs.pop("validators", None)
 
         self._cache: dict = {}
+        self.cache_enabled = True
         self.obj = obj
         self.config = config
         self.store = store
@@ -232,20 +231,22 @@ class DynaconfCore:
     # CACHING
 
     def get_cached(self, key):
-        if not cache_enabled:
-            raise KeyError  # communicates "cache not found"
+        """Return value or raises KeyError for key not found."""
+        if not self.cache_enabled:
+            raise KeyError
         return self._cache[key]
 
     def set_cached(self, key, value):
-        if not cache_enabled:
+        # NOTE: remove support for this marker in a breaking change
+        _is_lazy = hasattr(value, "_dynaconf_lazy_format")
+        if not self.cache_enabled:
             return
         fresh_vars = self.config.fresh_vars
-        is_lazy = value.__class__.__name__ == "Lazy"
-        if key not in fresh_vars and not is_lazy:
+        if key not in fresh_vars and not _is_lazy:
             self._cache[key] = value
 
     def clear_cache(self):
-        if not cache_enabled:
+        if not self.cache_enabled:
             return
         self._cache.clear()
 

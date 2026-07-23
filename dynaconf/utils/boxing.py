@@ -1,15 +1,28 @@
 from __future__ import annotations
 
 import inspect
+import warnings
 from typing import Any
 
+from dynaconf.nodes import DataDict
 from dynaconf.nodes import recursively_evaluate_lazy_format
 from dynaconf.utils import find_the_correct_casing
 from dynaconf.utils.functional import empty
 from dynaconf.vendor.box import Box
 
 
-class DynaBox(Box):
+class DynaBox(DataDict):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "DynaBox is deprecated and will be removed in 4.0.0,"
+            " use dynaconf.DataDict instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        super().__init__(*args, **kwargs)
+
+
+class _DynaBox(Box):
     """Specialized Box for dynaconf
     it allows items/attrs to be found both in upper or lower case"""
 
@@ -69,7 +82,7 @@ class DynaBox(Box):
         keys = list(self.keys())
         reserved = [
             item[0]
-            for item in inspect.getmembers(DynaBox)
+            for item in inspect.getmembers(_DynaBox)
             if not item[0].startswith("__")
         ]
         return (

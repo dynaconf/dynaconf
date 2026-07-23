@@ -14,6 +14,10 @@ class Empty:
 empty = Empty()
 
 
+def is_lazy(value):
+    return bool(getattr(value, "_dynaconf_lazy_format", False))
+
+
 def new_method_proxy(func):
     def inner(self, *args):
         if self._wrapped is empty:
