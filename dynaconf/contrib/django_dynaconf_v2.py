@@ -121,6 +121,10 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     setattr(django_settings_module, "DYNACONF", lazy_settings)
 
     # 4) keep django original settings
+    # dir(django_settings) triggers _setup() which populates _wrapped.
+    # Read from _wrapped directly to bypass LazySettings.__getattr__
+    # validation (e.g. empty SECRET_KEY raises ImproperlyConfigured,
+    # not AttributeError, so getattr's default can't catch it).
     dj = {}
     for key in dir(django_settings):
         if (
@@ -128,9 +132,12 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
             and (key != "SETTINGS_MODULE")
             and key not in lazy_settings.store
         ):
-            val = getattr(django_settings, key, None)
+            wrapped = django_settings._wrapped
+            val = getattr(wrapped, key, None)
             dj[key] = val
-        dj["ORIGINAL_SETTINGS_MODULE"] = django_settings.SETTINGS_MODULE
+        dj["ORIGINAL_SETTINGS_MODULE"] = (
+            django_settings._wrapped.SETTINGS_MODULE
+        )
 
     lazy_settings.update(dj)
 
