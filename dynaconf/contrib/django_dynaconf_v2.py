@@ -28,7 +28,8 @@ import os
 import sys
 
 import dynaconf
-from dynaconf.hooking import HookableSettings
+from dynaconf.hooking import Action, Hook, HookableSettings
+from dynaconf.utils.functional import empty
 
 try:  # pragma: no cover
     from django import conf
@@ -172,6 +173,21 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     # This implementation is recommended by Guido Van Rossum
     # https://mail.python.org/pipermail/python-ideas/2012-May/014969.html
     sys.modules["django.conf"] = Wrapper()
+
+    # 5b) Replay Django's LazySettings.__getattr__ validations
+    # (e.g. empty SECRET_KEY raises ImproperlyConfigured).
+    # django_settings._wrapped is populated from step 4's dir() call.
+    _original_django_settings = django_settings
+
+    def _django_validate_hook(temp_settings, value, *args, **kwargs):
+        key = args[0] if args else kwargs.get("key")
+        if key and key.isupper():
+            conf.LazySettings.__getattr__(_original_django_settings, key)
+        return value
+
+    lazy_settings["_registered_hooks"] = {
+        Action.AFTER_GET: [Hook(_django_validate_hook)],
+    }
 
     # 6) Enable standalone scripts to use Dynaconf
     # This is for when `django.conf.settings` is imported directly
