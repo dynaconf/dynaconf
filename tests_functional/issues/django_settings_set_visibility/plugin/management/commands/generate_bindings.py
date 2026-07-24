@@ -3,6 +3,7 @@
 Accesses computed settings via django.conf.settings, the same way
 rpm plugin code does.
 """
+
 import json
 
 from django.conf import settings

@@ -28,8 +28,9 @@ import os
 import sys
 
 import dynaconf
-from dynaconf.hooking import Action, Hook, HookableSettings
-from dynaconf.utils.functional import empty
+from dynaconf.hooking import Action
+from dynaconf.hooking import Hook
+from dynaconf.hooking import HookableSettings
 
 try:  # pragma: no cover
     from django import conf
@@ -182,12 +183,17 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     def _django_validate_hook(temp_settings, value, *args, **kwargs):
         key = args[0] if args else kwargs.get("key")
         if key and key.isupper():
-            conf.LazySettings.__getattr__(_original_django_settings, key)
+            try:
+                conf.LazySettings.__getattr__(_original_django_settings, key)
+            except AttributeError:
+                # Key exists in dynaconf but not in Django's Settings.
+                # Not a Django-managed key, so no validation to apply.
+                pass
         return value
 
-    lazy_settings["_registered_hooks"] = {
-        Action.AFTER_GET: [Hook(_django_validate_hook)],
-    }
+    hooks = lazy_settings.store.get("_registered_hooks", {})
+    hooks.setdefault(Action.AFTER_GET, []).append(Hook(_django_validate_hook))
+    lazy_settings["_registered_hooks"] = hooks
 
     # 6) Enable standalone scripts to use Dynaconf
     # This is for when `django.conf.settings` is imported directly

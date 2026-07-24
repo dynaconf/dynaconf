@@ -11,6 +11,7 @@ step 4 fails to copy Django's built-in settings. This prevents step 5
 from patching django.conf.settings, making post_hook values invisible
 to code using `from django.conf import settings`.
 """
+
 from __future__ import annotations
 
 import json
