@@ -256,6 +256,15 @@ def handle_metavalues(
                 new[key] = object_merge(
                     old.get(key), new[key], list_merge=list_merge
                 )
+            else:
+                # No merge token on this level, but a nested level may still
+                # carry one - it must be handled (and removed) as well. ref #1210
+                nested_old = old.get(key)
+                handle_metavalues(
+                    nested_old if isinstance(nested_old, dict) else {},
+                    new[key],
+                    list_merge=list_merge,
+                )
 
 
 class FakeCore:
