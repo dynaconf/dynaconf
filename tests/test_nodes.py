@@ -288,6 +288,28 @@ def test_nested_structures():
     assert isinstance(di["b"]["c"], DataList)
 
 
+def test_nested_dict_and_list_subclasses_are_converted():
+    """Subclasses of dict/list must become data-nodes too.
+
+    Regression for #1430: an identity check on ``__class__`` skipped
+    dict/list subclasses (e.g. ``OrderedDict``, ``box.Box``), so nested
+    values kept plain-container behavior and lost case-insensitive
+    reading and lazy-format evaluation.
+    """
+
+    class MyDict(dict):
+        pass
+
+    class MyList(list):
+        pass
+
+    di = DataDict({"a": MyDict({"x": 1}), "b": MyList([{"y": 2}])})
+
+    assert isinstance(di["a"], DataDict)
+    assert isinstance(di["b"], DataList)
+    assert isinstance(di["b"][0], DataDict)
+
+
 def test_method_preservation():
     di = DataDict()
     di["a"] = {"x": 1}
