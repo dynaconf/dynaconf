@@ -2,6 +2,28 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.3.4](https://github.com/dynaconf/dynaconf/releases/tag/3.3.4) - 2026-07-29
+
+### Bug Fixes
+
+
+- Fixed error when passing a list values for env on dynaconf init (#1278) (#1421). By @apoorvdarshan.
+
+
+- Clean up nested dynaconf_merge tokens when parent key is new (#1435). By @Sanjays2402.
+
+
+- Keep sibling keys that share a dotted path leaf name (#1434). By @Sanjays2402.
+
+
+- Convert container subclasses (#1436). By @deepakganesh78.
+
+
+- Django early validation integration code bug (#1432). By @pedro-psb.
+
+
+### Chore
+
 ## [3.3.3](https://github.com/dynaconf/dynaconf/releases/tag/3.3.3) - 2026-07-22
 
 ### Bug Fixes
