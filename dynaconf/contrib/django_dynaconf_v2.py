@@ -28,6 +28,8 @@ import os
 import sys
 
 import dynaconf
+from dynaconf.hooking import Action
+from dynaconf.hooking import Hook
 from dynaconf.hooking import HookableSettings
 
 try:  # pragma: no cover
@@ -121,6 +123,10 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     setattr(django_settings_module, "DYNACONF", lazy_settings)
 
     # 4) keep django original settings
+    # dir(django_settings) triggers _setup() which populates _wrapped.
+    # Read from _wrapped directly to bypass LazySettings.__getattr__
+    # validation (e.g. empty SECRET_KEY raises ImproperlyConfigured,
+    # not AttributeError, so getattr's default can't catch it).
     dj = {}
     for key in dir(django_settings):
         if (
@@ -128,9 +134,12 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
             and (key != "SETTINGS_MODULE")
             and key not in lazy_settings.store
         ):
-            val = getattr(django_settings, key, None)
+            wrapped = django_settings._wrapped
+            val = getattr(wrapped, key, None)
             dj[key] = val
-        dj["ORIGINAL_SETTINGS_MODULE"] = django_settings.SETTINGS_MODULE
+        dj["ORIGINAL_SETTINGS_MODULE"] = (
+            django_settings._wrapped.SETTINGS_MODULE
+        )
 
     lazy_settings.update(dj)
 
@@ -165,6 +174,26 @@ def load(django_settings_module_name=None, **kwargs):  # pragma: no cover
     # This implementation is recommended by Guido Van Rossum
     # https://mail.python.org/pipermail/python-ideas/2012-May/014969.html
     sys.modules["django.conf"] = Wrapper()
+
+    # 5b) Replay Django's LazySettings.__getattr__ validations
+    # (e.g. empty SECRET_KEY raises ImproperlyConfigured).
+    # django_settings._wrapped is populated from step 4's dir() call.
+    _original_django_settings = django_settings
+
+    def _django_validate_hook(temp_settings, value, *args, **kwargs):
+        key = args[0] if args else kwargs.get("key")
+        if key and key.isupper():
+            try:
+                conf.LazySettings.__getattr__(_original_django_settings, key)
+            except AttributeError:
+                # Key exists in dynaconf but not in Django's Settings.
+                # Not a Django-managed key, so no validation to apply.
+                pass
+        return value
+
+    hooks = lazy_settings.store.get("_registered_hooks", {})
+    hooks.setdefault(Action.AFTER_GET, []).append(Hook(_django_validate_hook))
+    lazy_settings["_registered_hooks"] = hooks
 
     # 6) Enable standalone scripts to use Dynaconf
     # This is for when `django.conf.settings` is imported directly
