@@ -392,6 +392,18 @@ def normalize_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
             for c_old, c_new in RENAMED_VARS.items():
                 if c_new == new:
                     kwargs[c_old] = kwargs[new]
+
+    # A list passed as `env` is the programmatic equivalent of the
+    # comma-separated ENV_FOR_DYNACONF environment variable. Normalize it here
+    # so all loaders can use their existing multi-environment handling. #1278
+    env = kwargs.get("ENV_FOR_DYNACONF")
+    if isinstance(env, list):
+        if not all(isinstance(item, str) for item in env):
+            raise TypeError("'env' must be a string or a list of strings")
+        kwargs["ENV_FOR_DYNACONF"] = ",".join(env)
+    elif env is not None and not isinstance(env, str):
+        raise TypeError("'env' must be a string or a list of strings")
+
     return kwargs
 
 
