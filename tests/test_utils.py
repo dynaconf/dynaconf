@@ -383,6 +383,22 @@ def test_merge_list_token_when_key_absent_in_old():
     assert new == {"existing": 1, "ports": [8080]}
 
 
+def test_nested_merge_token_is_cleaned_up_when_key_absent_in_old():
+    # A `dynaconf_merge` token nested below a key that does not exist in the
+    # existing data was never consumed, so it leaked into the final settings
+    # as a regular key.  See #1210.
+    old = {}
+    new = {"a": {"nested": {"dynaconf_merge": True, "y": 2}}}
+    object_merge(old, new)
+    assert new == {"a": {"nested": {"y": 2}}}
+
+    # Same for a deeper nesting level.
+    old = {"a": {"other": 1}}
+    new = {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}}
+    object_merge(old, new)
+    assert new == {"a": {"other": 1, "b": {"c": {"y": 2}}}}
+
+
 def test_trimmed_split():
     # No sep
     assert trimmed_split("hello") == ["hello"]
