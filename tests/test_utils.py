@@ -383,20 +383,66 @@ def test_merge_list_token_when_key_absent_in_old():
     assert new == {"existing": 1, "ports": [8080]}
 
 
-def test_nested_merge_token_is_cleaned_up_when_key_absent_in_old():
-    # A `dynaconf_merge` token nested below a key that does not exist in the
-    # existing data was never consumed, so it leaked into the final settings
-    # as a regular key.  See #1210.
-    old = {}
-    new = {"a": {"nested": {"dynaconf_merge": True, "y": 2}}}
+@pytest.mark.parametrize(
+    "old, new, expected",
+    [
+        pytest.param(
+            {},
+            {"a": {"nested": {"dynaconf_merge": True, "y": 2}}},
+            {"a": {"nested": {"y": 2}}},
+            id="absent_key_level_1",
+        ),
+        pytest.param(
+            {"a": {"other": 1}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}}}},
+            id="absent_key_level_2",
+        ),
+        pytest.param(
+            {"m": {"other": 1}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"b": {"c": {"y": 2}}}, "m": {"other": 1}},
+            id="absent_key_level_2_different_root",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {}}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}}}},
+            id="absent_key_level_2_with_existing_empty_parent",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {"b_child": 3}}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}, "b_child": 3}}},
+            id="absent_key_level_2_with_existing_nonempty_parent",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {"c": {}}}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}}}},
+            id="absent_key_level_2_with_existing_empty_sibling",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {"c": {"z": 3}}}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2, "z": 3}}}},
+            id="absent_key_level_2_with_existing_nonempty_sibling",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {"c": {"z": 3}}}},
+            {"a": {"b": {"c": {"dynaconf_merge": False, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}}}},
+            id="absent_key_level_2_with_existing_nonempty_sibling_merge_false",
+        ),
+    ],
+)
+def test_nested_merge_token_is_cleaned_up_when_key_absent_in_old(
+    old, new, expected
+):
+    """See #1210. Merge token nested below an absent key must be stripped
+    so it doesn't leak into the final settings."""
     object_merge(old, new)
-    assert new == {"a": {"nested": {"y": 2}}}
-
-    # Same for a deeper nesting level.
-    old = {"a": {"other": 1}}
-    new = {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}}
-    object_merge(old, new)
-    assert new == {"a": {"other": 1, "b": {"c": {"y": 2}}}}
+    assert new == expected
 
 
 def test_trimmed_split():
