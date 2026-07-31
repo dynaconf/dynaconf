@@ -89,6 +89,15 @@ class DataDict(dict):
     def __copy__(self):
         return self.copy()
 
+    def __deepcopy__(self, memo=None):
+        memo = memo or {}
+        out = self.__class__(core=self.__meta__.core)
+        out.__meta__.data_env = self.__meta__.data_env
+        memo[id(self)] = out
+        for k, v in dict.items(self):
+            out[copy.deepcopy(k, memo=memo)] = copy.deepcopy(v, memo=memo)
+        return out
+
     def __getitem__(self, item):
         try:
             result = super().__getitem__(item)

@@ -252,6 +252,38 @@ class TestDataDict:
         with pytest.raises(AccessError):
             _ = di.nonexistent_key
 
+    def test_deepcopy(self):
+        core = DynaconfCore("test")
+        di = DataDict({"a": 1, "b": {"c": 2}}, core=core)
+
+        di_copy = copy.deepcopy(di)
+
+        assert di_copy == di
+        assert di_copy is not di
+        assert isinstance(di_copy, DataDict)
+        assert isinstance(di_copy["b"], DataDict)
+        assert get_core(di_copy) is core
+
+    def test_deepcopy_does_not_traverse_core(self):
+        """deepcopy must not recurse into __meta__.core (the Settings graph).
+
+        Real Settings objects hold non-picklable state (DI containers,
+        thread locks, vault clients). DataDict.__deepcopy__ must propagate
+        core by reference — same as DataList already does.
+        """
+        import threading
+
+        core = DynaconfCore("test")
+        core._lock = threading.RLock()  # simulate non-picklable state
+
+        di = DataDict({"host": "localhost", "port": 5432}, core=core)
+
+        di_copy = copy.deepcopy(di)
+
+        assert di_copy == {"host": "localhost", "port": 5432}
+        assert isinstance(di_copy, DataDict)
+        assert get_core(di_copy) is core
+
 
 class TestDataList:
     def test_init_converts_nested(self):
