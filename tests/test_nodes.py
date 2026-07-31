@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import threading
 from collections import namedtuple
 
 import pytest
@@ -105,6 +106,39 @@ def test_get():
 def test_copy_no_cause_inf_recursion():
     ddict.__copy__()
     ddict.copy()
+
+
+def test_deepcopy_datadict_propagates_core_by_reference():
+    """Issue: https://github.com/dynaconf/dynaconf/issues/1439
+
+    Without DataDict.__deepcopy__, the default implementation recurses into
+    __meta__.core and raises on anything the Settings graph holds that cannot
+    be pickled, such as a lock.
+    """
+    core = DynaconfCore("test")
+    core.obj._lock = threading.RLock()
+    data = DataDict({"a": {"b": [1, 2]}}, core=core)
+
+    out = copy.deepcopy(data)
+
+    assert isinstance(out, DataDict)
+    assert out == data
+    assert out.__meta__.core is core
+    assert out["a"].__meta__.core is core
+
+    # values are copied deeply, so mutating the copy leaves the original alone
+    out["a"]["b"].append(3)
+    assert list(data["a"]["b"]) == [1, 2]
+
+
+def test_deepcopy_datadict_handles_cycles():
+    core = DynaconfCore("test")
+    data = DataDict({"x": 1}, core=core)
+    data["self"] = data
+
+    out = copy.deepcopy(data)
+
+    assert out["self"] is out
 
 
 def test_accessing_datadict_inside_datalist_inside_datadict():

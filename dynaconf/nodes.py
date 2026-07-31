@@ -89,6 +89,17 @@ class DataDict(dict):
     def __copy__(self):
         return self.copy()
 
+    def __deepcopy__(self, memo=None):
+        # Not part of the plain dict API, but needed to propagate core.
+        # Without it, the default deepcopy recurses into __meta__.core and
+        # fails on any non-copyable object the Settings graph holds.
+        out = self.__class__(core=self.__meta__.core)
+        memo = memo or {}
+        memo[id(self)] = out
+        for k, v in super().items():
+            out[copy.deepcopy(k, memo=memo)] = copy.deepcopy(v, memo=memo)
+        return out
+
     def __getitem__(self, item):
         try:
             result = super().__getitem__(item)
