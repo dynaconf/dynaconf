@@ -9,6 +9,7 @@ Shout out to our top contributors!
 - [janw](https://github.com/janw)
 - [mitches-got-glitches](https://github.com/mitches-got-glitches)
 - [hilam](https://github.com/hilam)
+- [sarathfrancis90](https://github.com/sarathfrancis90)
 - [dependabot[bot]](https://github.com/apps/dependabot)
 - [VaultVulp](https://github.com/VaultVulp)
 - [rsnyman](https://github.com/rsnyman)
@@ -25,11 +26,10 @@ Shout out to our top contributors!
 - [cassiobotaro](https://github.com/cassiobotaro)
 - [mirekdlugosz](https://github.com/mirekdlugosz)
 - [adevore](https://github.com/adevore)
+- [sjh9714](https://github.com/sjh9714)
 - [mspinelli](https://github.com/mspinelli)
 - [Riverfount](https://github.com/Riverfount)
 - [tanalam2411](https://github.com/tanalam2411)
-- [chobeat](https://github.com/chobeat)
-- [obaranov](https://github.com/obaranov)
 
 
-_Last updated: Fri, 05 Jul 24 06:09:33 +0000_
+_Last updated: Sat, 01 Aug 26 03:30:21 +0000_
