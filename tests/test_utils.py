@@ -19,6 +19,7 @@ from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import ensure_upperfied_list
 from dynaconf.utils import extract_json_objects
+from dynaconf.utils import find_the_correct_casing
 from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import Missing
 from dynaconf.utils import missing
@@ -355,6 +356,18 @@ def test_merge_dict_preserves_old_key_order():
     object_merge(old2, new2)
     assert list(new2.keys()) == ["x", "y", "z"]
     assert new2 == {"x": 99, "y": 20, "z": 30}
+
+
+def test_find_the_correct_casing_skips_non_str_keys():
+    assert find_the_correct_casing("timeout", (1, 2, "TIMEOUT")) == "TIMEOUT"
+    assert find_the_correct_casing("timeout", (1, 2)) is None
+
+
+def test_merge_existing_dict_with_non_str_keys():
+    existing = {1: "fast", 2: "slow", "TIMEOUT": 30}
+    new = {"timeout": 60}
+    object_merge(existing, new)
+    assert new == {1: "fast", 2: "slow", "TIMEOUT": 60}
 
 
 def test_merge_dict_with_meta_values(settings):
