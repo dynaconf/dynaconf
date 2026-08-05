@@ -2,6 +2,31 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.3.5](https://github.com/dynaconf/dynaconf/releases/tag/3.3.5) - 2026-08-05
+
+### Bug Fixes
+
+
+- Skip non-str keys when resolving key casing (#1446). By @shuvamk.
+
+
+- Get/get_fresh with dotted keys stop working after first call (#1423). By @pctablet505.
+
+
+- Fix get_history ignoring its history_limit argument (#1424). By @chuenchen309.
+
+
+- Fix regression on override precedence with proper dynaconf-token cleanup (#1438). By @pedro-psb.
+
+
+- Add __deepcopy__ to DataDict to match DataList (#1440). By @digitronik.
+
+
+### Chore
+
+
+- Added py314 in toxList and up some test packages to full support this (#1443). By @even-even.
+
 ## [3.3.4](https://github.com/dynaconf/dynaconf/releases/tag/3.3.4) - 2026-07-29
 
 ### Bug Fixes
