@@ -617,7 +617,7 @@ def find_the_correct_casing(
 ) -> str | None:
     """Given a key, find the proper casing in data.
 
-    Return 'None' for non-str key types.
+    Non-str keys in data are skipped.
 
     Arguments:
         key {str} -- A key to be searched in data
@@ -630,7 +630,7 @@ def find_the_correct_casing(
         return key
     for k in data_keys:
         if not isinstance(k, str):
-            return None
+            continue
         if k.lower() == key.lower():
             return k
         if k.replace(" ", "_").lower() == key.lower():
