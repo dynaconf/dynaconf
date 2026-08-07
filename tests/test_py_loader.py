@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import os
+import sys
 
 import pytest
 
 from dynaconf import default_settings
 from dynaconf import LazySettings
+from dynaconf.loaders.py_loader import get_module
 from dynaconf.loaders.py_loader import load
 from dynaconf.loaders.py_loader import try_to_load_from_py_module_name
 from dynaconf.utils import DynaconfDict
@@ -275,3 +277,48 @@ def test_post_load_hooks(clean_env, tmpdir):
             "INSTALLED_APPS": ["dummyplugin"],
         }
     }
+
+
+@pytest.fixture
+def with_importable_tmp_path(tmp_path):
+    sys.path.insert(0, str(tmp_path))
+    yield tmp_path
+    sys.path.remove(str(tmp_path))
+    for key in list(sys.modules.keys()):
+        mod = sys.modules[key]
+        if getattr(mod, "__file__", None) and str(tmp_path) in mod.__file__:
+            del sys.modules[key]
+
+
+def test_get_module_reraises_import_error_from_module_content(
+    create_file, with_importable_tmp_path
+):
+    """get_module() must propagate ImportError caused by content inside the
+    settings module (e.g. cyclic imports), not just swallow it as 'not found'.
+
+    Regression test for https://github.com/dynaconf/dynaconf/issues/1308
+    Uses real on-disk modules in a genuine A-imports-B / B-imports-A cyclic
+    setup to exercise the actual import path.
+    """
+    # Module A imports from B, and B imports from A — a real cyclic import.
+    # Python raises: ImportError: cannot import name 'X' from partially
+    # initialized module 'Y' (most likely due to a circular import)
+    create_file(
+        "cyclic_a.py",
+        """
+        from cyclic_b import B_VALUE
+        A_VALUE = 1
+        """,
+    )
+    create_file(
+        "cyclic_b.py",
+        """
+        from cyclic_a import A_VALUE
+        B_VALUE = 2
+        """,
+    )
+
+    settings = DynaconfDict()
+
+    with pytest.raises(ImportError):
+        get_module(settings, "cyclic_a", silent=False)
