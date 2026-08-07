@@ -8,7 +8,7 @@ Todo comando (com exceção do init) requer uma Instância que pode ser passada 
 
 O comando `$ dynaconf -i config.settings` do cli provê alguns comandos bem úteis
 
-> **IMPORTANTE** caso usem [Flask Extension](flask.md) a variável de ambiente `FLASK_APP` deve ser definda para usar o CLI, e caso usem [Django Extension](django.md) a variável `DJANGO_SETTINGS_MODULE` deve estar definida.
+> **IMPORTANTE** caso usem [Flask Extension](../../flask.md) a variável de ambiente `FLASK_APP` deve ser definda para usar o CLI, e caso usem [Django Extension](../../django.md) a variável `DJANGO_SETTINGS_MODULE` deve estar definida.
 
 ### dynaconf --help
 
@@ -64,7 +64,7 @@ Bem como incluirá no arquivo `.gitignore` para que seja ignorado o arquivo `.se
 .secrets.*
 ```
 
-> Reomenda-se que para dados sensíveis em produção use[Vault Server](secrets.md)
+> Reomenda-se que para dados sensíveis em produção use[Vault Server](../../secrets.md)
 
 ```
 Uso: dynaconf init [OPÇÕES]

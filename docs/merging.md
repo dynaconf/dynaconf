@@ -69,7 +69,7 @@ export DYNACONF_DATABASE__ARGS__timeout=30
 export DYNACONF_DATABASE__ARGS__retries=5
 ```
 
-Each `__` is parsed as a level traversing thought dict keys. read more in [environment variables](envvars.md#nested-keys-in-dictionaries-via-environment-variables)
+Each `__` is parsed as a level traversing thought dict keys. read more in [environment variables](envvars.md#environment-variables)
 
 So the above will result in
 
@@ -318,7 +318,7 @@ For nested structures, the recommendation is to use dunder merging because it is
 parameters__enabled = false
 ```
 
-The use of `__` to denote nested level will ensure the key is merged with existing values read more in [merging existing values](#merging-existing-values).
+The use of `__` to denote nested level will ensure the key is merged with existing values read more in [merging existing values](#local-configuration-files-and-merging-to-existing-data).
 
 
 ## Nested set via environment variables
@@ -479,7 +479,7 @@ DATABASES = {
 > **New in 3.3.0 (experimental)**
 
 The feature for lists is in experimental phase and is disabled by default.
-To enable it, configure [`INDEX_SEPARATOR_FOR_DYNACONF`](../configuration/#index_separators) to something like `___` (three underscores).
+To enable it, configure [`INDEX_SEPARATOR_FOR_DYNACONF`](configuration.md#index_separator) to something like `___` (three underscores).
 
 This works similarly to the case for dicionaries.
 Example:

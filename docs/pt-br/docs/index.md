@@ -93,7 +93,7 @@ pip install dynaconf
             settings_files=['settings.toml', '.secrets.toml'],
         )
         ```
-        Mais opções são descritas em [Dynaconf Configuration](configuration.md)
+        Mais opções são descritas em [Dynaconf Configuration](../../configuration.md)
 
     === "settings.toml"
         **Opcionalmente** armazene as configurações em um arquivo (ou em múltiplos arquivos)
@@ -108,7 +108,7 @@ pip install dynaconf
         [a_dict.nested]
         other_level = "nested value"
         ```
-        Mais detalhes em [Settings Files](settings_files.md)
+        Mais detalhes em [Settings Files](../../settings_files.md)
 
     === ".secrets.toml"
         **Opcionalmente** armazene dados sensíveis em um único arquivo local chamado `.secrets.toml`
@@ -125,7 +125,7 @@ pip install dynaconf
         .secrets.*
         ```
 
-        Leia mais em [Secrets](secrets.md)
+        Leia mais em [Secrets](../../secrets.md)
 
     === "env vars"
         **Opcionalmente** use variáveis de ambiente com prefixos. (arquivos `.env` também são suportados)

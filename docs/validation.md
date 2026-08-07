@@ -113,7 +113,7 @@ except dynaconf.ValidationError as e:
     print(accumulative_errors)
 ```
 
-<h5>Trigger on data update</h5>
+##### Trigger on data update
 
 By default, if the data of an instance is updated with `update`, `set` or `load_file` methods,
 no validation will be triggered.
