@@ -31,6 +31,10 @@ Additional links:
 
 #### Prepare your environment
 
+This project uses [uv](https://docs.astral.sh/uv/) to manage the development
+environment and dependencies. Install it first if you don't have it — see the
+[uv installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+
 ```bash
 # clone your fork of this repo
 git clone git@github.com:{$USER}/dynaconf.git
@@ -38,9 +42,9 @@ git clone git@github.com:{$USER}/dynaconf.git
 # Add the upstream remote
 git remote add upstream https://github.com/dynaconf/dynaconf.git
 
-# Activate your Python Environment
-python3.10 -m venv venv
-source venv/bin/activate
+# Create and activate your Python environment with uv
+uv venv
+source .venv/bin/activate
 
 # Install dynaconf for development
 make all

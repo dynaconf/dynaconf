@@ -1,7 +1,0 @@
-include *.md
-include *.png
-include LICENSE
-include VERSION
-include dynaconf/VERSION
-recursive-include vendor_licenses **
-prune dynaconf/vendor_src

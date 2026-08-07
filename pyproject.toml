@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "dynaconf"
@@ -11,6 +11,7 @@ authors = [
     {name = "Bruno Rocha", email = "rochacbruno@gmail.com"},
 ]
 license = {text = "MIT"}
+license-files = ["LICENSE", "vendor_licenses/*"]
 requires-python = ">=3.10,<3.15"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -52,36 +53,59 @@ configobj = ["configobj"]
 [project.scripts]
 dynaconf = "dynaconf.cli:main"
 
-# SETUPTOOLS
-# ==========
+# HATCHLING
+# =========
 
-[tool.setuptools]
-include-package-data = true
-zip-safe = false
-platforms = ["any"]
-license-files = ["LICENSE", "vendor_licenses/*"]
+[tool.hatch.version]
+path = "dynaconf/VERSION"
+pattern = "(?P<version>.+)"
 
-[tool.setuptools.dynamic]
-version = {file = "dynaconf/VERSION"}
-
-[tool.setuptools.packages.find]
+[tool.hatch.build.targets.wheel]
+packages = ["dynaconf"]
 exclude = [
-    "tests",
-    "tests.*",
-    "tests_functional",
-    "tests_functional.*",
-    "docs",
-    "scripts",
-    "scripts.*",
-    "legacy_docs",
-    "legacy_docs.*",
-    "docs.*",
-    "build",
-    "build.*",
-    "dynaconf.vendor_src",
     "dynaconf/vendor_src",
-    "dynaconf.vendor_src.*",
-    "dynaconf/vendor_src/*",
+    "dynaconf/vendor_src/**",
+    # packaging cruft from vendored deps (own README/LICENSE/setup.cfg/etc) —
+    # not part of the setuptools build either; vendor_licenses/ is the single
+    # source of truth for vendored-code license text.
+    "dynaconf/vendor/vendor.txt",
+    "dynaconf/vendor/vendor_history",
+    "dynaconf/vendor/toml/DEPRECATION.txt",
+    "dynaconf/vendor/ruamel/yaml/PKG-INFO",
+    "dynaconf/vendor/ruamel/yaml/LICENSE",
+    "dynaconf/vendor/ruamel/yaml/CHANGES",
+    "dynaconf/vendor/ruamel/yaml/MANIFEST.in",
+    "dynaconf/vendor/ruamel/yaml/setup.cfg",
+    "dynaconf/vendor/ruamel/yaml/README.rst",
+]
+
+[tool.hatch.build.targets.wheel.force-include]
+"vendor_licenses" = "vendor_licenses"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/dynaconf",
+    "/tests",
+    "/vendor_licenses",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/CONTRIBUTING.md",
+    "/CONTRIBUTORS.md",
+    "/RELEASING.md",
+    "/SECURITY.md",
+    "/LICENSE",
+]
+exclude = [
+    "/dynaconf/vendor_src",
+    "/dynaconf/vendor/vendor.txt",
+    "/dynaconf/vendor/vendor_history",
+    "/dynaconf/vendor/toml/DEPRECATION.txt",
+    "/dynaconf/vendor/ruamel/yaml/PKG-INFO",
+    "/dynaconf/vendor/ruamel/yaml/LICENSE",
+    "/dynaconf/vendor/ruamel/yaml/CHANGES",
+    "/dynaconf/vendor/ruamel/yaml/MANIFEST.in",
+    "/dynaconf/vendor/ruamel/yaml/setup.cfg",
+    "/dynaconf/vendor/ruamel/yaml/README.rst",
 ]
 
 # TYPOS
