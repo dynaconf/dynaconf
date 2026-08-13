@@ -1,15 +1,15 @@
 name: CI
 
 on:
-  # Triggers the workflow on push event for the master branch
+  # Triggers the workflow on push event for the master and release branches
   push:
-    branches: [master]
+    branches: [master, "*.*"]
     paths-ignore: # run if anything different from these is modified
       - "docs/**"
       - "mkdocs.yml"
-  # Triggers the workflow on pull_request event for the master branch
+  # Triggers the workflow on pull_request event for the master and release branches
   pull_request:
-    branches: [master]
+    branches: [master, "*.*"]
     paths-ignore:
       - "docs/**"
       - "mkdocs.yml"
