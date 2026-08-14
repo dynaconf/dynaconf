@@ -8,13 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.14"
-          cache: 'pip'
       - name: Install uv
         uses: astral-sh/setup-uv@v8.2.0
-        with:
-          enable-cache: true
-      - name: Install and lint
-        run: make clean ciinstall run-pre-commit
+
+      - name: Lint
+        run: make lint

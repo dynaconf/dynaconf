@@ -5,6 +5,8 @@ from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
 import pytest
+import redis
+from redis.exceptions import ConnectionError as RedisConnectionError
 
 from dynaconf import LazySettings
 from dynaconf.loaders.redis_loader import delete
@@ -16,11 +18,13 @@ if TYPE_CHECKING:
     from pytest_docker.plugin import Service
 
 
-def is_responsive(url):
-    # This function should be check if the redis server is online and ready
-    # write(settings, {"SECRET": "redis_works"})
-    # return load(settings, key="SECRET")
-    return True
+def is_responsive(host, port):
+    try:
+        return redis.Redis(
+            host=host, port=port, socket_connect_timeout=2
+        ).ping()
+    except RedisConnectionError:
+        return False
 
 
 DYNACONF_TEST_REDIS_URL = os.environ.get("DYNACONF_TEST_REDIS_URL", None)
@@ -37,7 +41,9 @@ else:
         port = docker_services.port_for("redis", 6379)
         url = f"http://{docker_ip}:{port}"
         docker_services.wait_until_responsive(
-            timeout=15.0, pause=0.1, check=lambda: is_responsive(url)
+            timeout=15.0,
+            pause=0.1,
+            check=lambda: is_responsive(docker_ip, port),
         )
         return url
 
