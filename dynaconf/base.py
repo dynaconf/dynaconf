@@ -35,6 +35,7 @@ from dynaconf.nodes import recursively_evaluate_lazy_format
 from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils import BANNER
 from dynaconf.utils import ensure_a_list
+from dynaconf.utils import find_the_correct_casing
 from dynaconf.utils import ensure_upperfied_list
 from dynaconf.utils import ListMergeOptions
 from dynaconf.utils import missing
@@ -1010,6 +1011,22 @@ class Settings:
         for key in keys:
             self.unset(key, force=force)
 
+    def _get_raw_leaf(self, split_keys):
+        """Return the unevaluated value at a dotted path, or `empty`."""
+        node = self.store
+        try:
+            for k in split_keys:
+                if isinstance(node, DataDict):
+                    node = node.get(k, bypass_eval=True)
+                elif isinstance(node, dict):
+                    n_item = find_the_correct_casing(k, tuple(node.keys())) or k
+                    node = node[n_item]
+                else:
+                    return empty
+            return node
+        except (AttributeError, KeyError, TypeError):
+            return empty
+
     def _dotted_set(
         self,
         dotted_key: str,
@@ -1106,6 +1123,11 @@ class Settings:
                         tree[index] = value  # assign value
                 else:  # odd cases like [2]0
                     raise (ValueError("Invalid field:", k))
+
+        if isinstance(value, Lazy):
+            previous = self._get_raw_leaf(split_keys)
+            if previous is not empty:
+                value.previous = previous
 
         if existing_data:
             if config.dynaboxify:
@@ -1217,12 +1239,19 @@ class Settings:
         # Fix for #869 - Evaluating an existing lazy value during set can
         # fail before a complete replacement value is stored.
         existing = None
+        existing_raw = empty
+        with suppress(AttributeError, KeyError):
+            if isinstance(self.store, DataDict):
+                existing_raw = self.store.get(key, bypass_eval=True)
+            else:
+                existing_raw = self.store.get(key)
         if not isinstance(parsed, Lazy):
-            with suppress(AttributeError, KeyError):
-                if isinstance(self.store, DataDict):
-                    existing = self.store.get(key, bypass_eval=True)
-                else:
-                    existing = self.store.get(key)
+            if existing_raw is not empty:
+                existing = existing_raw
+        elif existing_raw is not empty:
+            # Keep the replaced value so a self-referencing formatter
+            # (FOO="@int @jinja {{this.FOO|int}}") can read it (#1425).
+            parsed.previous = existing_raw
 
         if getattr(parsed, "_dynaconf_insert", False):
             # `@insert` calls insert in a list by index
