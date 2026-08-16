@@ -75,12 +75,31 @@ def _parse_quoted_string(value: str) -> tuple[str, str]:
     # Check for quotes at start
     if value[0] in ('"', "'"):
         quote = value[0]
-        try:
-            end_idx = value.index(quote, 1)
-            return value[1:end_idx], value[end_idx + 1 :].strip()
-        except ValueError:
-            # Unclosed quote - treat as error
-            raise DynaconfFormatError(f"Unclosed quote in: {value}")
+        idx = 1
+        length = len(value)
+        chars = []
+        while idx < length:
+            char = value[idx]
+            if char == "\\":
+                if idx + 1 < length:
+                    next_char = value[idx + 1]
+                    if next_char in (quote, "\\"):
+                        chars.append(next_char)
+                        idx += 2
+                        continue
+                    chars.append("\\")
+                    chars.append(next_char)
+                    idx += 2
+                    continue
+                chars.append("\\")
+                idx += 1
+                continue
+            if char == quote:
+                return "".join(chars), value[idx + 1 :].strip()
+            chars.append(char)
+            idx += 1
+
+        raise DynaconfFormatError(f"Unclosed quote in: {value}")
     else:
         # Not quoted - split on whitespace
         parts = value.split(maxsplit=1)
@@ -326,19 +345,23 @@ def _get_formatter(value, **context):
     cast group will match anything provided after @
     the default group will match single-word or quoted multi-word values
     """
-    tokens = value.strip().split()
-    if not tokens:
+    parts = value.strip().split(maxsplit=1)
+    if not parts:
         raise DynaconfFormatError(f"Error parsing {value}: no key specified")
 
-    key = tokens[0]
+    key = parts[0]
     cast = None
     default = None
-    remainder = " ".join(tokens[1:])
+    remainder = parts[1] if len(parts) > 1 else ""
 
     while remainder:
         remainder = remainder.strip()
         if not remainder:
             break
+
+        if remainder.startswith("default="):
+            remainder = remainder[8:].strip()
+            continue
 
         if remainder[0] in ('"', "'"):
             # Quoted value (default)
@@ -404,7 +427,13 @@ def _read_file_formatter(value, **context):
 
     # Parse path (may be quoted)
     path, remainder = _parse_quoted_string(value)
-    default = remainder.strip() if remainder else None
+    if remainder:
+        if remainder[0] in ('"', "'"):
+            default, _ = _parse_quoted_string(remainder)
+        else:
+            default = remainder.strip()
+    else:
+        default = None
 
     # Validate path is not empty after parsing
     if not path:
@@ -705,12 +734,14 @@ def add_converter(converter_key, func):
         converter_key = f"@{converter_key}"
 
     converters[converter_key] = wraps(func)(
-        lambda value: value.set_casting(func)
-        if isinstance(value, Lazy)
-        else Lazy(
-            value,
-            casting=func,
-            formatter=BaseFormatter(lambda x, **_: x, converter_key),
+        lambda value: (
+            value.set_casting(func)
+            if isinstance(value, Lazy)
+            else Lazy(
+                value,
+                casting=func,
+                formatter=BaseFormatter(lambda x, **_: x, converter_key),
+            )
         )
     )
 
