@@ -61,6 +61,7 @@ def set_settings(ctx, instance=None):
 
     _echo_enabled = ctx.invoked_subcommand not in [
         "get",
+        "generate",
         "inspect",
         "debug-info",
         None,
@@ -662,6 +663,140 @@ def _list(
             click.echo(
                 json.dumps(prepare_json({key: value}), default=repr), nl=True
             )
+
+    if env:
+        settings.setenv()
+
+
+GENERATE_FORMATS = ["toml", "yaml", "json", "env"]
+
+
+def _generate_toml_literal(value):
+    """Render *value* as a TOML literal (scalars, lists and inline tables)."""
+    if value is None:
+        return '""'
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (int, float)):
+        return json.dumps(value)
+    if isinstance(value, (list, tuple)):
+        return "[" + ", ".join(_generate_toml_literal(v) for v in value) + "]"
+    if isinstance(value, dict):
+        inner = ", ".join(
+            f"{k} = {_generate_toml_literal(v)}" for k, v in value.items()
+        )
+        return "{" + inner + "}"
+    return json.dumps(str(value))
+
+
+def _generate_render_value(fileformat, value):
+    """Render a single validator default as a literal for *fileformat*."""
+    if value is empty:
+        value = None
+    if fileformat in ("yaml", "json"):
+        # JSON scalars and flow collections are also valid YAML.
+        return json.dumps(prepare_json(value), default=repr)
+    if fileformat == "toml":
+        return _generate_toml_literal(value)
+    # env
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    if isinstance(value, (list, tuple, dict)):
+        return json.dumps(prepare_json(value), default=repr)
+    return str(value)
+
+
+def _iter_validator_specs(settings):
+    """Yield (name, default, description) for each registered validator name."""
+    seen = set()
+    for validator in settings.validators:
+        names = getattr(validator, "names", ()) or ()
+        default = getattr(validator, "default", empty)
+        description = getattr(validator, "description", None)
+        for name in names:
+            if isinstance(name, tuple) and name:
+                name = name[0]
+            if name in seen:
+                continue
+            seen.add(name)
+            yield name, default, description
+
+
+def _generate_sample(settings, fileformat):
+    """Build a sample settings file from the instance's validators."""
+    specs = list(_iter_validator_specs(settings))
+    if fileformat == "json":
+        data = {
+            str(name): (None if default is empty else default)
+            for name, default, _ in specs
+        }
+        return json.dumps(prepare_json(data), indent=2, default=repr) + "\n"
+
+    if not specs:
+        return "# No validators are registered for this instance.\n"
+
+    lines = []
+    for name, default, description in specs:
+        key = str(name)
+        if description:
+            for line in str(description).splitlines():
+                lines.append(f"# {line}")
+        value = _generate_render_value(fileformat, default)
+        if fileformat == "yaml":
+            lines.append(f"{key}: {value}")
+        elif fileformat == "env":
+            lines.append(f"{key.upper()}={value}")
+        else:  # toml
+            lines.append(f"{key} = {value}")
+        lines.append("")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+@main.command()
+@click.option(
+    "--format",
+    "fileformat",
+    "-f",
+    default="toml",
+    type=click.Choice(GENERATE_FORMATS),
+    help="Output format for the sample settings.",
+)
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(writable=True, dir_okay=False),
+    default=None,
+    help="Write the sample to this file instead of stdout.",
+)
+@click.option(
+    "--env",
+    "-e",
+    default=None,
+    help="Filters the env used to read the registered validators.",
+)
+def generate(fileformat, output, env):
+    """Generate a sample settings file from the registered validators.
+
+    Each registered ``Validator`` becomes an entry using its default value,
+    and its ``description`` (when set) is written as a leading comment.
+
+    Example:
+
+        dynaconf -i config.settings generate -f yaml > settings.sample.yaml
+    """
+    if env:
+        settings.setenv(env.strip())
+
+    content = _generate_sample(settings, fileformat)
+
+    if output:
+        with open(output, "w", encoding=ENC) as sample_file:
+            sample_file.write(content)
+        click.echo(f"Sample settings written to {output}")
+    else:
+        click.echo(content, nl=False)
 
     if env:
         settings.setenv()

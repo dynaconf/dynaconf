@@ -317,6 +317,70 @@ When using `py` you may want a flat output (without being nested inside the env 
 dynaconf list -o path/to/file.py --output-flat
 ```
 
+### dynaconf generate
+
+Generate a sample settings file from the validators registered on the instance.
+
+Each registered `Validator` becomes an entry, using its `default` value, and its
+`description` (when set) is written as a leading comment. This is handy to
+bootstrap a documented `settings.toml` (or the equivalent for another format)
+that lists every configuration key the application expects.
+
+```
+Usage: dynaconf generate [OPTIONS]
+
+  Generate a sample settings file from the registered validators.
+
+  Each registered ``Validator`` becomes an entry using its default value, and
+  its ``description`` (when set) is written as a leading comment.
+
+Options:
+  -f, --format [toml|yaml|json|env]
+                                  Output format for the sample settings.
+  -o, --output FILE               Write the sample to this file instead of
+                                  stdout.
+  -e, --env TEXT                  Filters the env used to read the registered
+                                  validators.
+  --help                          Show this message and exit.
+```
+
+Given an instance registering the following validators:
+
+```python
+# config.py
+from dynaconf import Dynaconf, Validator
+
+settings = Dynaconf(
+    validators=[
+        Validator("PORT", default=8080, description="The port to bind to"),
+        Validator("HOST", default="localhost", description="Server host name"),
+    ]
+)
+```
+
+The command prints a documented sample to stdout, which you can redirect to a
+file:
+
+```console
+$ dynaconf -i config.settings generate -f yaml > settings.sample.yaml
+```
+
+```yaml
+# The port to bind to
+PORT: 8080
+
+# Server host name
+HOST: "localhost"
+```
+
+The default format is `toml`. The `json` format does not support comments, so
+the descriptions are omitted for that one. You can also write directly to a file
+with `-o`:
+
+```console
+$ dynaconf -i config.settings generate -f toml -o settings.sample.toml
+```
+
 ### dynaconf write
 
 ```

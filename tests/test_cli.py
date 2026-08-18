@@ -10,6 +10,7 @@ import pytest
 
 from dynaconf import default_settings
 from dynaconf import LazySettings
+from dynaconf import Validator
 from dynaconf.cli import EXTS
 from dynaconf.cli import main
 from dynaconf.cli import read_file_in_root_directory
@@ -18,6 +19,16 @@ from dynaconf.utils.files import read_file
 from dynaconf.vendor.click.testing import CliRunner
 
 settings = LazySettings(OPTION_FOR_TESTS=True, environments=True)
+
+generate_settings = LazySettings(
+    validators=[
+        Validator("PORT", default=8080, description="The port to bind to"),
+        Validator("HOST", default="localhost", description="Server host name"),
+        Validator("DEBUG", default=False, description="Enable debug mode"),
+        Validator("TAGS", default=["web", "api"], description="Default tags"),
+        Validator("SECRET_KEY", description="Secret key (no default)"),
+    ]
+)
 
 
 def run(cmd, env=None, attr="output"):
@@ -947,3 +958,65 @@ def test_inspect_invalid_format(tmp_path):
     )
 
     assert expected in result
+
+
+GENERATE_INSTANCE = "tests.test_cli.generate_settings"
+
+
+def test_generate_toml_is_the_default_format():
+    result = run(["-i", GENERATE_INSTANCE, "generate"])
+    assert "# The port to bind to" in result
+    assert "PORT = 8080" in result
+    assert 'HOST = "localhost"' in result
+    assert "DEBUG = false" in result
+    # a validator without a default still shows up with its description
+    assert "# Secret key (no default)" in result
+    assert 'SECRET_KEY = ""' in result
+
+
+def test_generate_yaml_format():
+    result = run(["-i", GENERATE_INSTANCE, "generate", "-f", "yaml"])
+    assert "# The port to bind to" in result
+    assert "PORT: 8080" in result
+    assert "SECRET_KEY: null" in result
+
+
+def test_generate_env_format():
+    result = run(["-i", GENERATE_INSTANCE, "generate", "-f", "env"])
+    assert "# Enable debug mode" in result
+    assert "PORT=8080" in result
+    assert "DEBUG=false" in result
+
+
+def test_generate_json_format_is_parseable():
+    result = run(["-i", GENERATE_INSTANCE, "generate", "-f", "json"])
+    data = json.loads(result)
+    assert data["PORT"] == 8080
+    assert data["HOST"] == "localhost"
+    assert data["DEBUG"] is False
+    assert data["TAGS"] == ["web", "api"]
+    assert data["SECRET_KEY"] is None
+
+
+def test_generate_writes_to_output_file(tmp_path):
+    output = tmp_path / "settings.sample.toml"
+    result = run(
+        [
+            "-i",
+            GENERATE_INSTANCE,
+            "generate",
+            "-f",
+            "toml",
+            "-o",
+            str(output),
+        ]
+    )
+    assert f"Sample settings written to {output}" in result
+    content = read_file(str(output))
+    assert "# The port to bind to" in content
+    assert "PORT = 8080" in content
+
+
+def test_generate_without_validators_reports_it():
+    result = run(["-i", "tests.test_cli.settings", "generate"])
+    assert "No validators are registered" in result
