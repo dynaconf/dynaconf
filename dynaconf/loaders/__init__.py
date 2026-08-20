@@ -278,6 +278,8 @@ def settings_loader(
 
     files.extend(ensure_a_list(obj.get("SECRETS_FOR_DYNACONF", None)))
 
+    # Evaluate glob patterns and build a list of existing files and
+    # modules that will be used to load the settings.
     found_files = []
     modules_names = []
     for item in files:
@@ -315,57 +317,83 @@ def settings_loader(
         ]
     )
 
+    loaders = [
+        {"ext": ct.YAML_EXTENSIONS, "name": "YAML", "loader": yaml_loader},
+        {"ext": ct.TOML_EXTENSIONS, "name": "TOML", "loader": toml_loader},
+        {"ext": ct.INI_EXTENSIONS, "name": "INI", "loader": ini_loader},
+        {"ext": ct.JSON_EXTENSIONS, "name": "JSON", "loader": json_loader},
+    ]
+
+    # Group files by their loader type to optimize bulk loading.
+    # Instead of parsing and loading files individually, we pass a list
+    # of files of the same format to the specific loader.
+    file_groups = []
+    current_group = {"loader": None, "files": []}
+
     for mod_file in modules_names + found_files:
-        # can be set to multiple files settings.py,settings.yaml,...
-
-        # Cascade all loaders
-        loaders = [
-            {"ext": ct.YAML_EXTENSIONS, "name": "YAML", "loader": yaml_loader},
-            {"ext": ct.TOML_EXTENSIONS, "name": "TOML", "loader": toml_loader},
-            {"ext": ct.INI_EXTENSIONS, "name": "INI", "loader": ini_loader},
-            {"ext": ct.JSON_EXTENSIONS, "name": "JSON", "loader": json_loader},
-        ]
-
-        for loader in loaders:
-            if loader["name"] not in enabled_core_loaders:
+        loader = None
+        for loader_item in loaders:
+            if loader_item["name"] not in enabled_core_loaders:
                 continue
+            if mod_file.endswith(loader_item["ext"]):
+                loader = loader_item
+                break
 
-            if mod_file.endswith(loader["ext"]):
-                if isinstance(identifier, str):
-                    # ensure it is always loader name
-                    identifier = loader["name"].lower()
-                loader["loader"].load(
+        if loader and current_group["loader"] == loader:
+            current_group["files"].append(mod_file)
+        else:
+            if current_group["files"]:
+                file_groups.append(current_group)
+            current_group = {"loader": loader, "files": [mod_file]}
+
+    if current_group["files"]:
+        file_groups.append(current_group)
+
+    # Execute each loader passing the grouped files.
+    for group in file_groups:
+        loader = group["loader"]
+        files = group["files"]
+
+        if loader:
+            loader_identifier = identifier
+            if isinstance(identifier, str):
+                loader_identifier = loader["name"].lower()
+            loader["loader"].load(
+                obj,
+                filename=files,
+                env=env,
+                silent=silent,
+                key=key,
+                validate=validate,
+                identifier=loader_identifier,
+            )
+        else:
+            # Module fallback: if no specific loader is found, assume it is a Python module.
+            for mod_file in files:
+                if mod_file.endswith(ct.ALL_EXTENSIONS):
+                    continue
+                if "PY" not in enabled_core_loaders:
+                    # pyloader is disabled
+                    continue
+
+                # must be Python file or module
+                # load from default defined module settings.py or .secrets.py if exists
+                py_loader.load(
                     obj,
-                    filename=mod_file,
-                    env=env,
-                    silent=silent,
+                    mod_file,
                     key=key,
                     validate=validate,
                     identifier=identifier,
                 )
-                continue
 
-        if mod_file.endswith(ct.ALL_EXTENSIONS):
-            continue
-
-        if "PY" not in enabled_core_loaders:
-            # pyloader is disabled
-            continue
-
-        # must be Python file or module
-        # load from default defined module settings.py or .secrets.py if exists
-        py_loader.load(
-            obj, mod_file, key=key, validate=validate, identifier=identifier
-        )
-
-        # load from the current env e.g: development_settings.py
-        # counting on the case where env is a comma separated string
-        env = env or obj.current_env
-        if env and isinstance(env, str):
-            for env_name in env.split(","):
-                load_from_env_named_file(
-                    obj, env_name, key, validate, identifier, mod_file
-                )
+                # load from the current env e.g: development_settings.py
+                # counting on the case where env is a comma separated string
+                env = env or obj.current_env
+                if env and isinstance(env, str):
+                    for env_name in env.split(","):
+                        load_from_env_named_file(
+                            obj, env_name, key, validate, identifier, mod_file
+                        )
 
 
 def load_from_env_named_file(obj, env, key, validate, identifier, mod_file):

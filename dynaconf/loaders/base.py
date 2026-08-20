@@ -144,6 +144,7 @@ class BaseLoader:
                 }
             }
         """
+        lower_source_data = {}
         for file_name, file_data in source_data.items():
             # env name is checked in lower
             file_data = {k.lower(): value for k, value in file_data.items()}
@@ -153,10 +154,19 @@ class BaseLoader:
 
             # is there a flag disabling dotted lookup on file?
             file_dotted_lookup = file_data.get("dynaconf_dotted_lookup")
+            lower_source_data[file_name] = {
+                "data": file_data,
+                "merge": file_merge,
+                "dotted_lookup": file_dotted_lookup,
+            }
 
-            for env in build_env_list(self.obj, self.env):
-                env = env.lower()  # lower for better comparison
-                # print(self.env, file_data)
+        for env in build_env_list(self.obj, self.env):
+            env = env.lower()  # lower for better comparison
+
+            for file_name, file_info in lower_source_data.items():
+                file_data = file_info["data"]
+                file_merge = file_info["merge"]
+                file_dotted_lookup = file_info["dotted_lookup"]
 
                 # set source metadata
                 source_metadata = SourceMetadata(
