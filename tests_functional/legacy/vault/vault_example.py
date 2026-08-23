@@ -25,3 +25,43 @@ for env in available_envs:
 
 print(available_envs)
 print(all_secrets)
+
+# Pin a KV v2 secret version: write a second revision of the default
+# secret, then read the first one back through the pin.
+from dynaconf import Dynaconf  # noqa
+from dynaconf.loaders.vault_loader import write  # noqa
+
+
+def kv2_settings(**extra):
+    return Dynaconf(
+        environments=True,
+        VAULT_ENABLED_FOR_DYNACONF=True,
+        VAULT_KV_VERSION_FOR_DYNACONF=2,
+        VAULT_TOKEN_FOR_DYNACONF="myroot",
+        **extra,
+    )
+
+
+write(kv2_settings(), {"SECRET": "vault_works_in_default_v2"})
+
+latest = kv2_settings()
+assert latest.SECRET == "vault_works_in_default_v2", latest.SECRET
+
+pinned = kv2_settings(VAULT_SECRET_VERSION_FOR_DYNACONF=1)
+assert pinned.SECRET == "vault_works_in_default", pinned.SECRET
+print(f"pinned version 1: {pinned.SECRET} / latest: {latest.SECRET}")
+
+# KV v1 keeps no versions: a pin combined with it must refuse, not
+# silently read the latest.
+try:
+    Dynaconf(
+        environments=True,
+        VAULT_ENABLED_FOR_DYNACONF=True,
+        VAULT_KV_VERSION_FOR_DYNACONF=1,
+        VAULT_TOKEN_FOR_DYNACONF="myroot",
+        VAULT_SECRET_VERSION_FOR_DYNACONF=1,
+    ).SECRET
+except ValueError as error:
+    assert "keeps no secret versions" in str(error), error
+else:
+    raise AssertionError("a version pin on KV v1 must raise")

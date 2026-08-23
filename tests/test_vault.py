@@ -115,6 +115,49 @@ def test_read_from_vault_kv2_with_different_environments(docker_vault):
 
 
 @pytest.mark.integration
+def test_read_pinned_secret_version_kv2(docker_vault):
+    os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_KV_VERSION_FOR_DYNACONF"] = "2"
+    os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
+    settings = LazySettings(environments=True)
+    write(settings, {"SECRET": "first_revision"})
+    write(settings, {"SECRET": "second_revision"})
+    load(settings)
+    assert settings.get("SECRET") == "second_revision"
+
+    pinned = LazySettings(
+        environments=True, VAULT_SECRET_VERSION_FOR_DYNACONF=1
+    )
+    load(pinned)
+    assert pinned.get("SECRET") == "first_revision"
+
+
+@pytest.mark.integration
+def test_pinned_version_missing_is_skipped(docker_vault):
+    os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_KV_VERSION_FOR_DYNACONF"] = "2"
+    os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
+    settings = LazySettings(
+        environments=True, VAULT_SECRET_VERSION_FOR_DYNACONF=999
+    )
+    load(settings, key="NEVER_WRITTEN")
+    assert settings.get("NEVER_WRITTEN") is None
+
+
+@pytest.mark.integration
+def test_pinned_version_requires_kv2():
+    os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_KV_VERSION_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
+    settings = LazySettings(
+        environments=True, VAULT_SECRET_VERSION_FOR_DYNACONF=3
+    )
+    with pytest.raises(ValueError) as excinfo:
+        load(settings)
+    assert "KV v1 engine keeps no secret versions" in str(excinfo.value)
+
+
+@pytest.mark.integration
 def test_vault_has_proper_source_metadata(docker_vault):
     os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
     os.environ["VAULT_KV_VERSION_FOR_DYNACONF"] = "2"
