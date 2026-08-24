@@ -121,7 +121,7 @@ def get_module(obj, filename, silent=False):
         mod = importlib.import_module(filename)
         loaded_from = "module"
         mod.is_error = False
-    except (ImportError, TypeError):
+    except (ModuleNotFoundError, TypeError):
         mod = import_from_filename(obj, filename, silent=silent)
         if mod and not mod._is_error:
             loaded_from = "filename"
