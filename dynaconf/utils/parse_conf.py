@@ -480,6 +480,9 @@ class Lazy:
     ):
         self.value = value
         self.casting = casting
+        # Previous store value this Lazy replaced, if any. Used when a
+        # formatter reads the same key it is defining (#1425).
+        self.previous = empty
         # Sometimes a simple function is passed to the formatter.
         # but on evaluation-time, we may need to access `formatter.token`
         # so we are wrapping the fn to comply with this interface.

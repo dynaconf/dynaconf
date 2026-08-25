@@ -741,9 +741,16 @@ def recursively_evaluate_lazy_format(value, settings):
         # Check for circular reference
         value_id = id(value)
         if value_id in eval_stack:
+            # A lazy override that reads the same key (e.g. FOO="@int @jinja
+            # {{this.FOO|int}}" after FOO="2015") should see the previous
+            # value, not raise. True A→B→A cycles have no usable previous.
+            previous = getattr(value, "previous", empty)
+            if previous is not empty and not is_lazy(previous):
+                return previous
             raise __import__("dynaconf.utils.parse_conf").DynaconfFormatError(
                 "Circular reference detected in lazy formatting. "
-                "A value is referencing itself directly or indirectly."
+                "A value is referencing itself directly or indirectly: "
+                f"{value!r}"
             )
 
         # Add to stack before evaluation
