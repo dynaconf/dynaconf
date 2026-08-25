@@ -109,6 +109,24 @@ settings.from_env('production').PASSWORD == 777777
 settings.from_env('production').USERNAME == 'produser'
 ```
 
+### Pinning a secret version (KV v2)
+
+The KV v2 engine keeps a version history for every secret, and by default
+Dynaconf reads the latest version. To read a specific version instead —
+for example so a deployment keeps reading the secret revision it was
+released with, no matter what has been written to Vault since — pin it:
+
+```bash
+VAULT_KV_VERSION_FOR_DYNACONF=2
+VAULT_SECRET_VERSION_FOR_DYNACONF=7
+```
+
+The pinned version is requested for every path the loader reads, so this
+is most useful with a single secret path (an environment-less store, or
+one environment). A path that has no such version is skipped, exactly like
+a path that does not exist. Combining a pin with the KV v1 engine raises a
+`ValueError`, because KV v1 keeps no versions.
+
 ## Additional secrets file (for CI, jenkins etc.)
 
 It is common to have an extra `secrets` file that is available only when running on specific CI environment like `Jenkins`, usually there will be an environment variable pointing to the file.
