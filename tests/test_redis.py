@@ -9,6 +9,7 @@ import redis
 from redis.exceptions import ConnectionError as RedisConnectionError
 
 from dynaconf import LazySettings
+from dynaconf.loaders.redis_loader import _get_redis_client
 from dynaconf.loaders.redis_loader import delete
 from dynaconf.loaders.redis_loader import load
 from dynaconf.loaders.redis_loader import write
@@ -133,3 +134,24 @@ def test_redis_has_proper_source_metadata(docker_redis):
     )
     assert history[0]["env"] == "development"  # default when environments=True
     assert history[0]["value"]["SECRET"] == "redis_works_perfectly"
+
+
+def test_partial_redis_config_keeps_defaults():
+    # A partial REDIS_FOR_DYNACONF used to drop the internal defaults, so
+    # decode_responses fell back to False and values came back as bytes.
+    settings = LazySettings(
+        REDIS_FOR_DYNACONF={"host": "irrelevant", "port": 1111}
+    )
+    kwargs = _get_redis_client(settings).connection_pool.connection_kwargs
+    assert kwargs["decode_responses"] is True
+    assert kwargs["host"] == "irrelevant"
+    assert kwargs["port"] == 1111
+    assert kwargs["db"] == 0
+
+
+def test_partial_redis_config_user_value_wins():
+    settings = LazySettings(
+        REDIS_FOR_DYNACONF={"host": "irrelevant", "decode_responses": False}
+    )
+    kwargs = _get_redis_client(settings).connection_pool.connection_kwargs
+    assert kwargs["decode_responses"] is False
