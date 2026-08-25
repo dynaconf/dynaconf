@@ -476,6 +476,10 @@ default = {
 
 ```
 
+A custom `REDIS_FOR_DYNACONF` is merged over these defaults, so passing a
+partial dict (e.g. just `host` and `port`) keeps the remaining keys such as
+`decode_responses`.
+
 ---
 
 ### **root_path**

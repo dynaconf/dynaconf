@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dynaconf.default_settings import default_redis
 from dynaconf.loaders.base import SourceMetadata
 from dynaconf.utils import build_env_list
 from dynaconf.utils import upperfy
@@ -34,7 +35,11 @@ def _get_redis_client(obj):
     redis_url = obj.get("REDIS_URL_FOR_DYNACONF")
     if redis_url:
         return StrictRedis.from_url(redis_url)
-    return StrictRedis(**obj.get("REDIS_FOR_DYNACONF"))
+    # A user supplied REDIS_FOR_DYNACONF may only override a few keys, so
+    # merge it over the internal defaults to keep decode_responses (and the
+    # rest) instead of silently dropping them and getting bytes back.
+    kwargs = {**default_redis, **(obj.get("REDIS_FOR_DYNACONF") or {})}
+    return StrictRedis(**kwargs)
 
 
 def load(obj, env=None, silent=True, key=None, validate=False):
