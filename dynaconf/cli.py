@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import importlib
 import inspect as python_inspect
 import json
 import os
@@ -51,6 +50,47 @@ EXTS = ["ini", "toml", "yaml", "json", "py", "env"]
 WRITERS = ["ini", "toml", "yaml", "json", "py", "redis", "vault", "env"]
 
 ENC = default_settings.ENCODING_FOR_DYNACONF
+
+
+def _get_loader_module(name):
+    """Safely return a loader module to avoid dynamic imports."""
+    if name == "ini":
+        from dynaconf.loaders import ini_loader
+
+        return ini_loader
+    elif name == "toml":
+        from dynaconf.loaders import toml_loader
+
+        return toml_loader
+    elif name == "yaml":
+        from dynaconf.loaders import yaml_loader
+
+        return yaml_loader
+    elif name == "json":
+        from dynaconf.loaders import json_loader
+
+        return json_loader
+    elif name == "py":
+        from dynaconf.loaders import py_loader
+
+        return py_loader
+    elif name == "redis":
+        from dynaconf.loaders import redis_loader
+
+        return redis_loader
+    elif name == "vault":
+        from dynaconf.loaders import vault_loader
+
+        return vault_loader
+    elif name == "env":
+        from dynaconf.loaders import env_loader
+
+        return env_loader
+    else:
+        click.secho(
+            f"Invalid loader format {name}", bg="red", fg="white", err=True
+        )
+        sys.exit(1)
 
 
 def set_settings(ctx, instance=None):
@@ -131,6 +171,9 @@ def import__django_settings(django_settings_module):
     """Import the Django settings module from the string importable path."""
     try:
         with redirect_stdout(None):
+            import importlib
+
+            # nosemgrep
             module = importlib.import_module(django_settings_module)
     except ImportError as e:
         raise click.UsageError(e)
@@ -154,6 +197,9 @@ def import_settings(dotted_path):
         )
     try:
         with redirect_stdout(None):
+            import importlib
+
+            # nosemgrep
             module = importlib.import_module(module)
     except ImportError as e:
         raise click.UsageError(e)
@@ -363,7 +409,7 @@ def init(ctx, fileformat, path, env, _vars, _secrets, wg, y, django):
 
     env = settings.current_env.lower()
 
-    loader = importlib.import_module(f"dynaconf.loaders.{fileformat}_loader")
+    loader = _get_loader_module(fileformat)
     # Turn foo=bar=zaz in {'foo': 'bar=zaz'}
     env_data = split_vars(_vars)
     _secrets = split_vars(_secrets)
@@ -634,7 +680,12 @@ def _list(
             )
             (click.echo_via_pager if more else click.echo)(datalines)
         if output:
-            loaders.write(output, prepare_json(data), env=not flat and cur_env)
+            loaders.write(
+                output,
+                prepare_json(data),
+                env=not flat and cur_env,
+                settings=settings,
+            )
         if _json:
             json_data = json.dumps(
                 prepare_json(data), sort_keys=True, default=repr
@@ -656,7 +707,10 @@ def _list(
             click.echo(format_setting(key, value))
         if output:
             loaders.write(
-                output, prepare_json({key: value}), env=not flat and cur_env
+                output,
+                prepare_json({key: value}),
+                env=not flat and cur_env,
+                settings=settings,
             )
         if _json:
             click.echo(
@@ -713,7 +767,7 @@ def write(to, _vars, _secrets, path, env, y):
     """Writes data to specific source."""
     _vars = split_vars(_vars)
     _secrets = split_vars(_secrets)
-    loader = importlib.import_module(f"dynaconf.loaders.{to}_loader")
+    loader = _get_loader_module(to)
 
     if to in EXTS:
         # Lets write to a file
