@@ -278,17 +278,20 @@ class Validator:
         current_env = getattr(settings, "current_env", "main")
         envs = self.envs or [current_env]
 
-        # NOTE: Smells bad, must not mutate a validator
         if self.when is not None:
+            # inherit env if not defined, without pinning it on `when`
+            inherited_envs = self.when.envs is None
             try:
-                # inherit env if not defined
-                if self.when.envs is None:
+                if inherited_envs:
                     self.when.envs = envs
 
                 self.when.validate(settings, only=only, exclude=exclude)
             except ValidationError:
                 # if when is invalid, return canceling validation flow
                 return
+            finally:
+                if inherited_envs:
+                    self.when.envs = None
 
         if only_current_env:
             if current_env.upper() in [s.upper() for s in envs]:
