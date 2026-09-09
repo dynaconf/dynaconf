@@ -81,18 +81,15 @@ def object_merge(
             new.extend([[]] * max(len(old) - len(new), 0))
             for ii, item in enumerate(old):
                 # replace at corresponding positions
-                if list_merge == "shallow":
-                    new[ii] = new[ii] or item
-                else:  # deep replace
-                    if not new[ii]:  # copy over the older values
-                        new[ii] = item
-                    elif item:  # old[ii] is not None
-                        object_merge(
-                            old[ii],
-                            new[ii],
-                            full_path=full_path[1:],
-                            list_merge="deep",
-                        )
+                if not new[ii]:  # copy over the older values
+                    new[ii] = item
+                elif item:  # old[ii] is not None
+                    object_merge(
+                        old[ii],
+                        new[ii],
+                        full_path=full_path[1:],
+                        list_merge="deep",
+                    )
 
     if isinstance(old, dict) and isinstance(new, dict):
         existing_value = recursive_get(old, full_path)  # doesn't handle None

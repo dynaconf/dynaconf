@@ -99,3 +99,5 @@ dynaconf/vendor/source
 *.dat
 tmp*
 *.tsv
+*.project
+*.pydevproject
