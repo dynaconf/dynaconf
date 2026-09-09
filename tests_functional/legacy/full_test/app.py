@@ -19,12 +19,12 @@ EXPECTED = {
     "REDIS_FOR_DYNACONF": {},
     "REDIS_ENABLED_FOR_DYNACONF": False,
     "VALKEY_FOR_DYNACONF": {
-        'host': 'localhost', 
-        'port': 6379, 
-        'db': 0, 
-        'decode_responses': True, 
-        'username': None, 
-        'password': None
+        "host": "localhost",
+        "port": 6379,
+        "db": 0,
+        "decode_responses": True,
+        "username": None,
+        "password": None,
     },
     "VALKEY_ENABLED_FOR_DYNACONF": False,
     "VAULT_FOR_DYNACONF": {
