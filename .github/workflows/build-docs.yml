@@ -24,8 +24,11 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v8.2.0
 
+      - name: Install dependencies
+        run: make install GROUP=docs
+
       - name: Build documentation
-        run: uv run make docs
+        run: make docs-build
 
       - name: Upload documentation artifact
         uses: actions/upload-artifact@v7

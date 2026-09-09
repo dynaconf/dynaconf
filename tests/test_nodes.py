@@ -14,7 +14,8 @@ from dynaconf.nodes import get_core
 from dynaconf.nodes import init_core
 from dynaconf.utils import container_items
 from dynaconf.utils import data_print
-from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils.boxing import _DynaBox
+from dynaconf.vendor.box import Box
 from dynaconf.vendor.box import BoxList
 
 pytestmark = pytest.mark.usefixtures("no_deprecations")
@@ -185,6 +186,27 @@ def test_data_containers_init(input):
     recursive_walk(data, assert_fn)
 
 
+def test_data_containers_init_converts_subclasses_without_rewrapping_nodes():
+    data_dict = DataDict({"value": 1})
+    data_list = DataList([1])
+
+    data = DataDict(
+        {
+            "dict_subclass": Box({"nested": {"value": 1}}),
+            "list_subclass": BoxList([{"value": 1}]),
+            "data_dict": data_dict,
+            "data_list": data_list,
+        }
+    )
+
+    assert type(data["dict_subclass"]) is DataDict
+    assert type(data["dict_subclass"]["nested"]) is DataDict
+    assert type(data["list_subclass"]) is DataList
+    assert type(data["list_subclass"][0]) is DataDict
+    assert dict.__getitem__(data, "data_dict") is data_dict
+    assert dict.__getitem__(data, "data_list") is data_list
+
+
 class TestDataDict:
     def test_init_converts_nested(self):
         di = DataDict({"a": {"b": [1, 2]}})
@@ -229,6 +251,38 @@ class TestDataDict:
         di = DataDict({"a": 1})
         with pytest.raises(AccessError):
             _ = di.nonexistent_key
+
+    def test_deepcopy(self):
+        core = DynaconfCore("test")
+        di = DataDict({"a": 1, "b": {"c": 2}}, core=core)
+
+        di_copy = copy.deepcopy(di)
+
+        assert di_copy == di
+        assert di_copy is not di
+        assert isinstance(di_copy, DataDict)
+        assert isinstance(di_copy["b"], DataDict)
+        assert get_core(di_copy) is core
+
+    def test_deepcopy_does_not_traverse_core(self):
+        """deepcopy must not recurse into __meta__.core (the Settings graph).
+
+        Real Settings objects hold non-picklable state (DI containers,
+        thread locks, vault clients). DataDict.__deepcopy__ must propagate
+        core by reference — same as DataList already does.
+        """
+        import threading
+
+        core = DynaconfCore("test")
+        core._lock = threading.RLock()  # simulate non-picklable state
+
+        di = DataDict({"host": "localhost", "port": 5432}, core=core)
+
+        di_copy = copy.deepcopy(di)
+
+        assert di_copy == {"host": "localhost", "port": 5432}
+        assert isinstance(di_copy, DataDict)
+        assert get_core(di_copy) is core
 
 
 class TestDataList:
@@ -366,7 +420,7 @@ class TestBoxCompatibility:
         test_data = {"name": "test", "nested": {"value": 42}}
         data_dict = DataDict(test_data.copy())
 
-        dyna_box = DynaBox(test_data.copy())
+        dyna_box = _DynaBox(test_data.copy())
         # Test merge_update method works the same
         data_dict.merge_update({"new_key": "new_value"})
         dyna_box.merge_update({"new_key": "new_value"})
@@ -378,7 +432,7 @@ class TestBoxCompatibility:
         """
         test_data = {"name": "test", "nested": {"value": 42}}
         data_dict = DataDict(test_data.copy())
-        dyna_box = DynaBox(test_data.copy())
+        dyna_box = _DynaBox(test_data.copy())
 
         # Test to_yaml, to_json, etc
         contents_of = {}
@@ -399,7 +453,7 @@ class TestBoxCompatibility:
             assert isinstance(content, str)
             file.write_text(content)
             filename = str(file.absolute())
-            box_method = getattr(DynaBox, method_name)
+            box_method = getattr(_DynaBox, method_name)
             assert box_method(filename=filename) == test_data
             method = getattr(DataDict, method_name)
             assert method(filename=filename) == test_data

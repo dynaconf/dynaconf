@@ -27,6 +27,8 @@ default:
     - django.contrib.auth.middleware.AuthenticationMiddleware
     - django.contrib.messages.middleware.MessageMiddleware
     - django.middleware.clickjacking.XFrameOptionsMiddleware
+  DEBUG_TOOLBAR_CONFIG:
+    IS_RUNNING_TESTS: false
   ROOT_URLCONF: foo.urls
   WSGI_APPLICATION: foo.wsgi.application
   LANGUAGE_CODE: en-us

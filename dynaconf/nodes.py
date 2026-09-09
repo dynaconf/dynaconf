@@ -24,6 +24,7 @@ from typing import Union
 
 import dynaconf.utils as ut
 from dynaconf.utils.functional import empty
+from dynaconf.utils.functional import is_lazy
 from dynaconf.vendor.box import converters
 
 if TYPE_CHECKING:
@@ -87,6 +88,15 @@ class DataDict(dict):
 
     def __copy__(self):
         return self.copy()
+
+    def __deepcopy__(self, memo=None):
+        memo = memo or {}
+        out = self.__class__(core=self.__meta__.core)
+        out.__meta__.data_env = self.__meta__.data_env
+        memo[id(self)] = out
+        for k, v in dict.items(self):
+            out[copy.deepcopy(k, memo=memo)] = copy.deepcopy(v, memo=memo)
+        return out
 
     def __getitem__(self, item):
         try:
@@ -701,9 +711,9 @@ def get_core(node, raises=True) -> DynaconfCore:
 
 def convert_containers(data: dict | list | DataNode, iter, core):
     for key, value in iter:
-        if value.__class__ is dict:
+        if isinstance(value, dict) and not isinstance(value, DataDict):
             data[key] = DataDict(value, core=core)
-        if value.__class__ is list:
+        if isinstance(value, list) and not isinstance(value, DataList):
             data[key] = DataList(value, core=core)
 
 
@@ -721,7 +731,7 @@ def recursively_evaluate_lazy_format(value, settings):
     Uses contextvars for context-local storage, ensuring proper isolation
     in both threaded and async (asyncio) environments.
     """
-    if value.__class__.__name__ == "Lazy":
+    if is_lazy(value):
         # Use context-local storage for the evaluation stack
         eval_stack = _eval_stack_ctx.get()
         if eval_stack is None:
@@ -756,6 +766,12 @@ def recursively_evaluate_lazy_format(value, settings):
                 for item in value
             ]
         )
+
+    elif type(value) is dict:
+        value = {
+            k: recursively_evaluate_lazy_format(v, settings)
+            for k, v in value.items()
+        }
 
     return value
 

@@ -125,6 +125,7 @@ def object_merge(
                 # but the new value on the end of full path is the same
                 if (
                     existing_value is not None
+                    and len(full_path) == 1
                     and old_key.lower() == full_path[-1].lower()
                     and existing_value is value
                 ):
@@ -178,6 +179,15 @@ def recursive_get(
         return result
 
     return recursive_get(result, tail)
+
+
+def _strip_merge_tokens(data: dict) -> None:
+    """Remove dynaconf_merge tokens from a dict tree without merging."""
+    for key in list(data.keys()):
+        if isinstance(data[key], dict):
+            data[key].pop("dynaconf_merge", None)
+            data[key].pop("dynaconf_merge_unique", None)
+            _strip_merge_tokens(data[key])
 
 
 def handle_metavalues(
@@ -256,6 +266,8 @@ def handle_metavalues(
                 new[key] = object_merge(
                     old.get(key), new[key], list_merge=list_merge
                 )
+            elif key not in old:
+                _strip_merge_tokens(new[key])
 
 
 class FakeCore:
@@ -382,6 +394,18 @@ def normalize_kwargs(kwargs: dict[str, Any]) -> dict[str, Any]:
             for c_old, c_new in RENAMED_VARS.items():
                 if c_new == new:
                     kwargs[c_old] = kwargs[new]
+
+    # A list passed as `env` is the programmatic equivalent of the
+    # comma-separated ENV_FOR_DYNACONF environment variable. Normalize it here
+    # so all loaders can use their existing multi-environment handling. #1278
+    env = kwargs.get("ENV_FOR_DYNACONF")
+    if isinstance(env, list):
+        if not all(isinstance(item, str) for item in env):
+            raise TypeError("'env' must be a string or a list of strings")
+        kwargs["ENV_FOR_DYNACONF"] = ",".join(env)
+    elif env is not None and not isinstance(env, str):
+        raise TypeError("'env' must be a string or a list of strings")
+
     return kwargs
 
 
@@ -593,7 +617,7 @@ def find_the_correct_casing(
 ) -> str | None:
     """Given a key, find the proper casing in data.
 
-    Return 'None' for non-str key types.
+    Non-str keys in data are skipped.
 
     Arguments:
         key {str} -- A key to be searched in data
@@ -606,7 +630,7 @@ def find_the_correct_casing(
         return key
     for k in data_keys:
         if not isinstance(k, str):
-            return None
+            continue
         if k.lower() == key.lower():
             return k
         if k.replace(" ", "_").lower() == key.lower():

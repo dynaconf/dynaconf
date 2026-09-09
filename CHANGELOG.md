@@ -2,6 +2,78 @@ Changelog
 =========
 
 <!-- insertion marker -->
+## [3.3.5](https://github.com/dynaconf/dynaconf/releases/tag/3.3.5) - 2026-08-05
+
+### Bug Fixes
+
+
+- Skip non-str keys when resolving key casing (#1446). By @shuvamk.
+
+
+- Get/get_fresh with dotted keys stop working after first call (#1423). By @pctablet505.
+
+
+- Fix get_history ignoring its history_limit argument (#1424). By @chuenchen309.
+
+
+- Fix regression on override precedence with proper dynaconf-token cleanup (#1438). By @pedro-psb.
+
+
+- Add __deepcopy__ to DataDict to match DataList (#1440). By @digitronik.
+
+
+### Chore
+
+
+- Added py314 in toxList and up some test packages to full support this (#1443). By @even-even.
+
+## [3.3.4](https://github.com/dynaconf/dynaconf/releases/tag/3.3.4) - 2026-07-29
+
+### Bug Fixes
+
+
+- Fixed error when passing a list values for env on dynaconf init (#1278) (#1421). By @apoorvdarshan.
+
+
+- Clean up nested dynaconf_merge tokens when parent key is new (#1435). By @Sanjays2402.
+
+
+- Keep sibling keys that share a dotted path leaf name (#1434). By @Sanjays2402.
+
+
+- Convert container subclasses (#1436). By @deepakganesh78.
+
+
+- Django early validation integration code bug (#1432). By @pedro-psb.
+
+
+### Chore
+
+## [3.3.3](https://github.com/dynaconf/dynaconf/releases/tag/3.3.3) - 2026-07-22
+
+### Bug Fixes
+
+
+- Fixed regression on lazy evaluation when using dynaboxify=False (#1429). By @pedro-psb.
+
+
+### Docs
+
+
+- Clarify the values of True, False and None for must_exist check (#1416). By @pedro-psb.
+
+
+### Chore
+
+
+- Fix netlify deploy command on publish workflow (#1420). By @pedro-psb.
+
+
+- Consolidate docs-publishing workflow for rolling-release (#1417). By @pedro-psb.
+
+
+- Simplify docs-only skip and include backport branches on main CI (#1415). By @pedro-psb.
+
 ## [3.3.2](https://github.com/dynaconf/dynaconf/releases/tag/3.3.2) - 2026-06-29
 
 ### Bug Fixes

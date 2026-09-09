@@ -2,26 +2,6 @@
 
 set -euo pipefail
 
-# Ensure we are using a python lowerbound version
-PYTHON_LOWERBOUND=$(python -c \
-   'import toml; \
-   data=toml.load("pyproject.toml"); \
-   version=data["project"]["requires-python"].split(",")[0].split("=")[-1]; \
-   print(version)' \
-)
-
-PYTHON_ERR_MSG="$(cat <<EOF
-ERROR: Must use python ${PYTHON_LOWERBOUND}
-Minification creates code compatible with the current python version in use.
-For greater compatibility, the build should be done with the lower python we support.\n
-EOF
-)"
-
-if ! python --version | grep $PYTHON_LOWERBOUND; then
-   printf "$PYTHON_ERR_MSG"
-   exit 1
-fi
-
 # Ensure vendor is source and cleanup vendor_src backup folder
 ls dynaconf/vendor/source && rm -rf dynaconf/vendor_src
 
@@ -47,7 +27,7 @@ do
    touch dynaconf/vendor/$direc/__init__.py
 
    # for each .py file in the vendor_srx directory
-   # NOTE: vendor_src is created when make minify_vendor is run
+   # NOTE: vendor_src is created when make build runs ./scripts/minify.sh
    for eachfile in `ls dynaconf/vendor_src/$direc/*.py`
    do
       # minify each file pasting resilts to the dynaconf/vendor directory

@@ -5,6 +5,7 @@ from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
 import pytest
+import requests
 
 from dynaconf import LazySettings
 from dynaconf.loaders.vault_loader import list_envs
@@ -17,10 +18,11 @@ if TYPE_CHECKING:
 
 
 def is_responsive(url):
-    # This function should be check if the redis server is online and ready
-    # write(settings, {"SECRET": "redis_works"})
-    # return load(settings, key="SECRET")
-    return True
+    try:
+        response = requests.get(f"{url}/v1/sys/health", timeout=2)
+    except requests.exceptions.ConnectionError:
+        return False
+    return response.status_code == 200
 
 
 @pytest.fixture(scope="module")

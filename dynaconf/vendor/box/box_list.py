@@ -24,8 +24,8 @@ def get_dynabox_class_avoiding_circular_import():
     """
     global DYNABOX_CLASS
     if DYNABOX_CLASS is None:
-        from dynaconf.utils.boxing import DynaBox
-        DYNABOX_CLASS = DynaBox
+        from dynaconf.utils.boxing import _DynaBox
+        DYNABOX_CLASS = _DynaBox
     return DYNABOX_CLASS
 
 

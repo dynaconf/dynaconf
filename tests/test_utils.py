@@ -19,6 +19,7 @@ from dynaconf.utils import build_env_list
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import ensure_upperfied_list
 from dynaconf.utils import extract_json_objects
+from dynaconf.utils import find_the_correct_casing
 from dynaconf.utils import isnamedtupleinstance
 from dynaconf.utils import Missing
 from dynaconf.utils import missing
@@ -357,6 +358,18 @@ def test_merge_dict_preserves_old_key_order():
     assert new2 == {"x": 99, "y": 20, "z": 30}
 
 
+def test_find_the_correct_casing_skips_non_str_keys():
+    assert find_the_correct_casing("timeout", (1, 2, "TIMEOUT")) == "TIMEOUT"
+    assert find_the_correct_casing("timeout", (1, 2)) is None
+
+
+def test_merge_existing_dict_with_non_str_keys():
+    existing = {1: "fast", 2: "slow", "TIMEOUT": 30}
+    new = {"timeout": 60}
+    object_merge(existing, new)
+    assert new == {1: "fast", 2: "slow", "TIMEOUT": 60}
+
+
 def test_merge_dict_with_meta_values(settings):
     existing = {"A": 1, "B": 2, "C": 3}
     new = {
@@ -381,6 +394,68 @@ def test_merge_list_token_when_key_absent_in_old():
     new = {"ports": [8080, "dynaconf_merge_unique"]}
     object_merge(old, new)
     assert new == {"existing": 1, "ports": [8080]}
+
+
+@pytest.mark.parametrize(
+    "old, new, expected",
+    [
+        pytest.param(
+            {},
+            {"a": {"nested": {"dynaconf_merge": True, "y": 2}}},
+            {"a": {"nested": {"y": 2}}},
+            id="absent_key_level_1",
+        ),
+        pytest.param(
+            {"a": {"other": 1}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}}}},
+            id="absent_key_level_2",
+        ),
+        pytest.param(
+            {"m": {"other": 1}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"b": {"c": {"y": 2}}}, "m": {"other": 1}},
+            id="absent_key_level_2_different_root",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {}}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}}}},
+            id="absent_key_level_2_with_existing_empty_parent",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {"b_child": 3}}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}, "b_child": 3}}},
+            id="absent_key_level_2_with_existing_nonempty_parent",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {"c": {}}}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}}}},
+            id="absent_key_level_2_with_existing_empty_sibling",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {"c": {"z": 3}}}},
+            {"a": {"b": {"c": {"dynaconf_merge": True, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2, "z": 3}}}},
+            id="absent_key_level_2_with_existing_nonempty_sibling",
+        ),
+        pytest.param(
+            {"a": {"other": 1, "b": {"c": {"z": 3}}}},
+            {"a": {"b": {"c": {"dynaconf_merge": False, "y": 2}}}},
+            {"a": {"other": 1, "b": {"c": {"y": 2}}}},
+            id="absent_key_level_2_with_existing_nonempty_sibling_merge_false",
+        ),
+    ],
+)
+def test_nested_merge_token_is_cleaned_up_when_key_absent_in_old(
+    old, new, expected
+):
+    """See #1210. Merge token nested below an absent key must be stripped
+    so it doesn't leak into the final settings."""
+    object_merge(old, new)
+    assert new == expected
 
 
 def test_trimmed_split():
@@ -455,85 +530,104 @@ def test_upperfy():
     assert upperfy("foo_BAR") == "FOO_BAR"
 
 
-def test_lazy_format_class():
-    value = Lazy("{this[FOO]}/bar")
-    settings = {"FOO": "foo"}
-    assert value(settings) == "foo/bar"
-    assert str(value) == value.value
-    assert repr(value) == f"'@{value.formatter} {value.value}'"
+class TestLazyInternal:
+    def test_format_class(self):
+        value = Lazy("{this[FOO]}/bar")
+        settings = {"FOO": "foo"}
+        assert value(settings) == "foo/bar"
+        assert str(value) == value.value
+        assert repr(value) == f"'@{value.formatter} {value.value}'"
+
+    def test_format_class_jinja(self):
+        value = Lazy(
+            "{{this['FOO']}}/bar", formatter=Formatters.jinja_formatter
+        )
+        settings = {"FOO": "foo"}
+        assert value(settings) == "foo/bar"
+
+    def test_custom_function_formatter(self):
+        def custom_formatter(value, **context):
+            return f"custom:{value}"
+
+        lazy_val = Lazy("test", formatter=custom_formatter)
+        assert lazy_val({}) == "custom:test"
+
+    def test_json_serializable(self):
+        value = Lazy("{this[FOO]}/bar")
+        assert (
+            json.dumps({"val": value}, cls=DynaconfEncoder)
+            == '{"val": "@format {this[FOO]}/bar"}'
+        )
 
 
-def test_evaluate_lazy_format_decorator(settings):
-    class Settings:
-        FOO = "foo"
-        AUTO_CAST_FOR_DYNACONF = True
+class TestLazyDecorator:
+    def _make_settings(self, template):
+        class Settings:
+            FOO = "foo"
+            AUTO_CAST_FOR_DYNACONF = True
 
-        @evaluate_lazy_format
-        def get(self, key, default=None):
-            if key.endswith("_FOR_DYNACONF"):
-                return getattr(self, key)
-            return parse_conf_data("@format {this.FOO}/bar", box_settings=self)
+            @evaluate_lazy_format
+            def get(self, key, default=None):
+                if key.endswith("_FOR_DYNACONF"):
+                    return getattr(self, key)
+                return parse_conf_data(template, box_settings=self)
 
-        def __contains__(self, key):
-            value = getattr(self, key, missing)
-            if value is missing:
-                return False
-            return True
+            def __contains__(self, key):
+                value = getattr(self, key, missing)
+                if value is missing:
+                    return False
+                return True
 
-    settings = Settings()
-    assert settings.get("foo") == "foo/bar"
+        return Settings()
 
+    def test_format(self):
+        settings = self._make_settings("@format {this.FOO}/bar")
+        assert settings.get("foo") == "foo/bar"
 
-def test_lazy_format_on_settings(settings):
-    os.environ["ENV_THING"] = "LazyFormat"
-    settings.set("set_1", "really")
-    settings.set("lazy", "@format {env[ENV_THING]}/{this[set_1]}/{this.SET_2}")
-    settings.set("set_2", "works")
-
-    assert settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
-
-
-def test_lazy_format_class_jinja():
-    value = Lazy("{{this['FOO']}}/bar", formatter=Formatters.jinja_formatter)
-    settings = {"FOO": "foo"}
-    assert value(settings) == "foo/bar"
+    def test_jinja(self):
+        settings = self._make_settings("@jinja {{this.FOO}}/bar")
+        assert settings.get("foo") == "foo/bar"
 
 
-def test_evaluate_lazy_format_decorator_jinja(settings):
-    class Settings:
-        FOO = "foo"
+class TestLazyUsage:
+    @pytest.fixture(params=[True, False], ids=["dynaboxify", "no_dynaboxify"])
+    def settings(self, request):
+        return Dynaconf(dynaboxify=request.param)
 
-        AUTO_CAST_FOR_DYNACONF = True
+    def test_format(self, settings):
+        os.environ["ENV_THING"] = "LazyFormat"
+        settings.set("set_1", "really")
+        settings.set(
+            "lazy", "@format {env[ENV_THING]}/{this[set_1]}/{this.SET_2}"
+        )
+        settings.set("set_2", "works")
 
-        @evaluate_lazy_format
-        def get(self, key, default=None):
-            if key.endswith("_FOR_DYNACONF"):
-                return getattr(self, key)
-            return parse_conf_data(
-                "@jinja {{this.FOO}}/bar", box_settings=settings
-            )
+        assert (
+            settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
+        )
 
-    settings = Settings()
-    assert settings.get("foo") == "foo/bar"
+    def test_format_nested_dict(self, settings):
+        settings.set("BASE_VALUE", "hello")
+        settings.set("NESTED", {"inner": "@format {this[BASE_VALUE]}/world"})
+        assert settings.get("NESTED")["inner"] == "hello/world"
 
+    def test_jinja(self, settings):
+        os.environ["ENV_THING"] = "LazyFormat"
+        settings.set("set_1", "really")
+        settings.set(
+            "lazy",
+            "@jinja {{env.ENV_THING}}/{{this['set_1']}}/{{this.SET_2}}",
+        )
+        settings.set("set_2", "works")
 
-def test_lazy_format_on_settings_jinja(settings):
-    os.environ["ENV_THING"] = "LazyFormat"
-    settings.set("set_1", "really")
-    settings.set(
-        "lazy", "@jinja {{env.ENV_THING}}/{{this['set_1']}}/{{this.SET_2}}"
-    )
-    settings.set("set_2", "works")
+        assert (
+            settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
+        )
 
-    assert settings.LAZY == settings.get("lazy") == "LazyFormat/really/works"
-
-
-def test_lazy_format_is_json_serializable():
-    value = Lazy("{this[FOO]}/bar")
-    assert (
-        json.dumps({"val": value}, cls=DynaconfEncoder)
-        == '{"val": "@format {this[FOO]}/bar"}'
-    )
+    def test_jinja_nested_dict(self, settings):
+        settings.set("BASE_VALUE", "hello")
+        settings.set("NESTED", {"inner": "@jinja {{this.BASE_VALUE}}/world"})
+        assert settings.get("NESTED")["inner"] == "hello/world"
 
 
 def test_try_to_encode():
@@ -1363,19 +1457,6 @@ def test_read_file_os_error(tmp_path, monkeypatch):
         m.setattr("builtins.open", mock_open)
         with pytest.raises(DynaconfFormatError, match="Error reading"):
             settings.SECRET
-
-
-def test_lazy_with_custom_function_formatter():
-    """Test Lazy with custom function (not BaseFormatter)"""
-    from dynaconf.utils.parse_conf import Lazy
-
-    def custom_formatter(value, **context):
-        return f"custom:{value}"
-
-    lazy_val = Lazy("test", formatter=custom_formatter)
-    settings = {}
-    result = lazy_val(settings)
-    assert result == "custom:test"
 
 
 def test_safe_json_parse_extract_objects(settings):

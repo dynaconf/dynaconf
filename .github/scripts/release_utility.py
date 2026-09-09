@@ -107,6 +107,9 @@ HELP_FORMATTER = argparse.RawDescriptionHelpFormatter
 
 _DEBUG = True
 
+# Network git ops (fetch, ls-remote) shouldn't hang forever on a bad connection.
+GIT_TIMEOUT_SECONDS = 10
+
 
 def debug(label: str, value: object) -> None:
     if _DEBUG:
@@ -122,12 +125,18 @@ class Repository:
 
     def _git(self, *args) -> tuple[str, str]:
         result = subprocess.run(
-            ["git", *args], check=True, capture_output=True, text=True
+            ["git", *args],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=GIT_TIMEOUT_SECONDS,
         )
         return result.stdout.strip(), result.stderr.strip()
 
     def _git_ok(self, *args) -> bool:
-        result = subprocess.run(["git", *args], capture_output=True)
+        result = subprocess.run(
+            ["git", *args], capture_output=True, timeout=GIT_TIMEOUT_SECONDS
+        )
         return result.returncode == 0
 
     # --- read-only ---

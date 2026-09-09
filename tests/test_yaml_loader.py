@@ -578,3 +578,38 @@ def test_empty_yaml_key_overriding(tmpdir):
             _settings.level1.key6
             _settings.level1.key7
             _settings.level1.KEY8
+
+
+def test_nested_format_does_not_drop_env_override(create_file, clean_env):
+    """Regression test for #1437.
+
+    With environments=True + merge_enabled=True, a nested @format value
+    two or more levels deep caused the environment override of a sibling
+    key to be silently dropped (reverted to the default value).
+    """
+    settings_file = create_file(
+        "settings.yaml",
+        """\
+        default:
+          database:
+            name: "default_schema"
+            tables:
+              users:
+                name: "users"
+                full_name: "@format {this.database.name}.{this.database.tables.users.name}"
+
+        production:
+          database:
+            name: "prod_schema"
+        """,
+    )
+
+    settings = LazySettings(
+        settings_files=[str(settings_file)],
+        environments=True,
+        merge_enabled=True,
+        env="production",
+    )
+
+    assert settings.database.name == "prod_schema"
+    assert settings.database.tables.users.full_name == "prod_schema.users"

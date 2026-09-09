@@ -4,7 +4,7 @@ from collections import namedtuple
 
 import pytest
 
-from dynaconf.utils.boxing import DynaBox
+from dynaconf.utils.boxing import _DynaBox
 from dynaconf.vendor.box import BoxList
 
 pytestmark = pytest.mark.skip("To be removed")
@@ -12,7 +12,7 @@ pytestmark = pytest.mark.skip("To be removed")
 DBDATA = namedtuple("DbData", ["server", "port"])
 
 
-box = DynaBox(
+box = _DynaBox(
     {
         "server": {
             "HOST": "server.com",
@@ -36,7 +36,7 @@ def test_named_tuple_is_not_transformed():
 
 def test_datatypes():
     assert isinstance(box.server, dict)
-    assert isinstance(box.server, DynaBox)
+    assert isinstance(box.server, _DynaBox)
     assert isinstance(box.server.host, str)
     assert isinstance(box.server.PORT, int)
 
@@ -94,14 +94,14 @@ def test_copy_no_cause_inf_recursion():
 
 
 def test_accessing_dynabox_inside_boxlist_inside_dynabox():
-    data = DynaBox({"nested": [{"deeper": "nest"}]})
+    data = _DynaBox({"nested": [{"deeper": "nest"}]})
     assert data.nested[0].deeper == "nest"
     assert data.NESTED[0].deeper == "nest"
     assert data.NESTED[0].DEEPER == "nest"
 
-    data = DynaBox({"nested": BoxList([DynaBox({"deeper": "nest"})])})
+    data = _DynaBox({"nested": BoxList([_DynaBox({"deeper": "nest"})])})
     assert data.nested[0].deeper == "nest"
     assert data.NESTED[0].deeper == "nest"
     assert isinstance(data.NESTED, BoxList)
-    assert isinstance(data.NESTED[0], DynaBox)
+    assert isinstance(data.NESTED[0], _DynaBox)
     assert data.NESTED[0].DEEPER == "nest"

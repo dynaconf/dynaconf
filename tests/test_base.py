@@ -277,6 +277,42 @@ def test_env_should_be_string(settings):
         settings.setenv(123456)
 
 
+@pytest.mark.parametrize("env_kwarg", ["env", "ENV_FOR_DYNACONF"])
+def test_env_kwarg_accepts_a_list(create_file, env_kwarg):
+    settings_file = create_file(
+        "settings.toml",
+        """
+        [default]
+        issue_1278_value = "default"
+
+        [test]
+        issue_1278_value = "test"
+        issue_1278_from_test = true
+
+        [dev]
+        issue_1278_value = "dev"
+        issue_1278_from_dev = true
+        """,
+    )
+
+    settings = Dynaconf(
+        settings_files=[settings_file],
+        environments=True,
+        **{env_kwarg: ["test", "dev"]},
+    )
+
+    assert settings.current_env == "test,dev"
+    assert settings.issue_1278_value == "dev"
+    assert settings.issue_1278_from_test is True
+    assert settings.issue_1278_from_dev is True
+
+
+@pytest.mark.parametrize("env", [["test", 1], 1])
+def test_env_kwarg_rejects_invalid_values(env):
+    with pytest.raises(TypeError, match="string or a list of strings"):
+        Dynaconf(environments=True, env=env)
+
+
 def test_env_should_allow_underline(settings):
     settings.setenv("COOL_env")
     assert settings.current_env == "COOL_ENV"
@@ -870,6 +906,42 @@ def test_dotted_traversal_access(settings):
 
     # nested separator test
     assert settings.get("ME__NUMBER") == "42"
+
+
+def test_dotted_get_fresh(tmpdir):
+    """Regression test for issue #1187.
+
+    `get`/`get_fresh` with a dot separated key must keep returning the
+    value on repeated calls, reloading it fresh from the source every
+    time instead of returning None after the first call.
+    """
+    settings_file = tmpdir.join("settings.toml")
+    toml_loader.write(str(settings_file), {"foo": {"bar": "baz"}}, merge=False)
+    settings = LazySettings(settings_file="settings.toml")
+
+    assert settings.get("foo.bar", fresh=True) == "baz"
+    # second and third calls used to return None (issue #1187)
+    assert settings.get("foo.bar", fresh=True) == "baz"
+    assert settings.get("foo.bar", fresh=True) == "baz"
+
+    assert settings.get_fresh("foo.bar") == "baz"
+    assert settings.get_fresh("foo.bar") == "baz"
+
+    # fresh must actually reload the value from the source
+    toml_loader.write(
+        str(settings_file), {"foo": {"bar": "changed"}}, merge=False
+    )
+    assert settings.get("foo.bar", fresh=True) == "changed"
+
+    # deeper nesting keeps working across repeated fresh calls too
+    toml_loader.write(
+        str(tmpdir.join("settings2.toml")),
+        {"foo": {"baz": {"qux": "v1"}}},
+        merge=False,
+    )
+    settings2 = LazySettings(settings_file="settings2.toml")
+    assert settings2.get("foo.baz.qux", fresh=True) == "v1"
+    assert settings2.get("foo.baz.qux", fresh=True) == "v1"
 
 
 def test_dotted_set(settings):

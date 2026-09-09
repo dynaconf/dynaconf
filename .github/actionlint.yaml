@@ -1,0 +1,6 @@
+paths:
+  .github/workflows/**/*.{yml,yaml}:
+    ignore:
+      # False positives on client-id/app-id
+      # See: https://github.com/rhysd/actionlint/issues/669
+      - "actions/create-github-app-token@v3"

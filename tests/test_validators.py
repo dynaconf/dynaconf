@@ -937,3 +937,23 @@ def test_from_env_with_validate_on_update_does_not_recurse():
     # Before the fix this raised RecursionError.
     other_settings = settings.from_env("development")
     assert other_settings.current_env.lower() == "development"
+
+
+def test_sibling_key_sharing_leaf_name_survives_validation():
+    """Nested keys sharing a leaf name must all survive validation. See #974"""
+    from dynaconf import Dynaconf
+    from dynaconf import Validator
+
+    settings = Dynaconf()
+    settings.validators.register(
+        Validator("foo.bar.value", must_exist=True, is_type_of=bool)
+    )
+    settings.set("foo.value", True)
+    settings.set("foo.bar.value", True)
+
+    settings.validators.validate()
+
+    assert settings.foo.bar.value is True
+    # Before the fix `foo.value` was dropped, because the sibling key shared
+    # the leaf name of the dotted path being set.
+    assert settings.foo.value is True

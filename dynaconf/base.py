@@ -31,6 +31,7 @@ from dynaconf.loaders import yaml_loader
 from dynaconf.loaders.base import SourceMetadata
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
+from dynaconf.nodes import recursively_evaluate_lazy_format
 from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils import BANNER
 from dynaconf.utils import ensure_a_list
@@ -55,8 +56,6 @@ from dynaconf.utils.parse_conf import parse_conf_data
 from dynaconf.utils.parse_conf import true_values
 from dynaconf.validator import ValidationError
 from dynaconf.validator import ValidatorList
-
-cache_enabled = True  # disable if something weird happen
 
 
 class LazySettings(LazyObject):
@@ -223,6 +222,7 @@ class DynaconfCore:
         validators = kwargs.pop("validators", None)
 
         self._cache: dict = {}
+        self.cache_enabled = True
         self.obj = obj
         self.config = config
         self.store = store
@@ -231,20 +231,22 @@ class DynaconfCore:
     # CACHING
 
     def get_cached(self, key):
-        if not cache_enabled:
-            raise KeyError  # communicates "cache not found"
+        """Return value or raises KeyError for key not found."""
+        if not self.cache_enabled:
+            raise KeyError
         return self._cache[key]
 
     def set_cached(self, key, value):
-        if not cache_enabled:
+        # NOTE: remove support for this marker in a breaking change
+        _is_lazy = hasattr(value, "_dynaconf_lazy_format")
+        if not self.cache_enabled:
             return
         fresh_vars = self.config.fresh_vars
-        is_lazy = value.__class__.__name__ == "Lazy"
-        if key not in fresh_vars and not is_lazy:
+        if key not in fresh_vars and not _is_lazy:
             self._cache[key] = value
 
     def clear_cache(self):
-        if not cache_enabled:
+        if not self.cache_enabled:
             return
         self._cache.clear()
 
@@ -635,12 +637,22 @@ class Settings:
             return default
 
         if (
-            fresh or config.fresh or key in config.fresh_vars
-        ) and key not in UPPER_DEFAULT_SETTINGS:
+            (fresh or config.fresh or key in config.fresh_vars)
+            and key not in UPPER_DEFAULT_SETTINGS
+            and parent is None
+        ):
+            # `parent` is only set when resolving a child segment of a
+            # dotted key against an already-fetched nested container
+            # (see `_dotted_get`). Such a `key` is not a real top-level
+            # setting, so it must not be unset/reloaded here: doing so
+            # would mark it as deleted permanently and break every
+            # future lookup of the dotted key.
             self.unset(key)
             self.execute_loaders(key=key)
 
         data = _get_with_default(parent or core.store, key, default)
+        if config.dynaboxify is False:
+            data = recursively_evaluate_lazy_format(data, self)
         if cast:
             data = apply_converter(cast, data, box_settings=self)
         return data

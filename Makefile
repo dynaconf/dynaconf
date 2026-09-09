@@ -1,90 +1,69 @@
 SHELL := /bin/bash
-.PHONY: all check-releases citest clean mypy dist docs install publish run-pre-commit run-tox setup-pre-commit test test_functional test_only test_redis test_vault help coverage-report watch_test bench
+
+# Override with e.g. `make install PYTHON=3.11` to pick the interpreter version.
+PYTHON_FLAG := $(if $(PYTHON),--python $(PYTHON))
+
+# Use for running things that requires the project installed
+#
+# Note: in CI, the install target exports the venv as the default venv, so the
+# the workflow can use it without calling uv.
+RUN := $(if $(CI),,uv run --no-sync $(PYTHON_FLAG))
+
+# Use for running things independent of project state. Usage: $(call RUN_TOOL,<group>)
+RUN_TOOL = uv run --isolated $(PYTHON_FLAG) $(if $(1),--only-group $(1))
+
+# Lowest Python version we support (pyproject.toml's requires-python) - minification
+# must run on it for the resulting bytecode to stay compatible with all supported versions.
+PYTHON_LOWERBOUND := 3.10
+
+# Windows and macOS are excluded: their integration tests' docker fixtures
+# aren't reliable there (macOS GitHub-hosted runners have no Docker at all).
+CITEST_FULL := $(if $(CI),$(if $(filter Windows macOS,$(RUNNER_OS)),,1))
+
+# Pytest flags
+PYTEST_COV := --cov-config pyproject.toml --cov=dynaconf
+SHORT_TB := --tb=short
+
+# Override with e.g. `make test k=test_something` to run a single test by name/expression.
+K_FILTER = $(if $(k),-k "$(k)")
+# This outcome is a report on what test failed, succeeded, etc
+OUTCOME_REPORT = --junitxml=junit/$(1)-results.xml
+
+ifeq ($(RUNNER_OS),Windows)
+VENV_BIN := .venv/Scripts
+else
+VENV_BIN := .venv/bin
+endif
+
+.PHONY: help
 help:
-	@$(MAKE) -pRrq -f $(lastword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/^# File/,/^# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort | egrep -v -e '^[^[:alnum:]]' -e '^$@$$'
+	@python scripts/makefile_doc.py < $(MAKEFILE_LIST)
 
-all: clean install run-pre-commit test test_functional coverage-report
 
-test_functional:
-	./tests_functional/runtests.py
+# ---------------------------------------------------------------------------
+# General
+# ---------------------------------------------------------------------------
 
-test_vault:
-	./tests_functional/test_vault.sh
-	./tests_functional/test_vault_userpass.sh
+.PHONY: all tips lint docs docs-build
 
-test_redis:
-	./tests_functional/test_redis.sh
+#: Clean, install dev deps, lint, and run the full test suite
+all: clean install lint test test-functional
+	$(RUN) coverage report
 
-bench:
-	rm -rf tmp-bench
-	@scripts/bench.sh depth2_getitem
-	@scripts/bench.sh depth2_getattr
-	@scripts/bench.sh depth1_getattr
-	@scripts/bench.sh depth1_setattr
+#: Lint and format the code
+lint:
+	$(call RUN_TOOL,lint) pre-commit run --all-files
 
-watch:
-	ls **/**.py | entr py.test -m "not integration" -s -vvv -l --tb=long --maxfail=1 tests/
+#: Serve the documentation site locally with live-reload
+docs: _check-venv
+	$(RUN) mkdocs serve
 
-watch_test:
-	# make watch_test ARGS="tests/test_typed.py -k union"
-	ls **/**.py | entr py.test --showlocals -sx -vv --disable-warnings --tb=short $(ARGS)
+#: Build the documentation site
+docs-build: _check-venv
+	rm -rf site
+	$(RUN) mkdocs build --clean
 
-watch_django:
-	ls {**/**.py,~/.virtualenvs/dynaconf/**/**.py,.venv/**/**.py} | PYTHON_PATH=. DJANGO_SETTINGS_MODULE=foo.settings entr tests_functional/django_example/manage.py test polls -v 2
-
-watch_coverage:
-	ls {**/**.py,~/.virtualenvs/dynaconf/**/**.py} | entr -s "make test;coverage html"
-
-test_only:
-	py.test -m "not integration" -v --cov-config pyproject.toml --cov=dynaconf -l --tb=short --maxfail=1 tests/
-	coverage xml
-
-test_integration:
-	py.test -m integration -v --cov-config pyproject.toml --cov=dynaconf --cov-append -l --tb=short --maxfail=1 tests/
-	coverage xml
-
-coverage-report:
-	coverage report
-
-mypy:
-	mypy dynaconf/ --exclude '^dynaconf/vendor*'
-
-test: mypy test_only
-
-citest:
-	py.test -v --cov-config pyproject.toml --cov=dynaconf -l tests/ --junitxml=junit/test-results.xml
-	coverage xml
-	make coverage-report
-
-ciinstall:
-	uv export --no-hashes --group ci > /tmp/requirements-ci.txt  # lets move all uv soon
-	python -m pip install --upgrade pip
-	python -m pip install -r /tmp/requirements-ci.txt
-
-test_all: test_functional test_integration test_redis test_vault test
-	@coverage html
-
-install:
-	uv export --no-hashes --group dev > /tmp/requirements-dev.txt  # lets move all uv soon
-	python -m pip install -r /tmp/requirements-dev.txt
-
-run-pre-commit:
-	rm -rf .tox/
-	rm -rf build/
-	pre-commit run --all-files
-
-dist: clean
-	@make minify_vendor
-	@python -m build
-	@make source_vendor
-
-check-releases:
-	uv run --isolated --with-editable .github/scripts/ release-utility check
-
-# Bump X.Y.Z.dev to X.Y+1.0.dev
-bump-minor:
-	uv run bump-my-version bump minor --commit
-
+#: Remove build artifacts, caches, and generated files
 clean:
 	@find ./ -name '*.pyc' -exec rm -f {} \;
 	@find ./ -name '__pycache__' -prune -exec rm -rf {} \;
@@ -98,23 +77,131 @@ clean:
 	rm -rf .tox/
 	rm -rf site
 	rm -rf tmp-bench
+	rm -rf .venv
 
-docs:
-	rm -rf site
-	uv run --group docs mkdocs build --clean
+# ---------------------------------------------------------------------------
+# Setup
+# ---------------------------------------------------------------------------
 
-run-tox:
-	tox --recreate
-	rm -rf .tox
+.PHONY: install clean info _check-venv
 
-minify_vendor:
+_check-venv:
+	@if [ ! -d .venv ]; then \
+		echo "ERROR: No .venv found. Run 'make install' first."; \
+		exit 1; \
+	fi
+
+#: Create .venv and install project | [WHEEL=<path>] [GROUP=<group>] [PYTHON=<version>] [ARGS=<uv-args>]
+install:
+	uv venv --clear $(PYTHON_FLAG)
+	uv pip install \
+		$(if $(WHEEL),$(WHEEL),--editable .) \
+		--group $(if $(GROUP),$(GROUP),dev) \
+		$(ARGS)
+	@[ -n "$$GITHUB_PATH" ] && echo "$(CURDIR)/$(VENV_BIN)" >> "$$GITHUB_PATH" || true
+	@[ -n "$$GITHUB_ENV" ] && echo "VIRTUAL_ENV=$(CURDIR)/$(VENV_DIR)" >> $$GITHUB_ENV || true
+
+#: Show info of local venv (.venv) | [VERBOSE=1] full pip list
+info:
+	@if [ ! -d .venv ]; then \
+		echo "No .venv found. Run 'make install' first."; \
+	else \
+		echo "Path:   $(CURDIR)/.venv"; \
+		echo "Python: $$($(VENV_BIN)/python --version 2>&1)"; \
+		echo; \
+		$(if $(VERBOSE), \
+			uv pip list, \
+			uv pip show dynaconf dynaconf-release-utility; \
+			echo -e "\n---\nFor full package list:\nmake info VERBOSE=1" \
+		); \
+	fi
+
+#: Show quick usage tips
+tips:
+	@echo "- Behavior can differ when the CI env var is set: some targets (test, install, lint) adapt automatically."
+	@echo "- Auto re-run tests on change: find . -name '*.py' | entr make test"
+
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+
+.PHONY: test test-integration test-functional test-redis test-vault test-all bench
+
+#: Run the unit test suite with coverage | [k=<expr>] run tests matching <expr>
+test: _check-venv
+	$(RUN) pytest tests/ \
+		-m "not integration" \
+		-v -l --color=yes $(SHORT_TB) $(K_FILTER) \
+		$(if $(k),--disable-warnings,$(PYTEST_COV)) \
+		$(if $(CITEST_FULL),$(call OUTCOME_REPORT,test))
+	$(if $(k),,$(if $(CITEST_FULL),$(RUN) coverage xml))
+
+#: Run integration-marked tests only | [k=<expr>] run tests matching <expr>
+test-integration: _check-venv
+	$(RUN) pytest tests/ \
+		-m "integration" \
+		-v -l --color=yes $(SHORT_TB) $(K_FILTER) \
+		$(if $(k),--disable-warnings,$(PYTEST_COV) --cov-append) \
+		$(if $(CITEST_FULL),$(call OUTCOME_REPORT,integration))
+	$(if $(k),,$(if $(CITEST_FULL),$(RUN) coverage xml))
+
+#: Run the functional test suite | [k=<expr>] run tests matching <expr>
+test-functional: _check-venv
+	$(RUN) python tests_functional/runtests.py $(if $(k),--filter "$(k)")
+
+#: Run functional tests against a local Redis
+test-redis: _check-venv
+	$(RUN) ./tests_functional/test_redis.sh
+
+#: Run functional tests against a local Vault
+test-vault: _check-venv
+	$(RUN) ./tests_functional/test_vault.sh
+	$(RUN) ./tests_functional/test_vault_userpass.sh
+
+#: Run every test suite and generate an HTML coverage report
+test-all: test-functional test-integration test-redis test-vault test
+	$(RUN) coverage html
+
+#: Run performance benchmarks
+bench:
+	rm -rf tmp-bench
+	@scripts/bench.sh depth2_getitem
+	@scripts/bench.sh depth2_getattr
+	@scripts/bench.sh depth1_getattr
+	@scripts/bench.sh depth1_setattr
+
+# ---------------------------------------------------------------------------
+# Build & Release
+# ---------------------------------------------------------------------------
+
+.PHONY: build check-releases release-notes bump-minor
+
+#: Build the sdist and wheel
+build: clean
 	# create a new dynaconf/vendor folder with minified files
-	./minify.sh
+	$(call RUN_TOOL,release) --python $(PYTHON_LOWERBOUND) ./scripts/minify.sh
+	@uv build
+	# restore dynaconf/vendor_src folder as dynaconf/vendor
+	@./scripts/source_vendor.sh
+	.github/scripts/dist-health-check.sh
+	ls -la dist
 
+#: Check for pending releases | Release via https://github.com/dynaconf/dynaconf/actions)
+check-releases:
+	$(call RUN_TOOL,release) release-utility check
 
-source_vendor:
-	# Ensure dynaconf/vendor_src is source and cleanup vendor folder
-	ls dynaconf/vendor_src/source && rm -rf dynaconf/vendor
+#: Preview release notes
+release-notes:
+	$(call RUN_TOOL,release) git-changelog --release-notes
 
-	# Restore dynaconf/vendor_src folder as dynaconf/vendor
-	mv dynaconf/vendor_src dynaconf/vendor
+#: Bump X.Y.Z.dev to X.(Y+1).0.dev | [YES=1] create the bump commit (DEFAULT=dry-run)
+bump-minor:
+	$(if $(YES), \
+		@$(call RUN_TOOL,release) bump-my-version bump minor --commit && \
+		echo -e "Bump commit created!\n" && \
+		git log -1 --stat, \
+		@NEXT=$$($(call RUN_TOOL,release) bump-my-version show --increment minor new_version); \
+		echo "Next version would be: $$NEXT"; \
+		echo -e "To create the bump commit, run:\n"; \
+		echo "make bump-minor YES=1" \
+	)

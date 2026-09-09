@@ -208,6 +208,36 @@ def test_get_history_env_false__file_plus_envvar(tmp_path):
     )
 
 
+def test_get_history_history_limit(tmp_path):
+    """
+    Given a history longer than history_limit
+    Should return only the first history_limit entries
+    """
+    file_a = tmp_path / "a.yml"
+    create_file(file_a, "foo: from_file")
+    settings = Dynaconf(settings_file=file_a, environments=False)
+
+    full = get_history(settings)
+    assert len(full) > 1
+
+    limited = get_history(settings, history_limit=1)
+    assert len(limited) == 1
+    assert limited == full[:1]
+
+
+def test_get_history_history_limit_larger_than_history(tmp_path):
+    """
+    Given a history_limit larger than the history
+    Should return the whole history unchanged
+    """
+    file_a = tmp_path / "a.yml"
+    create_file(file_a, "foo: from_file")
+    settings = Dynaconf(settings_file=file_a, environments=False)
+
+    full = get_history(settings)
+    assert get_history(settings, history_limit=len(full) + 10) == full
+
+
 def test_get_history_env_false__val_default_plus_envvar():
     """
     Given environments=False and sources=validation-default+envvar

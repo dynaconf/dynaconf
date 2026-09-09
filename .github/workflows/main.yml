@@ -25,7 +25,7 @@ jobs:
       code_changed: ${{ steps.filter.outputs.code_changed }}
     steps:
       - uses: actions/checkout@v7
-      - uses: dorny/paths-filter@v3
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -54,7 +54,7 @@ jobs:
     with:
       dist-artifact: ${{ needs.build.outputs.dist-artifact }}
       python_minimal: '["3.10", "3.14"]'
-      python_full: '["3.10", "3.11", "3.12", "3.13", "3.14"]'
+      python_full: '["3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]'
       python_latest: '3.14'
     secrets: inherit
 

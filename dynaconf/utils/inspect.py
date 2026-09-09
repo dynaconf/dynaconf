@@ -297,6 +297,9 @@ def get_history(
         if key and not result:
             raise KeyNotFoundError(f"The requested key was not found: {key!r}")
 
+    if history_limit:
+        result = result[:history_limit]
+
     return result
 
 
