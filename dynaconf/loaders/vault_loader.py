@@ -84,29 +84,31 @@ def load(obj, env=None, silent=None, key=None, validate=False):
     :return: None
     """
     client = get_client(obj)
-    try:
-        if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2:
-            dirs = client.secrets.kv.v2.list_secrets(
-                path=obj.VAULT_PATH_FOR_DYNACONF,
-                mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
-            )["data"]["keys"]
-        else:
-            dirs = client.secrets.kv.v1.list_secrets(
-                path=obj.VAULT_PATH_FOR_DYNACONF,
-                mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
-            )["data"]["keys"]
-    except InvalidPath:
-        # The given path is not a directory
-        dirs = []
-    except Forbidden:
-        # The given token does not have permission to list the given path
-        dirs = []
+    dirs = []
+    if obj.VAULT_LOAD_ALL_ENVS_FOR_DYNACONF:
+        try:
+            if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2:
+                dirs = client.secrets.kv.v2.list_secrets(
+                    path=obj.VAULT_PATH_FOR_DYNACONF,
+                    mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
+                )["data"]["keys"]
+            else:
+                dirs = client.secrets.kv.v1.list_secrets(
+                    path=obj.VAULT_PATH_FOR_DYNACONF,
+                    mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
+                )["data"]["keys"]
+        except InvalidPath:
+            # The given path is not a directory
+            dirs = []
+        except Forbidden:
+            # The given token does not have permission to list the given path
+            dirs = []
     # First look for secrets into environments less store
     if not obj.ENVIRONMENTS_FOR_DYNACONF:
         # By adding '', dynaconf will now read secrets from environments-less
         # store which are not written by `dynaconf write` to Vault store
         env_list = [obj.MAIN_ENV_FOR_DYNACONF.lower(), ""]
-    # Finally, look for secret into all the environments
+    # Finally, apply the normal environment loading order.
     else:
         env_list = dirs + build_env_list(obj, env)
     for env in env_list:
