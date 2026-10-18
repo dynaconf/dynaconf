@@ -1569,8 +1569,13 @@ class Settings:
             else:
                 filepath = os.path.join(root_dir, str(_filename))
 
-            paths = [p for p in sorted(glob(filepath)) if ".local." not in p]
-            local_paths = [p for p in sorted(glob(filepath)) if ".local." in p]
+            globbed = sorted(glob(filepath))
+            paths = [
+                p for p in globbed if ".local." not in os.path.basename(p)
+            ]
+            local_paths = [
+                p for p in globbed if ".local." in os.path.basename(p)
+            ]
 
             if (
                 not silent

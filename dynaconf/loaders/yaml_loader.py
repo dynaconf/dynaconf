@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from warnings import warn
 
@@ -44,7 +45,7 @@ class AllLoader(BaseLoader):
                         config.loaded_files.append(source_file)
                         self._assign_data(data, source_file, content)
                 except OSError as e:
-                    if ".local." not in source_file:
+                    if ".local." not in os.path.basename(source_file):
                         warn(
                             f"{self.identifier}_loader: {source_file} "
                             f":{str(e)}"
