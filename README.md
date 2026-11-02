@@ -66,7 +66,10 @@ from dynaconf import Dynaconf
 
 settings = Dynaconf(
     envvar_prefix="DYNACONF",  # export envvars with `export DYNACONF_FOO=bar`.
-    settings_files=['settings.yaml', '.secrets.yaml'],  # Load files in the given order.
+    settings_files=[
+        "settings.yaml",
+        ".secrets.yaml",
+    ],  # Load files in the given order.
 )
 ```
 
@@ -108,11 +111,11 @@ from path.to.project.config import settings
 # Reading the settings
 
 settings.username == "admin"  # dot notation with multi nesting support
-settings.PORT == 9900  # case insensitive
-settings['password'] == "secret123"  # dict like access
+settings.PORT == 9900  # case-insensitive
+settings["password"] == "secret123"  # dict like access
 settings.get("nonexisting", "default value")  # Default values just like a dict
 settings.databases.name == "mydb"  # Nested key traversing
-settings['databases.schema'] == "main"  # Nested key traversing
+settings["databases.schema"] == "main"  # Nested key traversing
 ```
 
 ## More

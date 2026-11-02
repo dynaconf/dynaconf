@@ -12,9 +12,21 @@ Run this code:
 from dynaconf.utils.boxing import DynaBox
 from dynaconf.utils import object_merge
 
-existing_data = DynaBox({"DATABASES": {'default': {'ENGINE': 'django.db.backends.postgresql_psycopg2', 'HOST': 'localhost', 'PASSWORD': 'pulp', 'NAME': 'pulp', 'USER': 'pulp'}}})
-new_data = DynaBox({'DATABASES': {'default': {'USER': 'postgres'}}})
-split_keys = ['DATABASES', 'default', 'USER']
+existing_data = DynaBox(
+    {
+        "DATABASES": {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql_psycopg2",
+                "HOST": "localhost",
+                "PASSWORD": "pulp",
+                "NAME": "pulp",
+                "USER": "pulp",
+            }
+        }
+    }
+)
+new_data = DynaBox({"DATABASES": {"default": {"USER": "postgres"}}})
+split_keys = ["DATABASES", "default", "USER"]
 object_merge(old=existing_data, new=new_data, full_path=split_keys)
 ```
 
