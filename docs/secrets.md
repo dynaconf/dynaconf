@@ -140,18 +140,22 @@ An external storage is needed in some programs for scenarios like:
 2) The need to change settings on the fly without redeploying or restarting the app.
 3) Storing sensitive values in a safe sealed **Vault**
 
-### Using REDIS
+### Using REDIS/VALKEY
 
 1. Run a Redis server installed or via docker:
 
 ```bash
 $ docker run -d -p 6379:6379 redis
+or
+$ docker run -d -p 6379:6379 valkey/valkey
 ```
 
 2. Install support for redis in dynaconf
 
 ```bash
 $ pip install dynaconf[redis]
+or 
+$ pip install dynaconf[valkey]
 ```
 
 3. In your `.env` file or in exported environment variables define:
@@ -163,7 +167,14 @@ REDIS_PORT_FOR_DYNACONF=6379
 REDIS_USERNAME_FOR_DYNACONF=<ACL username>(optional)
 REDIS_PASSWORD_FOR_DYNACONF=<password>(optional)
 ```
-
+or 
+```bash
+VALKEY_ENABLED_FOR_DYNACONF=true
+VALKEY_HOST_FOR_DYNACONF=localhost
+VALKEY_PORT_FOR_DYNACONF=6379
+VALKEY_USERNAME_FOR_DYNACONF=<ACL username>(optional)
+VALKEY_PASSWORD_FOR_DYNACONF=<password>(optional)
+```
 You can now write variables direct in to a redis hash named `< ENVVAR_PREFIX_FOR_DYNACONF >_< env >`. For example, when using the default `DYNACONF` envvar prefix:
 
 - `DYNACONF_DEFAULT`: default values
@@ -175,6 +186,8 @@ You can also use the redis writer
 
 ```bash
 $ dynaconf write redis -v name=Bruno -v database=localhost -v port=1234
+or 
+$ dynaconf write valkey -v name=Bruno -v database=localhost -v port=1234
 ```
 
 The above data will be recorded in redis as a hash:
