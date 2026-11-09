@@ -58,6 +58,7 @@ and
 **/path/src/app.py**
 ```python
 from dynaconf import settings
+
 ...
 ```
 
