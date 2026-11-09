@@ -26,6 +26,7 @@ TEST = ["a", "@format {this.VAL}]
 **/path/src/app.py**
 ```python
 from dynaconf import settings
+
 print(settings.TEST)
 ...
 ```

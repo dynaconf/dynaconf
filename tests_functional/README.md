@@ -88,6 +88,7 @@ Those names matches `os.name` for the platform.
 
    ```python
    from dynaconf import Dynaconf
+
    settings = Dynaconf(
        envvar_prefix="MYAPP",
        settings_files=["settings.toml"],
