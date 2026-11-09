@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+import base64
+import json
 import os
+import subprocess
+import time
 from collections.abc import Iterator
 from typing import TYPE_CHECKING
 
+import hvac
 import pytest
 import requests
 
@@ -133,3 +138,92 @@ def test_vault_has_proper_source_metadata(docker_vault):
     assert history[1]["value"]["SECRET"] == "vault_works_in_dev"
     assert history[2]["env"] == "prod"
     assert history[2]["value"]["SECRET"] == "vault_works_in_prod"
+
+
+def _b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+def _sign_test_jwt(tmp_path, claims: dict) -> str:
+    """A self-signed RS256 JWT, built with openssl only (no PyJWT test dep)."""
+    private_key = tmp_path / "jwt_test_key.pem"
+    subprocess.run(
+        ["openssl", "genrsa", "-out", str(private_key), "2048"],
+        check=True,
+        capture_output=True,
+    )
+    public_key = subprocess.run(
+        ["openssl", "rsa", "-in", str(private_key), "-pubout"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout
+
+    header = {"alg": "RS256", "typ": "JWT"}
+    signing_input = (
+        f"{_b64url(json.dumps(header).encode())}."
+        f"{_b64url(json.dumps(claims).encode())}"
+    )
+    signature = subprocess.run(
+        ["openssl", "dgst", "-sha256", "-sign", str(private_key)],
+        input=signing_input.encode(),
+        capture_output=True,
+        check=True,
+    ).stdout
+    return f"{signing_input}.{_b64url(signature)}", public_key
+
+
+@pytest.mark.integration
+def test_load_from_vault_with_jwt_auth(docker_vault, tmp_path):
+    """A CI-issued JWT (GitLab id_tokens, k8s service account tokens, ...)
+    authenticates via Vault's jwt auth method - no VAULT_TOKEN involved."""
+    now = int(time.time())
+    test_jwt, public_key = _sign_test_jwt(
+        tmp_path,
+        {
+            "sub": "dynaconf-ci",
+            "aud": "dynaconf-tests",
+            "iat": now,
+            "exp": now + 300,
+        },
+    )
+
+    root = hvac.Client(url=docker_vault, token="myroot")
+    root.sys.enable_auth_method("jwt", path="jwt-test")
+    root.auth.jwt.configure(
+        jwt_validation_pubkeys=[public_key], path="jwt-test"
+    )
+    root.sys.create_or_update_policy(
+        name="dynaconf-jwt-test",
+        policy='path "secret/*" { capabilities = ["read", "list", "create", "update"] }',
+    )
+    root.auth.jwt.create_role(
+        name="dynaconf-role",
+        role_type="jwt",
+        allowed_redirect_uris=[],
+        bound_audiences=["dynaconf-tests"],
+        user_claim="sub",
+        bound_subject="dynaconf-ci",
+        token_policies=["dynaconf-jwt-test"],
+        path="jwt-test",
+    )
+
+    os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_URL_FOR_DYNACONF"] = docker_vault
+    os.environ["VAULT_KV_VERSION_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_PATH_FOR_DYNACONF"] = "test_jwt_auth"
+    os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
+    settings = LazySettings(environments=True)
+    write(settings, {"SECRET": "vault_works_with_jwt"})
+
+    del os.environ["VAULT_TOKEN_FOR_DYNACONF"]
+    os.environ["VAULT_JWT_TOKEN_FOR_DYNACONF"] = test_jwt
+    os.environ["VAULT_JWT_AUTH_PATH_FOR_DYNACONF"] = "jwt-test"
+    os.environ["VAULT_AUTH_ROLE_FOR_DYNACONF"] = "dynaconf-role"
+    settings = LazySettings(environments=True)
+    load(settings, key="SECRET")
+    assert settings.get("SECRET") == "vault_works_with_jwt"
+
+    del os.environ["VAULT_JWT_TOKEN_FOR_DYNACONF"]
+    del os.environ["VAULT_JWT_AUTH_PATH_FOR_DYNACONF"]
+    del os.environ["VAULT_AUTH_ROLE_FOR_DYNACONF"]

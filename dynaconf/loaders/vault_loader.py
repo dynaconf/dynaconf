@@ -46,6 +46,12 @@ def get_client(obj):
             username=obj.VAULT_USERNAME_FOR_DYNACONF,
             password=obj.VAULT_PASSWORD_FOR_DYNACONF,
         )
+    elif obj.VAULT_JWT_TOKEN_FOR_DYNACONF is not None:
+        client.auth.jwt.jwt_login(
+            role=obj.VAULT_AUTH_ROLE_FOR_DYNACONF,
+            jwt=obj.VAULT_JWT_TOKEN_FOR_DYNACONF,
+            path=obj.VAULT_JWT_AUTH_PATH_FOR_DYNACONF,
+        )
 
     elif obj.VAULT_AUTH_WITH_IAM_FOR_DYNACONF:
         if boto3 is None:
@@ -67,8 +73,8 @@ def get_client(obj):
         client.auth.token.renew_self()
 
     assert client.is_authenticated(), (
-        "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF or "
-        "VAULT_ROLE_ID_FOR_DYNACONF defined?"
+        "Vault authentication error: is VAULT_TOKEN_FOR_DYNACONF, "
+        "VAULT_ROLE_ID_FOR_DYNACONF, or VAULT_JWT_TOKEN_FOR_DYNACONF defined?"
     )
     client.secrets.kv.default_kv_version = obj.VAULT_KV_VERSION_FOR_DYNACONF
     return client
