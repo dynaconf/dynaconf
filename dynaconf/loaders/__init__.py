@@ -437,15 +437,29 @@ def enable_external_loaders(obj):
             obj.LOADERS_FOR_DYNACONF.insert(0, loader)
 
 
-def write(filename, data, env=None, merge=False):
+def write(filename, data, env=None, merge=False, settings=None):
     """Writes `data` to `filename` infers format by file extension."""
     loader_name = f"{filename.rpartition('.')[-1]}_loader"
     loader = globals().get(loader_name)
     if not loader:
         raise OSError(f"{loader_name} cannot be found.")
 
+    is_external = getattr(loader, "IDENTIFIER", None) in ("redis", "vault")
+
     data = to_dict(DataDict(data, box_settings={}))
-    if loader is not py_loader and env and env not in data:
+    if loader is not py_loader and not is_external and env and env not in data:
         data = {env: data}
 
-    loader.write(filename, data, merge=merge)
+    if is_external:
+        if settings is None:
+            from dynaconf import settings as dynaconf_settings
+
+            settings = dynaconf_settings
+
+        if env and env != settings.current_env:
+            with settings.using_env(env):
+                loader.write(settings, data)
+        else:
+            loader.write(settings, data)
+    else:
+        loader.write(filename, data, merge=merge)
