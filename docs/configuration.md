@@ -552,6 +552,25 @@ Read more on [settings_files](settings_files.md) </br>
 
 ---
 
+### **silent_errors**
+
+> type=`bool`, default=`True` </br>
+> env-var=`SILENT_ERRORS_FOR_DYNACONF`
+
+Controls whether loaders suppress loading errors.
+Set this to `False` to let errors from external loaders, such as Redis, propagate.
+
+With `environments=True`, strict file loading requires the requested environment
+to exist in each loaded settings file.
+The fallback layers (`default_env`, the legacy environment named after
+`envvar_prefix`, and `global`) remain optional unless explicitly requested.
+For example, a file containing only `[development]` can be loaded with
+`env="development", silent_errors=False`.
+When `env` lists multiple environments, each requested environment must exist.
+The same rule applies to `settings.load_file(..., env=..., silent=False)`.
+
+---
+
 ### **skip_files**
 
 > type=`list`, default=`None` </br>
