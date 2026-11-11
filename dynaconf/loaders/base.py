@@ -144,6 +144,7 @@ class BaseLoader:
                 }
             }
         """
+        requested_envs = {env.strip().lower() for env in self.env.split(",")}
         for file_name, file_data in source_data.items():
             # env name is checked in lower
             file_data = {k.lower(): value for k, value in file_data.items()}
@@ -166,7 +167,8 @@ class BaseLoader:
                 try:
                     data = file_data[env] or {}
                 except KeyError:
-                    if silent:
+                    # Fallback layers are optional, even for strict loads.
+                    if silent or env not in requested_envs:
                         continue
                     raise
 
