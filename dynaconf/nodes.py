@@ -183,6 +183,21 @@ class DataDict(dict):
         )  # pragma: nocover
         return ut.to_dict(self)
 
+    def as_dict(self):
+        """
+        Turn the DataDict and sub DataDicts back into a native python dictionary.
+
+        Alias of :meth:`to_dict`, consistent with
+        ``LazySettings.as_dict()`` (see dynaconf/dynaconf#1073), so nested
+        settings can be converted the same way as top-level settings::
+
+            settings.hyperparameters.as_dict()
+            # {'max_depth': 10, 'n_estimators': 20}
+
+        :return: python dictionary of this DataDict
+        """
+        return ut.to_dict(self)
+
     def merge_update(self, __m=None, **kwargs):  # pragma: nocover
         """Merge update with another dict"""
         box_deprecation_warning("merge_update", "DataDict")
