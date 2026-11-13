@@ -284,6 +284,33 @@ class TestDataDict:
         assert isinstance(di_copy, DataDict)
         assert get_core(di_copy) is core
 
+ def test_as_dict(self):
+        """DataDict.as_dict() mirrors LazySettings.as_dict() (#1073)."""
+        di = DataDict({"a": 1, "b": {"c": 2}, "d": [3, {"e": 4}]})
+        result = di.as_dict()
+        assert result == {"a": 1, "b": {"c": 2}, "d": [3, {"e": 4}]}
+        assert type(result) is dict
+        assert type(result["b"]) is dict
+        assert type(result["d"][1]) is dict
+
+    def test_as_dict_of_nested_settings(self):
+        """Nested settings expose as_dict() like top-level settings (#1073)."""
+        from dynaconf import Dynaconf
+
+        settings = Dynaconf(
+            settings_files=[],
+            hyperparameters={"max_depth": 10, "n_estimators": 20},
+        )
+        assert isinstance(settings.hyperparameters, DataDict)
+        assert settings.hyperparameters.as_dict() == {
+            "max_depth": 10,
+            "n_estimators": 20,
+        }
+        assert settings.as_dict()["HYPERPARAMETERS"] == {
+            "max_depth": 10,
+            "n_estimators": 20,
+        }
+
 
 class TestDataList:
     def test_init_converts_nested(self):
