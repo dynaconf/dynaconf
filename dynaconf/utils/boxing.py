@@ -26,6 +26,9 @@ class _DynaBox(Box):
     """Specialized Box for dynaconf
     it allows items/attrs to be found both in upper or lower case"""
 
+    # Alias consistent with ``LazySettings.as_dict()`` (dynaconf/dynaconf#1073).
+    as_dict = Box.to_dict
+
     def __getattr__(self, item, *args, **kwargs):
         try:
             result = super().__getattr__(item, *args, **kwargs)
