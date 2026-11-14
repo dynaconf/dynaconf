@@ -1343,6 +1343,47 @@ def test_parse_quoted_string_empty(settings):
     assert remainder == ""
 
 
+def test_parse_quoted_string_escaped_quotes(settings):
+    """Test _parse_quoted_string with escaped quotes and backslashes"""
+    from dynaconf.utils.parse_conf import _parse_quoted_string
+
+    result, remainder = _parse_quoted_string(r'"with \"escaped\" quotes" rest')
+    assert result == 'with "escaped" quotes'
+    assert remainder == "rest"
+
+    result, remainder = _parse_quoted_string(r"'with \'escaped\' quotes' rest")
+    assert result == "with 'escaped' quotes"
+    assert remainder == "rest"
+
+    result, remainder = _parse_quoted_string(
+        r'"with \\ double backslash" rest'
+    )
+    assert result == "with \\ double backslash"
+    assert remainder == "rest"
+
+
+def test_get_formatter_with_escaped_quotes(settings):
+    """Test @get default value containing escaped quotes"""
+    settings.set("MSG", r'@get NONEXISTENT_XYZ default="fallback \"quoted\""')
+    assert settings.MSG == 'fallback "quoted"'
+
+
+def test_insert_with_escaped_quotes(settings):
+    """Test @insert value containing escaped quotes"""
+    settings.set("LIST_ITEMS", ["first", "third"])
+    settings.set("LIST_ITEMS", r'@insert 1 "second with \"quoted\""')
+    assert settings.LIST_ITEMS == ["first", 'second with "quoted"', "third"]
+
+
+def test_read_file_quoted_default(settings):
+    """Test @read_file with quoted default value when file does not exist"""
+    settings.set(
+        "NON_EXISTENT_FILE",
+        r'@read_file /path/does/not/exist.txt "my default value"',
+    )
+    assert settings.NON_EXISTENT_FILE == "my default value"
+
+
 def test_merge_kv_pattern_fallback(settings):
     """Test @merge using old KV_PATTERN (no quotes)"""
     # Pattern starting with '=' matches KV_PATTERN but not KV_PATTERN_QUOTED
