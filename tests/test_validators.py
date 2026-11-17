@@ -132,6 +132,27 @@ def test_validators_on_init(tmpdir):
         settings.HOSTNAME
 
 
+def test_when_validator_does_not_retain_inherited_env(tmpdir):
+    # `when` inherits the caller's envs; it must not keep them for later calls.
+    tmpfile = tmpdir.join("settings.toml")
+    tmpfile.write(
+        "[development]\nFEATURE_ON = false\n\n[production]\nFEATURE_ON = true\n"
+    )
+    settings = Dynaconf(environments=True, settings_files=[str(tmpfile)])
+    guard = Validator("FEATURE_ON", eq=True)
+    settings.validators.register(
+        Validator("FEATURE_KEY", must_exist=True, when=guard)
+    )
+
+    settings.setenv("development")
+    settings.validators.validate()
+    assert guard.envs is None
+
+    settings.setenv("production")
+    with pytest.raises(ValidationError):
+        settings.validators.validate()
+
+
 def test_validators_register(tmpdir):
     tmpfile = tmpdir.join("settings.toml")
     tmpfile.write(TOML)
