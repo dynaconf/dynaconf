@@ -587,8 +587,10 @@ def _safe_json_parse(value):
         return json.loads(value)
 
     # Try extracting JSON objects with boolean/None normalization
-    # This handles single-quoted JSON and Python-style booleans
-    with suppress(json.JSONDecodeError, ValueError, TypeError):
+    # This handles single-quoted JSON and Python-style booleans.
+    # AttributeError guards against non-string input (e.g. None), where
+    # the string replacement below has no `.replace` to call.
+    with suppress(json.JSONDecodeError, ValueError, TypeError, AttributeError):
         json_objects = list(
             extract_json_objects(
                 multi_replace(
