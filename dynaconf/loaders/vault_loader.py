@@ -83,6 +83,15 @@ def load(obj, env=None, silent=None, key=None, validate=False):
     :param key: if defined load a single key, else load all in env
     :return: None
     """
+    secret_version = obj.get("VAULT_SECRET_VERSION_FOR_DYNACONF")
+    if secret_version is not None:
+        secret_version = int(secret_version)
+        if obj.VAULT_KV_VERSION_FOR_DYNACONF != 2:
+            raise ValueError(
+                "VAULT_SECRET_VERSION_FOR_DYNACONF requires "
+                "VAULT_KV_VERSION_FOR_DYNACONF=2; the KV v1 engine "
+                "keeps no secret versions."
+            )
     client = get_client(obj)
     try:
         if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2:
@@ -115,6 +124,7 @@ def load(obj, env=None, silent=None, key=None, validate=False):
             if obj.VAULT_KV_VERSION_FOR_DYNACONF == 2:
                 data = client.secrets.kv.v2.read_secret_version(
                     path,
+                    version=secret_version,  # None reads the latest version
                     mount_point=obj.VAULT_MOUNT_POINT_FOR_DYNACONF,
                     raise_on_deleted_version=True,  # keep default behavior
                 )

@@ -114,6 +114,74 @@ def test_read_from_vault_kv2_with_different_environments(docker_vault):
     assert settings.from_env("prod").secret == "vault_works_in_prod"
 
 
+## A dedicated path, never the suite's shared one: the rest of this file is
+## intentionally order-dependent, each test leaving SECRET in a known state
+## for the next to read. LazySettings(environments=True) with no active env
+## writes under dynaconf's own default env name ("development"), which -
+## against the shared path - showed up as a new directory a later listing
+## (test_vault_has_proper_source_metadata) picked up, displacing 'prod' from
+## its expected index. A private path makes that interaction impossible.
+PINNED_VERSION_TEST_PATH = "dynaconf_pinned_version_test"
+
+
+@pytest.mark.integration
+def test_read_pinned_secret_version_kv2(docker_vault):
+    os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_KV_VERSION_FOR_DYNACONF"] = "2"
+    os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
+    os.environ["VAULT_PATH_FOR_DYNACONF"] = PINNED_VERSION_TEST_PATH
+    settings = LazySettings(environments=True)
+    write(settings, {"SECRET": "first_revision"})
+    write(settings, {"SECRET": "second_revision"})
+    load(settings)
+    assert settings.get("SECRET") == "second_revision"
+
+    pinned = LazySettings(
+        environments=True,
+        VAULT_PATH_FOR_DYNACONF=PINNED_VERSION_TEST_PATH,
+        VAULT_SECRET_VERSION_FOR_DYNACONF=1,
+    )
+    load(pinned)
+    assert pinned.get("SECRET") == "first_revision"
+    del os.environ["VAULT_PATH_FOR_DYNACONF"]
+
+
+@pytest.mark.integration
+def test_pinned_version_missing_is_skipped(docker_vault):
+    os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_KV_VERSION_FOR_DYNACONF"] = "2"
+    os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
+    settings = LazySettings(
+        environments=True,
+        VAULT_PATH_FOR_DYNACONF=PINNED_VERSION_TEST_PATH,
+        VAULT_SECRET_VERSION_FOR_DYNACONF=999,
+    )
+    load(settings, key="NEVER_WRITTEN")
+    assert settings.get("NEVER_WRITTEN") is None
+
+
+@pytest.mark.integration
+def test_pinned_version_requires_kv2():
+    os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
+    os.environ["VAULT_TOKEN_FOR_DYNACONF"] = "myroot"
+    # Environment variables outrank constructor kwargs in dynaconf's own
+    # precedence, so a VAULT_KV_VERSION_FOR_DYNACONF left in os.environ by
+    # test_read_pinned_secret_version_kv2 / test_pinned_version_missing_is_skipped
+    # (both set it to "2", neither cleans up) would silently outrank the
+    # kwarg=1 below and this test would stop testing what it says it tests.
+    os.environ.pop("VAULT_KV_VERSION_FOR_DYNACONF", None)
+    settings = LazySettings(
+        environments=True,
+        VAULT_PATH_FOR_DYNACONF=PINNED_VERSION_TEST_PATH,
+        VAULT_KV_VERSION_FOR_DYNACONF=1,
+        VAULT_SECRET_VERSION_FOR_DYNACONF=3,
+    )
+    with pytest.raises(ValueError) as excinfo:
+        load(settings)
+    assert "KV v1 engine keeps no secret versions" in str(excinfo.value)
+    os.environ.pop("VAULT_KV_VERSION_FOR_DYNACONF", None)
+
+
 @pytest.mark.integration
 def test_vault_has_proper_source_metadata(docker_vault):
     os.environ["VAULT_ENABLED_FOR_DYNACONF"] = "1"
