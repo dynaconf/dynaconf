@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import warnings
 from typing import NamedTuple
 
@@ -103,7 +104,7 @@ class BaseLoader:
                         if content:
                             data[source_file] = content
                 except OSError as e:
-                    if ".local." not in source_file:
+                    if ".local." not in os.path.basename(source_file):
                         warnings.warn(
                             f"{self.identifier}_loader: {source_file} "
                             f":{str(e)}"

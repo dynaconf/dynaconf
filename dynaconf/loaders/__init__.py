@@ -311,7 +311,7 @@ def settings_loader(
         [
             get_local_filename(item)
             for item in found_files
-            if ".local." not in str(item)
+            if ".local." not in os.path.basename(str(item))
         ]
     )
 

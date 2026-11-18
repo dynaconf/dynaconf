@@ -2067,3 +2067,15 @@ class TestIndexMerge:
             )
             settings = Dynaconf(INDEX_SEPARATOR_FOR_DYNACONF="___")
             assert settings.databases == expected
+
+
+def test_local_file_loaded_when_parent_dir_contains_dot_local(tmpdir):
+    """A `.local.` in a parent directory name must not disable the
+    `<name>.local.<ext>` override file of settings_file."""
+    root = tmpdir.mkdir("my.local.project")
+    root.join("settings.toml").write("a = 1\nb = 1\n")
+    root.join("settings.local.toml").write("b = 2\n")
+
+    settings = Dynaconf(settings_file=str(root.join("settings.toml")))
+    assert settings.A == 1
+    assert settings.B == 2
