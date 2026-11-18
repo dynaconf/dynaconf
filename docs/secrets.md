@@ -109,6 +109,22 @@ settings.from_env('production').PASSWORD == 777777
 settings.from_env('production').USERNAME == 'produser'
 ```
 
+### Restricting Vault environment loading
+
+With `environments=True`, Dynaconf loads all environments discovered under
+the Vault path before applying its normal environment loading order.
+To disable discovery and avoid loading unrelated environments, set:
+
+```bash
+VAULT_LOAD_ALL_ENVS_FOR_DYNACONF=false
+```
+
+The default is `true`, preserving the existing behavior. When `false`, no
+Vault listing is performed. The loader still uses Dynaconf's normal order:
+the default environment, the environment-variable prefix, the current
+environment(s), any explicitly requested environment(s), and `global`.
+With `environments=False`, the main-environment and root paths are unchanged.
+
 ## Additional secrets file (for CI, jenkins etc.)
 
 It is common to have an extra `secrets` file that is available only when running on specific CI environment like `Jenkins`, usually there will be an environment variable pointing to the file.

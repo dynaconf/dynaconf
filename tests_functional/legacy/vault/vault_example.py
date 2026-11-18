@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dynaconf import settings
 from dynaconf.loaders.vault_loader import list_envs
+from dynaconf.loaders.vault_loader import write
 
 print(settings.FOO)  # noqa
 # >>> 'foo_is_default'
@@ -25,3 +26,13 @@ for env in available_envs:
 
 print(available_envs)
 print(all_secrets)
+
+write(
+    settings.from_env("prod"),
+    {"SECRET": "vault_works_in_prod", "PROD_ONLY": "only_in_prod"},
+)
+dev_settings = settings.from_env("dev", VAULT_LOAD_ALL_ENVS_FOR_DYNACONF=False)
+assert dev_settings.SECRET == "vault_works_in_dev"
+assert dev_settings.FOO == "foo_is_default"
+assert dev_settings.get("PROD_ONLY") is None
+assert dev_settings.from_env("prod").PROD_ONLY == "only_in_prod"
