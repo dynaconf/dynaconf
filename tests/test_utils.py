@@ -1302,6 +1302,41 @@ def test_format_circular_reference(settings):
         settings.A
 
 
+def test_lazy_self_reference_uses_previous_value():
+    """A lazy override may read the key it replaces (#1425)."""
+    settings = Dynaconf(environments=False)
+    settings.set("FOO", "2015")
+    settings.set("FOO", "@int @jinja {{this.FOO | int}}")
+    assert settings.FOO == 2015
+    assert isinstance(settings.FOO, int)
+
+    settings.set("BAR", "hello")
+    settings.set("BAR", "@format {this.BAR} world")
+    assert settings.BAR == "hello world"
+
+
+def test_lazy_self_reference_nested_and_include(tmp_path):
+    """Same-key @jinja via include / dotted set (issue #1425)."""
+    (tmp_path / "settings.toml").write_text('[main]\nstartyear = "2015"\n')
+    (tmp_path / "config_post.toml").write_text(
+        'MAIN__STARTYEAR = "@int @jinja {{this.main.startyear | int}}"\n'
+    )
+    settings = Dynaconf(
+        merge_enabled=True,
+        environments=False,
+        settings_files=[str(tmp_path / "settings.toml")],
+        loaders=["dynaconf.loaders.toml_loader"],
+        includes=[str(tmp_path / "config_post.toml")],
+    )
+    assert settings.main.startyear == 2015
+    assert isinstance(settings.main.startyear, int)
+
+    nested = Dynaconf(environments=False)
+    nested.set("main.startyear", "2015")
+    nested.set("MAIN__STARTYEAR", "@int @jinja {{this.main.startyear | int}}")
+    assert nested.main.startyear == 2015
+
+
 def test_string_utils_with_numbers(settings):
     """Test string utilities with numeric input"""
     settings.set("NUM", "@upper 42")
