@@ -1723,6 +1723,10 @@ class Settings:
         merge = merge or self.get("MERGE_ENABLED_FOR_DYNACONF")
         data = self.to_dict(internal=internal) if convert_to_dict else self
         keys = keys or self.keys()
+        if isinstance(ignore, str):
+            ignore = [ignore]
+        # keys are upperfied below, so compare against upperfied ignore
+        ignore = ensure_upperfied_list(ignore or [])
         for key in keys:
             key = upperfy(key)
             if not internal:
