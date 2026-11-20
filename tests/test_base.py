@@ -145,6 +145,24 @@ def test_populate_obj_with_ignore(settings):
         assert obj.VALUE == 42.1
 
 
+def test_populate_obj_with_ignore_is_case_insensitive(settings):
+    class Obj:
+        pass
+
+    obj = Obj()
+
+    settings.populate_obj(obj, ignore=["value"])
+
+    assert obj.DEBUG is True
+    assert not hasattr(obj, "VALUE")
+
+    # a single key given as a string is still one key
+    other = Obj()
+    settings.populate_obj(other, ignore="value")
+    assert other.DEBUG is True
+    assert not hasattr(other, "VALUE")
+
+
 def test_populate_obj_convert_to_dict(settings):
     class Obj:
         pass
