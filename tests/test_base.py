@@ -71,6 +71,78 @@ def test_deleted_raise(settings):
     assert settings.get("TODELETE3") is None
 
 
+def test_unset_removes_key_previously_set(settings):
+    """unset() must remove a key even if it was created with set()"""
+    settings.set("TOUNSET", 123)
+    assert settings.get("TOUNSET") == 123
+
+    settings.unset("TOUNSET")
+
+    assert settings.exists("TOUNSET") is False
+    assert settings.get("TOUNSET") is None
+    assert "TOUNSET" not in settings.as_dict()
+
+
+def test_unset_dotted_key(settings):
+    """unset() must remove the leaf of a dotted key, keeping siblings"""
+    settings.set("a.b.c", 42)
+    settings.set("a.b.d", 43)
+    settings.set("a.e", 44)
+
+    settings.unset("a.b.c")
+
+    assert settings.get("a.b.c") is None
+    assert settings.exists("a.b.c") is False
+    assert "a.b.c" not in settings
+    # siblings and parent structures are kept
+    assert settings.get("a.b.d") == 43
+    assert settings.get("a.e") == 44
+    assert settings.as_dict()["A"] == {"b": {"d": 43}, "e": 44}
+
+
+def test_unset_dotted_subtree(settings):
+    """unset() of a middle segment removes the whole subtree"""
+    settings.set("a.b.c", 42)
+    settings.set("a.e", 44)
+
+    settings.unset("a.b")
+
+    assert settings.get("a.b") is None
+    assert settings.get("a.b.c") is None
+    assert settings.exists("a.b.c") is False
+    assert settings.get("a.e") == 44
+
+
+def test_unset_dotted_key_and_set_again(settings):
+    """a dotted key can be set again after being unset"""
+    settings.set("a.b.c", 42)
+    settings.unset("a.b.c")
+    assert settings.exists("a.b.c") is False
+
+    settings.set("a.b.c", 100)
+
+    assert settings.get("a.b.c") == 100
+    assert settings.exists("a.b.c") is True
+
+
+def test_unset_dotted_key_fresh_lookup(settings):
+    """an unset dotted key stays unset on fresh lookups"""
+    settings.set("a.b.c", 42)
+    settings.unset("a.b.c")
+
+    assert settings.get("a.b.c", fresh=True) is None
+    assert settings.exists("a.b.c") is False
+
+
+def test_unset_missing_dotted_key_does_not_raise(settings):
+    settings.set("a.b.c", 42)
+
+    settings.unset("a.x.y")
+    settings.unset("notthere.at.all")
+
+    assert settings.get("a.b.c") == 42
+
+
 def test_delete_and_set_again(settings):
     """asserts variable can be deleted and set again"""
 

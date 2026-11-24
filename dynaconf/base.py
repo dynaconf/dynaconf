@@ -36,6 +36,7 @@ from dynaconf.strategies.filtering import PrefixFilter
 from dynaconf.utils import BANNER
 from dynaconf.utils import ensure_a_list
 from dynaconf.utils import ensure_upperfied_list
+from dynaconf.utils import find_the_correct_casing
 from dynaconf.utils import ListMergeOptions
 from dynaconf.utils import missing
 from dynaconf.utils import normalize_kwargs
@@ -529,6 +530,16 @@ class Settings:
         :param default: In case of not found it will be returned
         :param parent: Is there a pre-loaded parent in a nested data?
         """
+        # A dotted path recorded as deleted (e.g. by `unset`) stays
+        # deleted even if a fresh reload restores the parent container
+        # from its source. Only the entry call (`parent is None`) checks
+        # this: recursive calls resolve a remaining sub-path, which must
+        # not be matched against full-path records.
+        if parent is None and upperfy(dotted_key) in (
+            self.__core__.config.deleted
+        ):
+            return default
+
         split_key = dotted_key.split(".")
         name, keys = split_key[0], split_key[1:]
         result = self.get(name, default=default, parent=parent, **kwargs)
@@ -987,18 +998,64 @@ class Settings:
         :param key: The key to be unset
         :param force: Bypass default checks and force unset
         """
-        config = self.__core__.config
         key = upperfy(key.strip())
-        if (
-            key not in UPPER_DEFAULT_SETTINGS
-            and key not in config.defaults
-            or force
-        ):
-            with suppress(KeyError, AttributeError):
-                # AttributeError can happen when a LazyValue consumes
-                # a previously deleted key
-                delattr(self, key)
-                del self.store[key]
+
+        nested_sep = getattr(self, "NESTED_SEPARATOR_FOR_DYNACONF", None)
+        if nested_sep and nested_sep in key:
+            key = key.replace(nested_sep, ".")
+
+        # Built-in default settings are protected unless forced. Any
+        # other key can be unset, including keys recorded in
+        # `config.defaults` by a previous `set()` call: membership in
+        # `defaults` only means the value is re-applied on reloads, it
+        # must not make `unset` a silent no-op.
+        if key in UPPER_DEFAULT_SETTINGS and not force:
+            return
+
+        if "." in key:
+            self._dotted_unset(key)
+            return
+
+        with suppress(KeyError, AttributeError):
+            # AttributeError can happen when a LazyValue consumes
+            # a previously deleted key
+            delattr(self, key)
+            del self.store[key]
+
+    def _dotted_unset(self, dotted_key: str):
+        """Unset the leaf of a dotted key from the store.
+
+        Counterpart of `_dotted_set`: traverses the nested containers
+        resolving the casing of each segment, deletes the last segment
+        and records the full path as deleted, so `get`, `exists` and
+        fresh lookups agree the key is gone. Missing paths are ignored.
+        """
+        config = self.__core__.config
+        split_keys = dotted_key.split(".")
+        self._delete_dotted_path(self.store, split_keys)
+        config.deleted.add(dotted_key)
+
+    @staticmethod
+    def _delete_dotted_path(data, split_keys):
+        """Delete the `split_keys` path from nested dict `data`."""
+        current = data
+        for segment in split_keys[:-1]:
+            if not isinstance(current, dict):
+                return
+            resolved = find_the_correct_casing(
+                segment, tuple(dict.keys(current))
+            )
+            if resolved is None:
+                return
+            # bypass lazy evaluation: deletion works on the raw nodes
+            current = dict.__getitem__(current, resolved)
+        if isinstance(current, dict):
+            leaf = find_the_correct_casing(
+                split_keys[-1], tuple(dict.keys(current))
+            )
+            if leaf is not None:
+                with suppress(KeyError):
+                    del current[leaf]
 
     @invalidates_cache
     def unset_all(self, keys, force=False):  # pragma: no cover
@@ -1134,6 +1191,9 @@ class Settings:
             dotted_lookup=False,
             **kwargs,
         )
+        # Setting a dotted key revives it: drop any record of a
+        # previous dotted unset of this exact path.
+        config.deleted.discard(upperfy(dotted_key))
 
     @invalidates_cache
     def set(
