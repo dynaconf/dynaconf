@@ -101,14 +101,22 @@ def write(settings_path, settings_data, merge=True):
     if settings_path.exists() and merge:  # pragma: no cover
         try:  # tomllib first
             with open(str(settings_path), "rb") as open_file:
-                object_merge(tomllib.load(open_file), settings_data)
+                object_merge(
+                    tomllib.load(open_file),
+                    settings_data,
+                    preserve_tokens=True,
+                )
         except UnicodeDecodeError:  # pragma: no cover
             # uiri/toml fallback (TBR on 4.0.0)
             with open(
                 str(settings_path),
                 encoding=default_settings.ENCODING_FOR_DYNACONF,
             ) as open_file:
-                object_merge(toml.load(open_file), settings_data)
+                object_merge(
+                    toml.load(open_file),
+                    settings_data,
+                    preserve_tokens=True,
+                )
 
     try:  # tomllib first
         with open(str(settings_path), "wb") as open_file:
