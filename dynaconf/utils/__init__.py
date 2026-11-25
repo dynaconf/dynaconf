@@ -46,6 +46,7 @@ def object_merge(
     unique: bool = False,
     full_path: Optional[list[str]] = None,
     list_merge: ListMergeOptions = "merge",
+    preserve_tokens: bool = False,
 ) -> Any:
     """
     Recursively merge two data structures, new is mutated in-place.
@@ -59,6 +60,10 @@ def object_merge(
         - shallow: replace the top-most level list of the nested structure
         - deep: iteratively traverse the nested structure and replace
             the element in the list at the level specified by the full_path
+    :param preserve_tokens: When True, `dynaconf_merge` and
+        `dynaconf_merge_unique` tokens are treated as regular data and kept
+        in the merged result instead of being consumed as merge directives.
+        Used when merging existing file content on write operations.
     """
     if full_path is None:
         full_path = []
@@ -68,7 +73,7 @@ def object_merge(
 
     if isinstance(old, list) and isinstance(new, list):
         # 726: allow local_merge to override global merge on lists
-        if "dynaconf_merge_unique" in new:
+        if not preserve_tokens and "dynaconf_merge_unique" in new:
             new.remove("dynaconf_merge_unique")
             unique = True
 
@@ -92,6 +97,7 @@ def object_merge(
                             new[ii],
                             full_path=full_path[1:],
                             list_merge="deep",
+                            preserve_tokens=preserve_tokens,
                         )
 
     if isinstance(old, dict) and isinstance(new, dict):
@@ -118,7 +124,9 @@ def object_merge(
                 return data.items()
 
         # local mark may set dynaconf_merge=False
-        should_merge = new.pop("dynaconf_merge", True)
+        should_merge = (
+            True if preserve_tokens else new.pop("dynaconf_merge", True)
+        )
         if should_merge:
             for old_key, value in safe_items(old):
                 # This is for when the dict exists internally
@@ -141,6 +149,7 @@ def object_merge(
                         new[old_key],
                         full_path=full_path[1:] if full_path else None,
                         list_merge=list_merge,
+                        preserve_tokens=preserve_tokens,
                     )
 
             # Restore old key order: keys that exist in old keep old's
@@ -152,7 +161,9 @@ def object_merge(
             for k in ordered:
                 new[k] = new.pop(k)
 
-        handle_metavalues(old, new, list_merge=list_merge)
+        handle_metavalues(
+            old, new, list_merge=list_merge, preserve_tokens=preserve_tokens
+        )
 
     return new
 
@@ -194,6 +205,7 @@ def handle_metavalues(
     old: DataDict | dict[str, int] | dict[str, str | int],
     new: Any,
     list_merge: ListMergeOptions = "merge",
+    preserve_tokens: bool = False,
 ) -> None:
     """
     Cleanup of MetaValues on new dict
@@ -204,6 +216,9 @@ def handle_metavalues(
         - shallow: replace the top-most level list of the nested structure
         - deep: iteratively traverse the nested structure and replace
             the element in the list at the level specified by the full_path
+    :param preserve_tokens: When True, `dynaconf_merge` and
+        `dynaconf_merge_unique` tokens inside data structures are kept
+        instead of being consumed as merge directives.
     """
 
     for key in list(new.keys()):
@@ -221,6 +236,7 @@ def handle_metavalues(
                 old.get(key),
                 new[key].unwrap(),
                 unique=new[key].unique,
+                preserve_tokens=preserve_tokens,
             )
         elif getattr(new[key], "_dynaconf_insert", False):
             # Insert on `new` triggers insert with existing data
@@ -234,6 +250,10 @@ def handle_metavalues(
                 new[key] = [new[key].unwrap()]
 
         # Data structures containing merge tokens
+        if preserve_tokens:
+            # tokens are regular data and must be kept as they are
+            continue
+
         if isinstance(new.get(key), (list, tuple)):
             has_merge = "dynaconf_merge" in new[key]
             has_merge_unique = "dynaconf_merge_unique" in new[key]
@@ -264,7 +284,10 @@ def handle_metavalues(
 
             if local_merge:
                 new[key] = object_merge(
-                    old.get(key), new[key], list_merge=list_merge
+                    old.get(key),
+                    new[key],
+                    list_merge=list_merge,
+                    preserve_tokens=preserve_tokens,
                 )
             elif key not in old:
                 _strip_merge_tokens(new[key])

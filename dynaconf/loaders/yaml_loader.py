@@ -128,7 +128,11 @@ def write(settings_path, settings_data, merge=True):
         with open(
             str(settings_path), encoding=default_settings.ENCODING_FOR_DYNACONF
         ) as open_file:
-            object_merge(yaml.safe_load(open_file), settings_data)
+            object_merge(
+                yaml.safe_load(open_file),
+                settings_data,
+                preserve_tokens=True,
+            )
 
     with open(
         str(settings_path),
