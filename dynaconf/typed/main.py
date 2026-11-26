@@ -175,13 +175,13 @@ def extract_defaults_and_validators_from_typing(
                             items_defaults, default_value
                         )
 
-        # field: list[T]
+        # field: list[T] or a parameterized tuple
         elif ut.is_enclosed_list(_type, _type_args):
-            # NOTE: Should we really avoid multi args? list[T, T, T] ?
             inner_type, *more_types = _type_args
-            gu.raise_for_invalid_amount_of_enclosed_types(
-                full_name, _type, inner_type, more_types
-            )
+            if _type is list:
+                gu.raise_for_invalid_amount_of_enclosed_types(
+                    full_name, _type, inner_type, more_types
+                )
             gu.raise_for_invalid_default_type(
                 full_name, default_value, annotation
             )

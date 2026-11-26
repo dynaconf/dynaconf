@@ -40,7 +40,9 @@ def raise_for_invalid_amount_of_enclosed_types(
         )
 
 
-def raise_for_unsupported_type(full_name, _type, _type_args, annotation):
+def raise_for_unsupported_type(
+    full_name, _type, _type_args, annotation, *, in_multi_arg_tuple=False
+):
     # Remove any Validator()|NotRequiredMarker from extracted _type_args
     _type_args = [
         item
@@ -48,14 +50,34 @@ def raise_for_unsupported_type(full_name, _type, _type_args, annotation):
         if not isinstance(item, (BaseValidator, ty.NotRequiredMarker))
     ]
 
+    if (ut.get_origin(_type) or _type) is tuple:
+        args = ut.get_args(_type) or _type_args
+        if Ellipsis in args and not (
+            len(args) == 2 and args[0] is not Ellipsis and args[1] is Ellipsis
+        ):
+            raise ex.DynaconfSchemaError(
+                f"Invalid tuple annotation for {full_name}: {annotation}. "
+                "Use tuple[T, ...] for a variable-length tuple."
+            )
+        in_multi_arg_tuple = in_multi_arg_tuple or len(args) > 1
+
     _types = _type_args or [_type]
 
     for _type in _types:
+        if in_multi_arg_tuple and ut.is_dict_value(_type):
+            raise ex.DynaconfSchemaError(
+                f"Nested DictValue validation is not supported for "
+                f"{full_name}: {annotation}"
+            )
         _type_origin = ut.get_origin(_type) or _type
         _type_args = ut.get_args(_type)
         if _type_args:  # Union[] or list[] or tuple[]
             raise_for_unsupported_type(
-                full_name, _type, _type_args, annotation
+                full_name,
+                _type,
+                _type_args,
+                annotation,
+                in_multi_arg_tuple=in_multi_arg_tuple,
             )
 
         unsupported = isinstance(_type, type) and not issubclass(

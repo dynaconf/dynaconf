@@ -1,6 +1,7 @@
 title = "Default Title"
 api_prefix = "https://my-great-api"
 middlewares= ["new.plugin", "admin"]
+endpoint = ["localhost", 8000]
 static_url = "https://static.site.com/"
 
 [database]

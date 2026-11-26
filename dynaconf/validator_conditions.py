@@ -77,6 +77,20 @@ def is_type_of(value, other) -> bool:
     if args:
         if origin in [Union, UnionType]:
             return any(is_type_of(value, arg) for arg in args)
+        elif origin is tuple and len(args) > 1:
+            if not isinstance(value, (list, tuple)):
+                return False
+            # Unlike typing.Tuple, tuple[...] leaves None as a literal argument.
+            if None in args:
+                args = tuple(
+                    type(None) if arg is None else arg for arg in args
+                )
+            if len(args) == 2 and args[1] is Ellipsis:
+                return all(is_type_of(item, args[0]) for item in value)
+            return len(value) == len(args) and all(
+                is_type_of(item, item_type)
+                for item, item_type in zip(value, args)
+            )
         elif origin in (list, tuple):
             return isinstance(value, (list, tuple)) and all(
                 is_type_of(item, args) for item in value
