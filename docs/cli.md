@@ -124,6 +124,7 @@ Usage: dynaconf inspect [OPTIONS]
 
 Options:
   -k, --key TEXT                  Filters result by key.
+  --regex                         Interpret --key as a regular expression.
   -e, --env TEXT                  Filters result by environment on --report-
                                   mode=inspect.
 
@@ -176,6 +177,11 @@ To save to a file, use regular stream redirect methods:
 ```bash
 $ dynaconf -i app.settings inspect -k foo -f yaml > dump.yaml
 ```
+
+To see the current values and loading history of all top-level keys ending in
+`_URL`, use `dynaconf -i app.settings inspect -k '_URL$' --regex`. A source
+appears in the history only if it contains a matching key. This filter applies
+to the default inspect report.
 
 #### Inspect Debug Info
 
@@ -284,6 +290,7 @@ Usage: dynaconf list [OPTIONS]
 Options:
   -e, --env TEXT     Filters the env to get the values
   -k, --key TEXT     Filters a single key
+  --regex            Interpret --key as a regular expression.
   -m, --more         Pagination more|less style
   -l, --loader TEXT  a loader identifier to filter e.g: toml|yaml
   -a, --all          show dynaconf internal settings?
@@ -299,6 +306,10 @@ Options:
 $ dynaconf list --json
 {"a_valid_raw": "json_output"}
 ```
+
+Use `dynaconf list -k '_URL$' --regex --json` to select multiple top-level
+keys. The pattern searches key names as displayed, usually in uppercase.
+Add `--all` to include internal settings.
 
 The above output is printed to stdout and can be piped to a file or processed
 using tools such as `jq`.

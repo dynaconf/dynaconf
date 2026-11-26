@@ -5,6 +5,7 @@ import inspect as python_inspect
 import json
 import os
 import pprint
+import re
 import sys
 import warnings
 import webbrowser
@@ -21,6 +22,8 @@ from dynaconf import settings as legacy_settings
 from dynaconf.base import Settings
 from dynaconf.loaders.py_loader import get_module
 from dynaconf.utils import prepare_json
+from dynaconf.utils import RENAMED_VARS
+from dynaconf.utils import to_dict
 from dynaconf.utils import upperfy
 from dynaconf.utils.files import read_file
 from dynaconf.utils.functional import empty
@@ -28,6 +31,7 @@ from dynaconf.utils.inspect import builtin_dumpers
 from dynaconf.utils.inspect import EnvNotFoundError
 from dynaconf.utils.inspect import inspect_settings
 from dynaconf.utils.inspect import KeyNotFoundError
+from dynaconf.utils.inspect import matching_settings
 from dynaconf.utils.inspect import OutputFormatError
 from dynaconf.utils.inspect import print_debug_info
 from dynaconf.utils.parse_conf import parse_conf_data
@@ -513,11 +517,25 @@ def get(key, default, env, unparse):
     click.echo(result, nl=False)
 
 
+def _compile_key_pattern(key):
+    if key is None:
+        raise click.UsageError("--regex requires --key")
+    try:
+        return re.compile(key)
+    except re.error as err:
+        raise click.UsageError(f"Invalid regular expression: {err}") from err
+
+
 @main.command(name="list")
 @click.option(
     "--env", "-e", default=None, help="Filters the env to get the values"
 )
 @click.option("--key", "-k", default=None, help="Filters a single key")
+@click.option(
+    "--regex",
+    is_flag=True,
+    help="Treat --key as a regular expression for top-level keys.",
+)
 @click.option(
     "--more",
     "-m",
@@ -570,6 +588,7 @@ def _list(
     output=None,
     flat=False,
     _json=False,
+    regex=False,
 ):
     """
     Lists user defined settings or all (including internal configs).
@@ -577,9 +596,10 @@ def _list(
     By default, shows only user defined. If `--all` is passed it also shows
     dynaconf internal variables aswell.
     """
+    pattern = _compile_key_pattern(key) if regex else None
     if env:
         env = env.strip()
-    if key:
+    if key and not regex:
         key = key.strip()
     if loader:
         loader = loader.strip()
@@ -603,11 +623,18 @@ def _list(
         )
 
     if not loader:
-        data = settings.as_dict(env=env, internal=_all)
+        data = (
+            settings.store
+            if regex
+            else settings.as_dict(env=env, internal=_all)
+        )
     else:
         identifier = f"{loader}_{cur_env}"
         data = settings.loaded_by_loaders.get(identifier, {})
         data = data or settings.loaded_by_loaders.get(loader, {})
+
+    if regex:
+        data = to_dict(matching_settings(data, pattern, include_internal=_all))
 
     # remove to avoid displaying twice
     data.pop("SETTINGS_MODULE", None)
@@ -625,12 +652,15 @@ def _list(
         value = pprint.pformat(_v)
         return f"{key}{data_type} {value}"
 
-    if not key:
+    if regex or not key:
         if not _json:
             datalines = "\n".join(
                 format_setting(k, v)
                 for k, v in data.items()
-                if k not in data.get("RENAMED_VARS", [])
+                if k
+                not in (
+                    RENAMED_VARS if regex else data.get("RENAMED_VARS", [])
+                )
             )
             (click.echo_via_pager if more else click.echo)(datalines)
         if output:
@@ -867,6 +897,11 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
 @main.command()
 @click.option("--key", "-k", help="Filters result by key.")
 @click.option(
+    "--regex",
+    is_flag=True,
+    help="Treat --key as a regular expression for top-level keys.",
+)
+@click.option(
     "--env",
     "-e",
     help="Filters result by environment on --report-mode=inspect.",
@@ -917,13 +952,28 @@ INSPECT_FORMATS = list(builtin_dumpers.keys())
     help="Increase verbosity of the output on --report-mode=debug.",
 )
 def inspect(
-    key, env, format, new_first, history_limit, _all, report_mode, verbose
+    key,
+    env,
+    format,
+    new_first,
+    history_limit,
+    _all,
+    report_mode,
+    verbose,
+    regex=False,
 ):  # pragma: no cover
     """
     Inspect the loading history of the given settings instance.
 
     Filters by key and environment, otherwise shows all.
     """
+
+    if regex:
+        key = _compile_key_pattern(key)
+        if report_mode == "debug":
+            raise click.UsageError(
+                "--regex is not supported with --report-mode=debug"
+            )
 
     if report_mode == "debug":
         print_debug_info(
