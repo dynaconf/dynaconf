@@ -886,6 +886,112 @@ def test_list_enclosed_type_with_multi_args():
         Settings()
 
 
+# Handle fixed and variable-length tuple annotations.
+@pytest.mark.parametrize("value", [(1, "one"), [1, "one"]])
+def test_fixed_tuple_constructor(value):
+    class Settings(Dynaconf):
+        pair: tuple[int, str]
+
+    assert list(Settings(pair=value).pair) == [1, "one"]
+
+
+@pytest.mark.parametrize("value", [[], [1], [1, "one", 2], ["one", 1], [1, 2]])
+def test_fixed_tuple_validates_positions_and_length(value):
+    class Settings(Dynaconf):
+        pair: Annotated[tuple[int, str], Validator()]
+
+    assert list(Settings(pair=[1, "one"]).pair) == [1, "one"]
+    with pytest.raises(ValidationError, match="pair must is_type_of"):
+        Settings(pair=value)
+
+
+def test_fixed_tuple_from_environment(monkeypatch):
+    class Settings(Dynaconf):
+        pair: tuple[int, str]
+
+    monkeypatch.setenv("DYNACONF_PAIR", '@json [1, "one"]')
+    assert list(Settings().pair) == [1, "one"]
+
+    monkeypatch.setenv("DYNACONF_PAIR", '@json ["one", 1]')
+    with pytest.raises(ValidationError, match="pair must is_type_of"):
+        Settings()
+
+
+@pytest.mark.parametrize("value", [[], [1], [1, 2, 3]])
+def test_variadic_tuple_constructor(value):
+    class Settings(Dynaconf):
+        numbers: tuple[int, ...]
+
+    assert list(Settings(numbers=value).numbers) == value
+
+
+def test_variadic_tuple_rejects_wrong_item_type():
+    class Settings(Dynaconf):
+        numbers: Annotated[tuple[int, ...], Validator()]
+
+    with pytest.raises(ValidationError, match="numbers must is_type_of"):
+        Settings(numbers=[1, "two"])
+
+
+@pytest.mark.parametrize(
+    "annotation, value",
+    [
+        (tuple[int, str], (1, "one")),
+        (tuple[int, ...], (1, 2)),
+        (tuple[None, int], (None, 1)),
+        (tuple[None, ...], (None, None)),
+    ],
+)
+def test_tuple_annotation_default(annotation, value):
+    class Settings(Dynaconf):
+        sequence: annotation = value
+
+    assert list(Settings().sequence) == list(value)
+
+
+@pytest.mark.parametrize("value", [[], [1], [1, 2]])
+def test_single_argument_tuple_remains_homogeneous(value):
+    class Settings(Dynaconf):
+        numbers: tuple[int]
+
+    assert list(Settings(numbers=value).numbers) == value
+
+    with pytest.raises(ValidationError, match="numbers must is_type_of"):
+        Settings(numbers=[1, "two"])
+
+
+@pytest.mark.parametrize("annotated", [False, True])
+def test_fixed_tuple_rejects_indirect_dictvalue(annotated):
+    class User(DictValue):
+        count: int
+
+    annotation = tuple[list[User], int]
+    if annotated:
+        annotation = Annotated[annotation, Validator()]
+
+    class Settings(Dynaconf):
+        users: annotation
+
+    with pytest.raises(DynaconfSchemaError, match="users"):
+        Settings(users=([{"count": "invalid"}], 1))
+
+
+@pytest.mark.parametrize(
+    "annotation",
+    [
+        tuple[int, ..., str],
+        tuple[..., ...],
+        Annotated[tuple[int, ..., str], Validator()],
+    ],
+)
+def test_tuple_rejects_invalid_ellipsis(annotation):
+    class Settings(Dynaconf):
+        sequence: annotation
+
+    with pytest.raises(DynaconfSchemaError, match="sequence"):
+        Settings(sequence=[])
+
+
 # Handle list enclosed union `field: list[Union[T, T, T]]`
 def test_list_enclosed_type_with_union():
     # Unionized and required

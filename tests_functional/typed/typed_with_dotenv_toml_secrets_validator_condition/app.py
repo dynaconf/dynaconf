@@ -3,6 +3,7 @@ from config import settings
 assert settings.title == "My Awesome App"
 assert settings.api_prefix == "https://my-great-api"
 assert "admin" in settings.middlewares
+assert list(settings.endpoint) == ["localhost", 8000]
 assert settings.database.host == "postgres.com"
 assert settings.database.port == 5433, settings.database.port
 assert len(settings.plugins) == 3

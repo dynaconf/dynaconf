@@ -46,6 +46,7 @@ class Settings(Dynaconf):
     title: Optional[str] = None
     api_prefix: Annotated[str, Validator(startswith="https://")]
     middlewares: Annotated[list[str], ItemsValidator(ne="deprecated.plugin")]
+    endpoint: tuple[str, int]
     static_url: Annotated[str, is_url]
     # not_a_url: Annotated[str, Not(IsUrl)] = "https://foo.bar"  # fails validation
     not_a_url: Annotated[str, Not(is_url)] = "batatinha 123"  # passes!
