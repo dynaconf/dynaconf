@@ -10,6 +10,7 @@ from functools import partial
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version
 from pathlib import PosixPath
+from re import Pattern
 from typing import Any
 from typing import Literal
 from typing import Protocol
@@ -20,6 +21,7 @@ from typing import Union
 from dynaconf.loaders.base import SourceMetadata
 from dynaconf.nodes import DataDict
 from dynaconf.nodes import DataList
+from dynaconf.utils import to_dict
 from dynaconf.utils.functional import empty
 from dynaconf.utils.parse_conf import Lazy
 from dynaconf.vendor.ruamel.yaml import YAML
@@ -87,9 +89,28 @@ class OutputFormatError(Exception):
     pass
 
 
+def matching_settings(
+    data: dict,
+    pattern: Pattern[str],
+    *,
+    include_internal: bool = False,
+) -> dict:
+    """Select top-level keys before accessing their possibly lazy values."""
+    # base imports inspect while defining Settings.
+    from dynaconf.base import UPPER_DEFAULT_SETTINGS
+
+    return {
+        name: data[name]
+        for name in data
+        if isinstance(name, str)
+        and (include_internal or name not in UPPER_DEFAULT_SETTINGS)
+        and pattern.search(name)
+    }
+
+
 def inspect_settings(
     settings: Settings | LazySettings,
-    key: str | None = None,
+    key: str | Pattern[str] | None = None,
     env: str | None = None,
     *,
     new_first: bool = True,
@@ -106,13 +127,13 @@ def inspect_settings(
     Optional arguments must be provided as kwargs.
 
     :param settings: A Dynaconf instance
-    :param key: String dotted path. E.g "path.to.key"
+    :param key: String dotted path, or a compiled pattern for top-level keys.
     :param env: Filter by this env
 
     :param new_first: If True, uses newest to oldest loading order
     :param history_limit: Limits how many entries are shown
     :param include_internal: If True, include internal loaders (e.g. defaults).
-        This has effect only if key is not provided.
+        Applies when key is omitted or is a compiled pattern.
     :param to_file: If specified, write to this filename
     :param print_report: If true, prints the dumped report to stdout
     :param dumper: Accepts preset strings (e.g. "yaml", "json") or custom
@@ -164,7 +185,13 @@ def inspect_settings(
     if history_limit:
         history = history[:history_limit]
 
-    if key:
+    if isinstance(key, Pattern):
+        current_value = to_dict(
+            matching_settings(
+                settings.store, key, include_internal=include_internal
+            )
+        )
+    elif key:
         current_value = settings.get(key)
     else:
         current_value = settings.as_dict()
@@ -173,7 +200,7 @@ def inspect_settings(
     dict_report = _report_builder(
         history=history,
         current=current_value,
-        key=key,
+        key=key.pattern if isinstance(key, Pattern) else key,
         env=env,
         new_first=new_first,
         history_limit=history_limit,
@@ -216,7 +243,7 @@ def _default_report_builder(**kwargs) -> dict:
 
 def get_history(
     obj: Settings | LazySettings,
-    key: str | None = None,
+    key: str | Pattern[str] | None = None,
     *,
     filter_callable: Callable[[SourceMetadata], bool] | None = None,
     include_internal: bool = False,
@@ -230,10 +257,10 @@ def get_history(
     data and it's source metadata.
 
     :param obj: Setting object which contain the data
-    :param key: Key path to desired key. Use all if not provided
+    :param key: Key path or compiled pattern for top-level keys. Use all if omitted.
     :param filter_callable: Takes SourceMetadata and returns a boolean
     :param include_internal: If True, include internal loaders (e.g. defaults).
-        This has effect only if key is not provided.
+        Applies when key is omitted or is a compiled pattern.
     history_limit: limits how many entries are shown
 
     Example:
@@ -255,7 +282,7 @@ def get_history(
     sep = obj.get("NESTED_SEPARATOR_FOR_DYNACONF", "__")
 
     # trigger key based hooks
-    if key:
+    if isinstance(key, str) and key:
         obj.get(key)  # noqa
 
     internal_identifiers = ["default_settings", "_root_path"]
@@ -267,7 +294,7 @@ def get_history(
 
         # filter by internal identifiers
         if (
-            not key
+            (not key or isinstance(key, Pattern))
             and include_internal is False
             and source_metadata.identifier in internal_identifiers
         ):
@@ -275,7 +302,20 @@ def get_history(
 
         # filter by key path
         try:
-            data = _get_data_by_key(data, key, sep=sep) if key else data
+            if isinstance(key, Pattern):
+                # A DataDict evaluates interpolations on lookup. History
+                # should show the values as they were loaded.
+                if isinstance(data, DataDict):
+                    data = dict(data.items(bypass_eval=True))
+                data = matching_settings(
+                    data,
+                    key,
+                    include_internal=include_internal,
+                )
+                if not data:
+                    continue
+            elif key:
+                data = _get_data_by_key(data, key, sep=sep)
         except KeyError:
             continue  # skip: source doesn't contain the requested key
 
@@ -283,7 +323,7 @@ def get_history(
         data = _ensure_serializable(data)
         result.append({**source_metadata._asdict(), "value": data})
 
-    if key and not result:
+    if isinstance(key, str) and key and not result:
         # Key may be set in obj but history not tracked
         if (data := obj.get(key, empty)) is not empty:
             generic_source_metadata = SourceMetadata(

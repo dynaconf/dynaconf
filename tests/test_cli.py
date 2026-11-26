@@ -571,6 +571,141 @@ def get_current_test_name():
     return name
 
 
+@pytest.fixture
+def regex_cli_instance(tmp_path):
+    instance_name = get_current_test_name()
+    first = create_file(
+        tmp_path / "first.toml",
+        """\
+        first_url = 'original'
+        second_url = 'second'
+        unrelated = 'ignore'
+        nested.CHILD_URL = 'not a top-level key'
+        """,
+    )
+    second = create_file(
+        tmp_path / "second.toml",
+        "first_url = 'updated'\nunrelated = 'still ignored'",
+    )
+    create_file(
+        tmp_path / f"{instance_name}.py",
+        f"""\
+        from dynaconf import Dynaconf
+        settings = Dynaconf(
+            settings_files={[first.as_posix(), second.as_posix()]!r},
+        )
+        settings.set(17, "not a string key")
+        settings.set("UNRELATED_LAZY", "@format {{this.MISSING}}")
+        """,
+    )
+    return ["-i", f"{instance_name}.settings"]
+
+
+def run_json(cmd, env=None):
+    with mock.patch.dict(os.environ, {}):
+        result = CliRunner().invoke(main, cmd, env=env, catch_exceptions=False)
+    assert result.exit_code == 0, result.output
+    return json.loads(result.output)
+
+
+def test_list_regex_search(regex_cli_instance):
+    result = run_json(
+        [*regex_cli_instance, "list", "--json", "-k", "_URL$", "--regex"]
+    )
+    assert result == {"FIRST_URL": "updated", "SECOND_URL": "second"}
+
+
+@pytest.mark.parametrize("limit", [None, 1])
+def test_inspect_regex_search(regex_cli_instance, limit):
+    cmd = [*regex_cli_instance, "inspect", "-k", "_URL$", "--regex"]
+    if limit is not None:
+        cmd.extend(["--limit", str(limit)])
+    # This newer source must be excluded before applying the history limit.
+    result = run_json(cmd, env={"DYNACONF_UNRELATED": "from environ"})
+    assert result["current"] == {
+        "FIRST_URL": "updated",
+        "SECOND_URL": "second",
+    }
+    expected = [
+        {"FIRST_URL": "updated"},
+        {"FIRST_URL": "original", "SECOND_URL": "second"},
+    ]
+    assert [entry["value"] for entry in result["history"]] == expected[:limit]
+
+
+@pytest.mark.parametrize("command", ["list", "inspect"])
+def test_cli_regex_no_matches(regex_cli_instance, command):
+    cmd = [*regex_cli_instance, command, "-k", "^MISSING$", "--regex"]
+    if command == "list":
+        cmd.append("--json")
+    result = run_json(cmd)
+    if command == "list":
+        assert result == {}
+    else:
+        assert result["current"] == {}
+        assert result["history"] == []
+
+
+def test_list_regex_keeps_renamed_keys_in_json(regex_cli_instance):
+    result = run_json(
+        [
+            *regex_cli_instance,
+            "list",
+            "--all",
+            "--json",
+            "-k",
+            "^PROJECT_ROOT$",
+            "--regex",
+        ]
+    )
+    assert list(result) == ["PROJECT_ROOT"]
+
+
+@pytest.mark.parametrize("command", ["list", "inspect"])
+@pytest.mark.parametrize("include_internal", [False, True])
+def test_cli_regex_internal_keys(
+    regex_cli_instance, command, include_internal
+):
+    key = "ENVVAR_PREFIX_FOR_DYNACONF"
+    cmd = [*regex_cli_instance, command, "-k", f"^{key}$", "--regex"]
+    if command == "list":
+        cmd.append("--json")
+    if include_internal:
+        cmd.append("--all")
+    result = run_json(cmd)
+    current = result if command == "list" else result["current"]
+    assert current == ({key: "DYNACONF"} if include_internal else {})
+    if command == "inspect" and not include_internal:
+        assert result["history"] == []
+
+
+@pytest.mark.parametrize("command", ["list", "inspect"])
+@pytest.mark.parametrize(
+    "arguments, messages",
+    [
+        (
+            ["-k", "[", "--regex"],
+            ("invalid regular expression", "unterminated"),
+        ),
+        (["--regex"], ("--key",)),
+    ],
+)
+def test_cli_regex_usage_error(
+    regex_cli_instance, command, arguments, messages
+):
+    runner = CliRunner()
+    result = runner.invoke(
+        main,
+        [*regex_cli_instance, command, *arguments],
+        catch_exceptions=False,
+    )
+    assert result.exit_code == 2
+    assert "Usage:" in result.output
+    assert "Error:" in result.output
+    assert "no such option" not in result.output.lower()
+    assert any(message in result.output.lower() for message in messages)
+
+
 def test_inspect_no_args(tmp_path):
     """Inspect command with no arguments"""
     instance_name = get_current_test_name()
