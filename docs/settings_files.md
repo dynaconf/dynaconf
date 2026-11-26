@@ -185,6 +185,20 @@ distinct environment.
     name = "admin"
     ```
 
+=== "settings.py"
+    ```py
+    # settings.py (base/default settings)
+    NAME = ""
+    ```
+    ```py
+    # development_settings.py
+    NAME = "developer"
+    ```
+    ```py
+    # production_settings.py
+    NAME = "admin"
+    ```
+
 !!! info
     You can define a custom environment using the name you want, like `[testing]` or `[anything]`
 
@@ -215,6 +229,36 @@ distinct environment.
 !!! tip
     It is also possible to switch environments programmatically passing
     `env="development"` to `Dynaconf` class on instantiation.
+
+### Layered environments with `.py` files
+
+Unlike `.toml`, `.yaml`, `.json`, and `.ini` files—where environments are defined
+as top-level sections or keys inside the file—Python settings modules use
+separate `<env>_<filename>.py` files in the same directory:
+
+```python
+settings = Dynaconf(
+    settings_files=["settings.py"],
+    environments=True,
+    merge_enabled=True,  # optional: merge nested dicts instead of replacing
+)
+```
+
+Pass only the base file (`"settings.py"`) in `settings_files`, not the
+environment-specific files (`development_settings.py`, `production_settings.py`).
+When `environments=True`, Dynaconf loads `settings.py` first, then automatically
+looks for `<env>_settings.py` matching the active environment (such as
+`development_settings.py`, `production_settings.py`, or `testing_settings.py`),
+and finally `global_settings.py` (which overrides all environments).
+
+For any other Python filename `<name>.py`, Dynaconf looks for
+`<env>_<name>.py` and `global_<name>.py` (for `.secrets.py`, it looks for
+`.<env>_secrets.py` and `.global_secrets.py`).
+
+!!! note
+    The `<env>_<filename>.py` naming pattern applies **only** to `.py` files.
+    For `.toml`, `.yaml`, `.json`, and `.ini` files, define environments as
+    sections inside the file itself.
 
 ### YAML Caveats
 
