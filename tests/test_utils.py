@@ -1525,6 +1525,47 @@ def test_json_extract_with_embedded_json(settings):
     assert result == {"key": True, "other": False}
 
 
+def test_json_cast_of_rendered_dict_with_empty_dict(settings):
+    """@json on a rendered Python dict returns the whole dict.
+
+    The empty nested dict is valid JSON by itself, it must not be
+    returned in place of the outer dict.
+    """
+    settings.set("MODEL", {"path": "a.b", "kwargs": {}})
+    res = parse_conf_data("@json @jinja {{ this.MODEL }}")(settings)
+    assert res == {"path": "a.b", "kwargs": {}}
+    res = parse_conf_data("@json @format {this.MODEL}")(settings)
+    assert res == {"path": "a.b", "kwargs": {}}
+
+
+@pytest.mark.parametrize(
+    "value,expected",
+    [
+        (
+            '[{"name": "a", "enabled": True}, {"name": "b", "enabled": False}]',
+            [{"name": "a", "enabled": True}, {"name": "b", "enabled": False}],
+        ),
+        ("""['x', {"a": 1}]""", ["x", {"a": 1}]),
+        ("""{'outer': {"inner": 1}}""", {"outer": {"inner": 1}}),
+        ("""{'payload': '{"x": 1}'}""", {"payload": '{"x": 1}'}),
+        ("[{}, {'a': 1}]", [{}, {"a": 1}]),
+    ],
+)
+def test_safe_json_parse_returns_whole_value(value, expected):
+    """A JSON object inside the value is not returned as the result."""
+    from dynaconf.utils.parse_conf import _safe_json_parse
+
+    assert _safe_json_parse(value) == expected
+
+
+def test_safe_json_parse_trailing_text_fails():
+    """Text after a JSON object is an error, not ignored."""
+    from dynaconf.utils.parse_conf import _safe_json_parse
+
+    with pytest.raises(DynaconfParseError, match="Cannot parse as JSON"):
+        _safe_json_parse('{"a": 1} trailing')
+
+
 def test_tomlfy_filter_with_dotted_key(settings):
     """Test parse_conf_data with dotted key in tomlfy_filter"""
     # This tests dotted path handling in tomlfy_filter
