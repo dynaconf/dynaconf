@@ -574,8 +574,11 @@ def _safe_json_parse(value):
 
     Tries in order:
     1. Standard JSON (double quotes)
-    2. Extract JSON from string with boolean/None fixes
+    2. Standard JSON after Python-style True/False/None are normalized
     3. Python literal syntax (ast.literal_eval)
+
+    Each step must parse the whole value. A JSON object found somewhere
+    inside the value (e.g. an empty nested dict) is not the result.
 
     This handles cases like:
     - {'key': 'value'} (Python dict syntax)
@@ -586,26 +589,22 @@ def _safe_json_parse(value):
     with suppress(json.JSONDecodeError, TypeError):
         return json.loads(value)
 
-    # Try extracting JSON objects with boolean/None normalization
-    # This handles single-quoted JSON and Python-style booleans
+    # Try again with boolean/None normalization
+    # This handles double-quoted JSON with Python-style booleans
     with suppress(json.JSONDecodeError, ValueError, TypeError):
-        json_objects = list(
-            extract_json_objects(
-                multi_replace(
-                    value,
-                    {
-                        ": True": ": true",
-                        ":True": ": true",
-                        ": False": ": false",
-                        ":False": ": false",
-                        ": None": ": null",
-                        ":None": ": null",
-                    },
-                )
+        return json.loads(
+            multi_replace(
+                value,
+                {
+                    ": True": ": true",
+                    ":True": ": true",
+                    ": False": ": false",
+                    ":False": ": false",
+                    ": None": ": null",
+                    ":None": ": null",
+                },
             )
         )
-        if json_objects:
-            return json_objects[0]
 
     # Last resort: try ast.literal_eval for Python dict/list syntax
     import ast
